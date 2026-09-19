@@ -1,0 +1,497 @@
+#@GENERATE TRANSLATE START
+menu.dashboard: Головна
+menu.group_setting: Настройки Сайта
+menu.group_catalog: Каталог товарів
+menu.group_email: Пошта
+menu.group_bank: Банк
+menu.link_email_template: Шаблони листів
+menu.link_email_template_single: Шаблон листа
+menu.link_email_template_section: Секції листів
+menu.link_email_template_section_single: Секція листа
+menu.link_email_parameter: Параметри
+menu.link_email_parameter_single: Параметр
+menu.link_bank_account: Рахунки
+menu.link_bank_account_single: Рахунок
+menu.link_email_sender: Відправники листів
+menu.link_email_sender_single: Відправник листів
+menu.link_order_email: Листи замовлень
+menu.link_order_email_single: Лист замовлення
+menu.link_email_log: Журнал листів
+menu.link_email_log_single: Запис листа
+menu.link_email_template_test: Тест шаблонів
+menu.users: Користувачі
+menu.link_user: Користувачі
+menu.link_user_single: Користувач
+menu.link_product: Товари
+menu.link_product_single: Товар
+menu.link_supplier: Постачальники
+menu.link_supplier_single: Постачальник
+menu.link_product_offer: Цінові пропозиції
+menu.link_product_offer_single: Цінова пропозиція
+menu.link_cart: Кошики
+menu.link_cart_single: Кошик
+menu.link_order: Замовлення
+menu.link_order_single: Замовлення
+menu.link_payment: Платежі
+menu.link_payment_single: Платіж
+admin.order.info: Інформація про замовлення
+admin.order.customer_info: Інформація про клієнта
+admin.order.customer_account: Клієнт
+admin.order.guest_customer: 'Гість-%visitor_id%'
+admin.order.visitor_id: Visitor ID
+admin.order.do_not_call_yes: Так
+admin.order.order_number: Номер замовлення
+admin.order.status_label: Статус
+admin.order.created_at: Створено
+admin.order.updated_at: Оновлено
+admin.order.currency: Валюта
+admin.order.locale: Локаль
+admin.order.amounts: Сума замовлення
+admin.order.order_total: Сума замовлення
+admin.order.paid_amount: Оплачено
+admin.order.amount_due: До оплати
+admin.order.status.created: Створено
+admin.order.status.in_process: В обробці
+admin.order.status.awaiting_deposit_for_shipment: Очікуємо завдаток для відправки
+admin.order.status.paid: Оплачено
+admin.payment.status.pending: Очікує
+admin.payment.status.success: Успішно
+admin.payment.status.failed: Помилка
+admin.payment.order: Замовлення
+admin.payment.method.on_delivery: Оплата при отриманні
+admin.payment.method.privatbank: PrivatBank (LiqPay)
+admin.payment.method.monobank: Monobank
+admin.order.payments: Оплати
+admin.order.payments_empty: Немає оплат
+admin.order.payment_link: 'Оплата #%id%'
+admin.cart.items: Товари в кошику
+admin.cart.status.active: Активний
+admin.cart.status.inactive: Неактивний
+admin.cart.status.suspended: Призупинений
+admin.cart_item.status.active: Активний
+admin.cart_item.status.inactive: Неактивний
+admin.cart_item.line_total: Сума
+admin.order.items: Товари в замовленні
+admin.order.items_empty: Немає товарів
+admin.order.items_from_cart_snapshot: Дані зі знімка кошика (позиції замовлення ще не збережені окремо)
+admin.order.item_name: Товар
+admin.order.item_sku: SKU
+admin.order.item_quantity: Кількість
+admin.order.item_unit_price: Ціна
+admin.order.item_line_total: Сума
+admin.order.item_status: Статус
+admin.order.shipment_address: Адреса доставки
+admin.order.shipping_cost: Вартість доставки
+admin.order.np_waybill_number: ТТН Нова Пошта
+admin.order.np_waybill_ref: REF ТТН
+admin.shipment_address.delivery_cost: Вартість доставки
+admin.order_item.supplier: Постачальник
+admin.order_item.status.pending: Очікує
+admin.order_item.status.confirmed: Підтверджено
+admin.order_item.status.cancelled: Скасовано
+menu.link_cart_item: Позиції кошика
+menu.link_cart_item_single: Позиція кошика
+menu.link_order_item: Позиції замовлення
+menu.link_order_item_single: Позиція замовлення
+menu.link_shipment_address: Адреси доставки
+menu.link_shipment_address_single: Адреса доставки
+admin.shipment_address.type.courier: Кур'єр
+admin.shipment_address.type.np_branch: Нова пошта (відділення)
+admin.shipment_address.type.np_postomat: Нова пошта (поштомат)
+admin.shipment_address.summary: Адреса
+admin.shipment_address.user: Користувач
+admin.user.saved_addresses: Збережені адреси
+admin.user.full_name: Ім'я
+admin.user.phone: Телефон
+admin.order.contact: Контактні дані
+admin.order.customer_name: Ім'я клієнта
+admin.order.customer_phone: Телефон клієнта
+admin.order.customer_email: Email клієнта
+admin.order.do_not_call: Не телефонувати
+menu.link_footersetting_single: Настройка Футера
+menu.link_footersetting: Настройки Футера
+menu.link_footertranslation_single: Переклад Футера
+menu.link_footertranslation: Переклад Футера
+menu.link_headersetting_single: Настройка Заголовка
+menu.link_headersetting: Настройки Заголовків
+admin.header.phones: Телефони
+admin.header.phones_help: 'Один номер на рядок або через « · ». У хедері показуються через « · », у футері — окремими рядками.'
+admin.header.work_hours: Графік роботи
+admin.header.work_hours_help: 'Можна вводити HTML. Наприклад: 7 днів на тиждень з &lt;strong&gt;9:00&lt;/strong&gt; до &lt;strong&gt;19:00&lt;/strong&gt;'
+admin.header.courier_delivery_cost: Вартість кур'єрської доставки
+admin.header.courier_delivery_cost_help: Фіксована ціна кур'єра в межах Івано-Франківська, незалежно від кількості товару.
+admin.site.courier_delivery_cost: Вартість кур'єрської доставки
+admin.site.courier_delivery_cost_help: Фіксована ціна кур'єра в межах Івано-Франківська, незалежно від кількості товару.
+admin.site.cod_standard_percent: Комісія НП, стандартний %
+admin.site.cod_standard_percent_help: Відсоток комісії Нової пошти для оплати готівкою або на терміналі.
+admin.site.cod_novapay_percent: Комісія NovaPay, %
+admin.site.cod_novapay_percent_help: Відсоток комісії NovaPay за повернення коштів.
+admin.site.cod_prepayment_amount: Передоплата для відправки
+admin.site.cod_prepayment_amount_help: Сума передоплати для відправки товару при оплаті післяплатою.
+admin.site.cod_commission_notice_uk: Повідомлення про комісію (UK)
+admin.site.cod_commission_notice_en: Повідомлення про комісію (EN)
+admin.site.cod_commission_notice_help: 'Плейсхолдери: %standard_percent%, %novapay_percent%, %standard_amount%, %novapay_amount%, %prepayment_amount%. HTML дозволено.'
+admin.site.active_payment_methods: Активні методи оплати
+admin.site.active_payment_methods_help: 'Оберіть методи оплати для сайту. Якщо поле порожнє — доступні всі. Онлайн-оплата показується лише за наявності ключів банку.'
+admin.site.active_delivery_methods: Активні методи доставки
+admin.site.active_delivery_methods_help: 'Оберіть способи доставки для сайту. Якщо поле порожнє — доступні всі.'
+admin.site.payment.on_delivery: Оплата після отримання
+admin.site.payment.privatbank: ПриватБанк (LiqPay)
+admin.site.payment.monobank: Monobank
+admin.site.delivery.courier: Кур'єр по місту
+admin.site.delivery.np_branch: Нова Пошта — відділення
+admin.site.delivery.np_postomat: Нова Пошта — поштомат
+admin.product.name: Назва
+admin.product.sku: Артикул
+admin.product.category: Категорія
+admin.product.weight: Вага (кг)
+admin.product.package_height: Висота упаковки (см)
+admin.product.package_width: Ширина упаковки (см)
+admin.product.package_length: Довжина упаковки (см)
+admin.product.in_stock: В наявності
+admin.product.stock_qty: Кількість на складі
+admin.product.badge: Бейдж
+admin.product.short_description: Короткий опис
+admin.product.description: Опис
+admin.product.description_help: Можна використовувати HTML.
+admin.product.features: Переваги
+admin.product.features_help: Один пункт на рядок.
+admin.product.gallery: Галерея
+admin.product.gallery_image: 'Зображення %number%'
+admin.product.gallery_alt: 'Alt-текст (зображення %number%)'
+admin.product.gallery_help: До 3 фото товару. JSON у базі формується автоматично при збереженні.
+admin.product.pricing_panel: Ціни та пропозиції
+admin.product.content_panel: Контент
+admin.product.no_price: Ціни немає
+admin.product.available_for_sale: Доступний для продажу
+admin.product.lowest_offer: Найнижча ціна
+admin.product.lowest_offer_help: Розраховується автоматично з цінових пропозицій постачальників.
+admin.product.offers: Цінові пропозиції
+admin.product.offers_count: Пропозицій
+admin.product.view_all_offers: Переглянути всі
+admin.product_offer.product: Товар
+admin.product_offer.supplier: Постачальник
+admin.product_offer.sku: SKU постачальника
+admin.product_offer.price: Ціна
+admin.product_offer.old_price: Стара ціна
+admin.product_offer.qty: Залишок
+admin.product_offer.qty_help: Кількість товару в наявності у цього постачальника.
+admin.supplier.name: Назва
+admin.supplier.description: Опис
+admin.supplier.phone: Телефон
+admin.supplier.email: Електронна пошта
+admin.supplier.offers: Товарні пропозиції
+
+admin.email_template.site: Сайт
+admin.email_template.name: Назва шаблону
+admin.email_template.name_help: Унікальний ідентифікатор шаблону в межах сайту, наприклад order_created.
+admin.email_template.name_unique: Шаблон з такою назвою вже існує для цього сайту.
+admin.email_template.subject: Тема листа
+admin.email_template.context: Контекст
+admin.email_template.context_order: Замовлення
+admin.email_template.context_user: Користувач
+admin.email_template.context_help: Визначає, які дані підставляються в плейсхолдери при тестуванні та відправці листа.
+admin.email_template.type: Тип шаблону
+admin.email_template.type_html: HTML
+admin.email_template.type_text: Текст
+admin.email_template.content: Контент
+admin.email_template.content_help: 'Тіло листа. Плейсхолдери: {{ order_number }}, {{ customer_name }}, а також параметри з розділу «Параметри» — {{ shop_logo_url }}, {{ shop_title }}, {{ support_email }} та ін.'
+admin.email_template.section_help: 'Секції: {{section=''header''}} — вставляє HTML-секцію з адмінки.'
+admin.email_template.additional_css: Додатковий CSS
+admin.email_template.additional_css_help: Додаткові стилі для HTML-листів. Вставляються у блок <style>.
+admin.email_template_section.site: Сайт
+admin.email_template_section.name: Назва секції
+admin.email_template_section.name_help: 'Унікальний ідентифікатор секції в межах сайту, наприклад header або footer.'
+admin.email_template_section.name_unique: Секція з такою назвою вже існує для цього сайту.
+admin.email_template_section.name_format: 'Назва може містити лише малі латинські літери, цифри, _ та -.'
+admin.email_template_section.content: HTML-контент
+admin.email_template_section.content_help: 'HTML-секція листа. Плейсхолдери, параметри з «Параметри» та інші секції підтримуються, наприклад {{ shop_url }}, {{ support_phone }} або {{section=''footer''}}.'
+
+admin.email_parameter.site: Сайт
+admin.email_parameter.locale: Локаль
+admin.email_parameter.name: Назва параметра
+admin.email_parameter.name_help: 'Унікальний ідентифікатор у межах сайту та локалі. Використовується як {{ name }} у шаблонах, наприклад shop_title або support_email.'
+admin.email_parameter.name_unique: Параметр з такою назвою вже існує для цього сайту та локалі.
+admin.email_parameter.name_format: 'Назва може містити лише малі латинські літери, цифри та _.'
+admin.email_parameter.type: Тип
+admin.email_parameter.type_text: Текст
+admin.email_parameter.type_image: Картинка
+admin.email_parameter.type_help: 'Для типу «Картинка» завантажується файл, у листах підставляється повний URL.'
+admin.email_parameter.value: Значення
+admin.email_parameter.value_help: 'Значення параметра для обраного сайту та локалі.'
+admin.email_parameter.image_help: 'Завантажте зображення. У шаблонах використовуйте {{ shop_logo_url }} — підставиться повний URL.'
+admin.bank_account.site: Сайт
+admin.bank_account.locale: Локаль
+admin.bank_account.title: Назва рахунку
+admin.bank_account.title_help: Внутрішня назва для списку рахунків у адмінці.
+admin.bank_account.recipient: Отримувач
+admin.bank_account.edrpou: ЄДРПОУ / ІПН
+admin.bank_account.bank_name: Назва банку
+admin.bank_account.iban: IBAN
+admin.bank_account.iban_help: Використовується на сторінці оплати на IBAN та в листах {{ shipment_pay_iban_url }}.
+admin.bank_account.is_default: Основний для локалі
+admin.email_log.created_at: Надіслано
+admin.email_log.status_label: Статус
+admin.email_log.status.sent: Надіслано
+admin.email_log.status.failed: Помилка
+admin.email_log.status.skipped: Пропущено
+admin.email_log.event_code: Код події
+admin.email_log.order: Замовлення
+admin.email_log.order_number: Номер замовлення
+admin.email_log.configuration: Конфігурація листа
+admin.email_log.recipient: Отримувач
+admin.email_log.sender_email: Email відправника
+admin.email_log.sender_name: Ім'я відправника
+admin.email_log.subject: Тема
+admin.email_log.body: Контент листа
+admin.email_log.is_html: HTML
+admin.email_log.error_message: Помилка відправки
+admin.email_log.skip_reason: Причина пропуску
+
+admin.email_template_test.title: Тест шаблонів листів
+admin.email_template_test.template: Шаблон
+admin.email_template_test.sender: Відправник
+admin.email_template_test.recipient: Отримувач
+admin.email_template_test.context_value: Контекст
+admin.email_template_test.context_order_none: Без замовлення (тестові дані)
+admin.email_template_test.context_order_help: Оберіть замовлення для підстановки реальних даних (номер, сума, доставка тощо).
+admin.email_template_test.context_user_none: Без користувача (тестові дані)
+admin.email_template_test.context_user_help: Оберіть користувача для підстановки реальних даних (імʼя, email, телефон).
+admin.email_template_test.choose: Оберіть…
+admin.email_template_test.preview: Переглянути
+admin.email_template_test.send: Надіслати лист
+admin.email_template_test.preview_title: Попередній перегляд
+admin.email_template_test.preview_subject: Тема
+admin.email_template_test.preview_empty: Оберіть шаблон і натисніть «Переглянути» або «Надіслати лист».
+admin.email_template_test.sent: Тестовий лист надіслано.
+admin.email_template_test.send_failed: Не вдалося надіслати лист. Перевірте налаштування пошти та журнал листів.
+admin.email_template_test.hint: Після вибору шаблону зʼявляється поле контексту — список замовлень або користувачів залежно від налаштування шаблону. Відправлені листи потрапляють у «Журнал листів».
+
+admin.email_sender.name: Назва
+admin.email_sender.email: Електронна пошта
+admin.email_sender.email_unique: Відправник з такою електронною поштою вже існує.
+
+admin.order_email.name: Назва листа
+admin.order_email.code: Код листа
+admin.order_email.code_help: 'Коди подій: order_created, wait_payment_for_shipment, order_paid, register_user (реєстрація користувача).'
+admin.order_email.code_unique: Лист з таким кодом вже існує.
+admin.order_email.code_format: 'Код може містити лише малі латинські літери, цифри та символ _.'
+admin.order_email.template: Шаблон
+admin.order_email.sender: Відправник
+menu.link_headertranslation_single: Переклад Заголовка
+menu.link_headertranslation: Переклад Заголовків
+menu.link_locale_single: Мова
+menu.link_locale: Мови
+menu.link_megamenusetting_single: Настройка Меню
+menu.link_megamenusetting: Настройки Меню
+menu.link_megamenutranslation_single: Пункт Меню
+menu.link_megamenutranslation: Пункти Меню
+menu.link_megamenutype_single: Тип Пунктів Меню
+menu.link_megamenutype: Типи Пунктів Меню
+menu.link_popularsearch_single: Популярне пошукове слово
+menu.link_popularsearch: Популярні пошукові слова
+menu.link_seosetting_single: Seo Настройка
+menu.link_seosetting: Seo Настройки
+menu.link_seosettingstranslation_single: Seo Настройка Переклад
+menu.link_seosettingstranslation: Seo Настройки Переклад
+menu.link_site_single: Сайт
+menu.link_site: Сайти
+#@GENERATE TRANSLATE FINISH
+shop.about: Про нас
+shop.my_account: Мій кабінет
+shop.welcome: Ласкаво просимо!
+shop.login: Увійти
+shop.register: Реєстрація
+shop.logout: Вийти
+shop.work_hours: 7 днів на тиждень з 9:00 до 19:00
+shop.header.language: Мова
+shop.header.your_city: Ваше місто
+shop.header.city_placeholder: Введіть місто
+shop.header.city_modal_title: Виберіть своє місто
+shop.header.city_modal_lead: Доставляємо замовлення по всій Україні!
+shop.header.city_search_label: Вкажіть населений пункт України
+shop.header.city_search_hint: 'Наприклад, Котюжини'
+shop.header.city_apply: Застосувати
+shop.header.city_modal_note: 'Вибір міста допоможе надати актуальну інформацію про наявність товару, його ціни та методів доставки у вашому місті! Це допоможе зберегти більше вільного часу для вас!'
+shop.header.city_close: Закрити
+shop.add_to_cart: До кошика
+shop.cart.added: Товар додано до кошика
+shop.cart.added_short: Додано ✓
+shop.cart.removed: Товар видалено з кошика
+shop.minicart.remove: Видалити
+shop.minicart.title: Кошик
+shop.minicart.open: Відкрити кошик
+shop.minicart.close: Закрити
+shop.minicart.empty: Кошик порожній
+shop.minicart.total: Разом
+shop.minicart.checkout: Оформити замовлення
+shop.minicart.continue_shopping: Продовжити покупки
+shop.buy_now: Купити зараз
+shop.brand:  Магазин Квадро
+shop.footer.buyers: Покупцям
+shop.footer.delivery: Доставка
+shop.footer.payment: Оплата
+shop.footer.warranty: Гарантія
+shop.footer.returns: Повернення
+shop.footer.contacts: Контакти
+shop.error404.title: Сторінку не знайдено
+shop.error404.text: Запитана сторінка не існує або була переміщена. Перевірте адресу або поверніться на головну.
+shop.error404.back_home: На головну
+
+shop.product.sku: Артикул
+shop.product.in_stock: 'В наявності (%qty% шт.)'
+shop.product.out_of_stock: Немає в наявності
+shop.product.no_price: Ціни немає
+shop.product.empty_catalog_title: Товари тимчасово недоступні
+shop.product.empty_catalog_text: Додайте товар у адмінці або виконайте міграції бази даних.
+shop.product.quantity: Кількість
+shop.product.you_save: 'Ви економите %amount%'
+shop.product.supplier: Постачальник
+shop.product.all_offers: Всі пропозиції
+shop.product.offers_modal_title: Цінові пропозиції
+shop.product.offers_modal_lead: Оберіть постачальника та ціну для замовлення.
+shop.product.offers_close: Закрити
+shop.product.offer_sku: SKU
+shop.product.lowest_price: Найнижча ціна
+shop.product.description_title: Детальний опис
+
+shop.checkout.title: Оформлення замовлення
+shop.checkout.steps: Кроки оформлення
+shop.checkout.step_contact: Контакти
+shop.checkout.step_delivery: Доставка
+shop.checkout.step_payment: Оплата
+shop.checkout.order_summary: Ваше замовлення
+shop.checkout.subtotal: Сума замовлення
+shop.checkout.delivery_cost: Доставка
+shop.checkout.delivery_cost_paid_on_receipt: (оплачується при отриманні замовлення)
+shop.checkout.delivery_cost_np_tariff: (згідно з тарифами Нової пошти)
+shop.checkout.delivery_cost_time_pay: оплачується при отриманні товару
+shop.checkout.delivery_pay_time:
+shop.checkout.total: До сплати
+shop.checkout.placeholder: Наступним кроком тут буде форма з даними для доставки та оплати.
+shop.checkout.back_to_shop: Повернутись до магазину
+shop.checkout.contact_details: Контактні дані
+shop.checkout.save_contact: Зберегти контактні дані
+shop.checkout.contact_saved: Контактні дані збережено.
+shop.checkout.saved_contact: Контактні дані
+shop.checkout.edit_contact: Змінити контакт
+shop.checkout.delivery_contact_locked: Спочатку збережіть контактні дані.
+shop.checkout.delivery_contact_required: Спочатку збережіть контактні дані.
+shop.validation.required: Поле обов'язкове
+shop.checkout.customer_name: Ім'я та прізвище
+shop.checkout.customer_email: Email
+shop.checkout.customer_phone: Телефон
+shop.checkout.do_not_call: Не телефонувати
+shop.checkout.delivery_method: Спосіб доставки
+shop.checkout.delivery_courier: Кур'єр по місту (Івано-Франківськ)
+shop.checkout.delivery_courier_short: Доставка кур'єром за вашою адресою в межах міста.
+shop.checkout.delivery_np_branch: Нова Пошта — відділення
+shop.checkout.delivery_np_branch_short: Самовивіз з відділення Нової Пошти у зручному для вас місті.
+shop.checkout.delivery_np_postomat: Нова Пошта — поштомат
+shop.checkout.delivery_np_postomat_short: Отримання замовлення у поштоматі Нової Пошти 24/7.
+shop.checkout.courier_address: Адреса доставки
+shop.checkout.courier_address_placeholder: "Вулиця, будинок, під'їзд, квартира"
+shop.checkout.courier_hint: Доставка кур'єром доступна в межах Івано-Франківська.
+shop.checkout.courier_address_required: Вкажіть адресу для кур'єрської доставки
+shop.checkout.courier_not_available: Кур'єрська доставка доступна лише в Івано-Франківську
+shop.checkout.np_hint: Оберіть місто та відділення або поштомат Нової Пошти.
+shop.checkout.np_hint_branch: Оберіть місто та відділення Нової Пошти.
+shop.checkout.np_hint_postomat: Оберіть місто та поштомат Нової Пошти.
+shop.checkout.np_village_hint: 'У %settlement% немає відділень Нової Пошти. Оберіть відділення в %city%.'
+shop.checkout.np_city: Місто
+shop.checkout.np_warehouse: Відділення / поштомат
+shop.checkout.np_warehouse_branch: Відділення
+shop.checkout.np_warehouse_postomat: Поштомат
+shop.checkout.np_warehouse_placeholder: Спочатку оберіть місто
+shop.checkout.np_warehouse_placeholder_branch: Оберіть відділення
+shop.checkout.np_warehouse_placeholder_postomat: Оберіть поштомат
+shop.checkout.np_warehouse_required: Оберіть відділення або поштомат Нової Пошти
+shop.checkout.np_not_configured: Доставка Новою Поштою тимчасово недоступна. Додайте NOVA_POSHTA_API_KEY у .env.local
+shop.checkout.save_delivery: Зберегти доставку
+shop.checkout.delivery_saved: Дані доставки збережено.
+shop.checkout.saved_delivery: Обрана доставка
+shop.checkout.edit_delivery: Змінити доставку
+
+shop.checkout.payment_method: Оплата
+shop.checkout.payment_hint: Оберіть банк для безпечної онлайн-оплати карткою.
+shop.checkout.payment_hint_methods: Оберіть спосіб оплати замовлення.
+shop.checkout.payment_on_delivery: Оплата після отримання товару
+shop.checkout.payment_on_delivery_desc: Оплатіть замовлення при отриманні на відділенні Нової пошти.
+shop.checkout.cod_prepayment: 'Передоплата :'
+shop.checkout.cod_additional_costs: 'Додаткові витрати :'
+shop.checkout.confirm_order: Підтвердити замовлення
+shop.checkout.payment_privatbank: ПриватБанк
+shop.checkout.payment_privatbank_desc: Оплата карткою Visa/Mastercard через LiqPay (ПриватБанк).
+shop.checkout.payment_monobank: monobank
+shop.checkout.payment_monobank_desc: Оплата карткою monobank або Apple Pay / Google Pay.
+shop.checkout.pay_now: Сплатити
+shop.checkout.payment_locked: Спочатку збережіть дані доставки, щоб перейти до оплати.
+shop.checkout.payment_not_configured: Онлайн-оплата тимчасово недоступна. Додайте LIQPAY_PUBLIC_KEY, LIQPAY_PRIVATE_KEY або MONOBANK_TOKEN у .env.local
+shop.checkout.payment_method_unavailable: Обраний метод оплати недоступний.
+shop.checkout.delivery_method_unavailable: Обраний метод доставки недоступний.
+shop.checkout.payment_delivery_required: Спочатку збережіть дані доставки.
+shop.checkout.payment_failed: Не вдалося створити платіж. Спробуйте ще раз або оберіть інший банк.
+shop.checkout.payment_redirect_title: Перехід до оплати
+shop.checkout.payment_redirect_text: Зараз ви будете перенаправлені на сторінку банку для оплати замовлення.
+shop.checkout.continue_to_payment: Перейти до оплати
+shop.checkout.success_title: Дякуємо за замовлення
+shop.checkout.success_paid_main: 'Ваше замовлення %order_id% оплачене і обробляється.'
+shop.checkout.success_paid_call: 'Очікуйте на дзвінок від адміністратора.'
+shop.checkout.success_paid_waybill: 'Після відправки ми надішлемо Вам номер транспортної накладної.'
+shop.checkout.success_deposit_main: 'Ваше замовлення %order_id% прийняте.'
+shop.checkout.success_deposit_payment: 'Очікуємо на оплату авансу для відправки товару.'
+shop.checkout.success_deposit_waybill: 'Ми надішлемо товар після отримання і Ви отримаєте номер транспортної накладної.'
+shop.shipment_pay.title: Оплата передоплати для відправки
+shop.shipment_pay.order_number: 'Замовлення: %order_number%'
+shop.shipment_pay.amount: 'Сума до оплати: %amount%'
+shop.shipment_pay.hint: 'Сплатіть передоплату, щоб ми могли відправити замовлення.'
+shop.shipment_pay.qr_alt: QR-код для оплати
+shop.shipment_pay.qr_caption_monobank: Відскануйте QR-код у застосунку Monobank
+shop.shipment_pay.qr_caption_privatbank: Відскануйте QR-код у застосунку Приват24
+shop.shipment_pay.save_qr: Зберегти QR-код як зображення
+shop.shipment_pay.mobile_hint: Збережіть QR-код у галерею та проскануйте його в застосунку банку.
+shop.shipment_pay.open_payment: Перейти до оплати
+shop.shipment_pay.already_paid: Передоплату вже отримано. Дякуємо!
+shop.shipment_pay.unavailable: Оплата зараз недоступна. Зверніться до підтримки магазину.
+shop.shipment_pay.iban_link: Оплатити на IBAN
+shop.shipment_pay_iban.title: Оплата на IBAN
+shop.shipment_pay_iban.hint: Перекажіть суму завдатку на рахунок за реквізитами нижче. У призначенні платежу обовʼязково вкажіть номер замовлення.
+shop.shipment_pay_iban.qr_alt: QR-код для оплати на IBAN
+shop.shipment_pay_iban.qr_caption: Відскануйте QR у застосунку банку — реквізити, суму та призначення заповняться автоматично.
+shop.shipment_pay_iban.recipient: Отримувач
+shop.shipment_pay_iban.edrpou: ЄДРПОУ / ІПН
+shop.shipment_pay_iban.bank: Банк
+shop.shipment_pay_iban.iban: IBAN
+shop.shipment_pay_iban.amount: Сума
+shop.shipment_pay_iban.purpose: Призначення платежу
+shop.shipment_pay_iban.copy: Копіювати
+shop.shipment_pay_iban.copied: Скопійовано
+shop.shipment_pay_iban.copy_fallback: Скопіюйте значення
+shop.shipment_pay_iban.note: Після зарахування коштів ми підтвердимо оплату та відправимо замовлення.
+shop.shipment_pay_iban.card_link: Оплатити карткою / QR
+shop.shipment_pay_iban.unavailable: IBAN-реквізити ще не налаштовані. Зверніться до підтримки магазину.
+admin.email_parameter.shop_iban: IBAN
+admin.email_parameter.shop_bank_name: Назва банку
+admin.email_parameter.shop_bank_recipient: Отримувач (IBAN)
+admin.email_parameter.shop_edrpou: ЄДРПОУ / ІПН
+shop.checkout.success_no_order: Оплату отримано. Якщо потрібна допомога — звʼяжіться з нами.
+
+auth.login_title: Вхід
+auth.login_subtitle: Увійдіть до облікового запису для доступу до магазину та адмін-панелі
+auth.register_title: Реєстрація
+auth.register_subtitle: Створіть обліковий запис для покупок у нашому магазині
+auth.email: Email
+auth.password: Пароль
+auth.repeat_password: Повторіть пароль
+auth.agree_terms: Я погоджуюсь з умовами використання
+auth.sign_in: Увійти
+auth.sign_up: Зареєструватись
+auth.no_account: Немає облікового запису?
+auth.have_account: Вже маєте обліковий запис?
+auth.register_link: Зареєструватись
+auth.login_link: Увійти
+auth.registration_success: Обліковий запис створено. Тепер ви можете увійти.
+auth.password_required: Будь ласка, введіть пароль
+auth.password_min_length: Пароль має містити щонайменше {{ limit }} символів
+auth.agree_terms_required: Потрібно погодитись з умовами
+auth.back_to_shop: Повернутись до магазину

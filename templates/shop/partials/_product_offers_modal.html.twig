@@ -1,0 +1,40 @@
+<div id="shop-offers-modal" class="shop-offers-modal" hidden aria-hidden="true">
+    <div class="shop-offers-modal__overlay" data-offers-close></div>
+    <div class="shop-offers-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="shop-offers-modal-title">
+        <button type="button" class="shop-offers-modal__close" data-offers-close aria-label="{{ 'shop.product.offers_close'|trans }}">&times;</button>
+
+        <h2 id="shop-offers-modal-title" class="shop-offers-modal__title">{{ 'shop.product.offers_modal_title'|trans }}</h2>
+        <p class="shop-offers-modal__lead">{{ 'shop.product.offers_modal_lead'|trans }}</p>
+
+        <ul class="shop-offers-modal__list" role="listbox">
+            {% for offer in product.offers %}
+                <li>
+                    <button
+                        type="button"
+                        class="shop-offers-modal__item{% if offer.id == product.selectedOfferId %} is-active{% endif %}"
+                        data-offer-id="{{ offer.id }}"
+                        role="option"
+                        aria-selected="{{ offer.id == product.selectedOfferId ? 'true' : 'false' }}"
+                    >
+                        <span class="shop-offers-modal__item-main">
+                            <span class="shop-offers-modal__supplier">{{ offer.supplier ? offer.supplier.name : '—' }}</span>
+                            <span class="shop-offers-modal__sku">
+                                {{ 'shop.product.offer_sku'|trans }}: {{ offer.sku }}
+                                · {{ 'shop.product.in_stock'|trans({'%qty%': offer.qty}) }}
+                            </span>
+                        </span>
+                        <span class="shop-offers-modal__item-price">
+                            <strong>{{ offer.price|number_format(2, ',', ' ') }} ₴</strong>
+                            {% if offer.oldPrice %}
+                                <del>{{ offer.oldPrice|number_format(2, ',', ' ') }} ₴</del>
+                            {% endif %}
+                        </span>
+                        {% if offer.isLowest %}
+                            <span class="shop-offers-modal__badge">{{ 'shop.product.lowest_price'|trans }}</span>
+                        {% endif %}
+                    </button>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>

@@ -1,0 +1,101 @@
+# yaml-language-server: $schema=../vendor/symfony/dependency-injection/Loader/schema/services.schema.json
+
+# This file is the entry point to configure your own services.
+# Files in the packages/ subdirectory configure your dependencies.
+# See also https://symfony.com/doc/current/service_container/import.html
+
+# Put parameters here that don't need to change on each machine where the app is deployed
+# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
+parameters:
+    locale: ua
+    languages: [ en, ua ]
+    app.domain: '%env(APP_DOMAIN)%'
+    app.enabled_locales: '%kernel.enabled_locales%'
+    env(SHOP_DEFAULT_CITY): 'Івано-Франківськ'
+    env(SHOP_DEFAULT_PACKAGE_WEIGHT): '1'
+    env(NOVA_POSHTA_SENDER_CITY_REF): ''
+    env(NOVA_POSHTA_SENDER_REF): ''
+    env(NOVA_POSHTA_SENDER_CONTACT_REF): ''
+    env(NOVA_POSHTA_SENDER_ADDRESS_REF): ''
+    env(NOVA_POSHTA_SENDER_PHONE): ''
+    env(NOVA_POSHTA_TEST_MODE): 'true'
+    env(NOVA_POSHTA_TEST_API_KEY): ''
+    env(SHOP_DEFAULT_PACKAGE_HEIGHT): '10'
+    env(SHOP_DEFAULT_PACKAGE_WIDTH): '10'
+    env(SHOP_DEFAULT_PACKAGE_LENGTH): '10'
+    shop_default_city: '%env(SHOP_DEFAULT_CITY)%'
+    shop_default_package_weight: '%env(SHOP_DEFAULT_PACKAGE_WEIGHT)%'
+    shop_default_package_height: '%env(SHOP_DEFAULT_PACKAGE_HEIGHT)%'
+    shop_default_package_width: '%env(SHOP_DEFAULT_PACKAGE_WIDTH)%'
+    shop_default_package_length: '%env(SHOP_DEFAULT_PACKAGE_LENGTH)%'
+services:
+    # default configuration for services in *this* file
+    _defaults:
+        autowire: true      # Automatically injects dependencies in your services.
+        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+
+    _instanceof:
+        App\Service\Seo\SitemapSourceInterface:
+            tags: ['app.sitemap_source']
+
+    # makes classes in src/ available to be used as services
+    # this creates a service per class whose id is the fully-qualified class name
+    App\:
+        resource: '../src/'
+    App\Command\ImportCsvCommand:
+        arguments:
+            $appDomain: '%app.domain%'
+    App\Twig\SiteSettingExtension:
+        tags: ['twig.extension']
+
+    App\Twig\CartExtension:
+        tags: ['twig.extension']
+
+    App\Twig\CityExtension:
+        tags: ['twig.extension']
+
+    App\Service\GeoIp\UserCityService:
+        arguments:
+            $defaultCity: '%env(default:shop_default_city:SHOP_DEFAULT_CITY)%'
+
+    App\Service\NovaPoshtaClient:
+        arguments:
+            $apiKey: '%env(default::NOVA_POSHTA_API_KEY)%'
+
+    App\Service\NovaPoshtaDeliveryQuoteService:
+        arguments:
+            $defaultCity: '%env(default:shop_default_city:SHOP_DEFAULT_CITY)%'
+            $senderCityRefOverride: '%env(default::NOVA_POSHTA_SENDER_CITY_REF)%'
+            $defaultPackageWeight: '%env(float:default:shop_default_package_weight:SHOP_DEFAULT_PACKAGE_WEIGHT)%'
+
+    App\Service\Checkout\PaymentCheckoutService:
+        arguments:
+            $liqpayPublicKey: '%env(default::LIQPAY_PUBLIC_KEY)%'
+            $liqpayPrivateKey: '%env(default::LIQPAY_PRIVATE_KEY)%'
+            $monobankToken: '%env(default::MONOBANK_TOKEN)%'
+
+    App\Service\Checkout\ShipmentPayTokenService:
+        arguments:
+            $appSecret: '%kernel.secret%'
+
+    App\Service\Checkout\ShipmentPayUrlGenerator:
+        arguments:
+            $appDomain: '%app.domain%'
+
+    App\Service\NovaPoshta\NovaPoshtaWaybillService:
+        arguments:
+            $apiKey: '%env(default::NOVA_POSHTA_API_KEY)%'
+            $testApiKey: '%env(default::NOVA_POSHTA_TEST_API_KEY)%'
+            $testMode: '%env(bool:NOVA_POSHTA_TEST_MODE)%'
+            $senderRef: '%env(default::NOVA_POSHTA_SENDER_REF)%'
+            $senderContactRef: '%env(default::NOVA_POSHTA_SENDER_CONTACT_REF)%'
+            $senderAddressRef: '%env(default::NOVA_POSHTA_SENDER_ADDRESS_REF)%'
+            $senderCityRef: '%env(default::NOVA_POSHTA_SENDER_CITY_REF)%'
+            $senderPhone: '%env(default::NOVA_POSHTA_SENDER_PHONE)%'
+            $defaultPackageHeight: '%env(float:default:shop_default_package_height:SHOP_DEFAULT_PACKAGE_HEIGHT)%'
+            $defaultPackageWidth: '%env(float:default:shop_default_package_width:SHOP_DEFAULT_PACKAGE_WIDTH)%'
+            $defaultPackageLength: '%env(float:default:shop_default_package_length:SHOP_DEFAULT_PACKAGE_LENGTH)%'
+
+
+    # add more service definitions when explicit configuration is needed
+    # please note that last definitions always *replace* previous ones

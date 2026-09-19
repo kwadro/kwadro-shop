@@ -1,0 +1,480 @@
+#@GENERATE TRANSLATE START
+menu.dashboard: Dashboard
+menu.group_setting: Setting Site
+menu.group_catalog: Product catalog
+menu.group_email: Email
+menu.group_bank: Bank
+menu.link_email_template: Email templates
+menu.link_email_template_single: Email template
+menu.link_email_template_section: Email sections
+menu.link_email_template_section_single: Email section
+menu.link_email_parameter: Parameters
+menu.link_email_parameter_single: Parameter
+menu.link_bank_account: Accounts
+menu.link_bank_account_single: Account
+menu.link_email_sender: Email senders
+menu.link_email_sender_single: Email sender
+menu.link_order_email: Order emails
+menu.link_order_email_single: Order email
+menu.link_email_log: Email log
+menu.link_email_log_single: Email log entry
+menu.link_email_template_test: Template test
+menu.users: Users
+menu.link_user: Users
+menu.link_user_single: User
+menu.link_product: Products
+menu.link_product_single: Product
+menu.link_supplier: Suppliers
+menu.link_supplier_single: Supplier
+menu.link_product_offer: Product offers
+menu.link_product_offer_single: Product offer
+menu.link_cart: Carts
+menu.link_cart_single: Cart
+menu.link_order: Orders
+menu.link_order_single: Order
+menu.link_payment: Payments
+menu.link_payment_single: Payment
+admin.order.info: Order information
+admin.order.customer_info: Customer information
+admin.order.customer_account: Customer
+admin.order.guest_customer: 'Guest-%visitor_id%'
+admin.order.visitor_id: Visitor ID
+admin.order.do_not_call_yes: Yes
+admin.order.order_number: Order number
+admin.order.status_label: Status
+admin.order.created_at: Created at
+admin.order.updated_at: Updated at
+admin.order.currency: Currency
+admin.order.locale: Locale
+admin.order.amounts: Order amount
+admin.order.order_total: Order total
+admin.order.paid_amount: Paid
+admin.order.amount_due: Amount due
+admin.order.status.created: Created
+admin.order.status.in_process: In process
+admin.order.status.awaiting_deposit_for_shipment: Awaiting deposit for shipment
+admin.order.status.paid: Paid
+admin.payment.status.pending: Pending
+admin.payment.status.success: Success
+admin.payment.status.failed: Failed
+admin.payment.order: Order
+admin.payment.method.on_delivery: Cash on delivery
+admin.payment.method.privatbank: PrivatBank (LiqPay)
+admin.payment.method.monobank: Monobank
+admin.order.payments: Payments
+admin.order.payments_empty: No payments
+admin.order.payment_link: 'Payment #%id%'
+admin.cart.items: Cart items
+admin.cart.status.active: Active
+admin.cart.status.inactive: Inactive
+admin.cart.status.suspended: Suspended
+admin.cart_item.status.active: Active
+admin.cart_item.status.inactive: Inactive
+admin.cart_item.line_total: Line total
+admin.order.items: Order items
+admin.order.items_empty: No items
+admin.order.items_from_cart_snapshot: Data from cart snapshot (order items not stored separately yet)
+admin.order.item_name: Product
+admin.order.item_sku: SKU
+admin.order.item_quantity: Quantity
+admin.order.item_unit_price: Unit price
+admin.order.item_line_total: Line total
+admin.order.item_status: Status
+admin.order.shipment_address: Shipment address
+admin.order.shipping_cost: Shipping cost
+admin.order.np_waybill_number: Nova Poshta waybill
+admin.order.np_waybill_ref: Waybill REF
+admin.shipment_address.delivery_cost: Delivery cost
+admin.order_item.supplier: Supplier
+admin.order_item.status.pending: Pending
+admin.order_item.status.confirmed: Confirmed
+admin.order_item.status.cancelled: Cancelled
+menu.link_cart_item: Cart items
+menu.link_cart_item_single: Cart item
+menu.link_order_item: Order items
+menu.link_order_item_single: Order item
+menu.link_shipment_address: Shipment addresses
+menu.link_shipment_address_single: Shipment address
+admin.shipment_address.type.courier: Courier
+admin.shipment_address.type.np_branch: Nova Poshta (branch)
+admin.shipment_address.type.np_postomat: Nova Poshta (postomat)
+admin.shipment_address.summary: Address
+admin.shipment_address.user: User
+admin.user.saved_addresses: Saved addresses
+admin.user.full_name: Full name
+admin.user.phone: Phone
+admin.order.contact: Contact details
+admin.order.customer_name: Customer name
+admin.order.customer_phone: Customer phone
+admin.order.customer_email: Customer email
+admin.order.do_not_call: Do not call
+menu.link_footersetting_single: Footer Setting
+menu.link_footersetting: Footer Settings
+menu.link_footertranslation_single: Footer Translation
+menu.link_footertranslation: Footer Translations
+menu.link_headersetting_single: Header Setting
+menu.link_headersetting: Header Settings
+admin.header.phones: Phone numbers
+admin.header.phones_help: 'One number per line or separated by « · ». Header shows them joined with « · », footer as separate lines.'
+admin.header.work_hours: Work hours
+admin.header.work_hours_help: 'HTML is supported. Example: 7 days a week from &lt;strong&gt;9:00&lt;/strong&gt; to &lt;strong&gt;19:00&lt;/strong&gt;'
+admin.header.courier_delivery_cost: Courier delivery cost
+admin.header.courier_delivery_cost_help: Fixed courier price within Ivano-Frankivsk, regardless of product quantity.
+admin.site.courier_delivery_cost: Courier delivery cost
+admin.site.courier_delivery_cost_help: Fixed courier price within Ivano-Frankivsk, regardless of product quantity.
+admin.site.cod_standard_percent: NP commission, standard %
+admin.site.cod_standard_percent_help: Nova Poshta commission percent for cash or terminal payment.
+admin.site.cod_novapay_percent: NovaPay commission, %
+admin.site.cod_novapay_percent_help: NovaPay money transfer commission percent.
+admin.site.cod_prepayment_amount: Shipping prepayment
+admin.site.cod_prepayment_amount_help: Prepayment amount required to ship the order for cash-on-delivery.
+admin.site.cod_commission_notice_uk: Commission notice (UK)
+admin.site.cod_commission_notice_en: Commission notice (EN)
+admin.site.cod_commission_notice_help: 'Placeholders: %standard_percent%, %novapay_percent%, %standard_amount%, %novapay_amount%, %prepayment_amount%. HTML allowed.'
+admin.site.active_payment_methods: Active payment methods
+admin.site.active_payment_methods_help: 'Choose payment methods for the shop. If empty, all methods are available. Online payments require bank credentials.'
+admin.site.active_delivery_methods: Active delivery methods
+admin.site.active_delivery_methods_help: 'Choose delivery methods for the shop. If empty, all methods are available.'
+admin.site.payment.on_delivery: Pay on delivery
+admin.site.payment.privatbank: PrivatBank (LiqPay)
+admin.site.payment.monobank: Monobank
+admin.site.delivery.courier: Courier in city
+admin.site.delivery.np_branch: Nova Poshta — branch
+admin.site.delivery.np_postomat: Nova Poshta — parcel locker
+admin.product.name: Name
+admin.product.sku: SKU
+admin.product.category: Category
+admin.product.weight: Weight (kg)
+admin.product.package_height: Package height (cm)
+admin.product.package_width: Package width (cm)
+admin.product.package_length: Package length (cm)
+admin.product.in_stock: In stock
+admin.product.stock_qty: Stock quantity
+admin.product.badge: Badge
+admin.product.short_description: Short description
+admin.product.description: Description
+admin.product.description_help: HTML is supported.
+admin.product.features: Features
+admin.product.features_help: One item per line.
+admin.product.gallery: Gallery
+admin.product.gallery_image: 'Image %number%'
+admin.product.gallery_alt: 'Alt text (image %number%)'
+admin.product.gallery_help: Up to 3 product photos. Gallery JSON is saved automatically.
+admin.product.pricing_panel: Pricing and offers
+admin.product.content_panel: Content
+admin.product.no_price: Price not available
+admin.product.available_for_sale: Available for sale
+admin.product.lowest_offer: Lowest price
+admin.product.lowest_offer_help: Calculated automatically from supplier offers.
+admin.product.offers: Price offers
+admin.product.offers_count: Offers
+admin.product.view_all_offers: View all
+admin.product_offer.product: Product
+admin.product_offer.supplier: Supplier
+admin.product_offer.sku: Supplier SKU
+admin.product_offer.price: Price
+admin.product_offer.old_price: Old price
+admin.product_offer.qty: Stock qty
+admin.product_offer.qty_help: Available quantity from this supplier offer.
+admin.supplier.name: Name
+admin.supplier.description: Description
+admin.supplier.phone: Phone
+admin.supplier.email: Email
+admin.supplier.offers: Product offers
+
+admin.email_template.site: Site
+admin.email_template.name: Template name
+admin.email_template.name_help: Unique identifier within the site, e.g. order_created.
+admin.email_template.name_unique: A template with this name already exists for this site.
+admin.email_template.subject: Email subject
+admin.email_template.context: Context
+admin.email_template.context_order: Order
+admin.email_template.context_user: User
+admin.email_template.context_help: Defines which data is used for placeholders when testing and sending emails.
+admin.email_template.type: Template type
+admin.email_template.type_html: HTML
+admin.email_template.type_text: Text
+admin.email_template.content: Content
+admin.email_template.content_help: 'Email body. Placeholders: {{ order_number }}, {{ customer_name }}, plus parameters from Parameters — {{ shop_logo_url }}, {{ shop_title }}, {{ support_email }}, etc.'
+admin.email_template.section_help: 'Sections: {{section=''header''}} inserts an HTML section from admin.'
+admin.email_template.additional_css: Additional CSS
+admin.email_template.additional_css_help: Extra styles for HTML emails. Inserted into a <style> block.
+admin.email_template_section.site: Site
+admin.email_template_section.name: Section name
+admin.email_template_section.name_help: 'Unique section identifier within the site, e.g. header or footer.'
+admin.email_template_section.name_unique: A section with this name already exists for this site.
+admin.email_template_section.name_format: 'Name may contain only lowercase Latin letters, digits, _ and -.'
+admin.email_template_section.content: HTML content
+admin.email_template_section.content_help: 'Email HTML section. Placeholders, parameters from Parameters, and nested sections are supported, e.g. {{ shop_url }}, {{ support_phone }}, or {{section=''footer''}}.'
+
+admin.email_parameter.site: Site
+admin.email_parameter.locale: Locale
+admin.email_parameter.name: Parameter name
+admin.email_parameter.name_help: 'Unique identifier within the site and locale. Used as {{ name }} in templates, e.g. shop_title or support_email.'
+admin.email_parameter.name_unique: A parameter with this name already exists for this site and locale.
+admin.email_parameter.name_format: 'Name may contain only lowercase Latin letters, digits, and _.'
+admin.email_parameter.type: Type
+admin.email_parameter.type_text: Text
+admin.email_parameter.type_image: Image
+admin.email_parameter.type_help: 'For Image type, upload a file; templates receive the full URL.'
+admin.email_parameter.value: Value
+admin.email_parameter.value_help: 'Parameter value for the selected site and locale.'
+admin.email_parameter.image_help: 'Upload an image. Use {{ shop_logo_url }} in templates to insert the full URL.'
+admin.bank_account.site: Site
+admin.bank_account.locale: Locale
+admin.bank_account.title: Account title
+admin.bank_account.title_help: Internal label shown in the accounts list.
+admin.bank_account.recipient: Recipient
+admin.bank_account.edrpou: Tax ID / EDRPOU
+admin.bank_account.bank_name: Bank name
+admin.bank_account.iban: IBAN
+admin.bank_account.iban_help: Used on the IBAN prepayment page and in {{ shipment_pay_iban_url }} emails.
+admin.bank_account.is_default: Default for locale
+admin.email_log.created_at: Sent at
+admin.email_log.status_label: Status
+admin.email_log.status.sent: Sent
+admin.email_log.status.failed: Failed
+admin.email_log.status.skipped: Skipped
+admin.email_log.event_code: Event code
+admin.email_log.order: Order
+admin.email_log.order_number: Order number
+admin.email_log.configuration: Email configuration
+admin.email_log.recipient: Recipient
+admin.email_log.sender_email: Sender email
+admin.email_log.sender_name: Sender name
+admin.email_log.subject: Subject
+admin.email_log.body: Email body
+admin.email_log.is_html: HTML
+admin.email_log.error_message: Send error
+admin.email_log.skip_reason: Skip reason
+
+admin.email_template_test.title: Email template test
+admin.email_template_test.template: Template
+admin.email_template_test.sender: Sender
+admin.email_template_test.recipient: Recipient
+admin.email_template_test.context_value: Context
+admin.email_template_test.context_order_none: No order (sample data)
+admin.email_template_test.context_order_help: Select an order to use real data (number, amount, delivery, etc.).
+admin.email_template_test.context_user_none: No user (sample data)
+admin.email_template_test.context_user_help: Select a user to use real data (name, email, phone).
+admin.email_template_test.choose: Choose…
+admin.email_template_test.preview: Preview
+admin.email_template_test.send: Send email
+admin.email_template_test.preview_title: Preview
+admin.email_template_test.preview_subject: Subject
+admin.email_template_test.preview_empty: Select a template and click Preview or Send email.
+admin.email_template_test.sent: Test email sent successfully.
+admin.email_template_test.send_failed: Failed to send email. Check mail settings and the email log.
+admin.email_template_test.hint: After selecting a template, a context field appears — orders or users depending on the template setting. Sent emails appear in the Email log.
+
+admin.email_sender.name: Name
+admin.email_sender.email: Email
+admin.email_sender.email_unique: A sender with this email already exists.
+
+admin.order_email.name: Letter name
+admin.order_email.code: Letter code
+admin.order_email.code_help: 'Event codes: order_created, wait_payment_for_shipment, order_paid, register_user (user registration).'
+admin.order_email.code_unique: An order email with this code already exists.
+admin.order_email.code_format: 'Code may contain only lowercase Latin letters, digits and underscore.'
+admin.order_email.template: Template
+admin.order_email.sender: Sender
+menu.link_headertranslation_single: Header Translation
+menu.link_headertranslation: Header Translations
+menu.link_locale_single: Locale
+menu.link_locale: Locales
+menu.link_megamenusetting_single: Menu Setting
+menu.link_megamenusetting: Menu Settings
+menu.link_megamenutranslation_single: Menu Item
+menu.link_megamenutranslation: Menu Items
+menu.link_megamenutype_single: Type Menu Item
+menu.link_megamenutype: Type Menu Items
+menu.link_popularsearch_single: Popular search term
+menu.link_popularsearch: Popular search terms
+menu.link_seosetting_single: Seo Setting
+menu.link_seosetting: Seo Settings
+menu.link_seosettingstranslation_single: Seo Setting Translation
+menu.link_seosettingstranslation: Seo Settings Translation
+menu.link_site_single: Site
+menu.link_site: Sites
+#@GENERATE TRANSLATE FINISH
+
+shop.about: About Us
+shop.my_account: My Account
+shop.welcome: Welcome!
+shop.login: Log In
+shop.register: Register
+shop.logout: Log Out
+shop.work_hours: 7 days a week, 9:00–19:00
+shop.header.language: Language
+shop.header.your_city: Your city
+shop.header.city_placeholder: Enter your city
+shop.header.city_modal_title: Choose your city
+shop.header.city_modal_lead: We deliver orders throughout Ukraine!
+shop.header.city_search_label: Specify a settlement in Ukraine
+shop.header.city_search_hint: 'For example, Kotiuzhyny'
+shop.header.city_apply: Apply
+shop.header.city_modal_note: 'Choosing a city helps us show product availability, prices, and delivery options for your location and saves you time.'
+shop.header.city_close: Close
+shop.add_to_cart: Add to cart
+shop.cart.added: Product added to cart
+shop.cart.added_short: Added ✓
+shop.cart.removed: Product removed from cart
+shop.minicart.remove: Remove
+shop.minicart.title: Cart
+shop.minicart.open: Open cart
+shop.minicart.close: Close
+shop.minicart.empty: Your cart is empty
+shop.minicart.total: Total
+shop.minicart.checkout: Proceed to checkout
+shop.minicart.continue_shopping: Continue shopping
+shop.buy_now: Buy now
+shop.brand:  Shop Kvadro
+shop.footer.buyers: For buyers
+shop.footer.delivery: Delivery
+shop.footer.payment: Payment
+shop.footer.warranty: Warranty
+shop.footer.returns: Returns
+shop.footer.contacts: Contacts
+shop.error404.title: Page not found
+shop.error404.text: The page you requested does not exist or has been moved. Check the address or return to the homepage.
+shop.error404.back_home: Back to homepage
+shop.footer.rights: All rights reserved.
+
+shop.product.sku: SKU
+shop.product.in_stock: 'In stock (%qty% pcs.)'
+shop.product.out_of_stock: Out of stock
+shop.product.no_price: Price not available
+shop.product.empty_catalog_title: Products are temporarily unavailable
+shop.product.empty_catalog_text: Add a product in the admin panel or run database migrations.
+shop.product.quantity: Quantity
+shop.product.you_save: 'You save %amount%'
+shop.product.supplier: Supplier
+shop.product.all_offers: All offers
+shop.product.offers_modal_title: Price offers
+shop.product.offers_modal_lead: Choose a supplier and price for your order.
+shop.product.offers_close: Close
+shop.product.offer_sku: SKU
+shop.product.lowest_price: Lowest price
+shop.product.description_title: Description
+
+shop.checkout.title: Checkout
+shop.checkout.steps: Checkout steps
+shop.checkout.step_contact: Contact
+shop.checkout.step_delivery: Delivery
+shop.checkout.step_payment: Payment
+shop.checkout.order_summary: Your order
+shop.checkout.subtotal: Order total
+shop.checkout.delivery_cost: Delivery
+shop.checkout.delivery_cost_paid_on_receipt: (paid upon receipt of the order)
+shop.checkout.delivery_cost_np_tariff: (according to Nova Poshta rates)
+shop.checkout.delivery_cost_time_pay: payment is due after receipt of the goods.
+shop.checkout.total: Total
+shop.checkout.placeholder: Next, a form for delivery and payment details will appear here.
+shop.checkout.back_to_shop: Back to shop
+shop.checkout.contact_details: Contact details
+shop.checkout.save_contact: Save contact details
+shop.checkout.contact_saved: Contact details saved.
+shop.checkout.saved_contact: Contact details
+shop.checkout.edit_contact: Edit contact
+shop.checkout.delivery_contact_locked: Please save contact details first.
+shop.checkout.delivery_contact_required: Please save contact details first.
+shop.validation.required: This field is required
+shop.checkout.customer_name: Full name
+shop.checkout.customer_email: Email
+shop.checkout.customer_phone: Phone
+shop.checkout.do_not_call: Do not call
+shop.checkout.delivery_method: Delivery method
+shop.checkout.delivery_courier: Courier in Ivano-Frankivsk
+shop.checkout.delivery_courier_short: Courier delivery to your address within the city.
+shop.checkout.delivery_np_branch: Nova Poshta — branch
+shop.checkout.delivery_np_branch_short: Pick up your order at a Nova Poshta branch in your city.
+shop.checkout.delivery_np_postomat: Nova Poshta — parcel locker
+shop.checkout.delivery_np_postomat_short: Collect your order from a Nova Poshta parcel locker 24/7.
+shop.checkout.courier_address: Delivery address
+shop.checkout.courier_address_placeholder: Street, building, apartment
+shop.checkout.courier_hint: Courier delivery is available within Ivano-Frankivsk.
+shop.checkout.courier_address_required: Please enter an address for courier delivery
+shop.checkout.courier_not_available: Courier delivery is only available in Ivano-Frankivsk
+shop.checkout.np_hint: Select a city and Nova Poshta branch or parcel locker.
+shop.checkout.np_hint_branch: Select a city and Nova Poshta branch.
+shop.checkout.np_hint_postomat: Select a city and Nova Poshta parcel locker.
+shop.checkout.np_village_hint: 'There are no Nova Poshta branches in %settlement%. Please choose a branch in %city%.'
+shop.checkout.np_city: City
+shop.checkout.np_warehouse: Branch / parcel locker
+shop.checkout.np_warehouse_branch: Branch
+shop.checkout.np_warehouse_postomat: Parcel locker
+shop.checkout.np_warehouse_placeholder: Select a city first
+shop.checkout.np_warehouse_placeholder_branch: Select a branch
+shop.checkout.np_warehouse_placeholder_postomat: Select a parcel locker
+shop.checkout.np_warehouse_required: Please select a Nova Poshta branch or parcel locker
+shop.checkout.np_not_configured: Nova Poshta delivery is temporarily unavailable. Add NOVA_POSHTA_API_KEY to .env.local
+shop.checkout.save_delivery: Save delivery details
+shop.checkout.delivery_saved: Delivery details saved.
+shop.checkout.saved_delivery: Selected delivery
+shop.checkout.edit_delivery: Change delivery
+
+shop.checkout.payment_method: Payment
+shop.checkout.payment_hint: Choose a bank for secure online card payment.
+shop.checkout.payment_hint_methods: Choose a payment method for your order.
+shop.checkout.payment_on_delivery: Pay on delivery
+shop.checkout.payment_on_delivery_desc: Pay for your order when you pick it up at a Nova Poshta branch.
+shop.checkout.cod_prepayment: 'Prepayment:'
+shop.checkout.cod_additional_costs: 'Additional costs:'
+shop.checkout.confirm_order: Confirm order
+shop.checkout.payment_privatbank: PrivatBank
+shop.checkout.payment_privatbank_desc: Pay with Visa/Mastercard via LiqPay (PrivatBank).
+shop.checkout.payment_monobank: monobank
+shop.checkout.payment_monobank_desc: Pay with monobank card or Apple Pay / Google Pay.
+shop.checkout.pay_now: Pay now
+shop.checkout.payment_locked: Save delivery details first to proceed to payment.
+shop.checkout.payment_not_configured: Online payment is temporarily unavailable. Add LIQPAY_PUBLIC_KEY, LIQPAY_PRIVATE_KEY or MONOBANK_TOKEN to .env.local
+shop.checkout.payment_method_unavailable: The selected payment method is unavailable.
+shop.checkout.delivery_method_unavailable: The selected delivery method is unavailable.
+shop.checkout.payment_delivery_required: Please save delivery details first.
+shop.checkout.payment_failed: Could not create payment. Please try again or choose another bank.
+shop.checkout.payment_redirect_title: Redirecting to payment
+shop.checkout.payment_redirect_text: You will now be redirected to the bank payment page.
+shop.checkout.continue_to_payment: Continue to payment
+shop.checkout.success_title: Thank you for your order
+shop.checkout.success_paid_main: 'Your order %order_id% has been paid and is being processed.'
+shop.checkout.success_paid_call: 'Expect a call from our administrator.'
+shop.checkout.success_paid_waybill: 'After shipment we will send you the waybill number.'
+shop.checkout.success_deposit_main: 'Your order %order_id% has been accepted.'
+shop.checkout.success_deposit_payment: 'We are waiting for the shipping prepayment.'
+shop.checkout.success_deposit_waybill: 'We will ship the goods after receiving the prepayment and you will get the waybill number.'
+shop.shipment_pay.title: Shipping prepayment
+shop.shipment_pay.order_number: 'Order: %order_number%'
+shop.shipment_pay.amount: 'Amount due: %amount%'
+shop.shipment_pay.hint: 'Pay the shipping prepayment configured in the shop settings so we can ship your order.'
+shop.shipment_pay.qr_alt: Payment QR code
+shop.shipment_pay.qr_caption_monobank: Scan the QR code in the Monobank app
+shop.shipment_pay.qr_caption_privatbank: Scan the QR code in the Privat24 app
+shop.shipment_pay.save_qr: Save QR code as image
+shop.shipment_pay.mobile_hint: Save the QR code to your gallery and scan it in your banking app.
+shop.shipment_pay.open_payment: Open payment page
+shop.shipment_pay.already_paid: Prepayment already received. Thank you!
+shop.shipment_pay.unavailable: Payment is currently unavailable. Please contact shop support.
+shop.shipment_pay.iban_link: Pay via IBAN
+shop.shipment_pay_iban.title: IBAN payment
+shop.shipment_pay_iban.hint: Transfer the prepayment amount using the bank details below. Always include the order number in the payment purpose.
+shop.shipment_pay_iban.qr_alt: IBAN payment QR code
+shop.shipment_pay_iban.qr_caption: Scan the QR code in your banking app to fill in the payment details, amount, and purpose automatically.
+shop.shipment_pay_iban.recipient: Recipient
+shop.shipment_pay_iban.edrpou: Tax ID / EDRPOU
+shop.shipment_pay_iban.bank: Bank
+shop.shipment_pay_iban.iban: IBAN
+shop.shipment_pay_iban.amount: Amount
+shop.shipment_pay_iban.purpose: Payment purpose
+shop.shipment_pay_iban.copy: Copy
+shop.shipment_pay_iban.copied: Copied
+shop.shipment_pay_iban.copy_fallback: Copy this value
+shop.shipment_pay_iban.note: After the transfer is received, we will confirm payment and ship your order.
+shop.shipment_pay_iban.card_link: Pay by card / QR
+shop.shipment_pay_iban.unavailable: IBAN details are not configured yet. Please contact shop support.
+admin.email_parameter.shop_iban: IBAN
+admin.email_parameter.shop_bank_name: Bank name
+admin.email_parameter.shop_bank_recipient: Recipient (IBAN)
+admin.email_parameter.shop_edrpou: Tax ID / EDRPOU
+shop.checkout.success_no_order: Payment received. Contact us if you need assistance.
+
+auth.login_title: Log in

@@ -1,0 +1,36 @@
+.ea-email-template-test .form-group,
+.ea-email-template-test .mb-3 {
+    margin-bottom: 0.5rem;
+}
+
+.ea-email-template-test .form-label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 0.175rem;
+}
+
+.ea-email-template-test .form-widget {
+    width: 100%;
+}
+
+.ea-email-template-test .form-select,
+.ea-email-template-test .form-control {
+    width: 100%;
+    max-width: 100%;
+}
+
+.ea-email-template-test .form-text.form-help {
+    display: block;
+    margin-top: 0.175rem;
+}
+
+.ea-email-template-test .invalid-feedback {
+    margin-top: 0.175rem;
+}
+
+.ea-email-template-test .ea-form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}

@@ -1,0 +1,74 @@
+{% set stepContact = showContactForm ? 'current' : (savedContact ? 'done' : 'upcoming') %}
+{% set stepDelivery = not savedContact ? 'upcoming' : (showDeliveryForm ? 'current' : (savedDelivery ? 'done' : 'upcoming')) %}
+{% set stepPayment = showPayment ? 'current' : 'upcoming' %}
+{% set connectorContactDelivery = stepContact == 'done' ? 'done' : 'upcoming' %}
+{% set connectorDeliveryPayment = stepDelivery == 'done' ? 'done' : 'upcoming' %}
+{% set contactStepUrl = stepContact == 'done'
+    ? path('shop_checkout', {_locale: app.request.locale, edit_contact: 1}) ~ '#checkout-contact-step'
+    : '#checkout-contact-step' %}
+{% set deliveryStepUrl = stepDelivery == 'done'
+    ? path('shop_checkout', {_locale: app.request.locale, edit_delivery: 1}) ~ '#checkout-delivery-step'
+    : '#checkout-delivery-step' %}
+{% set paymentStepUrl = '#checkout-payment-step' %}
+
+<nav class="shop-checkout__steps" aria-label="{{ 'shop.checkout.steps'|trans }}">
+    <ol class="shop-checkout__steps-list">
+        <li class="shop-checkout__step-item shop-checkout__step-item--{{ stepContact }}">
+            <a
+                href="{{ contactStepUrl }}"
+                class="shop-checkout__step-link"
+                data-checkout-step="contact"
+                {% if stepContact == 'upcoming' %} tabindex="-1" aria-disabled="true"{% endif %}
+            >
+                <span class="shop-checkout__step-marker" aria-hidden="true">
+                    {% if stepContact == 'done' %}
+                        <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M6.5 11.5 3 8l1-1 2.5 2.5L12 4l1 1z"/></svg>
+                    {% else %}
+                        1
+                    {% endif %}
+                </span>
+                <span class="shop-checkout__step-label">{{ 'shop.checkout.step_contact'|trans }}</span>
+            </a>
+        </li>
+
+        <li class="shop-checkout__step-item shop-checkout__step-item--connector shop-checkout__step-item--{{ connectorContactDelivery }}" aria-hidden="true">
+            <span class="shop-checkout__step-connector"></span>
+        </li>
+
+        <li class="shop-checkout__step-item shop-checkout__step-item--{{ stepDelivery }}">
+            <a
+                href="{{ deliveryStepUrl }}"
+                class="shop-checkout__step-link"
+                data-checkout-step="delivery"
+                {% if stepDelivery == 'upcoming' %} tabindex="-1" aria-disabled="true"{% endif %}
+            >
+                <span class="shop-checkout__step-marker" aria-hidden="true">
+                    {% if stepDelivery == 'done' %}
+                        <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M6.5 11.5 3 8l1-1 2.5 2.5L12 4l1 1z"/></svg>
+                    {% else %}
+                        2
+                    {% endif %}
+                </span>
+                <span class="shop-checkout__step-label">{{ 'shop.checkout.step_delivery'|trans }}</span>
+            </a>
+        </li>
+
+        <li class="shop-checkout__step-item shop-checkout__step-item--connector shop-checkout__step-item--{{ connectorDeliveryPayment }}" aria-hidden="true">
+            <span class="shop-checkout__step-connector"></span>
+        </li>
+
+        <li class="shop-checkout__step-item shop-checkout__step-item--{{ stepPayment }}">
+            <a
+                href="{{ paymentStepUrl }}"
+                class="shop-checkout__step-link"
+                data-checkout-step="payment"
+                {% if stepPayment == 'upcoming' %} tabindex="-1" aria-disabled="true"{% endif %}
+            >
+                <span class="shop-checkout__step-marker" aria-hidden="true">
+                    3
+                </span>
+                <span class="shop-checkout__step-label">{{ 'shop.checkout.step_payment'|trans }}</span>
+            </a>
+        </li>
+    </ol>
+</nav>

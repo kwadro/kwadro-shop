@@ -1,0 +1,47 @@
+{% extends 'shop/auth_layout.html.twig' %}
+
+{% block title %}{{ 'auth.login_title'|trans }}{% endblock %}
+
+{% block auth %}
+    <div class="shop-auth-card">
+        <div class="shop-auth-card__head">
+            <span class="shop-auth-card__badge">{{ 'shop.brand'|trans }}</span>
+            <h1>{{ 'auth.login_title'|trans }}</h1>
+            <p>{{ 'auth.login_subtitle'|trans }}</p>
+        </div>
+
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="shop-auth-alert shop-auth-alert--success">{{ message }}</div>
+            {% endfor %}
+        {% endfor %}
+
+        {% if error %}
+            <div class="shop-auth-alert shop-auth-alert--error">
+                {{ error.messageKey|trans(error.messageData, 'security') }}
+            </div>
+        {% endif %}
+
+        <form method="post" class="shop-auth-form">
+            <div class="shop-auth-field">
+                <label for="username">{{ 'auth.email'|trans }}</label>
+                <input class="shop-auth-input" type="email" value="{{ last_username }}" name="_username" id="username" autocomplete="email" required autofocus>
+            </div>
+            <div class="shop-auth-field">
+                <label for="password">{{ 'auth.password'|trans }}</label>
+                <input class="shop-auth-input" type="password" name="_password" id="password" autocomplete="current-password" required>
+            </div>
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+            <button class="shop-auth-submit" type="submit">{{ 'auth.sign_in'|trans }}</button>
+        </form>
+
+        <div class="shop-auth-footer">
+            {{ 'auth.no_account'|trans }}
+            <a href="{{ path('app_register') }}">{{ 'auth.register_link'|trans }}</a>
+        </div>
+
+        <div class="shop-auth-back">
+            <a href="{{ path('shop_home') }}">← {{ 'auth.back_to_shop'|trans }}</a>
+        </div>
+    </div>
+{% endblock %}

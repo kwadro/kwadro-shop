@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="{{ app.request.locale|default('uk') }}">
+<head>
+    {% set setting = site_settings() %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        {% block title %}
+            {{setting.seo.meta_title}}
+        {% endblock %}
+    </title>
+    {% if block_search_engines|default(false) %}
+        <meta name="robots" content="noindex, nofollow, noarchive, nosnippet"/>
+        <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet"/>
+    {% else %}
+        <meta name="robots" content="index,follow"/>
+        <meta name="description" content="{{setting.seo.meta_description}}"/>
+        <meta name="keywords" content="{{setting.seo.meta_keywords}}"/>
+        <meta name="author" content="{{setting.seo.author}}"/>
+        <meta property="og:title" content="{{setting.seo.og_title}}"/>
+        <meta property="og:description" content="{{setting.seo.og_description}}"/>
+        <meta property="og:type" content="{{setting.seo.og_type}}"/>
+        <meta property="og:url" content="{{ absolute_url(path('shop_home')) }}"/>
+        <meta property="og:image" content="{{ absolute_url(asset('uploads/images/' ~ setting.seo.og_image)) }}"/>
+        <link rel="canonical" href="{{ absolute_url(path('shop_home')) }}"/>
+    {% endif %}
+    <link rel="icon" type="image/x-icon" href="{{ absolute_url(asset('uploads/images/' ~ setting.header.favicon)) }}"/>
+    <link rel="stylesheet" href="{{ asset('css/shop.css') }}">
+    {% block stylesheets %}{% endblock %}
+    {% include 'shop/partials/_gtm.html.twig' with { placement: 'head', setting: setting } only %}
+</head>
+<body class="shop-body">
+    {% include 'shop/partials/_gtm.html.twig' with { placement: 'body', setting: setting } only %}
+    {% include 'shop/partials/_header.html.twig' %}
+
+    <div class="shop-layout">
+        <div class="shop-layout__inner">
+            <main class="shop-main">
+                {% block main %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    {% include 'shop/partials/_footer.html.twig' %}
+    {% include 'shop/partials/_city_modal.html.twig' %}
+
+    <script src="{{ asset('js/shop-cart.js') }}" defer></script>
+    <script src="{{ asset('js/shop-city.js') }}" defer></script>
+    {% block javascripts %}{% endblock %}
+</body>
+</html>

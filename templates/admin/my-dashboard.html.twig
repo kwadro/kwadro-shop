@@ -1,0 +1,9 @@
+{% extends '@EasyAdmin/layout.html.twig' %}
+{% block body_javascript %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('admin') }}
+    <script>console.log('ADMIN LAYOUT LOADED');</script>
+{% endblock %}
+{% block main %}
+    {# ... #}
+{% endblock main %}

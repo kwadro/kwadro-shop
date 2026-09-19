@@ -1,0 +1,18 @@
+easy_admin:
+    page_title.dashboard: "Панель керування"
+    page_title.detail: "Деталі"
+    page_title.edit: "Редагувати"
+    page_title.new: "Створити"
+    page_title.list: "Список"
+
+    action.new: "Створити"
+    action.edit: "Редагувати"
+    action.delete: "Видалити"
+    action.save: "Зберегти"
+    action.cancel: "Скасувати"
+    action.list: "Список"
+
+    label.true: "Так"
+    label.false: "Ні"
+
+

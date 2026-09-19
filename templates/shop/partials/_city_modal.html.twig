@@ -1,0 +1,50 @@
+{% set cityData = shop_city_data() %}
+<div id="shop-city-modal" class="shop-city-modal" hidden aria-hidden="true">
+    <div class="shop-city-modal__overlay" data-city-close></div>
+    <div class="shop-city-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="shop-city-modal-title">
+        <button type="button" class="shop-city-modal__close" data-city-close aria-label="{{ 'shop.header.city_close'|trans }}">×</button>
+
+        <h2 id="shop-city-modal-title" class="shop-city-modal__title">{{ 'shop.header.city_modal_title'|trans }}</h2>
+        <p class="shop-city-modal__lead">
+            <span class="shop-city-modal__lead-icon" aria-hidden="true">🚚</span>
+            {{ 'shop.header.city_modal_lead'|trans }}
+        </p>
+
+        <div class="shop-city-modal__popular">
+            {% for cityName in shop_popular_cities() %}
+                <button
+                    type="button"
+                    class="shop-city-modal__popular-item{% if cityName == cityData.name %} is-active{% endif %}"
+                    data-city-popular="{{ cityName }}"
+                >
+                    {{ cityName }}
+                </button>
+            {% endfor %}
+        </div>
+
+        <div class="shop-city-modal__search">
+            <label class="shop-city-modal__search-label" for="shop-city-modal-input">
+                {{ 'shop.header.city_search_label'|trans }}
+            </label>
+            {% set cityDetails = cityData.label is not empty and cityData.label != cityData.name ? cityData.label : cityData.subtitle %}
+            <input
+                type="text"
+                id="shop-city-modal-input"
+                class="shop-city-modal__search-input"
+                value="{{ cityDetails is not empty ? cityDetails : cityData.name }}"
+                placeholder="{{ 'shop.header.city_placeholder'|trans }}"
+                autocomplete="off"
+            >
+            <p class="shop-city-modal__search-hint">{{ 'shop.header.city_search_hint'|trans }}</p>
+            <div id="shop-city-modal-results" class="shop-city-modal__results" role="listbox" hidden></div>
+        </div>
+
+        <div class="shop-city-modal__actions">
+            <button type="button" id="shop-city-modal-apply" class="shop-city-modal__apply">
+                {{ 'shop.header.city_apply'|trans }}
+            </button>
+        </div>
+
+        <p class="shop-city-modal__note">{{ 'shop.header.city_modal_note'|trans }}</p>
+    </div>
+</div>

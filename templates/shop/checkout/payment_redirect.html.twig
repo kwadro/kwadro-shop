@@ -1,0 +1,23 @@
+{% extends 'shop/layout.html.twig' %}
+
+{% block title %}{{ 'shop.checkout.payment_redirect_title'|trans }}{% endblock %}
+
+{% block main %}
+    <article class="shop-page shop-checkout">
+        <h1 class="shop-page__title">{{ 'shop.checkout.payment_redirect_title'|trans }}</h1>
+        <p>{{ 'shop.checkout.payment_redirect_text'|trans }}</p>
+
+        <form id="payment-redirect-form" method="POST" action="{{ action }}">
+            <input type="hidden" name="data" value="{{ data }}">
+            <input type="hidden" name="signature" value="{{ signature }}">
+            <button type="submit" class="shop-checkout__submit">{{ 'shop.checkout.continue_to_payment'|trans }}</button>
+        </form>
+    </article>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.getElementById('payment-redirect-form')?.submit();
+    </script>
+{% endblock %}

@@ -1,0 +1,108 @@
+{# @var entity \EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto #}
+{% set order = entity.instance %}
+{% set items = order.items|sort((a, b) => a.id <=> b.id) %}
+
+{% if items is not empty %}
+    <div class="table-responsive">
+        <table class="table table-sm table-striped align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>{{ 'admin.order.item_name'|trans }}</th>
+                    <th>{{ 'admin.order.item_sku'|trans }}</th>
+                    <th class="text-end">{{ 'admin.order.item_quantity'|trans }}</th>
+                    <th class="text-end">{{ 'admin.order.item_unit_price'|trans }}</th>
+                    <th class="text-end">{{ 'admin.order.item_line_total'|trans }}</th>
+                    <th>{{ 'admin.order_item.supplier'|trans }}</th>
+                    <th>{{ 'admin.order.item_status'|trans }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                    {% set statusClass = item.status.value == 'confirmed' ? 'success' : (item.status.value == 'cancelled' ? 'danger' : 'warning') %}
+                    <tr>
+                        <td>
+                            {% if item.id %}
+                                <a href="{{ ea_url()
+                                    .setController('App\\Controller\\Admin\\OrderItemCrudController')
+                                    .setAction('detail')
+                                    .setEntityId(item.id) }}">
+                                    {{ item.productName }}
+                                </a>
+                            {% else %}
+                                {{ item.productName }}
+                            {% endif %}
+                        </td>
+                        <td>{{ item.productSku }}</td>
+                        <td class="text-end">{{ item.quantity }}</td>
+                        <td class="text-end">{{ item.unitPrice|number_format(2, ',', ' ') }} ₴</td>
+                        <td class="text-end">{{ item.lineTotal|number_format(2, ',', ' ') }} ₴</td>
+                        <td>{{ item.supplierName|default('—') }}</td>
+                        <td>
+                            <span class="badge text-bg-{{ statusClass }}">
+                                {{ ('admin.order_item.status.' ~ item.status.value)|trans }}
+                            </span>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% elseif order.cartData.items is defined and order.cartData.items is not empty %}
+    <div class="table-responsive">
+        <table class="table table-sm table-striped align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>{{ 'admin.order.item_name'|trans }}</th>
+                    <th>{{ 'admin.order.item_sku'|trans }}</th>
+                    <th class="text-end">{{ 'admin.order.item_quantity'|trans }}</th>
+                    <th class="text-end">{{ 'admin.order.item_unit_price'|trans }}</th>
+                    <th class="text-end">{{ 'admin.order.item_line_total'|trans }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cartItem in order.cartData.items %}
+                    {% set product = cartItem.product|default({}) %}
+                    {% set quantity = cartItem.quantity|default(1) %}
+                    {% set unitPrice = product.price|default(0) %}
+                    <tr>
+                        <td>{{ product.name|default('—') }}</td>
+                        <td>{{ product.sku|default('—') }}</td>
+                        <td class="text-end">{{ quantity }}</td>
+                        <td class="text-end">{{ unitPrice|number_format(2, ',', ' ') }} ₴</td>
+                        <td class="text-end">{{ (unitPrice * quantity)|number_format(2, ',', ' ') }} ₴</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <p class="text-muted small mb-0 mt-2">{{ 'admin.order.items_from_cart_snapshot'|trans }}</p>
+{% elseif order.cartData.product is defined %}
+    {% set product = order.cartData.product %}
+    {% set quantity = order.cartData.quantity|default(1) %}
+    {% set unitPrice = product.price|default(0) %}
+    <div class="table-responsive">
+        <table class="table table-sm table-striped align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>{{ 'admin.order.item_name'|trans }}</th>
+                    <th>{{ 'admin.order.item_sku'|trans }}</th>
+                    <th class="text-end">{{ 'admin.order.item_quantity'|trans }}</th>
+                    <th class="text-end">{{ 'admin.order.item_unit_price'|trans }}</th>
+                    <th class="text-end">{{ 'admin.order.item_line_total'|trans }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ product.name|default('—') }}</td>
+                    <td>{{ product.sku|default('—') }}</td>
+                    <td class="text-end">{{ quantity }}</td>
+                    <td class="text-end">{{ unitPrice|number_format(2, ',', ' ') }} ₴</td>
+                    <td class="text-end">{{ (unitPrice * quantity)|number_format(2, ',', ' ') }} ₴</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="text-muted small mb-0 mt-2">{{ 'admin.order.items_from_cart_snapshot'|trans }}</p>
+{% else %}
+    <p class="text-muted mb-0">{{ 'admin.order.items_empty'|trans }}</p>
+{% endif %}

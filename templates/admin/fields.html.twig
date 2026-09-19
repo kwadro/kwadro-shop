@@ -1,0 +1,89 @@
+{% extends '@EasyAdmin/crud/form_theme.html.twig' %}
+
+{% block order_info_row %}
+    <div class="col-12">
+        <div class="form-group field-order-info mb-4">
+            {% include 'admin/field/order_info.html.twig' with {entity: ea().entity} only %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block order_customer_row %}
+    <div class="col-12">
+        <div class="form-group field-order-customer mb-4">
+            {% include 'admin/field/order_customer.html.twig' with {entity: ea().entity} only %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block order_amounts_row %}
+    <div class="col-12">
+        <div class="form-group field-order-amounts mb-4">
+            {% include 'admin/field/order_amounts.html.twig' with {entity: ea().entity} only %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block order_items_row %}
+    <div class="col-12">
+        <div class="form-group field-order-items mb-4">
+            {% include 'admin/field/order_items.html.twig' with {entity: ea().entity} only %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block order_payments_row %}
+    <div class="col-12">
+        <div class="form-group field-order-payments mb-4">
+            {% include 'admin/field/order_payments.html.twig' with {entity: ea().entity} only %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block ea_fileupload_widget %}
+    {{ parent() }}
+    <span class="download-path d-none">{{ download_path }}</span>
+{% endblock %}
+
+{% block select_with_add_widget %}
+    <div class="d-flex gap-2"
+         data-controller="addselect"
+    >
+        {{ form_widget(form, {
+            attr: {
+                'data-addselect-target': 'select'
+            }
+        }) }}
+        <div class="col position-relative" >
+            {# Button Add New #}
+            <a href="{{
+                path('admin_addselect_new',{
+                   'data-entity': attr['data-entity'],
+                   'search-field': attr['search-field'],
+                   'require-fields': attr['require-fields'],
+                })
+            }}"
+               class="btn btn-primary mb-2"
+               data-action="click->addselect#open">
+                {{ 'Add New'|trans }}
+            </a>
+            {# Modal window #}
+            <div class="d-none ea-overlay" data-addselect-target="overlay"></div>
+            <div data-addselect-target="modal"
+                 class="admin-popup d-none position-absolute top-2 start-0 bg-white shadow rounded-3 flex items-center justify-center"
+                 style="min-width: 300px; max-width: 700px;"
+            >
+                <div class="bg-white border p-4  rounded w-1/2 relative">
+                    <div class="position-relative text-right">
+                        <span type="button"
+                            class="absolute top-2 right-2 text-gray-500"
+                            data-action="click->addselect#close">✖</span>
+                    </div>
+                    {# Content load here #}
+                    <div  data-addselect-target="content">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,15 @@
+{# @var entity \EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto #}
+{% set order = entity.instance %}
+
+<dl class="row mb-0 order-amounts-block">
+    <dt class="col-sm-3 col-lg-2">{{ 'admin.order.order_total'|trans }}</dt>
+    <dd class="col-sm-9 col-lg-4">{{ order.orderTotal|number_format(2, ',', ' ') }} ₴</dd>
+
+    <dt class="col-sm-3 col-lg-2">{{ 'admin.order.paid_amount'|trans }}</dt>
+    <dd class="col-sm-9 col-lg-4">{{ order.paidAmount|number_format(2, ',', ' ') }} ₴</dd>
+
+    <dt class="col-sm-3 col-lg-2">{{ 'admin.order.amount_due'|trans }}</dt>
+    <dd class="col-sm-9 col-lg-4">
+        <strong>{{ order.amountDue|number_format(2, ',', ' ') }} ₴</strong>
+    </dd>
+</dl>

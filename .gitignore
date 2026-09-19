@@ -1,0 +1,19 @@
+
+###> symfony/framework-bundle ###
+/111
+/bash
+/export
+/.idea
+/.cursor
+/python
+/resources
+/.env
+/.env.dev
+/.env.local
+/.env.local.php
+/.env.*.local
+/config/secrets/prod/prod.decrypt.private.php
+/public/bundles/
+/var/
+/vendor/
+###< symfony/framework-bundle ###

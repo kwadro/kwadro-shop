@@ -1,0 +1,15 @@
+{% extends '@EasyAdmin/crud/field/image.html.twig' %}
+
+{% block field %}
+    {% if entity.instance.image %}
+        <div class="mb-2">
+            <img
+                src="{{ field.formattedValue }}"
+                alt=""
+                style="max-height:160px;border-radius:8px"
+            >
+        </div>
+    {% endif %}
+
+    {{ parent() }}
+{% endblock %}

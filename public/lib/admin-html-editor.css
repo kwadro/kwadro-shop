@@ -1,0 +1,18 @@
+.form-widget .jodit-container,
+.ea-field .jodit-container {
+    width: 100% !important;
+    max-width: 100%;
+    margin-top: 0.25rem;
+}
+
+.jodit-container:not(.jodit_inline) {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.jodit-container .jodit-workplace,
+.jodit-container .jodit-wysiwyg,
+.jodit-container .jodit-source {
+    background: #fff !important;
+    color: #212529 !important;
+}

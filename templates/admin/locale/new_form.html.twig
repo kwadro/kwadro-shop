@@ -1,0 +1,57 @@
+<div class="mb-3">
+    {{'New'|trans  }} {{ entityName }}
+</div>
+{% set requiredFieldsArray = requireFields|split(',') %}
+{% for field in form  %}
+    <div class="mb-3">
+        {% if 'hidden' not in field.vars.block_prefixes %}
+            {{ form_label(field, null, {
+                required: field.vars.name in requiredFieldsArray,
+                label_attr: { class: 'form-label' }
+            })
+            }}
+
+            {{ form_widget(field, {
+                required: field.vars.name in requiredFieldsArray,
+                attr: {
+                    class: 'form-control',
+                }
+            }) }}
+            {{ form_errors(field) }}
+        {% else %}
+            {{ form_label(field, null, { label_attr: { class: 'form-label d-none' } }) }}
+            {{ form_widget(field, { attr: { class: 'form-control' } }) }}
+            {{ form_errors(field) }}
+        {% endif %}
+    </div>
+{% endfor %}
+
+<div>
+    <input type="hidden"
+           name="_entityName"
+           value="{{ entityName }}"/>
+    <input type="hidden"
+           name="_searchField"
+           value="{{ searchField }}"/>
+    <input type="hidden"
+           name="_requireFields"
+           value="{{ requireFields }}"/>
+</div>
+
+<div class="d-flex justify-content-end gap-2 mt-3">
+    <button type="button" class="btn btn-success"
+            data-action="click->addselect#submitForm"
+            data-href="{{ path('admin_addselect_submitForm') }}"
+    >
+        {{ 'Save'|trans }}
+    </button>
+    <button type="button" class="btn btn-secondary"
+            data-action="click->addselect#close">
+        {{ 'Close'|trans }}
+    </button>
+</div>
+
+
+
+
+

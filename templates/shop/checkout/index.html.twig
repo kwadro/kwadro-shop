@@ -1,0 +1,1373 @@
+{% extends 'shop/layout.html.twig' %}
+
+{% block title %}{{ 'shop.checkout.title'|trans }}{% endblock %}
+
+{% block main %}
+    <article
+        class="shop-page shop-checkout"
+        data-edit-contact-url="{{ path('shop_checkout', {_locale: app.request.locale, edit_contact: 1}) }}#checkout-contact-step"
+        data-edit-delivery-url="{{ path('shop_checkout', {_locale: app.request.locale, edit_delivery: 1}) }}#checkout-delivery-step"
+        data-has-saved-delivery="{{ savedDelivery and not showDeliveryForm ? '1' : '0' }}"
+        data-show-contact-email="{{ showContactEmailField ? '1' : '0' }}"
+        {% if savedContact %}
+            data-saved-contact="{{ {
+                customerName: savedContact.customerName|default(''),
+                customerPhone: savedContact.customerPhone|default(''),
+                customerEmail: savedContact.customerEmail|default(''),
+                doNotCall: savedContact.doNotCall|default(false),
+            }|json_encode|e('html_attr') }}"
+        {% endif %}
+    >
+        <h1 class="shop-page__title">{{ 'shop.checkout.title'|trans }}</h1>
+
+        {% include 'shop/partials/_checkout_steps.html.twig' %}
+
+        {% for message in app.flashes('success') %}
+            <div class="shop-checkout__alert shop-checkout__alert--success">{{ message|trans }}</div>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div class="shop-checkout__alert shop-checkout__alert--error">{{ message|trans }}</div>
+        {% endfor %}
+        {% for message in app.flashes('info') %}
+            <div class="shop-checkout__alert shop-checkout__alert--error">{{ message|trans }}</div>
+        {% endfor %}
+
+        <section class="shop-checkout__summary">
+            <h2 class="shop-checkout__heading">{{ 'shop.checkout.order_summary'|trans }}</h2>
+
+            {% for item in cart.items %}
+                {% set unitPrice = item.product.price|default(0) %}
+                {% set oldPrice = item.product.oldPrice|default(null) %}
+                {% set hasOldPrice = oldPrice and oldPrice > unitPrice %}
+                <div class="shop-checkout__item">
+                    <div class="shop-checkout__item-info">
+                        <p class="shop-checkout__product-name">{{ item.product.name }}</p>
+                        <p class="shop-checkout__meta">
+                            {{ 'shop.product.sku'|trans }}: {{ item.product.offerSku|default(item.product.sku) }}
+                        </p>
+                    </div>
+                    <div class="shop-checkout__item-side">
+
+                        {% if hasOldPrice %}
+                            <span class="shop-checkout__old-price">
+                                <del>{{ oldPrice|number_format(2, ',', ' ') }} ₴</del>
+                            </span>
+                        {% endif %}
+                        <span class="shop-checkout__price">
+                                {{ unitPrice|number_format(2, ',', ' ') }} ₴
+                            </span>
+                        <span class="shop-checkout__quantity">
+                             {{ item.quantity }}
+                        </span>
+                        <span class="shop-checkout__price">
+                            {{ (unitPrice * item.quantity)|number_format(2, ',', ' ') }} ₴
+                        </span>
+                    </div>
+                </div>
+            {% endfor %}
+
+            <div class="shop-checkout__total shop-checkout__total--products">
+                <span>{{ 'shop.checkout.subtotal'|trans }}</span>
+                <strong id="checkout-subtotal-value">{{ subtotal|number_format(2, ',', ' ') }} ₴</strong>
+            </div>
+        </section>
+
+        {# Step 1: Contact details #}
+        <section id="checkout-contact-step" class="shop-checkout__step">
+            {% if savedContact and not showContactForm %}
+                <div class="shop-checkout__saved">
+                    <div class="shop-checkout__saved-header">
+                        <h2 class="shop-checkout__heading">{{ 'shop.checkout.saved_contact'|trans }}</h2>
+                        <a href="{{ path('shop_checkout', {_locale: app.request.locale, edit_contact: 1}) }}" class="shop-checkout__edit-link">
+                            {{ 'shop.checkout.edit_contact'|trans }}
+                        </a>
+                    </div>
+                    <p>
+                        {{ savedContact.customerName }} · {{ savedContact.customerPhone }}
+                        {% if savedContact.customerEmail %}
+                            · {{ savedContact.customerEmail }}
+                        {% endif %}
+                        {% if savedContact.doNotCall|default(false) %}
+                            · {{ 'shop.checkout.do_not_call'|trans }}
+                        {% endif %}
+                    </p>
+                </div>
+            {% endif %}
+
+            {% if showContactForm %}
+                {{ form_start(contactForm, { attr: { class: 'shop-checkout__form', id: 'checkout-contact-form', novalidate: 'novalidate' } }) }}
+
+                <section class="shop-checkout__section">
+                    <h2 class="shop-checkout__heading">{{ 'shop.checkout.contact_details'|trans }}</h2>
+                    <div class="shop-checkout__field-errors">
+                        {{ form_errors(contactForm) }}
+                    </div>
+                    {{ form_row(contactForm.customerName) }}
+                    {% if showContactEmailField %}
+                        {{ form_row(contactForm.customerEmail) }}
+                    {% endif %}
+                    {{ form_row(contactForm.customerPhone) }}
+                </section>
+
+                <button type="submit" class="shop-checkout__submit">
+                    {{ 'shop.checkout.save_contact'|trans }}
+                </button>
+
+                {{ form_end(contactForm) }}
+            {% endif %}
+        </section>
+
+        {# Step 2: Delivery #}
+        <section id="checkout-delivery-step" class="shop-checkout__step">
+            {% if savedContact and savedDelivery and not showDeliveryForm %}
+                <div class="shop-checkout__saved">
+                    <div class="shop-checkout__saved-header">
+                        <h2 class="shop-checkout__heading">{{ 'shop.checkout.saved_delivery'|trans }}</h2>
+                        <a href="{{ path('shop_checkout', {_locale: app.request.locale, edit_delivery: 1}) }}" class="shop-checkout__edit-link">
+                            {{ 'shop.checkout.edit_delivery'|trans }}
+                        </a>
+                    </div>
+                    <div class="shop-checkout__saved-delivery-row">
+                        <p>
+                            {% if savedDelivery.deliveryMethod == 'courier' %}
+                                {{ 'shop.checkout.delivery_courier'|trans }}: {{ savedDelivery.courierAddress }}
+                            {% elseif savedDelivery.deliveryMethod == 'np_branch' %}
+                                {{ 'shop.checkout.delivery_np_branch'|trans }}: {{ savedDelivery.npCityName }}, {{ savedDelivery.npWarehouseName }}
+                            {% else %}
+                                {{ 'shop.checkout.delivery_np_postomat'|trans }}: {{ savedDelivery.npCityName }}, {{ savedDelivery.npWarehouseName }}
+                            {% endif %}
+                        </p>
+                        {% if savedDelivery.deliveryCost is defined and savedDelivery.deliveryCost > 0 %}
+                            <p class="shop-checkout__delivery-price">
+                                {% if savedDelivery.deliveryMethod in ['np_branch', 'np_postomat'] %}
+                                    {{ 'shop.checkout.delivery_cost'|trans }} ~ {{ savedDelivery.deliveryCost|number_format(2, ',', ' ') }} ₴
+                                    <span class="shop-checkout__delivery-price-note">{{ 'shop.checkout.delivery_cost_np_tariff'|trans }}</span>
+                                    <span class="shop-checkout__delivery-price-note">{{ 'shop.checkout.delivery_cost_time_pay'|trans }}</span>
+                                {% else %}
+                                    {{ 'shop.checkout.delivery_cost'|trans }}: {{ savedDelivery.deliveryCost|number_format(2, ',', ' ') }} ₴
+                                    <span class="shop-checkout__delivery-price-note">{{ 'shop.checkout.delivery_cost_paid_on_receipt'|trans }}</span>
+                                {% endif %}
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+
+            {% if showDeliveryForm %}
+                {% set initialDeliveryMethod = deliveryForm.vars.value.deliveryMethod|default('np_branch') %}
+                {{ form_start(deliveryForm, { attr: {
+                    class: 'shop-checkout__form',
+                    id: 'checkout-delivery-form',
+                    novalidate: 'novalidate',
+                    'data-required-message': 'shop.validation.required'|trans,
+                } }) }}
+
+                <section class="shop-checkout__section">
+                    <h2 class="shop-checkout__heading">{{ 'shop.checkout.delivery_method'|trans }}</h2>
+
+                    <div class="shop-checkout__delivery-grid">
+                        {{ form_widget(deliveryForm.deliveryMethod) }}
+                    </div>
+                    <div class="shop-checkout__field-errors">
+                        {{ form_errors(deliveryForm) }}
+                        {{ form_errors(deliveryForm.deliveryMethod) }}
+                    </div>
+
+                    <div class="shop-checkout__delivery-info">
+                        {% if 'courier' in enabledDeliveryMethods and deliveryForm.courierAddress is defined %}
+                            <div class="shop-checkout__delivery-option" data-method="courier">
+                                <div
+                                    id="courier-delivery-card"
+                                    class="shop-checkout__delivery-card"
+                                    data-method="courier"
+                                    {% if not courierDeliveryAvailable %}hidden{% endif %}
+                                >
+                                    <strong>{{ 'shop.checkout.delivery_courier'|trans }}</strong>
+                                    <span>{{ 'shop.checkout.delivery_courier_short'|trans }}</span>
+                                </div>
+                                <div id="courier-panel" class="shop-checkout__panel shop-checkout__delivery-panel"{% if initialDeliveryMethod != 'courier' or not courierDeliveryAvailable or 'courier' not in enabledDeliveryMethods %} hidden{% endif %}>
+                                    <p class="shop-checkout__hint">{{ 'shop.checkout.courier_hint'|trans }}</p>
+                                    {{ form_row(deliveryForm.courierAddress, { row_attr: { id: 'courier-address-row', class: 'shop-checkout__courier-address-row' } }) }}
+                                    <p id="courier-delivery-price" class="shop-checkout__delivery-price" hidden></p>
+                                </div>
+                            </div>
+                        {% endif %}
+                        {% if 'np_branch' in enabledDeliveryMethods %}
+                            <div class="shop-checkout__delivery-option" data-method="np_branch">
+                                <div class="shop-checkout__delivery-card" data-method="np_branch">
+                                    <strong>{{ 'shop.checkout.delivery_np_branch'|trans }}</strong>
+                                    <span>{{ 'shop.checkout.delivery_np_branch_short'|trans }}</span>
+                                </div>
+                                <div class="shop-checkout__delivery-panel-slot" data-np-panel-host></div>
+                            </div>
+                        {% endif %}
+                        {% if 'np_postomat' in enabledDeliveryMethods %}
+                            <div class="shop-checkout__delivery-option" data-method="np_postomat">
+                                <div class="shop-checkout__delivery-card" data-method="np_postomat">
+                                    <strong>{{ 'shop.checkout.delivery_np_postomat'|trans }}</strong>
+                                    <span>{{ 'shop.checkout.delivery_np_postomat_short'|trans }}</span>
+                                </div>
+                                <div class="shop-checkout__delivery-panel-slot" data-np-panel-host></div>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div id="np-panel" class="shop-checkout__panel shop-checkout__delivery-panel"{% if initialDeliveryMethod not in ['np_branch', 'np_postomat'] or ('np_branch' not in enabledDeliveryMethods and 'np_postomat' not in enabledDeliveryMethods) %} hidden{% endif %}>
+                        {% if novaPoshtaEnabled %}
+                            <p
+                                id="np-hint"
+                                class="shop-checkout__hint"
+                                data-hint-branch="{{ 'shop.checkout.np_hint_branch'|trans|e('html_attr') }}"
+                                data-hint-postomat="{{ 'shop.checkout.np_hint_postomat'|trans|e('html_attr') }}"
+                            >{{ 'shop.checkout.np_hint_branch'|trans }}</p>
+
+                            <div class="shop-checkout__field{% if deliveryForm.npCityRef.vars.errors|length > 0 %} shop-checkout__field--invalid{% endif %}">
+                                <label for="np-city-search">{{ 'shop.checkout.np_city'|trans }}</label>
+                                <input
+                                    type="text"
+                                    id="np-city-search"
+                                    class="shop-checkout__input{% if deliveryForm.npCityRef.vars.errors|length > 0 %} shop-checkout__input--error{% endif %}"
+                                    autocomplete="off"
+                                    value="{{ deliveryForm.npCityName.vars.value }}"
+                                >
+                                <div id="np-city-results" class="shop-checkout__autocomplete"></div>
+                                <p
+                                    id="np-village-hint"
+                                    class="shop-checkout__hint shop-checkout__hint--info"
+                                    hidden
+                                    data-template="{{ 'shop.checkout.np_village_hint'|trans({'%settlement%': '%settlement%', '%city%': '%city%'})|e('html_attr') }}"
+                                ></p>
+                                <div id="np-city-errors" class="shop-checkout__field-errors">
+                                    {{ form_errors(deliveryForm.npCityRef) }}
+                                </div>
+                            </div>
+
+                            <div class="shop-checkout__field{% if deliveryForm.npWarehouseRef.vars.errors|length > 0 %} shop-checkout__field--invalid{% endif %}">
+                                <label
+                                    id="np-warehouse-label"
+                                    for="np-warehouse-select"
+                                    data-label-branch="{{ 'shop.checkout.np_warehouse_branch'|trans|e('html_attr') }}"
+                                    data-label-postomat="{{ 'shop.checkout.np_warehouse_postomat'|trans|e('html_attr') }}"
+                                >{{ 'shop.checkout.np_warehouse_branch'|trans }}</label>
+                                <select
+                                    id="np-warehouse-select"
+                                    class="shop-checkout__input{% if deliveryForm.npWarehouseRef.vars.errors|length > 0 %} shop-checkout__input--error{% endif %}"
+                                    data-placeholder-city="{{ 'shop.checkout.np_warehouse_placeholder'|trans|e('html_attr') }}"
+                                    data-placeholder-branch="{{ 'shop.checkout.np_warehouse_placeholder_branch'|trans|e('html_attr') }}"
+                                    data-placeholder-postomat="{{ 'shop.checkout.np_warehouse_placeholder_postomat'|trans|e('html_attr') }}"
+                                >
+                                    <option value="">{{ 'shop.checkout.np_warehouse_placeholder'|trans }}</option>
+                                </select>
+                                <div id="np-warehouse-errors" class="shop-checkout__field-errors">
+                                    {{ form_errors(deliveryForm.npWarehouseRef) }}
+                                </div>
+                            </div>
+
+                            <div id="np-selected-row" class="shop-checkout__selected-row" hidden>
+                                <p id="np-selected-point" class="shop-checkout__selected"></p>
+                                <p id="np-delivery-price" class="shop-checkout__delivery-price" hidden></p>
+                            </div>
+                        {% else %}
+                            <p class="shop-checkout__alert shop-checkout__alert--warning">
+                                {{ 'shop.checkout.np_not_configured'|trans }}
+                            </p>
+                        {% endif %}
+
+                        {{ form_widget(deliveryForm.npCityRef) }}
+                        {{ form_widget(deliveryForm.npCityName) }}
+                        {{ form_widget(deliveryForm.npWarehouseRef) }}
+                        {{ form_widget(deliveryForm.npWarehouseName) }}
+                        {{ form_widget(deliveryForm.deliveryCost) }}
+                    </div>
+                </section>
+
+                <button type="submit" class="shop-checkout__submit">
+                    {{ 'shop.checkout.save_delivery'|trans }}
+                </button>
+
+                {{ form_widget(deliveryForm._token) }}
+                {{ form_end(deliveryForm, { render_rest: false }) }}
+            {% elseif not savedContact %}
+                <section class="shop-checkout__section shop-checkout__section--locked">
+                    <h2 class="shop-checkout__heading">{{ 'shop.checkout.delivery_method'|trans }}</h2>
+                    <p class="shop-checkout__hint">{{ 'shop.checkout.delivery_contact_locked'|trans }}</p>
+                </section>
+            {% endif %}
+        </section>
+
+        {# Step 3: Payment #}
+        {% if contactComplete %}
+            {{ form_start(paymentForm, { attr: { class: 'shop-checkout__form shop-checkout__form--payment', id: 'checkout-payment-form' } }) }}
+
+            <section
+                id="checkout-payment-step"
+                class="shop-checkout__section shop-checkout__section--payment{% if not showPayment %} shop-checkout__section--locked{% endif %}"
+                {% if not showPayment %}hidden{% endif %}
+            >
+                <h2 class="shop-checkout__heading">{{ 'shop.checkout.payment_method'|trans }}</h2>
+                {% set paymentMethodCount = enabledPaymentMethods|length %}
+                {% if paymentMethodCount > 1 %}
+                    <p class="shop-checkout__hint" id="checkout-payment-hint">{{ 'shop.checkout.payment_hint_methods'|trans }}</p>
+                {% endif %}
+
+                {% if paymentEnabled %}
+                    <div class="shop-checkout__payment-grid">
+                        {{ form_widget(paymentForm.paymentMethod) }}
+                    </div>
+                    {{ form_errors(paymentForm.paymentMethod) }}
+
+                    <div class="shop-checkout__payment-info">
+                        {% if onDeliveryConfigured %}
+                            <div class="shop-checkout__payment-option" data-method="on_delivery"{% if not onDeliveryEnabled %} hidden{% endif %}>
+                                <div class="shop-checkout__payment-card shop-checkout__payment-card--cod" data-method="on_delivery">
+                                    <strong>{{ 'shop.checkout.payment_on_delivery'|trans }}</strong>
+                                    <p>{{ 'shop.checkout.payment_on_delivery_desc'|trans }}</p>
+                                </div>
+                                <div id="checkout-cod-notice" class="shop-checkout__cod-notice" hidden>
+                                    <div class="shop-checkout__cod-section">
+                                        <p class="shop-checkout__cod-notice-title">{{ 'shop.checkout.cod_prepayment'|trans }}</p>
+                                        <p id="checkout-cod-prepayment-text"></p>
+                                    </div>
+                                    <div class="shop-checkout__cod-section">
+                                        <p class="shop-checkout__cod-notice-title">{{ 'shop.checkout.cod_additional_costs'|trans }}</p>
+                                        <p id="checkout-cod-notice-text"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                        {% if privatbankEnabled %}
+                            <div class="shop-checkout__payment-option" data-method="privatbank">
+                                <div class="shop-checkout__payment-card shop-checkout__payment-card--privat" data-method="privatbank">
+                                    <strong>{{ 'shop.checkout.payment_privatbank'|trans }}</strong>
+                                    <p>{{ 'shop.checkout.payment_privatbank_desc'|trans }}</p>
+                                </div>
+                            </div>
+                        {% endif %}
+                        {% if monobankEnabled %}
+                            <div class="shop-checkout__payment-option" data-method="monobank">
+                                <div class="shop-checkout__payment-card shop-checkout__payment-card--mono" data-method="monobank">
+                                    <strong>{{ 'shop.checkout.payment_monobank'|trans }}</strong>
+                                    <p>{{ 'shop.checkout.payment_monobank_desc'|trans }}</p>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    {{ form_row(paymentForm.doNotCall) }}
+
+                    {% if showPayment %}
+                        <button type="submit" class="shop-checkout__submit shop-checkout__submit--pay" id="checkout-pay-button">
+                            <span id="checkout-pay-button-label">{{ 'shop.checkout.confirm_order'|trans }}</span> · <span id="checkout-pay-total">{{ total|number_format(2, ',', ' ') }} ₴</span>
+                        </button>
+                    {% endif %}
+                {% else %}
+                    <p class="shop-checkout__alert shop-checkout__alert--warning">
+                        {{ 'shop.checkout.payment_not_configured'|trans }}
+                    </p>
+                {% endif %}
+            </section>
+
+            {{ form_end(paymentForm) }}
+        {% else %}
+            <section class="shop-checkout__section shop-checkout__section--locked">
+                <h2 class="shop-checkout__heading">{{ 'shop.checkout.payment_method'|trans }}</h2>
+                <p class="shop-checkout__hint">{{ 'shop.checkout.payment_locked'|trans }}</p>
+            </section>
+        {% endif %}
+
+        <a href="{{ path('shop_home', {_locale: app.request.locale}) }}" class="shop-checkout__back">
+            ← {{ 'shop.checkout.back_to_shop'|trans }}
+        </a>
+    </article>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('js/shop-checkout-contact-cache.js') }}" defer></script>
+    <script>
+        (() => {
+            const scrollToHash = () => {
+                const hash = window.location.hash;
+                if (!hash) {
+                    return;
+                }
+
+                const target = document.querySelector(hash);
+                if (target) {
+                    window.requestAnimationFrame(() => {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    });
+                }
+            };
+
+            scrollToHash();
+
+            document.querySelectorAll('.shop-checkout__step-link:not([aria-disabled="true"])').forEach((link) => {
+                link.addEventListener('click', (event) => {
+                    const href = link.getAttribute('href') || '';
+                    if (href.includes('edit_contact=') || href.includes('edit_delivery=')) {
+                        return;
+                    }
+
+                    const hashIndex = href.indexOf('#');
+                    const targetSelector = hashIndex >= 0 ? href.slice(hashIndex) : href;
+                    const target = targetSelector ? document.querySelector(targetSelector) : null;
+                    if (!target) {
+                        return;
+                    }
+
+                    event.preventDefault();
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    if (window.history?.replaceState) {
+                        window.history.replaceState(null, '', targetSelector);
+                    }
+                });
+            });
+
+            const subtotalValue = {{ subtotal|json_encode|raw }};
+            const initialDeliveryCost = {{ deliveryCost|json_encode|raw }};
+            let currentPayTotal = {{ total|json_encode|raw }};
+            const courierDeliveryCost = {{ courierDeliveryCost|default(100)|json_encode|raw }};
+            let checkoutTotalUpdatedCallback = null;
+            let checkoutPaymentMethodsCallback = null;
+            const onDeliveryDeliveryMethods = {{ onDeliveryDeliveryMethods|default(['np_branch'])|json_encode|raw }};
+            const siteEnabledPaymentMethods = {{ siteEnabledPaymentMethods|default([])|json_encode|raw }};
+            const initialDeliveryMethodForPayment = {{ deliveryMethodForPayment|default('np_branch')|json_encode|raw }};
+            const deliveryQuoteEnabled = {{ deliveryQuoteEnabled ? 'true' : 'false' }};
+            const npDeliveryPriceUrl = {{ npDeliveryPriceUrl|default('')|json_encode|raw }};
+            const payTotalValue = document.getElementById('checkout-pay-total');
+            const deliveryCostLabel = {{ 'shop.checkout.delivery_cost'|trans|json_encode|raw }};
+            const deliveryCostNote = {{ 'shop.checkout.delivery_cost_paid_on_receipt'|trans|json_encode|raw }};
+            const deliveryCostNpNote = {{ 'shop.checkout.delivery_cost_np_tariff'|trans|json_encode|raw }};
+
+            const formatPrice = (amount) => {
+                const normalized = Number.isFinite(amount) ? amount : 0;
+                return normalized.toLocaleString('uk-UA', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                }) + ' ₴';
+            };
+
+            const formatCourierDeliveryPriceLine = (amount) =>
+                `${deliveryCostLabel}: ${formatPrice(amount)} ${deliveryCostNote}`;
+
+            const formatNpDeliveryPriceLine = (amount) =>
+                `${deliveryCostLabel} ~ ${formatPrice(amount)} ${deliveryCostNpNote}`;
+
+            const clearErrorsContainer = (container) => {
+                if (container) {
+                    container.innerHTML = '';
+                }
+            };
+
+            const clearFieldValidationState = (field) => {
+                if (!field) {
+                    return;
+                }
+
+                field.classList.remove('shop-checkout__input--error');
+
+                const row = field.closest('.mb-3, .shop-checkout__field, .shop-checkout__courier-address-row');
+                if (!row) {
+                    return;
+                }
+
+                row.classList.remove('shop-checkout__field--invalid');
+                row.querySelectorAll('.shop-checkout__field-errors').forEach((box) => {
+                    box.innerHTML = '';
+                });
+                row.querySelectorAll('ul').forEach((list) => {
+                    if (list.querySelector('li')) {
+                        list.remove();
+                    }
+                });
+            };
+
+            const fieldHasValue = (field) => {
+                if (!field || field.disabled) {
+                    return false;
+                }
+
+                if (field.tagName === 'SELECT') {
+                    return field.value !== '';
+                }
+
+                return field.value.trim() !== '';
+            };
+
+            const bindCheckoutLiveValidationClear = (form) => {
+                if (!form) {
+                    return;
+                }
+
+                form.querySelectorAll('input:not([type="hidden"]), textarea, select').forEach((field) => {
+                    field.addEventListener(field.tagName === 'SELECT' ? 'change' : 'input', () => {
+                        if (fieldHasValue(field)) {
+                            clearFieldValidationState(field);
+                        }
+                    });
+                });
+            };
+
+            bindCheckoutLiveValidationClear(document.getElementById('checkout-contact-form'));
+
+            const checkoutRoot = document.querySelector('.shop-checkout');
+            window.addEventListener('shop:city-changed', (event) => {
+                const city = event.detail;
+                if (!city?.deliveryCleared || checkoutRoot?.dataset.hasSavedDelivery !== '1') {
+                    return;
+                }
+
+                const editDeliveryUrl = checkoutRoot.dataset.editDeliveryUrl;
+                if (editDeliveryUrl) {
+                    window.location.href = editDeliveryUrl;
+                }
+            });
+
+            const deliveryForm = document.getElementById('checkout-delivery-form');
+            if (deliveryForm) {
+                const courierPanel = document.getElementById('courier-panel');
+                const npPanel = document.getElementById('np-panel');
+                const methodInputs = deliveryForm.querySelectorAll('input[name="checkout_delivery_form[deliveryMethod]"]');
+                const courierAddress = deliveryForm.querySelector('[name="checkout_delivery_form[courierAddress]"]');
+                const npCityRef = deliveryForm.querySelector('[name="checkout_delivery_form[npCityRef]"]');
+                const npCityName = deliveryForm.querySelector('[name="checkout_delivery_form[npCityName]"]');
+                const npWarehouseRef = deliveryForm.querySelector('[name="checkout_delivery_form[npWarehouseRef]"]');
+                const npWarehouseName = deliveryForm.querySelector('[name="checkout_delivery_form[npWarehouseName]"]');
+                const deliveryCostInput = deliveryForm.querySelector('[name="checkout_delivery_form[deliveryCost]"]');
+                const citySearch = document.getElementById('np-city-search');
+                const cityResults = document.getElementById('np-city-results');
+                const npVillageHint = document.getElementById('np-village-hint');
+                const warehouseSelect = document.getElementById('np-warehouse-select');
+                const selectedPoint = document.getElementById('np-selected-point');
+                const npSelectedRow = document.getElementById('np-selected-row');
+                const npDeliveryPrice = document.getElementById('np-delivery-price');
+                const courierDeliveryPrice = document.getElementById('courier-delivery-price');
+                const npEnabled = {{ novaPoshtaEnabled ? 'true' : 'false' }};
+                const citiesUrl = {{ npCitiesUrl|json_encode|raw }};
+                const warehousesUrl = {{ npWarehousesUrl|json_encode|raw }};
+                const defaultCity = {{ defaultCity|default(null)|json_encode|raw }};
+                const preferredCity = {{ preferredCity|default(null)|json_encode|raw }};
+                const courierCityName = {{ courierCityName|json_encode|raw }};
+                let headerCourierAvailable = {{ headerCourierAvailable ? 'true' : 'false' }};
+                let courierDeliveryAvailable = {{ courierDeliveryAvailable ? 'true' : 'false' }};
+                const activeDeliveryMethods = {{ enabledDeliveryMethods|json_encode|raw }};
+                const courierDeliveryCard = document.getElementById('courier-delivery-card');
+                const courierMethodInput = deliveryForm.querySelector('input[name="checkout_delivery_form[deliveryMethod]"][value="courier"]');
+
+                const normalizeCityName = (cityName) => (cityName || '').trim().toLowerCase().replace(/\s+/g, ' ');
+                const isCourierCity = (cityName) => normalizeCityName(cityName) === normalizeCityName(courierCityName);
+
+                const resolveCourierCityName = () => (npCityName?.value || citySearch?.value || '').trim();
+
+                const getCityDetails = (city) => {
+                    if (!city) {
+                        return '';
+                    }
+
+                    if (city.label && city.label !== city.name) {
+                        return city.label;
+                    }
+
+                    return city.subtitle || '';
+                };
+
+                const getCityDisplayValue = (city) => {
+                    if (!city) {
+                        return '';
+                    }
+
+                    return getCityDetails(city) || city.name || '';
+                };
+
+                const normalizeNpCity = (city) => ({
+                    name: typeof city?.name === 'string' ? city.name : '',
+                    ref: typeof city?.ref === 'string' ? city.ref : (typeof city?.warehouseCityRef === 'string' ? city.warehouseCityRef : ''),
+                    subtitle: typeof city?.subtitle === 'string' ? city.subtitle : '',
+                    label: typeof city?.label === 'string' ? city.label : '',
+                    settlementRef: typeof city?.settlementRef === 'string' ? city.settlementRef : '',
+                    warehouseCityRef: typeof city?.warehouseCityRef === 'string' ? city.warehouseCityRef : '',
+                    hasLocalWarehouses: Boolean(city?.hasLocalWarehouses),
+                });
+
+                let selectedNpCity = null;
+
+                const updateVillageHint = (city, warehouseCityName = '') => {
+                    if (!npVillageHint) {
+                        return;
+                    }
+
+                    if (city && city.hasLocalWarehouses === false && npCityRef.value) {
+                        const template = npVillageHint.dataset.template || '';
+                        npVillageHint.textContent = template
+                            .replace('%settlement%', city.name || '')
+                            .replace('%city%', warehouseCityName || '…');
+                        npVillageHint.hidden = false;
+                    } else {
+                        npVillageHint.hidden = true;
+                        npVillageHint.textContent = '';
+                    }
+                };
+
+                let updateCourierAvailability = () => {};
+
+                const defaultDeliveryMethod = courierDeliveryAvailable ? 'courier' : 'np_branch';
+                let citySearchTimer = null;
+                let deliveryPriceTimer = null;
+
+                const getSelectedMethod = () => {
+                    const checked = deliveryForm.querySelector('input[name="checkout_delivery_form[deliveryMethod]"]:checked');
+                    return checked ? checked.value : defaultDeliveryMethod;
+                };
+
+                let previousDeliveryMethod = getSelectedMethod();
+
+                const updateDeliveryPriceDisplay = (cost) => {
+                    const normalized = Math.max(0, Number(cost) || 0);
+                    const method = getSelectedMethod();
+                    const hasSelectedPoint = Boolean(npCityName?.value && npWarehouseName?.value);
+
+                    if (npSelectedRow) {
+                        npSelectedRow.hidden = !hasSelectedPoint && normalized <= 0;
+                    }
+
+                    if (npDeliveryPrice) {
+                        const showNpPrice = ['np_branch', 'np_postomat'].includes(method) && hasSelectedPoint && normalized > 0;
+                        npDeliveryPrice.textContent = showNpPrice
+                            ? formatNpDeliveryPriceLine(normalized)
+                            : '';
+                        npDeliveryPrice.hidden = !showNpPrice;
+                    }
+
+                    if (courierDeliveryPrice) {
+                        const showCourierPrice = method === 'courier' && normalized > 0;
+                        courierDeliveryPrice.textContent = showCourierPrice
+                            ? formatCourierDeliveryPriceLine(normalized)
+                            : '';
+                        courierDeliveryPrice.hidden = !showCourierPrice;
+                    }
+
+                    currentPayTotal = subtotalValue;
+
+                    if (payTotalValue) {
+                        payTotalValue.textContent = formatPrice(currentPayTotal);
+                    }
+
+                    checkoutTotalUpdatedCallback?.();
+                };
+
+                const setDeliveryCost = (cost) => {
+                    const normalized = Math.max(0, Number(cost) || 0);
+                    if (deliveryCostInput) {
+                        deliveryCostInput.value = normalized.toFixed(2);
+                    }
+                    updateDeliveryPriceDisplay(normalized);
+                };
+
+                const fetchDeliveryPrice = () => {
+                    window.clearTimeout(deliveryPriceTimer);
+
+                    const method = getSelectedMethod();
+                    if (!deliveryQuoteEnabled || !npDeliveryPriceUrl || !['np_branch', 'np_postomat'].includes(method)) {
+                        setDeliveryCost(0);
+                        return;
+                    }
+
+                    if (!npCityRef.value || !npWarehouseRef.value) {
+                        setDeliveryCost(0);
+                        return;
+                    }
+
+                    deliveryPriceTimer = window.setTimeout(async () => {
+                        try {
+                            const url = `${npDeliveryPriceUrl}?cityRef=${encodeURIComponent(npCityRef.value)}&method=${encodeURIComponent(method)}`;
+                            const response = await fetch(url, {
+                                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                                credentials: 'same-origin',
+                            });
+                            const data = await response.json();
+                            if (!response.ok || !Number.isFinite(data.cost)) {
+                                throw new Error(data.error || 'Delivery quote failed');
+                            }
+                            setDeliveryCost(data.cost);
+                        } catch (error) {
+                            console.error(error);
+                            setDeliveryCost(0);
+                        }
+                    }, 250);
+                };
+
+                const npHint = document.getElementById('np-hint');
+                const npWarehouseLabel = document.getElementById('np-warehouse-label');
+
+                const updateNpFormLabels = () => {
+                    const isPostomat = getSelectedMethod() === 'np_postomat';
+
+                    if (npHint) {
+                        npHint.textContent = isPostomat
+                            ? (npHint.dataset.hintPostomat || '')
+                            : (npHint.dataset.hintBranch || '');
+                    }
+
+                    if (npWarehouseLabel) {
+                        npWarehouseLabel.textContent = isPostomat
+                            ? (npWarehouseLabel.dataset.labelPostomat || '')
+                            : (npWarehouseLabel.dataset.labelBranch || '');
+                    }
+                };
+
+                const moveNpPanelToActiveSlot = () => {
+                    const method = getSelectedMethod();
+                    if (!npPanel || !['np_branch', 'np_postomat'].includes(method)) {
+                        return;
+                    }
+
+                    const host = deliveryForm.querySelector(
+                        `.shop-checkout__delivery-option[data-method="${method}"] [data-np-panel-host]`
+                    );
+                    if (host && host !== npPanel.parentElement) {
+                        host.appendChild(npPanel);
+                    }
+                };
+
+                const togglePanels = () => {
+                    const method = getSelectedMethod();
+                    const isCourierMethod = method === 'courier';
+                    const isNpMethod = ['np_branch', 'np_postomat'].includes(method);
+
+                    if (courierPanel) {
+                        courierPanel.hidden = !isCourierMethod;
+                    }
+
+                    if (npPanel) {
+                        npPanel.hidden = !isNpMethod;
+                    }
+
+                    if (courierAddress) {
+                        courierAddress.required = isCourierMethod;
+                        courierAddress.disabled = !isCourierMethod;
+                        if (!isCourierMethod) {
+                            courierAddress.value = '';
+                        }
+                    }
+
+                    if (method === 'courier') {
+                        setDeliveryCost(courierDeliveryCost);
+                    } else if (isNpMethod) {
+                        moveNpPanelToActiveSlot();
+                        updateNpFormLabels();
+                        updateWarehousePlaceholder();
+                        fetchDeliveryPrice();
+                    }
+                };
+
+                const updateSelectedPoint = () => {
+                    if (!selectedPoint) {
+                        return;
+                    }
+
+                    if (npCityName.value && npWarehouseName.value) {
+                        selectedPoint.textContent = `${npCityName.value}: ${npWarehouseName.value}`;
+                        if (npSelectedRow) {
+                            npSelectedRow.hidden = false;
+                        }
+                    } else {
+                        selectedPoint.textContent = '';
+                        if (npSelectedRow) {
+                            npSelectedRow.hidden = true;
+                        }
+                        if (npDeliveryPrice) {
+                            npDeliveryPrice.hidden = true;
+                            npDeliveryPrice.textContent = '';
+                        }
+                    }
+                };
+
+                const getWarehousePlaceholder = () => {
+                    if (!warehouseSelect) {
+                        return '';
+                    }
+
+                    if (!npCityRef.value) {
+                        return warehouseSelect.dataset.placeholderCity || '';
+                    }
+
+                    return getSelectedMethod() === 'np_postomat'
+                        ? (warehouseSelect.dataset.placeholderPostomat || '')
+                        : (warehouseSelect.dataset.placeholderBranch || '');
+                };
+
+                const clearWarehouseSelect = () => {
+                    if (!warehouseSelect) {
+                        return;
+                    }
+
+                    warehouseSelect.innerHTML = `<option value="">${getWarehousePlaceholder()}</option>`;
+                };
+
+                const updateWarehousePlaceholder = () => {
+                    if (!warehouseSelect || warehouseSelect.options.length === 0) {
+                        clearWarehouseSelect();
+                        return;
+                    }
+
+                    const placeholder = getWarehousePlaceholder();
+                    const firstOption = warehouseSelect.options[0];
+                    if (firstOption && firstOption.value === '') {
+                        firstOption.textContent = placeholder;
+                    }
+                };
+
+                const clearWarehouseSelection = () => {
+                    clearWarehouseSelect();
+                    npWarehouseRef.value = '';
+                    npWarehouseName.value = '';
+                    updateSelectedPoint();
+                    updateVillageHint(null);
+                };
+
+                const restoreWarehouseSelection = (savedWarehouseRef, savedWarehouseName) => {
+                    if (!warehouseSelect || !savedWarehouseRef) {
+                        updateSelectedPoint();
+                        return;
+                    }
+
+                    warehouseSelect.value = savedWarehouseRef;
+
+                    if (warehouseSelect.value !== savedWarehouseRef && savedWarehouseName) {
+                        const option = document.createElement('option');
+                        option.value = savedWarehouseRef;
+                        option.textContent = savedWarehouseName;
+                        option.dataset.name = savedWarehouseName;
+                        option.selected = true;
+                        warehouseSelect.appendChild(option);
+                    }
+
+                    const option = warehouseSelect.options[warehouseSelect.selectedIndex];
+                    npWarehouseRef.value = savedWarehouseRef;
+                    npWarehouseName.value = option?.dataset.name || savedWarehouseName || option?.textContent || '';
+                    updateSelectedPoint();
+                };
+
+                const loadWarehouses = async (preserveSelection = false) => {
+                    if (!npEnabled || !warehouseSelect || !npCityRef.value) {
+                        return;
+                    }
+
+                    const method = getSelectedMethod();
+                    const type = method === 'np_postomat' ? 'postomat' : 'branch';
+                    const url = `${warehousesUrl}?cityRef=${encodeURIComponent(npCityRef.value)}&type=${encodeURIComponent(type)}`;
+                    const savedWarehouseRef = preserveSelection ? npWarehouseRef.value : '';
+                    const savedWarehouseName = preserveSelection ? npWarehouseName.value : '';
+
+                    warehouseSelect.disabled = true;
+                    clearWarehouseSelect();
+
+                    try {
+                        const response = await fetch(url);
+                        const data = await response.json();
+                        const items = data.items || [];
+
+                        items.forEach((item) => {
+                            const option = document.createElement('option');
+                            option.value = item.ref;
+                            option.textContent = item.number ? `${item.number} — ${item.name}` : item.name;
+                            option.dataset.name = item.name;
+                            warehouseSelect.appendChild(option);
+                        });
+
+                        if (savedWarehouseRef) {
+                            restoreWarehouseSelection(savedWarehouseRef, savedWarehouseName);
+                        } else {
+                            updateSelectedPoint();
+                        }
+
+                        updateVillageHint(selectedNpCity, data.warehouseCityName || '');
+                    } catch (error) {
+                        console.error(error);
+                        if (savedWarehouseRef) {
+                            restoreWarehouseSelection(savedWarehouseRef, savedWarehouseName);
+                        }
+                    } finally {
+                        warehouseSelect.disabled = false;
+                    }
+                };
+
+                const selectCity = (city, resetWarehouse = true) => {
+                    selectedNpCity = normalizeNpCity(city);
+                    npCityRef.value = selectedNpCity.ref || '';
+                    npCityName.value = selectedNpCity.name || '';
+                    if (citySearch) {
+                        citySearch.value = getCityDisplayValue(selectedNpCity);
+                    }
+                    if (cityResults) {
+                        cityResults.innerHTML = '';
+                    }
+                    if (resetWarehouse) {
+                        clearWarehouseSelect();
+                        npWarehouseRef.value = '';
+                        npWarehouseName.value = '';
+                        updateSelectedPoint();
+                    }
+                    updateVillageHint(selectedNpCity);
+                    if (npCityRef.value) {
+                        loadWarehouses(!resetWarehouse);
+                    }
+                    if (!npWarehouseRef.value) {
+                        setDeliveryCost(0);
+                    }
+                    if (npCityRef.value) {
+                        clearFieldValidationState(citySearch);
+                        clearErrorsContainer(document.getElementById('np-city-errors'));
+                    }
+                    updateCourierAvailability();
+                };
+
+                const searchCities = (query) => {
+                    if (!npEnabled || !cityResults || query.trim().length < 2) {
+                        if (cityResults) {
+                            cityResults.innerHTML = '';
+                        }
+                        return;
+                    }
+
+                    clearTimeout(citySearchTimer);
+                    citySearchTimer = setTimeout(async () => {
+                        try {
+                            const response = await fetch(`${citiesUrl}?q=${encodeURIComponent(query)}`);
+                            const data = await response.json();
+                            cityResults.innerHTML = '';
+
+                            (data.items || []).forEach((city) => {
+                                const button = document.createElement('button');
+                                button.type = 'button';
+                                button.className = 'shop-checkout__autocomplete-item';
+
+                                const title = document.createElement('strong');
+                                title.className = 'shop-checkout__autocomplete-name';
+                                title.textContent = city.name;
+                                button.appendChild(title);
+
+                                const details = getCityDetails(city);
+                                if (details) {
+                                    const subtitle = document.createElement('span');
+                                    subtitle.className = 'shop-checkout__autocomplete-subtitle';
+                                    subtitle.textContent = details;
+                                    button.appendChild(subtitle);
+                                }
+
+                                button.addEventListener('mousedown', (event) => event.preventDefault());
+                                button.addEventListener('click', () => selectCity(city));
+                                cityResults.appendChild(button);
+                            });
+                        } catch (error) {
+                            console.error(error);
+                        }
+                    }, 300);
+                };
+
+                const deliveryCards = deliveryForm.querySelectorAll('.shop-checkout__delivery-card');
+
+                const syncDeliveryCards = () => {
+                    const method = getSelectedMethod();
+                    deliveryCards.forEach((card) => {
+                        card.classList.toggle('is-active', card.dataset.method === method);
+                    });
+                };
+
+                const findFirstEnabledDeliveryInput = () =>
+                    Array.from(methodInputs).find((input) =>
+                        !input.disabled && activeDeliveryMethods.includes(input.value)
+                    ) ?? null;
+
+                updateCourierAvailability = () => {
+                    const courierEnabled = activeDeliveryMethods.includes('courier');
+                    const available = courierEnabled && (headerCourierAvailable || isCourierCity(resolveCourierCityName()));
+                    courierDeliveryAvailable = available;
+
+                    if (courierDeliveryCard) {
+                        courierDeliveryCard.hidden = !available;
+                    }
+                    if (courierMethodInput) {
+                        courierMethodInput.disabled = !available;
+                    }
+
+                    if ((!available || !courierEnabled) && getSelectedMethod() === 'courier') {
+                        const fallbackInput = findFirstEnabledDeliveryInput();
+                        if (fallbackInput) {
+                            fallbackInput.checked = true;
+                            fallbackInput.dispatchEvent(new Event('change', { bubbles: true }));
+                            return;
+                        }
+                    }
+
+                    syncDeliveryCards();
+                    togglePanels();
+                };
+
+                methodInputs.forEach((input) => {
+                    input.addEventListener('change', () => {
+                        const method = getSelectedMethod();
+                        const switchedNpType = ['np_branch', 'np_postomat'].includes(previousDeliveryMethod)
+                            && ['np_branch', 'np_postomat'].includes(method)
+                            && previousDeliveryMethod !== method;
+
+                        syncDeliveryCards();
+                        togglePanels();
+
+                        if (['np_branch', 'np_postomat'].includes(method) && npCityRef.value) {
+                            if (switchedNpType) {
+                                clearWarehouseSelection();
+                            }
+                            loadWarehouses(!switchedNpType);
+                        }
+
+                        previousDeliveryMethod = method;
+                        checkoutPaymentMethodsCallback?.(method);
+                    });
+                });
+
+                deliveryCards.forEach((card) => {
+                    card.addEventListener('click', () => {
+                        const input = deliveryForm.querySelector(`input[name="checkout_delivery_form[deliveryMethod]"][value="${card.dataset.method}"]`);
+                        if (input) {
+                            input.checked = true;
+                            input.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
+                    });
+                });
+
+                if (citySearch) {
+                    citySearch.addEventListener('input', (event) => {
+                        selectedNpCity = null;
+                        updateVillageHint(null);
+                        searchCities(event.target.value);
+                        updateCourierAvailability();
+                    });
+
+                    citySearch.addEventListener('blur', () => {
+                        window.setTimeout(() => {
+                            if (cityResults && !cityResults.contains(document.activeElement)) {
+                                cityResults.innerHTML = '';
+                            }
+                        }, 150);
+                    });
+                }
+
+                if (warehouseSelect) {
+                    warehouseSelect.addEventListener('change', () => {
+                        const option = warehouseSelect.options[warehouseSelect.selectedIndex];
+                        npWarehouseRef.value = warehouseSelect.value;
+                        npWarehouseName.value = option?.dataset.name || option?.textContent || '';
+                        updateSelectedPoint();
+                        fetchDeliveryPrice();
+                        if (npWarehouseRef.value) {
+                            clearFieldValidationState(warehouseSelect);
+                            clearErrorsContainer(document.getElementById('np-warehouse-errors'));
+                        }
+                    });
+                }
+
+                bindCheckoutLiveValidationClear(deliveryForm);
+
+                window.addEventListener('shop:city-changed', (event) => {
+                    const city = event.detail;
+                    if (!city || typeof city.name !== 'string' || city.name.trim() === '') {
+                        return;
+                    }
+
+                    headerCourierAvailable = isCourierCity(city.name);
+
+                    if (!npEnabled || !npCityRef || !npCityName) {
+                        updateCourierAvailability();
+                        return;
+                    }
+
+                    if (!city.hasLocalWarehouses) {
+                        selectedNpCity = null;
+                        npCityRef.value = '';
+                        npCityName.value = '';
+                        if (citySearch) {
+                            citySearch.value = '';
+                        }
+                        clearWarehouseSelection();
+                        updateCourierAvailability();
+                        return;
+                    }
+
+                    selectCity({
+                        ref: typeof city.ref === 'string' ? city.ref : '',
+                        name: city.name,
+                        subtitle: typeof city.subtitle === 'string' ? city.subtitle : '',
+                        label: typeof city.label === 'string' ? city.label : '',
+                        settlementRef: typeof city.settlementRef === 'string' ? city.settlementRef : '',
+                        warehouseCityRef: typeof city.warehouseCityRef === 'string' ? city.warehouseCityRef : '',
+                        hasLocalWarehouses: Boolean(city.hasLocalWarehouses),
+                    }, true);
+                });
+
+                syncDeliveryCards();
+                togglePanels();
+                updateCourierAvailability();
+
+                if (npEnabled && !npCityRef.value) {
+                    const initialCity = preferredCity && preferredCity.ref && preferredCity.hasLocalWarehouses
+                        ? preferredCity
+                        : (defaultCity && defaultCity.hasLocalWarehouses ? defaultCity : null);
+                    if (initialCity && initialCity.ref) {
+                        selectCity(initialCity, true);
+                    }
+                } else if (npCityRef.value) {
+                    const storedCity = preferredCity && preferredCity.ref === npCityRef.value
+                        ? preferredCity
+                        : (defaultCity && defaultCity.ref === npCityRef.value ? defaultCity : null);
+                    if (storedCity) {
+                        selectedNpCity = normalizeNpCity(storedCity);
+                    }
+                    if (citySearch && npCityName.value) {
+                        citySearch.value = storedCity
+                            ? getCityDisplayValue(storedCity)
+                            : npCityName.value;
+                    }
+                    loadWarehouses(true).then(() => {
+                        if (npWarehouseRef.value) {
+                            fetchDeliveryPrice();
+                        }
+                    });
+                } else if (getSelectedMethod() === 'courier') {
+                    setDeliveryCost(courierDeliveryCost);
+                }
+
+                const npCityErrors = document.getElementById('np-city-errors');
+                const npWarehouseErrors = document.getElementById('np-warehouse-errors');
+                const requiredMessage = deliveryForm.dataset.requiredMessage || '';
+
+                const renderInlineRequiredError = (container) => {
+                    if (!container || !requiredMessage) {
+                        return;
+                    }
+
+                    container.innerHTML = `<ul><li>${requiredMessage.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</li></ul>`;
+                };
+
+                deliveryForm.addEventListener('submit', (event) => {
+                    const method = getSelectedMethod();
+
+                    if (['np_branch', 'np_postomat'].includes(method)) {
+                        const cityMissing = !npCityRef.value;
+                        const warehouseMissing = !npWarehouseRef.value;
+
+                        if (cityMissing || warehouseMissing) {
+                            event.preventDefault();
+                            if (cityMissing) {
+                                renderInlineRequiredError(npCityErrors);
+                                citySearch?.classList.add('shop-checkout__input--error');
+                                citySearch?.closest('.shop-checkout__field')?.classList.add('shop-checkout__field--invalid');
+                            }
+                            if (warehouseMissing) {
+                                renderInlineRequiredError(npWarehouseErrors);
+                                warehouseSelect?.classList.add('shop-checkout__input--error');
+                                warehouseSelect?.closest('.shop-checkout__field')?.classList.add('shop-checkout__field--invalid');
+                            }
+                            document.getElementById('checkout-delivery-step')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                    }
+                });
+            }
+
+            const paymentForm = document.getElementById('checkout-payment-form');
+            if (!paymentForm) {
+                return;
+            }
+
+            const paymentCards = paymentForm.querySelectorAll('.shop-checkout__payment-card');
+            const paymentInputs = paymentForm.querySelectorAll('input[name="checkout_payment_form[paymentMethod]"]');
+            const codNotice = document.getElementById('checkout-cod-notice');
+            const codPrepaymentText = document.getElementById('checkout-cod-prepayment-text');
+            const codNoticeText = document.getElementById('checkout-cod-notice-text');
+            const payButtonLabel = document.getElementById('checkout-pay-button-label');
+            const payNowLabel = {{ 'shop.checkout.pay_now'|trans|json_encode|raw }};
+            const confirmOrderLabel = {{ 'shop.checkout.confirm_order'|trans|json_encode|raw }};
+            const codCommissionSettings = {{ codCommissionSettings|json_encode|raw }};
+
+            const getCurrentPayTotal = () => (
+                Number.isFinite(currentPayTotal) ? currentPayTotal : subtotalValue
+            );
+
+            const formatPercent = (value) => {
+                const normalized = Number.isFinite(value) ? value : 0;
+                return Number.isInteger(normalized) ? String(normalized) : normalized.toFixed(2).replace(/\.?0+$/, '');
+            };
+
+            const buildCodPrepaymentNotice = () => {
+                const prepaymentAmount = formatPrice(Number(codCommissionSettings.prepayment_amount) || 0);
+                const template = String(codCommissionSettings.prepayment_notice || '');
+
+                return template
+                    .replace(/%prepayment_amount%/g, prepaymentAmount)
+                    .replace(/\n/g, '<br>');
+            };
+
+            const buildCodCommissionNotice = (orderTotal) => {
+                const standardPercent = Number(codCommissionSettings.standard_percent) || 0;
+                const novapayPercent = Number(codCommissionSettings.novapay_percent) || 0;
+                const standardAmountValue = Math.round((orderTotal * standardPercent / 100 + 20) * 100) / 100;
+                const novapayAmountValue = Math.round((orderTotal * novapayPercent / 100 + 10) * 100) / 100;
+                const standardAmount = formatPrice(standardAmountValue);
+                const novapayAmount = formatPrice(novapayAmountValue);
+                const template = String(codCommissionSettings.notice || '');
+
+                let notice = template
+                    .replace(/%standard_percent%/g, formatPercent(standardPercent))
+                    .replace(/%novapay_percent%/g, formatPercent(novapayPercent))
+                    .replace(/%standard_amount%/g, standardAmount)
+                    .replace(/%novapay_amount%/g, novapayAmount);
+
+                if (!template.includes('%standard_amount%')) {
+                    notice = notice.replace(
+                        /(20\s*грн\.?|20\s*UAH\.?)/i,
+                        `$1 = ${standardAmount}`
+                    );
+                }
+
+                if (!template.includes('%novapay_amount%')) {
+                    notice = notice.replace(
+                        /(10\s*грн\.?|10\s*UAH\.?)/i,
+                        `$1 = ${novapayAmount}`
+                    );
+                }
+
+                return notice.replace(/\n/g, '<br>');
+            };
+
+            const findFirstVisiblePaymentInput = (excludeMethod = null) => Array.from(
+                paymentForm.querySelectorAll('input[name="checkout_payment_form[paymentMethod]"]')
+            ).find((input) => {
+                if (excludeMethod && input.value === excludeMethod) {
+                    return false;
+                }
+
+                const option = paymentForm.querySelector(`.shop-checkout__payment-option[data-method="${input.value}"]`);
+
+                return !option || !option.hidden;
+            });
+
+            const syncPaymentCards = () => {
+                let checked = paymentForm.querySelector('input[name="checkout_payment_form[paymentMethod]"]:checked');
+
+                if (checked) {
+                    const checkedOption = paymentForm.querySelector(`.shop-checkout__payment-option[data-method="${checked.value}"]`);
+                    if (checkedOption?.hidden) {
+                        checked.checked = false;
+                        checked = null;
+                    }
+                }
+
+                if (!checked) {
+                    const fallback = findFirstVisiblePaymentInput();
+                    if (fallback) {
+                        fallback.checked = true;
+                        checked = fallback;
+                    }
+                }
+
+                const isCod = checked && checked.value === 'on_delivery';
+
+                paymentCards.forEach((card) => {
+                    const option = card.closest('.shop-checkout__payment-option');
+                    const isVisible = !option || !option.hidden;
+                    card.classList.toggle('is-active', isVisible && checked && card.dataset.method === checked.value);
+                });
+
+                if (codNotice) {
+                    codNotice.hidden = !isCod;
+                }
+
+                if (isCod) {
+                    if (codPrepaymentText) {
+                        codPrepaymentText.innerHTML = buildCodPrepaymentNotice();
+                    }
+
+                    if (codNoticeText) {
+                        codNoticeText.innerHTML = buildCodCommissionNotice(getCurrentPayTotal());
+                    }
+                }
+
+                if (payButtonLabel) {
+                    payButtonLabel.textContent = isCod ? confirmOrderLabel : payNowLabel;
+                }
+
+                const isPrivatbank = checked && checked.value === 'privatbank';
+                if (isPrivatbank) {
+                    currentPayTotal = subtotalValue;
+                    if (payTotalValue) {
+                        payTotalValue.textContent = formatPrice(currentPayTotal);
+                    }
+                }
+            };
+
+            const syncPaymentMethodsForDelivery = (deliveryMethod) => {
+                const allowsOnDelivery = onDeliveryDeliveryMethods.includes(deliveryMethod);
+                const onDeliveryOption = paymentForm.querySelector('.shop-checkout__payment-option[data-method="on_delivery"]');
+                const onDeliveryInput = paymentForm.querySelector('input[name="checkout_payment_form[paymentMethod]"][value="on_delivery"]');
+
+                if (onDeliveryOption) {
+                    onDeliveryOption.hidden = !allowsOnDelivery;
+                }
+
+                if (onDeliveryInput && !allowsOnDelivery && onDeliveryInput.checked) {
+                    onDeliveryInput.checked = false;
+
+                    const fallback = findFirstVisiblePaymentInput('on_delivery');
+                    if (fallback) {
+                        fallback.checked = true;
+                    }
+                }
+
+                syncPaymentCards();
+            };
+
+            paymentCards.forEach((card) => {
+                card.addEventListener('click', () => {
+                    const option = card.closest('.shop-checkout__payment-option');
+                    if (option?.hidden) {
+                        return;
+                    }
+
+                    const input = paymentForm.querySelector(`input[value="${card.dataset.method}"]`);
+                    if (input) {
+                        input.checked = true;
+                        syncPaymentCards();
+                    }
+                });
+            });
+
+            paymentInputs.forEach((input) => {
+                input.addEventListener('change', syncPaymentCards);
+            });
+
+            const resolveDeliveryMethodForPayment = () => {
+                const deliveryFormEl = document.getElementById('checkout-delivery-form');
+                if (deliveryFormEl) {
+                    const checked = deliveryFormEl.querySelector('input[name="checkout_delivery_form[deliveryMethod]"]:checked');
+                    if (checked) {
+                        return checked.value;
+                    }
+                }
+
+                return initialDeliveryMethodForPayment;
+            };
+
+            checkoutTotalUpdatedCallback = syncPaymentCards;
+            checkoutPaymentMethodsCallback = syncPaymentMethodsForDelivery;
+            syncPaymentMethodsForDelivery(resolveDeliveryMethodForPayment());
+            syncPaymentCards();
+
+            {% if showContactForm and contactForm.vars.submitted and not contactForm.vars.valid %}
+            document.getElementById('checkout-contact-step')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            {% elseif showDeliveryForm and deliveryForm.vars.submitted and not deliveryForm.vars.valid %}
+            document.getElementById('checkout-delivery-step')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            {% endif %}
+        })();
+    </script>
+{% endblock %}

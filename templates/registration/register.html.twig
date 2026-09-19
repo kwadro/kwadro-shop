@@ -1,0 +1,46 @@
+{% extends 'shop/auth_layout.html.twig' %}
+
+{% block title %}{{ 'auth.register_title'|trans }}{% endblock %}
+
+{% block auth %}
+    <div class="shop-auth-card">
+        <div class="shop-auth-card__head">
+            <span class="shop-auth-card__badge">{{ 'shop.brand'|trans }}</span>
+            <h1>{{ 'auth.register_title'|trans }}</h1>
+            <p>{{ 'auth.register_subtitle'|trans }}</p>
+        </div>
+
+        {{ form_start(registrationForm, { attr: { class: 'shop-auth-form' } }) }}
+            <div class="shop-auth-field">
+                {{ form_label(registrationForm.email) }}
+                {{ form_widget(registrationForm.email) }}
+                {{ form_errors(registrationForm.email) }}
+            </div>
+            <div class="shop-auth-field">
+                {{ form_label(registrationForm.plainPassword.first) }}
+                {{ form_widget(registrationForm.plainPassword.first) }}
+                {{ form_errors(registrationForm.plainPassword.first) }}
+            </div>
+            <div class="shop-auth-field">
+                {{ form_label(registrationForm.plainPassword.second) }}
+                {{ form_widget(registrationForm.plainPassword.second) }}
+                {{ form_errors(registrationForm.plainPassword.second) }}
+            </div>
+            <div class="shop-auth-checkbox">
+                {{ form_widget(registrationForm.agreeTerms) }}
+                {{ form_label(registrationForm.agreeTerms) }}
+            </div>
+            {{ form_errors(registrationForm.agreeTerms) }}
+            <button class="shop-auth-submit" type="submit">{{ 'auth.sign_up'|trans }}</button>
+        {{ form_end(registrationForm) }}
+
+        <div class="shop-auth-footer">
+            {{ 'auth.have_account'|trans }}
+            <a href="{{ path('app_login') }}">{{ 'auth.login_link'|trans }}</a>
+        </div>
+
+        <div class="shop-auth-back">
+            <a href="{{ path('shop_home') }}">← {{ 'auth.back_to_shop'|trans }}</a>
+        </div>
+    </div>
+{% endblock %}

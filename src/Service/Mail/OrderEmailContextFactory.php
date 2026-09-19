@@ -1,0 +1,76 @@
+<?php
+
+namespace App\Service\Mail;
+
+use App\Entity\Order;
+use App\Entity\Payment;
+use App\Service\Checkout\ShipmentPayUrlGenerator;
+
+final class OrderEmailContextFactory
+{
+    public function __construct(
+        private readonly OrderEmailItemsTableRenderer $itemsTableRenderer,
+        private readonly ShipmentPayUrlGenerator $shipmentPayUrlGenerator,
+    ) {
+    }
+
+    /** @return array<string, string> */
+    public function create(Order $order, ?Payment $payment = null): array
+    {
+        $delivery = $order->getDeliveryData();
+        $site = $this->shipmentPayUrlGenerator->resolveSite();
+        $prepaymentAmount = $site?->getCodPrepaymentAmount() ?? 0.0;
+
+        return [
+            'shipment_pay_url' => $this->shipmentPayUrlGenerator->generateForOrder($order, $payment),
+            'shipment_pay_iban_url' => $this->shipmentPayUrlGenerator->generateIbanUrlForOrder($order, $payment),
+            'shipment_prepayment_amount' => $this->formatMoney((float) $prepaymentAmount),
+            'order_id' => (string) ($order->getId() ?? ''),
+            'order_created_at' => $order->getCreatedAt()->format('d.m.Y, H:i'),
+            'created_at' => $order->getCreatedAt()->format('d.m.Y, H:i'),
+            'order_updated_at' => $order->getUpdatedAt()->format('Y-m-d H:i:s'),
+            'order_number' => $order->getOrderNumber(),
+            'customer_name' => $order->getCustomerName(),
+            'customer_email' => $order->getCustomerEmail() !== ''
+                ? $order->getCustomerEmail()
+                : trim((string) ($order->getCustomer()?->getEmail() ?? '')),
+            'customer_phone' => $order->getCustomerPhone(),
+            'order_amount' => $this->formatMoney((float) $order->getAmount()),
+            'amount' => $this->formatMoney((float) $order->getAmount()),
+            'shipping_cost' => $this->formatMoney((float) $order->getShippingCost()),
+            'order_total' => $this->formatMoney((float) $order->getAmount()),
+            'currency' => $order->getCurrency(),
+            'order_status' => $order->getStatus()->value,
+            'payment_method' => $payment?->getMethod() ?? '',
+            'items_summary' => $order->getItemsSummaryLabel(),
+            'order_items_table' => $this->itemsTableRenderer->render($order),
+            'delivery_summary' => $this->formatDeliverySummary($delivery),
+        ];
+    }
+
+    /** @param array<string, mixed> $delivery */
+    private function formatDeliverySummary(array $delivery): string
+    {
+        $method = (string) ($delivery['deliveryMethod'] ?? '');
+        if ($method === 'courier') {
+            $address = trim((string) ($delivery['courierAddress'] ?? ''));
+
+            return $address !== '' ? sprintf('Курʼєр: %s', $address) : 'Курʼєр';
+        }
+
+        if (in_array($method, ['np_branch', 'np_postomat'], true)) {
+            $city = trim((string) ($delivery['npCityName'] ?? ''));
+            $warehouse = trim((string) ($delivery['npWarehouseName'] ?? ''));
+            $parts = array_values(array_filter([$city, $warehouse], static fn (string $part): bool => $part !== ''));
+
+            return $parts !== [] ? implode(', ', $parts) : 'Нова Пошта';
+        }
+
+        return '';
+    }
+
+    private function formatMoney(float $amount): string
+    {
+        return number_format($amount, 2, ',', ' ');
+    }
+}

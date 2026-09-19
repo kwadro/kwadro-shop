@@ -1,0 +1,33 @@
+{# @var entity \EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto #}
+{% set order = entity.instance %}
+{% set payments = order.payments|sort((a, b) => b.id <=> a.id) %}
+
+{% if payments is empty %}
+    <p class="text-muted mb-0">{{ 'admin.order.payments_empty'|trans }}</p>
+{% else %}
+    <ul class="list-unstyled mb-0">
+        {% for payment in payments %}
+            {% set statusClass = payment.status.value == 'success' ? 'success' : (payment.status.value == 'failed' ? 'danger' : 'warning') %}
+            {% set methodKey = 'admin.payment.method.' ~ payment.method %}
+            {% set methodLabel = methodKey|trans %}
+            {% if methodLabel == methodKey %}
+                {% set methodLabel = payment.method %}
+            {% endif %}
+
+            <li class="mb-2">
+                <a href="{{ ea_url()
+                    .setController('App\\Controller\\Admin\\PaymentCrudController')
+                    .setAction('detail')
+                    .setEntityId(payment.id) }}">
+                    {{ 'admin.order.payment_link'|trans({'%id%': payment.id}) }}
+                </a>
+                · {{ methodLabel }}
+                · {{ payment.createdAt ? payment.createdAt|date('d.m.Y H:i') : '—' }}
+                · {{ payment.amount|number_format(2, ',', ' ') }} ₴
+                · <span class="badge text-bg-{{ statusClass }}">
+                    {{ ('admin.payment.status.' ~ payment.status.value)|trans }}
+                </span>
+            </li>
+        {% endfor %}
+    </ul>
+{% endif %}

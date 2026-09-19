@@ -1,0 +1,12 @@
+{% extends 'shop/layout.html.twig' %}
+
+{% block title %}{{ page.name }}{% endblock %}
+
+{% block main %}
+    <article class="shop-page">
+        <h1 class="shop-page__title">{{ page.name }}</h1>
+        <div class="shop-page__content">
+            {{ page.content|raw }}
+        </div>
+    </article>
+{% endblock %}

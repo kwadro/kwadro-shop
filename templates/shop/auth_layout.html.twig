@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    {% set setting = site_settings() %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ 'auth.login_title'|trans }}{% endblock %} — {{ 'shop.brand'|trans }}</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' fill='%234caf3a'>K</text></svg>">
+    <link rel="stylesheet" href="{{ asset('css/shop.css') }}">
+    {% block stylesheets %}{% endblock %}
+    {% include 'shop/partials/_gtm.html.twig' with { placement: 'head', setting: setting } only %}
+</head>
+<body class="shop-body shop-body--auth">
+    {% include 'shop/partials/_gtm.html.twig' with { placement: 'body', setting: setting } only %}
+    {% include 'shop/partials/_header.html.twig' %}
+
+    <div class="shop-auth">
+        <div class="shop-auth__inner">
+            {% block auth %}{% endblock %}
+        </div>
+    </div>
+
+    {% include 'shop/partials/_footer.html.twig' %}
+    {% block javascripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,34 @@
+{% set setting = site_settings() %}
+<footer class="shop-footer">
+    <div class="shop-footer__inner">
+
+        <div>
+            <h4>{{ 'shop.footer.buyers'|trans }}</h4>
+            <ul>
+                {% for item in setting.menu %}
+                    {% if item.megamenutype == 'FooterLink' and item.url %}
+                        <li><a href="{{ path('shop_page', {slug: item.url}) }}">{{ item.name }}</a></li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+        <div>
+            <h4>{{ 'shop.footer.contacts'|trans }}</h4>
+            <ul>
+                {% set phoneLinks = setting.header.phone_links|default([
+                    {display: '066-913-30-97', tel: '+380669133097'},
+                    {display: '067-343-70-40', tel: '+380673437040'},
+                ]) %}
+                {% for phone in phoneLinks %}
+                    <li><a href="tel:{{ phone.tel|e('html_attr') }}">{{ phone.display }}</a></li>
+                {% endfor %}
+                <li>info@kwadro.com.ua</li>
+                <li class="shop-footer__work-hours">{{ (setting.header.work_hours|default('shop.work_hours'|trans))|raw }}</li>
+            </ul>
+        </div>
+    </div>
+    <div class="shop-footer__bottom">
+        {{ setting.footer.content|raw }}
+
+    </div>
+</footer>

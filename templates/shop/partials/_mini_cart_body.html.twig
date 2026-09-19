@@ -1,0 +1,64 @@
+{% if cart.hasItems %}
+    <ul class="shop-minicart__items">
+        {% for item in cart.items %}
+            <li class="shop-minicart__item">
+                {% if item.image %}
+                    <img
+                        class="shop-minicart__thumb"
+                        src="{{ item.image }}"
+                        alt="{{ item.name }}"
+                        width="56"
+                        height="56"
+                        loading="lazy"
+                    >
+                {% else %}
+                    <div class="shop-minicart__thumb shop-minicart__thumb--placeholder" aria-hidden="true"></div>
+                {% endif %}
+                <div class="shop-minicart__item-body">
+                    <p class="shop-minicart__item-name">{{ item.name }}</p>
+                    {% if item.supplier_name %}
+                        <p class="shop-minicart__item-supplier">
+                            {{ 'shop.product.supplier'|trans }}: {{ item.supplier_name }}
+                        </p>
+                    {% endif %}
+                    <p class="shop-minicart__item-meta">
+                        {{ 'shop.product.sku'|trans }}: {{ item.sku }} · {{ 'shop.product.quantity'|trans }}: {{ item.quantity }}
+                    </p>
+                    <p class="shop-minicart__item-price">
+                        {{ item.line_total|number_format(2, ',', ' ') }} ₴
+                    </p>
+                </div>
+                <button
+                    type="button"
+                    class="shop-minicart__remove"
+                    data-remove-item
+                    data-cart-item-id="{{ item.cart_item_id }}"
+                    aria-label="{{ 'shop.minicart.remove'|trans }}"
+                    title="{{ 'shop.minicart.remove'|trans }}"
+                >
+                    &times;
+                </button>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <div class="shop-minicart__total">
+        <span>{{ 'shop.minicart.total'|trans }}</span>
+        <strong data-minicart-total>{{ cart.total|number_format(2, ',', ' ') }} ₴</strong>
+    </div>
+
+    <a
+        href="{{ path('shop_checkout', {_locale: app.request.locale}) }}"
+        class="shop-minicart__checkout"
+    >
+        {{ 'shop.minicart.checkout'|trans }}
+    </a>
+{% else %}
+    <p class="shop-minicart__empty">{{ 'shop.minicart.empty'|trans }}</p>
+    <a
+        href="{{ path('shop_home', {_locale: app.request.locale}) }}"
+        class="shop-minicart__checkout shop-minicart__checkout--secondary"
+    >
+        {{ 'shop.minicart.continue_shopping'|trans }}
+    </a>
+{% endif %}

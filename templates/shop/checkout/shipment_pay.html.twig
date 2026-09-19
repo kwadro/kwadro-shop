@@ -1,0 +1,99 @@
+{% extends 'shop/layout.html.twig' %}
+
+{% block title %}{{ 'shop.shipment_pay.title'|trans }}{% endblock %}
+
+{% block main %}
+    <article class="shop-page shop-checkout shop-shipment-pay">
+        <h1 class="shop-page__title">{{ 'shop.shipment_pay.title'|trans }}</h1>
+
+        <div class="shop-shipment-pay__meta">
+            <p>{{ 'shop.shipment_pay.order_number'|trans({'%order_number%': order.orderNumber}) }}</p>
+            <p>{{ 'shop.shipment_pay.amount'|trans({'%amount%': checkout.amount|number_format(2, ',', ' ') ~ ' ₴'}) }}</p>
+        </div>
+
+        {% if checkout.state == 'paid' %}
+            <div class="shop-checkout__alert shop-checkout__alert--success">
+                <p>{{ 'shop.shipment_pay.already_paid'|trans }}</p>
+            </div>
+        {% elseif checkout.state == 'unavailable' %}
+            <div class="shop-checkout__alert shop-checkout__alert--error">
+                <p>{{ 'shop.shipment_pay.unavailable'|trans }}</p>
+            </div>
+        {% else %}
+            <p class="shop-shipment-pay__hint">{{ 'shop.shipment_pay.hint'|trans }}</p>
+
+            {% if gateway_method == 'monobank' and qr_url %}
+                <div class="shop-shipment-pay__qr-desktop">
+                    <img
+                        src="{{ qr_url }}"
+                        alt="{{ 'shop.shipment_pay.qr_alt'|trans }}"
+                        width="220"
+                        height="220"
+                        class="shop-shipment-pay__qr-image"
+                    >
+                    <p class="shop-shipment-pay__qr-caption">{{ 'shop.shipment_pay.qr_caption_monobank'|trans }}</p>
+                </div>
+
+                <div class="shop-shipment-pay__qr-mobile">
+                    {% if qr_download_url %}
+                        <a href="{{ qr_download_url }}" class="shop-shipment-pay__download-btn" download>
+                            {{ 'shop.shipment_pay.save_qr'|trans }}
+                        </a>
+                    {% endif %}
+                    <p class="shop-shipment-pay__qr-caption">{{ 'shop.shipment_pay.mobile_hint'|trans }}</p>
+                </div>
+            {% elseif gateway_method == 'privatbank' and liqpay_widget %}
+                <div class="shop-shipment-pay__qr-desktop shop-shipment-pay__qr-desktop--liqpay">
+                    <div class="shop-shipment-pay__liqpay-widget">
+                        <lp-provider
+                            lp-data="{{ liqpay_widget.data|e('html_attr') }}"
+                            lp-signature="{{ liqpay_widget.signature|e('html_attr') }}"
+                            language="{{ app.request.locale == 'en' ? 'en' : 'uk' }}"
+                        >
+                            <lp-qr></lp-qr>
+                        </lp-provider>
+                    </div>
+                    <p class="shop-shipment-pay__qr-caption">{{ 'shop.shipment_pay.qr_caption_privatbank'|trans }}</p>
+                </div>
+
+                <div class="shop-shipment-pay__qr-mobile shop-shipment-pay__qr-mobile--liqpay">
+                    <div class="shop-shipment-pay__liqpay-widget">
+                        <lp-provider
+                            lp-data="{{ liqpay_widget.data|e('html_attr') }}"
+                            lp-signature="{{ liqpay_widget.signature|e('html_attr') }}"
+                            language="{{ app.request.locale == 'en' ? 'en' : 'uk' }}"
+                        >
+                            <lp-qr></lp-qr>
+                        </lp-provider>
+                    </div>
+                    <p class="shop-shipment-pay__qr-caption">{{ 'shop.shipment_pay.qr_caption_privatbank'|trans }}</p>
+                </div>
+            {% endif %}
+
+            {% if pay_url %}
+                <p class="shop-shipment-pay__actions">
+                    <a href="{{ pay_url }}" class="shop-shipment-pay__pay-btn" target="_blank" rel="noopener noreferrer">
+                        {{ 'shop.shipment_pay.open_payment'|trans }}
+                    </a>
+                </p>
+            {% endif %}
+
+            {% if iban_pay_url %}
+                <p class="shop-shipment-pay__alt-link">
+                    <a href="{{ iban_pay_url }}">{{ 'shop.shipment_pay.iban_link'|trans }}</a>
+                </p>
+            {% endif %}
+        {% endif %}
+
+        <a href="{{ path('shop_home', {_locale: app.request.locale}) }}" class="shop-checkout__back">
+            ← {{ 'shop.checkout.back_to_shop'|trans }}
+        </a>
+    </article>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {% if gateway_method == 'privatbank' and liqpay_widget %}
+        <script src="https://static.liqpay.ua/elements/customElements.js" defer></script>
+    {% endif %}
+{% endblock %}

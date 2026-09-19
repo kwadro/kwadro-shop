@@ -1,0 +1,31 @@
+{% extends 'shop/layout.html.twig' %}
+
+{% block title %}{{ 'shop.checkout.success_title'|trans }}{% endblock %}
+
+{% block main %}
+    <article class="shop-page shop-checkout">
+        <h1 class="shop-page__title">{{ 'shop.checkout.success_title'|trans }}</h1>
+
+        {% if order %}
+            <div class="shop-checkout__alert shop-checkout__alert--success shop-checkout__success">
+                {% if order.success_variant == 'awaiting_deposit' %}
+                    <p>{{ 'shop.checkout.success_deposit_main'|trans({'%order_id%': order.id}) }}</p>
+                    <p>{{ 'shop.checkout.success_deposit_payment'|trans }}</p>
+                    <p>{{ 'shop.checkout.success_deposit_waybill'|trans }}</p>
+                {% else %}
+                    <p>{{ 'shop.checkout.success_paid_main'|trans({'%order_id%': order.id}) }}</p>
+                    {% if not order.do_not_call %}
+                        <p>{{ 'shop.checkout.success_paid_call'|trans }}</p>
+                    {% endif %}
+                    <p>{{ 'shop.checkout.success_paid_waybill'|trans }}</p>
+                {% endif %}
+            </div>
+        {% else %}
+            <p>{{ 'shop.checkout.success_no_order'|trans }}</p>
+        {% endif %}
+
+        <a href="{{ path('shop_home', {_locale: app.request.locale}) }}" class="shop-checkout__back">
+            ← {{ 'shop.checkout.back_to_shop'|trans }}
+        </a>
+    </article>
+{% endblock %}

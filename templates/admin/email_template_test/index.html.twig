@@ -1,0 +1,84 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% form_theme form '@EasyAdmin/crud/form_theme.html.twig' %}
+
+{% block head_stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('lib/admin-email-template-test.css') }}">
+{% endblock %}
+
+{% block body_javascript %}
+    {{ parent() }}
+    <script src="{{ asset('lib/admin-email-template-test.js') }}" defer></script>
+{% endblock %}
+
+{% block content_title %}{{ page_title }}{% endblock %}
+
+{% block main %}
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <div class="card shadow-sm">
+                <div class="card-body ea-email-template-test">
+                    {{ form_start(form, { attr: { class: 'ea-form' } }) }}
+                        {{ form_row(form.template) }}
+                        {{ form_row(form.sender) }}
+                        {{ form_row(form.recipient) }}
+                        <div class="ea-email-template-test-context">
+                            {{ form_row(form.order) }}
+                            {{ form_row(form.user) }}
+                        </div>
+
+                        <div class="ea-form-actions">
+                            {{ form_widget(form.preview) }}
+                            {{ form_widget(form.send) }}
+                        </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+
+            <p class="text-muted small mt-3 mb-0">
+                {{ 'admin.email_template_test.hint'|trans({}, 'messages') }}
+            </p>
+        </div>
+
+        <div class="col-lg-7">
+            <div class="card shadow-sm h-100">
+                <div class="card-header">
+                    <strong>{{ 'admin.email_template_test.preview_title'|trans({}, 'messages') }}</strong>
+                </div>
+                <div class="card-body">
+                    {% if preview %}
+                        <dl class="row mb-3">
+                            <dt class="col-sm-3">{{ 'admin.email_template_test.preview_subject'|trans({}, 'messages') }}</dt>
+                            <dd class="col-sm-9">{{ preview.subject }}</dd>
+                        </dl>
+
+                        {% if preview.isHtml %}
+                            <iframe
+                                title="{{ 'admin.email_template_test.preview_title'|trans({}, 'messages') }}"
+                                class="w-100 border rounded"
+                                style="min-height: 520px; background: #fff;"
+                                srcdoc="{{ preview.body|e('html_attr') }}"
+                            ></iframe>
+                        {% else %}
+                            <pre class="border rounded p-3 mb-0 bg-body-secondary" style="white-space: pre-wrap;">{{ preview.body }}</pre>
+                        {% endif %}
+                    {% else %}
+                        <p class="text-muted mb-0">
+                            {{ 'admin.email_template_test.preview_empty'|trans({}, 'messages') }}
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

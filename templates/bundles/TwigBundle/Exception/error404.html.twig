@@ -1,0 +1,17 @@
+{% extends 'shop/layout.html.twig' %}
+
+{% set block_search_engines = true %}
+{% set currentLocale = app.request.locale|default('uk') %}
+
+{% block title %}{{ 'shop.error404.title'|trans }} — {{ site_settings().header.title|default('Kvadro') }}{% endblock %}
+
+{% block main %}
+    <section class="shop-not-found">
+        <p class="shop-not-found__code" aria-hidden="true">404</p>
+        <h1 class="shop-not-found__title">{{ 'shop.error404.title'|trans }}</h1>
+        <p class="shop-not-found__text">{{ 'shop.error404.text'|trans }}</p>
+        <a href="{{ path('shop_home', {_locale: currentLocale}) }}" class="shop-not-found__button">
+            {{ 'shop.error404.back_home'|trans }}
+        </a>
+    </section>
+{% endblock %}

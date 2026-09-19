@@ -1,0 +1,11 @@
+# Stateless CSRF is enabled for login/logout only.
+# EasyAdmin and other Symfony forms use session-based CSRF tokens.
+framework:
+    form:
+        csrf_protection:
+            token_id: submit
+
+    csrf_protection:
+        stateless_token_ids:
+            - authenticate
+            - logout
