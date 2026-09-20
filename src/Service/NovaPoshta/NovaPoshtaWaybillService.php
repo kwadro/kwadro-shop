@@ -6,6 +6,7 @@ use App\Entity\Order;
 use App\Entity\OrderItem;
 use App\Entity\ShopDeliveryMethod;
 use App\Repository\ProductRepository;
+use App\Service\GeoIp\UkrainianCityNameNormalizer;
 use App\Service\NovaPoshtaClient;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -19,6 +20,7 @@ class NovaPoshtaWaybillService
 
     public function __construct(
         HttpClientInterface $httpClient,
+        UkrainianCityNameNormalizer $cityNameNormalizer,
         private readonly EntityManagerInterface $entityManager,
         private readonly ProductRepository $productRepository,
         private readonly LoggerInterface $logger,
@@ -35,7 +37,7 @@ class NovaPoshtaWaybillService
         private readonly float $defaultPackageLength = self::DEFAULT_DIMENSION_CM,
     ) {
         $effectiveApiKey = $this->resolveWaybillApiKey($apiKey, $testApiKey, $testMode);
-        $this->waybillClient = new NovaPoshtaClient($httpClient, $effectiveApiKey);
+        $this->waybillClient = new NovaPoshtaClient($httpClient, $cityNameNormalizer, $effectiveApiKey);
     }
 
     public function isConfigured(): bool
