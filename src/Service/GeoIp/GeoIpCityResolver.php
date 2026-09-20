@@ -9,6 +9,7 @@ class GeoIpCityResolver
 {
     public function __construct(
         private readonly HttpClientInterface $httpClient,
+        private readonly UkrainianCityNameNormalizer $cityNameNormalizer,
         private readonly ?LoggerInterface $logger = null,
     ) {
     }
@@ -34,7 +35,9 @@ class GeoIpCityResolver
                 return null;
             }
 
-            return $city;
+            $countryCode = trim((string) ($data['country_code'] ?? ''));
+
+            return $this->cityNameNormalizer->normalize($city, $countryCode !== '' ? $countryCode : null);
         } catch (\Throwable $exception) {
             $this->logger?->warning('GeoIP city lookup failed.', [
                 'ip' => $ip,

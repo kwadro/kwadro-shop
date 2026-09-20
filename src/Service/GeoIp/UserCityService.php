@@ -29,6 +29,7 @@ class UserCityService
     public function __construct(
         private readonly GeoIpCityResolver $geoIpCityResolver,
         private readonly NovaPoshtaClient $novaPoshtaClient,
+        private readonly UkrainianCityNameNormalizer $cityNameNormalizer,
         private readonly RequestStack $requestStack,
         private readonly string $defaultCity = 'Івано-Франківськ',
     ) {
@@ -225,6 +226,8 @@ class UserCityService
         if ($cityName === '') {
             return $this->defaultCityData();
         }
+
+        $cityName = $this->cityNameNormalizer->normalize($cityName);
 
         if ($this->novaPoshtaClient->isConfigured()) {
             $matched = $this->novaPoshtaClient->findCityByName($cityName);

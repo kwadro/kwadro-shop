@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Service\GeoIp\UkrainianCityNameNormalizer;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class NovaPoshtaClient
@@ -10,6 +11,7 @@ class NovaPoshtaClient
 
     public function __construct(
         private readonly HttpClientInterface $httpClient,
+        private readonly UkrainianCityNameNormalizer $cityNameNormalizer,
         private readonly ?string $apiKey,
     ) {
     }
@@ -25,6 +27,7 @@ class NovaPoshtaClient
         if (!$this->isConfigured() || trim($query) === '') {
             return [];
         }
+        $query = $this->cityNameNormalizer->normalize(trim($query));
 
         $response = $this->request('Address', 'searchSettlements', [
             'CityName' => $query,
@@ -132,14 +135,24 @@ class NovaPoshtaClient
     /** @return array{ref: string, name: string, subtitle: string, label: string, settlementRef: string, warehouseCityRef: string, hasLocalWarehouses: bool}|null */
     public function findCityByName(string $name): ?array
     {
-        $cities = $this->searchCities($name, 5);
+        $originalName = trim($name);
+        $searchName = $this->cityNameNormalizer->normalize($originalName);
+        $cities = $this->searchCities($searchName, 5);
+        if ($cities === []) {
+            return null;
+        }
+
+        if ($this->cityNameNormalizer->wasAliased($originalName, $searchName)) {
+            return $cities[0];
+        }
+
         foreach ($cities as $city) {
-            if (mb_stripos($city['name'], $name) !== false) {
+            if (mb_stripos($city['name'], $searchName) !== false || mb_stripos($city['name'], $originalName) !== false) {
                 return $city;
             }
         }
 
-        return $cities[0] ?? null;
+        return $cities[0];
     }
 
     /** @param array<string, mixed> $item */
@@ -308,6 +321,8 @@ class NovaPoshtaClient
             'calledMethod' => $method,
             'methodProperties' => $properties,
         ];
+//        var_dump($payload);
+//        exit;
 
         $response = $this->httpClient->request('POST', self::API_URL, [
             'json' => $payload,

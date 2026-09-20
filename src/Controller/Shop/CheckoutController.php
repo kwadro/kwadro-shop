@@ -35,7 +35,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class CheckoutController extends AbstractController
 {
-    private const DEFAULT_CITY_NAME = 'Івано-Франківськ';
+    private const DEFAULT_CITY_NAME = 'Івано Франківськ';
 
     public function __construct(
         private readonly ProductCatalog $productCatalog,
