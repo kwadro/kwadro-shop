@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace DoctrineMigrations;
 
+use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
@@ -22,7 +23,7 @@ final class Version20260920200000 extends AbstractMigration
             $this->addSql('CREATE INDEX IDX_shop_payment_monobank_invoice ON shop_payment (monobank_invoice_id)');
         }
 
-        if ($this->connection->getDatabasePlatform()->getName() === 'mysql') {
+        if ($this->connection->getDatabasePlatform() instanceof AbstractMySQLPlatform) {
             $this->addSql(<<<'SQL'
                 UPDATE shop_payment
                 SET monobank_invoice_id = JSON_UNQUOTE(JSON_EXTRACT(gateway_response, '$.invoiceId'))
