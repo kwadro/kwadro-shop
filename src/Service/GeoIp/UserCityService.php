@@ -52,7 +52,7 @@ class UserCityService
             }
         }
 
-        if (!$this->isUkraineVisitor($request)) {
+        if ($this->isConfirmedOutsideUkraine($request)) {
             $data = $this->buildOutsideUkraineData($request);
             $request->attributes->set(self::REQUEST_DATA_ATTRIBUTE, $data);
 
@@ -66,12 +66,7 @@ class UserCityService
             return $stored;
         }
 
-        $location = $this->resolveIpLocation($request);
-        $detectedName = $location['city'] ?? null;
-        if ($detectedName === null || $detectedName === '') {
-            $detectedName = $this->geoIpCityResolver->resolveCityFromIp($request->getClientIp());
-        }
-
+        $detectedName = $this->resolveDetectedCityName($request);
         $data = $this->buildCityData($detectedName ?? $this->defaultCity);
         $this->stageCityData($request, $data);
 
@@ -80,12 +75,34 @@ class UserCityService
 
     public function isUkraineVisitor(?Request $request = null): bool
     {
+        return !$this->isConfirmedOutsideUkraine($request);
+    }
+
+    public function isGeoIpUnavailable(?Request $request = null): bool
+    {
+        return $this->resolveIpLocation($request) === null;
+    }
+
+    private function isConfirmedOutsideUkraine(?Request $request = null): bool
+    {
         $location = $this->resolveIpLocation($request);
         if ($location === null) {
-            return true;
+            return false;
         }
 
-        return $location['countryCode'] === 'UA';
+        return $location['countryCode'] !== 'UA';
+    }
+
+    private function resolveDetectedCityName(Request $request): ?string
+    {
+        $location = $this->resolveIpLocation($request);
+        if ($location === null) {
+            return null;
+        }
+
+        $city = trim((string) ($location['city'] ?? ''));
+
+        return $city !== '' ? $city : null;
     }
 
     /** @return array{countryCode: string, countryName: string, city: string}|null */
@@ -102,7 +119,12 @@ class UserCityService
             return \is_array($cached) ? $cached : null;
         }
 
-        $location = $this->geoIpCityResolver->resolveLocationFromIp($request->getClientIp());
+        try {
+            $location = $this->geoIpCityResolver->resolveLocationFromIp($request->getClientIp());
+        } catch (\Throwable) {
+            $location = null;
+        }
+
         $request->attributes->set(self::REQUEST_IP_LOCATION_ATTRIBUTE, $location);
 
         return $location;
@@ -302,6 +324,10 @@ class UserCityService
     private function buildOutsideUkraineData(Request $request): array
     {
         $location = $this->resolveIpLocation($request);
+        if ($location === null) {
+            return $this->defaultCityData();
+        }
+
         $countryCode = strtoupper(trim((string) ($location['countryCode'] ?? '')));
         $countryName = $this->resolveCountryDisplayName($countryCode, $location['countryName'] ?? '', $request->getLocale());
 

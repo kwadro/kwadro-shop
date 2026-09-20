@@ -54,6 +54,10 @@ services:
     App\Twig\CityExtension:
         tags: ['twig.extension']
 
+    App\Service\GeoIp\GeoIpFileLogger:
+        arguments:
+            $logFile: '%kernel.logs_dir%/geoip.log'
+
     App\Service\GeoIp\UserCityService:
         arguments:
             $defaultCity: '%env(default:shop_default_city:SHOP_DEFAULT_CITY)%'

@@ -2,7 +2,6 @@
 
 namespace App\Service\GeoIp;
 
-use Psr\Log\LoggerInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class GeoIpCityResolver
@@ -10,14 +9,28 @@ class GeoIpCityResolver
     public function __construct(
         private readonly HttpClientInterface $httpClient,
         private readonly UkrainianCityNameNormalizer $cityNameNormalizer,
-        private readonly ?LoggerInterface $logger = null,
+        private readonly GeoIpFileLogger $geoIpFileLogger,
     ) {
     }
 
     /** @return array{countryCode: string, countryName: string, city: string}|null */
     public function resolveLocationFromIp(?string $ip): ?array
     {
-        if ($ip === null || $ip === '' || $this->isPrivateIp($ip)) {
+        if ($ip === null || $ip === '') {
+            $this->geoIpFileLogger->log('lookup_skipped', [
+                'ip' => $ip,
+                'reason' => 'empty_ip',
+            ]);
+
+            return null;
+        }
+
+        if ($this->isPrivateIp($ip)) {
+            $this->geoIpFileLogger->log('lookup_skipped', [
+                'ip' => $ip,
+                'reason' => 'private_or_reserved_ip',
+            ]);
+
             return null;
         }
 
@@ -28,13 +41,26 @@ class GeoIpCityResolver
             $data = $response->toArray(false);
 
             if (($data['success'] ?? false) !== true) {
+                $this->geoIpFileLogger->log('lookup_failed', [
+                    'ip' => $ip,
+                    'provider' => 'ipwho.is',
+                    'message' => (string) ($data['message'] ?? 'GeoIP provider returned success=false'),
+                ]);
+
                 return null;
             }
 
             $countryCode = strtoupper(trim((string) ($data['country_code'] ?? '')));
             $countryName = trim((string) ($data['country'] ?? ''));
-            $city = trim((string) ($data['city'] ?? ''));
+            $rawCity = trim((string) ($data['city'] ?? ''));
+            $city = $rawCity;
             if ($countryCode === '' && $city === '') {
+                $this->geoIpFileLogger->log('lookup_failed', [
+                    'ip' => $ip,
+                    'provider' => 'ipwho.is',
+                    'message' => 'Empty country and city in provider response',
+                ]);
+
                 return null;
             }
 
@@ -42,14 +68,28 @@ class GeoIpCityResolver
                 $city = $this->cityNameNormalizer->normalize($city, $countryCode !== '' ? $countryCode : null);
             }
 
-            return [
+            $location = [
                 'countryCode' => $countryCode,
                 'countryName' => $countryName,
                 'city' => $city,
             ];
-        } catch (\Throwable $exception) {
-            $this->logger?->warning('GeoIP city lookup failed.', [
+
+            $this->geoIpFileLogger->log('lookup_success', [
                 'ip' => $ip,
+                'provider' => 'ipwho.is',
+                'countryCode' => $countryCode,
+                'countryName' => $countryName,
+                'cityRaw' => $rawCity,
+                'cityNormalized' => $city,
+                'isUkraine' => $countryCode === 'UA',
+                'region' => trim((string) ($data['region'] ?? '')),
+            ]);
+
+            return $location;
+        } catch (\Throwable $exception) {
+            $this->geoIpFileLogger->log('lookup_error', [
+                'ip' => $ip,
+                'provider' => 'ipwho.is',
                 'error' => $exception->getMessage(),
             ]);
 
