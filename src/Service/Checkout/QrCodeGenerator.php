@@ -2,6 +2,10 @@
 
 namespace App\Service\Checkout;
 
+use chillerlan\QRCode\Output\QRGdImagePNG;
+use chillerlan\QRCode\QRCode;
+use chillerlan\QRCode\QROptions;
+
 final class QrCodeGenerator
 {
     public function generatePng(string $data, int $moduleSize = 6): string
@@ -11,44 +15,23 @@ final class QrCodeGenerator
             throw new \InvalidArgumentException('QR code data cannot be empty.');
         }
 
-        if ($this->isExecutableAvailable('qrencode')) {
-            return $this->generateWithQrencode($data, $moduleSize);
+        if (!extension_loaded('gd')) {
+            throw new \RuntimeException('PHP GD extension is required to generate QR codes.');
         }
 
-        return $this->generateWithGoogleChart($data);
-    }
+        $options = new QROptions([
+            'outputInterface' => QRGdImagePNG::class,
+            'scale' => max(1, min(10, $moduleSize)),
+            'outputBase64' => false,
+            'addQuietzone' => true,
+            'quietzoneSize' => 1,
+        ]);
 
-    private function generateWithQrencode(string $data, int $moduleSize): string
-    {
-        $command = sprintf(
-            'qrencode -o - -s %d -m 1 -- %s',
-            max(1, min(10, $moduleSize)),
-            escapeshellarg($data),
-        );
-
-        $output = shell_exec($command);
-        if (!\is_string($output) || $output === '') {
+        $png = (new QRCode($options))->render($data);
+        if (!\is_string($png) || $png === '') {
             throw new \RuntimeException('Unable to generate QR code.');
         }
 
-        return $output;
-    }
-
-    private function generateWithGoogleChart(string $data): string
-    {
-        $url = 'https://chart.googleapis.com/chart?chs=240x240&cht=qr&chl=' . rawurlencode($data);
-        $image = @file_get_contents($url);
-        if (!\is_string($image) || $image === '') {
-            throw new \RuntimeException('Unable to generate QR code.');
-        }
-
-        return $image;
-    }
-
-    private function isExecutableAvailable(string $binary): bool
-    {
-        $path = trim((string) shell_exec(sprintf('command -v %s 2>/dev/null', escapeshellarg($binary))));
-
-        return $path !== '';
+        return $png;
     }
 }
