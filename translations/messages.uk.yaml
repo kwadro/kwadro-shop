@@ -54,6 +54,7 @@ admin.order.amount_due: До оплати
 admin.order.status.created: Створено
 admin.order.status.in_process: В обробці
 admin.order.status.awaiting_deposit_for_shipment: Очікуємо завдаток для відправки
+admin.order.status.deposit_paid: Оплачений аванс
 admin.order.status.paid: Оплачено
 admin.payment.status.pending: Очікує
 admin.payment.status.success: Успішно
@@ -456,7 +457,8 @@ shop.shipment_pay.qr_caption_privatbank: Відскануйте QR-код у з�
 shop.shipment_pay.save_qr: Зберегти QR-код як зображення
 shop.shipment_pay.mobile_hint: Збережіть QR-код у галерею та проскануйте його в застосунку банку.
 shop.shipment_pay.open_payment: Перейти до оплати
-shop.shipment_pay.already_paid: Передоплату вже отримано. Дякуємо!
+shop.shipment_pay.already_paid: Аванс оплачено
+shop.shipment_pay.deposit_paid_success: 'Ви успішно оплатили аванс для замовлення №%order_number%'
 shop.shipment_pay.unavailable: Оплата зараз недоступна. Зверніться до підтримки магазину.
 shop.shipment_pay.iban_link: Оплатити на IBAN
 shop.shipment_pay_iban.title: Оплата на IBAN

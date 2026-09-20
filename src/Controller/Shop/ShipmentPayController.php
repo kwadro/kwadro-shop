@@ -3,8 +3,10 @@
 namespace App\Controller\Shop;
 
 use App\Entity\Order;
+use App\Entity\OrderStatus;
 use App\Entity\Payment;
 use App\Entity\ShopPaymentMethod;
+use App\Repository\PaymentRepository;
 use App\Entity\Site;
 use App\Repository\OrderRepository;
 use App\Repository\SiteRepository;
@@ -15,18 +17,22 @@ use App\Service\Checkout\ShipmentDepositPaymentService;
 use App\Service\Checkout\ShipmentIbanDetails;
 use App\Service\Checkout\ShipmentIbanDetailsProvider;
 use App\Service\Checkout\ShipmentPayTokenService;
+use App\Service\Checkout\ShipmentDepositCheckoutResult;
 use App\Service\Checkout\ShipmentPayUrlGenerator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class ShipmentPayController extends AbstractController
 {
     public function __construct(
         private readonly OrderRepository $orderRepository,
+        private readonly PaymentRepository $paymentRepository,
         private readonly SiteRepository $siteRepository,
         private readonly ShipmentPayTokenService $tokenService,
         private readonly ShipmentPayUrlGenerator $shipmentPayUrlGenerator,
@@ -34,6 +40,7 @@ class ShipmentPayController extends AbstractController
         private readonly QrCodeGenerator $qrCodeGenerator,
         private readonly NbuPaymentQrEncoder $nbuPaymentQrEncoder,
         private readonly ShipmentIbanDetailsProvider $ibanDetailsProvider,
+        private readonly TranslatorInterface $translator,
     ) {
     }
 
@@ -45,10 +52,13 @@ class ShipmentPayController extends AbstractController
     )]
     public function iban(string $_locale, string $orderNumber, Request $request): Response
     {
-        [$order, $codPayment, $site] = $this->resolveAccess($orderNumber, $request);
+        [$order, , $site] = $this->resolveAccess($orderNumber, $request);
         $checkout = $this->depositPaymentService->resolveCheckout($order, $site, $_locale);
+        if ($redirect = $this->redirectIfDepositPaid($order, $checkout, $_locale, $request)) {
+            return $redirect;
+        }
         $ibanDetails = $this->ibanDetailsProvider->createForOrder($order, $site, $_locale);
-        $token = $this->tokenService->generate($order, $codPayment);
+        $token = $this->tokenService->generateForOrder($order);
         $qrPayload = $this->resolveIbanQrPayload($ibanDetails, $checkout->amount);
 
         return $this->render('shop/checkout/shipment_pay_iban.html.twig', [
@@ -103,17 +113,19 @@ class ShipmentPayController extends AbstractController
     )]
     public function pay(string $_locale, string $orderNumber, Request $request): Response
     {
-        [$order, $codPayment, $site] = $this->resolveAccess($orderNumber, $request);
+        [$order, , $site] = $this->resolveAccess($orderNumber, $request);
         $checkout = $this->depositPaymentService->resolveCheckout($order, $site, $_locale);
+        if ($redirect = $this->redirectIfDepositPaid($order, $checkout, $_locale, $request)) {
+            return $redirect;
+        }
         $qrPayload = $this->depositPaymentService->resolveQrPayload($checkout);
         $liqpayWidget = $this->depositPaymentService->resolveLiqPayWidget($checkout);
 
-        $token = $this->tokenService->generate($order, $codPayment);
+        $token = $this->tokenService->generateForOrder($order);
 
         return $this->render('shop/checkout/shipment_pay.html.twig', [
             'order' => $order,
             'checkout' => $checkout,
-            'cod_payment' => $codPayment,
             'token' => $token,
             'iban_pay_url' => $this->generateUrl('shop_order_shipment_pay_iban', [
                 '_locale' => $_locale,
@@ -149,7 +161,7 @@ class ShipmentPayController extends AbstractController
     )]
     public function qr(string $_locale, string $orderNumber, Request $request): Response
     {
-        [$order, $codPayment, $site] = $this->resolveAccess($orderNumber, $request);
+        [$order, , $site] = $this->resolveAccess($orderNumber, $request);
         $checkout = $this->depositPaymentService->resolveCheckout($order, $site, $_locale);
         $qrPayload = $this->depositPaymentService->resolveQrPayload($checkout);
 
@@ -171,21 +183,19 @@ class ShipmentPayController extends AbstractController
         return $response;
     }
 
-    /** @return array{0: Order, 1: Payment, 2: Site} */
+    /** @return array{0: Order, 1: Payment|null, 2: Site} */
     private function resolveAccess(string $orderNumber, Request $request): array
     {
         $order = $this->orderRepository->findOneByOrderNumber($orderNumber);
-        if ($order === null) {
-            throw new NotFoundHttpException();
-        }
-
-        $codPayment = $this->shipmentPayUrlGenerator->resolveCodPayment($order);
-        if ($codPayment === null) {
+        if ($order === null || !in_array($order->getStatus(), [OrderStatus::AwaitingDepositForShipment, OrderStatus::DepositPaid], true)) {
             throw new NotFoundHttpException();
         }
 
         $token = (string) $request->query->get('token', '');
-        if (!$this->tokenService->matches($order, $codPayment, $token)) {
+        $legacyCodPayment = $this->paymentRepository->findOnDeliveryByOrder($order);
+        $tokenValid = $this->tokenService->matchesOrder($order, $token)
+            || ($legacyCodPayment !== null && $this->tokenService->matches($order, $legacyCodPayment, $token));
+        if (!$tokenValid) {
             throw new AccessDeniedHttpException();
         }
 
@@ -195,7 +205,28 @@ class ShipmentPayController extends AbstractController
             throw new NotFoundHttpException();
         }
 
-        return [$order, $codPayment, $site];
+        return [$order, $legacyCodPayment, $site];
+    }
+
+    private function redirectIfDepositPaid(
+        Order $order,
+        ShipmentDepositCheckoutResult $checkout,
+        string $locale,
+        Request $request,
+    ): ?RedirectResponse {
+        if ($checkout->state !== ShipmentDepositCheckoutResult::STATE_PAID
+            && $order->getStatus() !== OrderStatus::DepositPaid) {
+            return null;
+        }
+
+        $flashKey = $request->query->getBoolean('return')
+            ? 'shop.shipment_pay.deposit_paid_success'
+            : 'shop.shipment_pay.already_paid';
+        $this->addFlash('success', $this->translator->trans($flashKey, [
+            '%order_number%' => $order->getOrderNumber(),
+        ], 'messages'));
+
+        return $this->redirectToRoute('shop_home', ['_locale' => $locale]);
     }
 
     private function resolveIbanQrPayload(ShipmentIbanDetails $ibanDetails, float $amount): ?string

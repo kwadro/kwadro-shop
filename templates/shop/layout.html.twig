@@ -36,6 +36,15 @@
     <div class="shop-layout">
         <div class="shop-layout__inner">
             <main class="shop-main">
+                {% for message in app.flashes('success') %}
+                    <div class="shop-checkout__alert shop-checkout__alert--success">{{ message }}</div>
+                {% endfor %}
+                {% for message in app.flashes('error') %}
+                    <div class="shop-checkout__alert shop-checkout__alert--error">{{ message }}</div>
+                {% endfor %}
+                {% for message in app.flashes('info') %}
+                    <div class="shop-checkout__alert shop-checkout__alert--info">{{ message }}</div>
+                {% endfor %}
                 {% block main %}{% endblock %}
             </main>
         </div>

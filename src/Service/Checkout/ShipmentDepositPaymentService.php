@@ -28,7 +28,7 @@ final class ShipmentDepositPaymentService
             return ShipmentDepositCheckoutResult::unavailable(0.0);
         }
 
-        if ($this->isDepositPaid($order, $amount)) {
+        if ($order->getStatus() === OrderStatus::DepositPaid || $this->isDepositPaid($order, $amount)) {
             return ShipmentDepositCheckoutResult::paid($amount);
         }
 
@@ -134,6 +134,10 @@ final class ShipmentDepositPaymentService
 
     private function isDepositPaid(Order $order, float $amount): bool
     {
+        if ($order->getStatus() === OrderStatus::DepositPaid) {
+            return true;
+        }
+
         if ($order->getPayAmount() + 0.009 >= $amount) {
             return true;
         }
@@ -179,6 +183,7 @@ final class ShipmentDepositPaymentService
         $redirectParams = [
             '_locale' => $locale,
             'orderNumber' => $order->getOrderNumber(),
+            'return' => '1',
         ];
 
         return match ($payment->getMethod()) {

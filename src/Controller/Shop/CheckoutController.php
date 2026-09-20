@@ -644,9 +644,15 @@ class CheckoutController extends AbstractController
     private function buildOrderSuccessViewData(Order $orderEntity): array
     {
         $payment = $this->paymentRepository->findLatestByOrder($orderEntity);
-        $paymentMethod = (string) ($payment?->getMethod() ?? '');
-        $isAwaitingDeposit = $paymentMethod === ShopPaymentMethod::OnDelivery
-            || $orderEntity->getStatus() === OrderStatus::AwaitingDepositForShipment;
+        $sessionOrder = $this->cartStorage->getOrderData();
+        $sessionPaymentMethod = \is_array($sessionOrder)
+            ? (string) ($sessionOrder['payment_method'] ?? '')
+            : '';
+        $paymentMethod = (string) ($payment?->getMethod() ?? $sessionPaymentMethod);
+        if ($paymentMethod === '' && in_array($orderEntity->getStatus(), [OrderStatus::AwaitingDepositForShipment, OrderStatus::DepositPaid, OrderStatus::InProcess], true)) {
+            $paymentMethod = ShopPaymentMethod::OnDelivery;
+        }
+        $isAwaitingDeposit = $orderEntity->getStatus() === OrderStatus::AwaitingDepositForShipment;
 
         return [
             'id' => $orderEntity->getOrderNumber(),
@@ -665,8 +671,7 @@ class CheckoutController extends AbstractController
         $paymentMethod = (string) ($sessionOrder['payment_method'] ?? '');
         $status = (string) ($sessionOrder['status'] ?? '');
         $contact = $this->cartStorage->getContactData();
-        $isAwaitingDeposit = $paymentMethod === ShopPaymentMethod::OnDelivery
-            || $status === OrderStatus::AwaitingDepositForShipment->value;
+        $isAwaitingDeposit = $status === OrderStatus::AwaitingDepositForShipment->value;
 
         return [
             'id' => (string) ($sessionOrder['order_number'] ?? $sessionOrder['id'] ?? ''),

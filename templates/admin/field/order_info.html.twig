@@ -1,6 +1,6 @@
 {# @var entity \EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto #}
 {% set order = entity.instance %}
-{% set statusClass = order.status.value == 'paid' ? 'success' : (order.status.value == 'in_process' ? 'warning' : (order.status.value == 'awaiting_deposit_for_shipment' ? 'info' : 'secondary')) %}
+{% set statusClass = order.status.value == 'paid' ? 'success' : (order.status.value == 'deposit_paid' ? 'primary' : (order.status.value == 'in_process' ? 'warning' : (order.status.value == 'awaiting_deposit_for_shipment' ? 'info' : 'secondary'))) %}
 
 <dl class="row mb-0 order-info-block">
     <dt class="col-sm-3 col-lg-2">{{ 'admin.order.order_number'|trans }}</dt>

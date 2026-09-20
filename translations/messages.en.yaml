@@ -54,6 +54,7 @@ admin.order.amount_due: Amount due
 admin.order.status.created: Created
 admin.order.status.in_process: In process
 admin.order.status.awaiting_deposit_for_shipment: Awaiting deposit for shipment
+admin.order.status.deposit_paid: Deposit paid
 admin.order.status.paid: Paid
 admin.payment.status.pending: Pending
 admin.payment.status.success: Success
@@ -457,7 +458,8 @@ shop.shipment_pay.qr_caption_privatbank: Scan the QR code in the Privat24 app
 shop.shipment_pay.save_qr: Save QR code as image
 shop.shipment_pay.mobile_hint: Save the QR code to your gallery and scan it in your banking app.
 shop.shipment_pay.open_payment: Open payment page
-shop.shipment_pay.already_paid: Prepayment already received. Thank you!
+shop.shipment_pay.already_paid: Deposit paid
+shop.shipment_pay.deposit_paid_success: 'You have successfully paid the deposit for order #%order_number%'
 shop.shipment_pay.unavailable: Payment is currently unavailable. Please contact shop support.
 shop.shipment_pay.iban_link: Pay via IBAN
 shop.shipment_pay_iban.title: IBAN payment

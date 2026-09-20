@@ -62,27 +62,27 @@ class PaymentCheckoutService
             $domain,
         );
 
+        if ($method === ShopPaymentMethod::OnDelivery) {
+            $this->orderCheckoutService->completeOnDeliveryCheckout($order, $order->getSite());
+
+            return PaymentRedirectResult::success();
+        }
+
         $paymentAmount = $method === ShopPaymentMethod::Privatbank
             ? max(0.0, round($this->orderCheckoutService->resolveCartSubtotal($cart), 2))
             : $order->getAmount();
 
-        $site = $order->getSite();
-        $payment = $this->orderCheckoutService->createPendingPayment($order, $method, $paymentAmount, $site);
+        $payment = $this->orderCheckoutService->createPendingPayment($order, $method, $paymentAmount, $order->getSite());
 
         $gatewayReference = (string) $payment->getGatewayReference();
         $amount = $paymentAmount;
         $description = $this->buildPaymentDescription($cart);
 
         $result = match ($method) {
-            'on_delivery' => PaymentRedirectResult::success(),
             'privatbank' => $this->createPrivatBankPayment($gatewayReference, $amount, $description, $locale, $payment),
             'monobank' => $this->createMonobankPayment($gatewayReference, $amount, $description, $locale, $payment),
             default => throw new \InvalidArgumentException(sprintf('Unsupported payment method "%s".', $method)),
         };
-
-        if ($method === 'on_delivery') {
-            return $result;
-        }
 
         if ($result->getType() === 'redirect') {
             $this->orderCheckoutService->updatePaymentGatewayData($payment, $result->getUrl(), null);

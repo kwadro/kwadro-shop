@@ -51,7 +51,7 @@ class OrderCheckoutService
     ): Order {
         $site = $this->resolveSiteForDomain($domain);
         $existing = $this->resolveOrderFromCartSession();
-        if ($existing !== null && $existing->getStatus() !== OrderStatus::Paid) {
+        if ($existing !== null && !in_array($existing->getStatus(), [OrderStatus::Paid, OrderStatus::DepositPaid], true)) {
             $this->syncOrderTotalsFromCheckout($existing, $cart, $checkoutData);
             if ($existing->getSite() === null && $site !== null) {
                 $existing->setSite($site);
@@ -136,19 +136,14 @@ class OrderCheckoutService
         ?float $paymentAmount = null,
         ?Site $site = null,
     ): Payment {
-        $this->failPendingPayments($order);
-
-        $order->setStatus(
-            $method === ShopPaymentMethod::OnDelivery
-                ? OrderStatus::AwaitingDepositForShipment
-                : OrderStatus::InProcess,
-        );
-
-        $site ??= $order->getSite();
-        $payAmount = $paymentAmount ?? $order->getAmount();
-        if ($method === ShopPaymentMethod::OnDelivery && $site !== null) {
-            $payAmount = max(0.0, round($payAmount - $site->getCodPrepaymentAmount(), 2));
+        if ($method === ShopPaymentMethod::OnDelivery) {
+            throw new \InvalidArgumentException('Use completeOnDeliveryCheckout() for on_delivery orders.');
         }
+
+        $this->failPendingPayments($order);
+        $order->setStatus(OrderStatus::InProcess);
+
+        $payAmount = $paymentAmount ?? $order->getAmount();
 
         $payment = (new Payment())
             ->setOrder($order)
@@ -167,15 +162,36 @@ class OrderCheckoutService
 
         $this->syncCartOrderReference($order, $payment);
 
-        if ($method === 'on_delivery') {
+        return $payment;
+    }
+
+    public function completeOnDeliveryCheckout(Order $order, ?Site $site = null): void
+    {
+        $this->failPendingPayments($order);
+
+        $site ??= $order->getSite();
+        $prepaymentAmount = max(0.0, round($site?->getCodPrepaymentAmount() ?? 0.0, 2));
+
+        if ($prepaymentAmount > 0) {
+            $order->setStatus(OrderStatus::AwaitingDepositForShipment);
+            $this->entityManager->flush();
+            $this->syncCartOrderReference($order, null, ShopPaymentMethod::OnDelivery);
             $this->orderEmailMailer->sendForOrder(
                 $order,
                 OrderEmailEvent::WaitPaymentForShipment,
-                $payment,
+                null,
             );
+
+            return;
         }
 
-        return $payment;
+        $order->setStatus(OrderStatus::InProcess);
+        $this->confirmOrderItems($order);
+        $this->entityManager->flush();
+        $this->syncCartOrderReference($order, null, ShopPaymentMethod::OnDelivery);
+        $this->novaPoshtaWaybillService->createForPaidOrder($order, ShopPaymentMethod::OnDelivery);
+        $this->orderEmailMailer->sendForOrder($order, OrderEmailEvent::OrderCreated, null);
+        $this->cartStorage->deactivateCartForOrder($order);
     }
 
     public function createShipmentDepositPayment(Order $order, float $amount, string $gatewayMethod): Payment
@@ -232,10 +248,11 @@ class OrderCheckoutService
         $order = $payment->getOrder();
         $isShipmentDeposit = $order !== null
             && $payment->getMethod() !== ShopPaymentMethod::OnDelivery
-            && ($order->getStatus() === OrderStatus::AwaitingDepositForShipment || str_contains($payment->getGatewayReference(), '-D'));
+            && (in_array($order->getStatus(), [OrderStatus::AwaitingDepositForShipment, OrderStatus::DepositPaid], true)
+                || str_contains($payment->getGatewayReference(), '-D'));
 
         if ($order !== null) {
-            $order->setStatus(OrderStatus::Paid);
+            $order->setStatus($isShipmentDeposit ? OrderStatus::DepositPaid : OrderStatus::Paid);
             $this->confirmOrderItems($order);
         }
 
@@ -299,8 +316,33 @@ class OrderCheckoutService
             return null;
         }
 
+        $orderData = $this->cartStorage->getOrderData();
+        $sessionPaymentMethod = \is_array($orderData)
+            ? (string) ($orderData['payment_method'] ?? '')
+            : '';
+
+        if (
+            $sessionPaymentMethod === ShopPaymentMethod::OnDelivery
+            && $order->getStatus() === OrderStatus::AwaitingDepositForShipment
+        ) {
+            $this->confirmOrderItems($order);
+            $this->entityManager->flush();
+            $this->cartStorage->deactivateCartForOrder($order);
+
+            return $order;
+        }
+
+        if (
+            $sessionPaymentMethod === ShopPaymentMethod::OnDelivery
+            && $order->getStatus() === OrderStatus::InProcess
+        ) {
+            $this->cartStorage->deactivateCartForOrder($order);
+
+            return $order;
+        }
+
         $payment = $this->paymentRepository->findLatestPendingByOrder($order);
-        if ($payment !== null && $payment->getMethod() === 'on_delivery') {
+        if ($payment !== null && $payment->getMethod() === ShopPaymentMethod::OnDelivery) {
             $this->confirmOrderItems($order);
             $this->entityManager->flush();
             $this->cartStorage->deactivateCartForOrder($order);
@@ -439,7 +481,7 @@ class OrderCheckoutService
         }
     }
 
-    private function syncCartOrderReference(Order $order, ?Payment $payment): void
+    private function syncCartOrderReference(Order $order, ?Payment $payment, ?string $paymentMethod = null): void
     {
         $payload = [
             'order_id' => $order->getId(),
@@ -447,9 +489,9 @@ class OrderCheckoutService
             'id' => $order->getOrderNumber(),
             'amount' => $order->getAmount(),
             'status' => $order->getStatus()->value,
-            'payment_method' => $payment?->getMethod(),
+            'payment_method' => $paymentMethod ?? $payment?->getMethod(),
             'payment_id' => $payment?->getId(),
-            'payment_status' => $payment?->getStatus()->value,
+            'payment_status' => $payment?->getStatus()?->value,
             'created_at' => $order->getCreatedAt()?->format(DATE_ATOM),
         ];
 

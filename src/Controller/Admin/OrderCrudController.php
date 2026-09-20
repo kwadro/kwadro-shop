@@ -59,6 +59,7 @@ class OrderCrudController extends AbstractCrudController
                 $this->translator->trans('admin.order.status.created', [], 'messages') => OrderStatus::Created,
                 $this->translator->trans('admin.order.status.in_process', [], 'messages') => OrderStatus::InProcess,
                 $this->translator->trans('admin.order.status.awaiting_deposit_for_shipment', [], 'messages') => OrderStatus::AwaitingDepositForShipment,
+                $this->translator->trans('admin.order.status.deposit_paid', [], 'messages') => OrderStatus::DepositPaid,
                 $this->translator->trans('admin.order.status.paid', [], 'messages') => OrderStatus::Paid,
             ]));
     }
@@ -137,12 +138,14 @@ class OrderCrudController extends AbstractCrudController
                 $this->translator->trans('admin.order.status.created', [], 'messages') => OrderStatus::Created,
                 $this->translator->trans('admin.order.status.in_process', [], 'messages') => OrderStatus::InProcess,
                 $this->translator->trans('admin.order.status.awaiting_deposit_for_shipment', [], 'messages') => OrderStatus::AwaitingDepositForShipment,
+                $this->translator->trans('admin.order.status.deposit_paid', [], 'messages') => OrderStatus::DepositPaid,
                 $this->translator->trans('admin.order.status.paid', [], 'messages') => OrderStatus::Paid,
             ])
             ->renderAsBadges([
                 OrderStatus::Created->value => 'secondary',
                 OrderStatus::InProcess->value => 'warning',
                 OrderStatus::AwaitingDepositForShipment->value => 'info',
+                OrderStatus::DepositPaid->value => 'primary',
                 OrderStatus::Paid->value => 'success',
             ]);
         yield MoneyField::new('amount', 'admin.order.order_total')

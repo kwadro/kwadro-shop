@@ -5,9 +5,7 @@ namespace App\Service\Checkout;
 use App\Entity\Order;
 use App\Entity\OrderStatus;
 use App\Entity\Payment;
-use App\Entity\ShopPaymentMethod;
 use App\Entity\Site;
-use App\Repository\PaymentRepository;
 use App\Repository\SiteRepository;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
@@ -15,7 +13,6 @@ use Symfony\Component\Routing\RouterInterface;
 final class ShipmentPayUrlGenerator
 {
     public function __construct(
-        private readonly PaymentRepository $paymentRepository,
         private readonly ShipmentPayTokenService $tokenService,
         private readonly SiteRepository $siteRepository,
         private readonly UrlGeneratorInterface $urlGenerator,
@@ -26,12 +23,7 @@ final class ShipmentPayUrlGenerator
 
     public function generateForOrder(Order $order, ?Payment $payment = null): string
     {
-        if ($order->getStatus() !== OrderStatus::AwaitingDepositForShipment) {
-            return '';
-        }
-
-        $codPayment = $this->resolveCodPayment($order, $payment);
-        if ($codPayment === null) {
+        if (!$this->canGenerateShipmentPayUrl($order)) {
             return '';
         }
 
@@ -41,18 +33,13 @@ final class ShipmentPayUrlGenerator
         return $this->urlGenerator->generate('shop_order_shipment_pay', [
             '_locale' => $locale,
             'orderNumber' => $order->getOrderNumber(),
-            'token' => $this->tokenService->generate($order, $codPayment),
+            'token' => $this->tokenService->generateForOrder($order),
         ], UrlGeneratorInterface::ABSOLUTE_URL);
     }
 
     public function generateIbanUrlForOrder(Order $order, ?Payment $payment = null): string
     {
-        if ($order->getStatus() !== OrderStatus::AwaitingDepositForShipment) {
-            return '';
-        }
-
-        $codPayment = $this->resolveCodPayment($order, $payment);
-        if ($codPayment === null) {
+        if (!$this->canGenerateShipmentPayUrl($order)) {
             return '';
         }
 
@@ -62,17 +49,19 @@ final class ShipmentPayUrlGenerator
         return $this->urlGenerator->generate('shop_order_shipment_pay_iban', [
             '_locale' => $locale,
             'orderNumber' => $order->getOrderNumber(),
-            'token' => $this->tokenService->generate($order, $codPayment),
+            'token' => $this->tokenService->generateForOrder($order),
         ], UrlGeneratorInterface::ABSOLUTE_URL);
     }
 
-    public function resolveCodPayment(Order $order, ?Payment $payment = null): ?Payment
+    private function canGenerateShipmentPayUrl(Order $order): bool
     {
-        if ($payment !== null && $payment->getMethod() === ShopPaymentMethod::OnDelivery) {
-            return $payment;
+        if ($order->getStatus() !== OrderStatus::AwaitingDepositForShipment) {
+            return false;
         }
 
-        return $this->paymentRepository->findOnDeliveryByOrder($order);
+        $site = $order->getSite() ?? $this->resolveSite();
+
+        return ($site?->getCodPrepaymentAmount() ?? 0.0) > 0;
     }
 
     public function resolveSite(?Site $site = null): ?Site
