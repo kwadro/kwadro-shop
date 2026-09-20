@@ -8,6 +8,7 @@
 /python
 /resources
 /.env
+/.env-stage.local
 /.env-live.local
 /.env.dev
 /.env.local
