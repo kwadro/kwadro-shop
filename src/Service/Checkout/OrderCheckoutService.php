@@ -20,6 +20,7 @@ use App\Service\Mail\OrderEmailMailer;
 use App\Service\NovaPoshta\NovaPoshtaWaybillService;
 use App\Service\Shipment\ShipmentAddressService;
 use Doctrine\ORM\EntityManagerInterface;
+use Throwable;
 
 class OrderCheckoutService
 {
@@ -79,6 +80,7 @@ class OrderCheckoutService
     /**
      * @param array<string, mixed> $cart
      * @param array<string, mixed> $checkoutData
+     * @throws Throwable
      */
     public function createOrder(
         array $cart,

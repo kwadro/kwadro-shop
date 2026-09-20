@@ -37,6 +37,9 @@ class Payment
     #[ORM\Column(length: 128, nullable: true)]
     private ?string $gateway_reference = null;
 
+    #[ORM\Column(length: 64, nullable: true)]
+    private ?string $monobank_invoice_id = null;
+
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $redirect_url = null;
 
@@ -121,6 +124,20 @@ class Payment
     public function setGatewayReference(?string $gatewayReference): static
     {
         $this->gateway_reference = $gatewayReference;
+
+        return $this;
+    }
+
+    public function getMonobankInvoiceId(): ?string
+    {
+        return $this->monobank_invoice_id;
+    }
+
+    public function setMonobankInvoiceId(?string $monobankInvoiceId): static
+    {
+        $this->monobank_invoice_id = $monobankInvoiceId !== null && $monobankInvoiceId !== ''
+            ? $monobankInvoiceId
+            : null;
 
         return $this;
     }

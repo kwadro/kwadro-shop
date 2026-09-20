@@ -38,6 +38,11 @@ class PaymentRepository extends ServiceEntityRepository
         return $this->findOneBy(['gateway_reference' => $gatewayReference]);
     }
 
+    public function findOneByMonobankInvoiceId(string $invoiceId): ?Payment
+    {
+        return $this->findOneBy(['monobank_invoice_id' => $invoiceId]);
+    }
+
     public function findOnDeliveryByOrder(Order $order): ?Payment
     {
         return $this->createQueryBuilder('p')

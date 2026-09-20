@@ -78,6 +78,14 @@ services:
             $liqpayPrivateKey: '%env(default::LIQPAY_PRIVATE_KEY)%'
             $monobankToken: '%env(default::MONOBANK_TOKEN)%'
 
+    App\Service\Checkout\Monobank\MonobankPublicKeyProvider:
+        arguments:
+            $monobankToken: '%env(default::MONOBANK_TOKEN)%'
+
+    App\Service\Checkout\Monobank\MonobankWebhookSignatureVerifier:
+        arguments:
+            $monobankToken: '%env(default::MONOBANK_TOKEN)%'
+
     App\Service\Checkout\ShipmentPayTokenService:
         arguments:
             $appSecret: '%kernel.secret%'

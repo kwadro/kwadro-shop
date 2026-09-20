@@ -130,7 +130,7 @@ class PaymentCheckoutService
                 'destination' => $description,
             ],
             'redirectUrl' => $this->urlGenerator->generate($redirectRoute, $redirectParams, UrlGeneratorInterface::ABSOLUTE_URL),
-            'webHookUrl' => $this->urlGenerator->generate('shop_checkout_monobank_callback', ['_locale' => $locale], UrlGeneratorInterface::ABSOLUTE_URL),
+            'webHookUrl' => $this->urlGenerator->generate('shop_monobank_webhook', [], UrlGeneratorInterface::ABSOLUTE_URL),
         ];
 
         $response = $this->httpClient->request('POST', self::MONOBANK_INVOICE_URL, [
@@ -141,6 +141,11 @@ class PaymentCheckoutService
             'json' => $payload,
             'timeout'  => 20,
         ])->toArray(false);
+
+        $invoiceId = $response['invoiceId'] ?? null;
+        if (\is_string($invoiceId) && $invoiceId !== '') {
+            $payment->setMonobankInvoiceId($invoiceId);
+        }
 
         $this->orderCheckoutService->updatePaymentGatewayData($payment, null, $response);
 

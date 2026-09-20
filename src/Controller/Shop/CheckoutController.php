@@ -18,6 +18,7 @@ use App\Routing\ShopRoutes;
 use App\Service\Cart\CartStorageService;
 use App\Service\Cart\VisitorIdResolver;
 use App\Service\Checkout\CheckoutPaymentMethodResolver;
+use App\Service\Checkout\Monobank\MonobankWebhookHandler;
 use App\Service\Checkout\OrderCheckoutService;
 use App\Service\Checkout\PaymentCheckoutService;
 use App\Service\GeoIp\UserCityService;
@@ -403,28 +404,16 @@ class CheckoutController extends AbstractController
         requirements: ['_locale' => ShopRoutes::LOCALE_REQUIREMENTS],
         methods: ['POST'],
     )]
-    public function monobankCallback(Request $request): Response
+    public function monobankCallback(Request $request, MonobankWebhookHandler $webhookHandler): Response
     {
-        $payload = json_decode($request->getContent(), true);
-        if (!\is_array($payload)) {
-            return new Response('OK', Response::HTTP_OK);
-        }
+        $rawBody = $request->getContent();
+        $result = $webhookHandler->handle($rawBody, $request->headers->get('X-Sign'));
 
-        $reference = (string) ($payload['reference'] ?? $payload['merchantPaymInfo']['reference'] ?? '');
-        $payment = $reference !== ''
-            ? $this->paymentRepository->findOneByGatewayReference($reference)
-            : null;
-
-        if ($payment !== null) {
-            $status = (string) ($payload['status'] ?? '');
-            if ($status === 'success') {
-                $this->orderCheckoutService->markPaymentSuccessful($payment, $payload);
-            } elseif (in_array($status, ['failure', 'expired', 'reversed'], true)) {
-                $this->orderCheckoutService->markPaymentFailed($payment, $payload);
-            }
-        }
-
-        return new Response('OK', Response::HTTP_OK);
+        return match ($result) {
+            'invalid_signature' => new Response('Invalid signature', Response::HTTP_FORBIDDEN),
+            'invalid_payload' => new Response('Invalid payload', Response::HTTP_BAD_REQUEST),
+            default => new Response('OK', Response::HTTP_OK),
+        };
     }
 
     #[Route(

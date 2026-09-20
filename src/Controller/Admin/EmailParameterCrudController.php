@@ -21,7 +21,6 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ImageField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\EntityFilter;
 use Symfony\Component\Form\Extension\Core\Type\EnumType;
@@ -148,9 +147,8 @@ class EmailParameterCrudController extends AbstractCrudController
                 ->setBasePath(self::IMAGE_BASE_PATH)
                 ->onlyOnIndex();
         } else {
-            yield TextareaField::new('value', $this->translator->trans('admin.email_parameter.value', [], 'messages'))
-                ->setHelp($this->translator->trans('admin.email_parameter.value_help', [], 'messages'))
-                ->setNumOfRows(4);
+            yield TextField::new('value', $this->translator->trans('admin.email_parameter.value', [], 'messages'))
+                ->setHelp($this->translator->trans('admin.email_parameter.value_help', [], 'messages'));
         }
     }
 }
