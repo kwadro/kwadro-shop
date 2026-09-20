@@ -307,6 +307,7 @@ shop.logout: Log Out
 shop.work_hours: 7 days a week, 9:00–19:00
 shop.header.language: Language
 shop.header.your_city: Your city
+shop.header.your_country: Your country
 shop.header.city_placeholder: Enter your city
 shop.header.city_modal_title: Choose your city
 shop.header.city_modal_lead: We deliver orders throughout Ukraine!
@@ -358,6 +359,9 @@ shop.product.lowest_price: Lowest price
 shop.product.description_title: Description
 
 shop.checkout.title: Checkout
+shop.checkout.outside_ukraine_title: Purchase unavailable
+shop.checkout.outside_ukraine_message: Orders can only be placed from within Ukraine. If you are in Ukraine but see this message, try disabling your VPN or contact us.
+shop.checkout.outside_ukraine_short: Purchases are available in Ukraine only
 shop.checkout.steps: Checkout steps
 shop.checkout.step_contact: Contact
 shop.checkout.step_delivery: Delivery

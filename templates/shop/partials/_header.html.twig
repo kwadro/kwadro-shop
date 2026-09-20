@@ -41,22 +41,38 @@
                 >
             </a>
             {% set cityDetails = cityData.label is not empty and cityData.label != cityData.name ? cityData.label : cityData.subtitle %}
-            <button
-                type="button"
-                id="shop-city-open"
-                class="shop-header__city-trigger"
-                aria-haspopup="dialog"
-                aria-controls="shop-city-modal"
-                aria-label="{{ 'shop.header.your_city'|trans }}"
-                title="{{ cityDetails|default(cityData.name)|e('html_attr') }}"
-            >
-                <span class="shop-header__city-icon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" focusable="false">
-                        <path d="M12 2C8.686 2 6 4.686 6 8c0 4.5 6 12 6 12s6-7.5 6-12c0-3.314-2.686-6-6-6zm0 8.25A2.25 2.25 0 1 1 12 5.75a2.25 2.25 0 0 1 0 4.5z"/>
-                    </svg>
+            {% set isOutsideUkraine = cityData.isOutsideUkraine|default(false) %}
+            {% if isOutsideUkraine %}
+                <span
+                    class="shop-header__city-trigger shop-header__city-trigger--static"
+                    aria-label="{{ 'shop.header.your_country'|trans }}"
+                    title="{{ cityData.name|e('html_attr') }}"
+                >
+                    <span class="shop-header__city-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" focusable="false">
+                            <path d="M12 2C8.686 2 6 4.686 6 8c0 4.5 6 12 6 12s6-7.5 6-12c0-3.314-2.686-6-6-6zm0 8.25A2.25 2.25 0 1 1 12 5.75a2.25 2.25 0 0 1 0 4.5z"/>
+                        </svg>
+                    </span>
+                    <span class="shop-header__city-value" id="shop-header-city-value">{{ cityData.name }}</span>
                 </span>
-                <span class="shop-header__city-value" id="shop-header-city-value">{{ cityData.name }}</span>
-            </button>
+            {% else %}
+                <button
+                    type="button"
+                    id="shop-city-open"
+                    class="shop-header__city-trigger"
+                    aria-haspopup="dialog"
+                    aria-controls="shop-city-modal"
+                    aria-label="{{ 'shop.header.your_city'|trans }}"
+                    title="{{ cityDetails|default(cityData.name)|e('html_attr') }}"
+                >
+                    <span class="shop-header__city-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" focusable="false">
+                            <path d="M12 2C8.686 2 6 4.686 6 8c0 4.5 6 12 6 12s6-7.5 6-12c0-3.314-2.686-6-6-6zm0 8.25A2.25 2.25 0 1 1 12 5.75a2.25 2.25 0 0 1 0 4.5z"/>
+                        </svg>
+                    </span>
+                    <span class="shop-header__city-value" id="shop-header-city-value">{{ cityData.name }}</span>
+                </button>
+            {% endif %}
         </div>
         <div class="shop-header__actions">
             {% include 'shop/partials/_mini_cart.html.twig' %}

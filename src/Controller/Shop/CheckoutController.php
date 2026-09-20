@@ -59,6 +59,10 @@ class CheckoutController extends AbstractController
     )]
     public function start(string $_locale, Request $request): Response
     {
+        if ($blockedResponse = $this->renderOutsideUkraineCheckoutBlocked($_locale)) {
+            return $blockedResponse;
+        }
+
         if (!$this->isCsrfTokenValid('checkout_start', (string) $request->request->get('_token'))) {
             throw $this->createAccessDeniedException();
         }
@@ -90,6 +94,10 @@ class CheckoutController extends AbstractController
     )]
     public function checkout(string $_locale, Request $request): Response
     {
+        if ($blockedResponse = $this->renderOutsideUkraineCheckoutBlocked($_locale)) {
+            return $blockedResponse;
+        }
+
         $cart = $this->cartStorage->getCartData();
 
         if (!\is_array($cart) || empty($cart['items'])) {
@@ -426,6 +434,10 @@ class CheckoutController extends AbstractController
     )]
     public function novaPoshtaCities(Request $request): JsonResponse
     {
+        if ($blockedResponse = $this->createOutsideUkraineCheckoutBlockedJson()) {
+            return $blockedResponse;
+        }
+
         if (!$this->cartStorage->getCartData()) {
             return new JsonResponse(['error' => 'Cart not found'], Response::HTTP_BAD_REQUEST);
         }
@@ -451,6 +463,10 @@ class CheckoutController extends AbstractController
     )]
     public function novaPoshtaWarehouses(Request $request): JsonResponse
     {
+        if ($blockedResponse = $this->createOutsideUkraineCheckoutBlockedJson()) {
+            return $blockedResponse;
+        }
+
         if (!$this->cartStorage->getCartData()) {
             return new JsonResponse(['error' => 'Cart not found'], Response::HTTP_BAD_REQUEST);
         }
@@ -484,6 +500,10 @@ class CheckoutController extends AbstractController
     )]
     public function novaPoshtaDeliveryPrice(Request $request): JsonResponse
     {
+        if ($blockedResponse = $this->createOutsideUkraineCheckoutBlockedJson()) {
+            return $blockedResponse;
+        }
+
         $cart = $this->cartStorage->getCartData();
         if (!\is_array($cart)) {
             return new JsonResponse(['error' => 'Cart not found'], Response::HTTP_BAD_REQUEST);
@@ -905,5 +925,27 @@ class CheckoutController extends AbstractController
         }
 
         return $method;
+    }
+
+    private function renderOutsideUkraineCheckoutBlocked(string $_locale): ?Response
+    {
+        if ($this->userCityService->isUkraineVisitor()) {
+            return null;
+        }
+
+        return $this->render('shop/checkout/blocked.html.twig', [
+            '_locale' => $_locale,
+        ]);
+    }
+
+    private function createOutsideUkraineCheckoutBlockedJson(): ?JsonResponse
+    {
+        if ($this->userCityService->isUkraineVisitor()) {
+            return null;
+        }
+
+        return new JsonResponse([
+            'error' => 'shop.checkout.outside_ukraine_message',
+        ], Response::HTTP_FORBIDDEN);
     }
 }

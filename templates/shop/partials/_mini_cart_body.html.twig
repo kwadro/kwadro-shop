@@ -47,12 +47,16 @@
         <strong data-minicart-total>{{ cart.total|number_format(2, ',', ' ') }} ₴</strong>
     </div>
 
-    <a
-        href="{{ path('shop_checkout', {_locale: app.request.locale}) }}"
-        class="shop-minicart__checkout"
-    >
-        {{ 'shop.minicart.checkout'|trans }}
-    </a>
+    {% if shop_is_ukraine_visitor() %}
+        <a
+            href="{{ path('shop_checkout', {_locale: app.request.locale}) }}"
+            class="shop-minicart__checkout"
+        >
+            {{ 'shop.minicart.checkout'|trans }}
+        </a>
+    {% else %}
+        <p class="shop-minicart__notice">{{ 'shop.checkout.outside_ukraine_short'|trans }}</p>
+    {% endif %}
 {% else %}
     <p class="shop-minicart__empty">{{ 'shop.minicart.empty'|trans }}</p>
     <a

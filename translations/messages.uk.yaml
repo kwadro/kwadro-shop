@@ -306,6 +306,7 @@ shop.logout: Вийти
 shop.work_hours: 7 днів на тиждень з 9:00 до 19:00
 shop.header.language: Мова
 shop.header.your_city: Ваше місто
+shop.header.your_country: Ваша країна
 shop.header.city_placeholder: Введіть місто
 shop.header.city_modal_title: Виберіть своє місто
 shop.header.city_modal_lead: Доставляємо замовлення по всій Україні!
@@ -356,6 +357,9 @@ shop.product.lowest_price: Найнижча ціна
 shop.product.description_title: Детальний опис
 
 shop.checkout.title: Оформлення замовлення
+shop.checkout.outside_ukraine_title: Покупка недоступна
+shop.checkout.outside_ukraine_message: Замовлення можна оформити лише з території України. Якщо ви в Україні, але бачите це повідомлення, спробуйте вимкнути VPN або зверніться до нас.
+shop.checkout.outside_ukraine_short: Покупка доступна лише в Україні
 shop.checkout.steps: Кроки оформлення
 shop.checkout.step_contact: Контакти
 shop.checkout.step_delivery: Доставка

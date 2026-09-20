@@ -14,7 +14,8 @@ class GeoIpCityResolver
     ) {
     }
 
-    public function resolveCityFromIp(?string $ip): ?string
+    /** @return array{countryCode: string, countryName: string, city: string}|null */
+    public function resolveLocationFromIp(?string $ip): ?array
     {
         if ($ip === null || $ip === '' || $this->isPrivateIp($ip)) {
             return null;
@@ -30,14 +31,22 @@ class GeoIpCityResolver
                 return null;
             }
 
+            $countryCode = strtoupper(trim((string) ($data['country_code'] ?? '')));
+            $countryName = trim((string) ($data['country'] ?? ''));
             $city = trim((string) ($data['city'] ?? ''));
-            if ($city === '') {
+            if ($countryCode === '' && $city === '') {
                 return null;
             }
 
-            $countryCode = trim((string) ($data['country_code'] ?? ''));
+            if ($city !== '') {
+                $city = $this->cityNameNormalizer->normalize($city, $countryCode !== '' ? $countryCode : null);
+            }
 
-            return $this->cityNameNormalizer->normalize($city, $countryCode !== '' ? $countryCode : null);
+            return [
+                'countryCode' => $countryCode,
+                'countryName' => $countryName,
+                'city' => $city,
+            ];
         } catch (\Throwable $exception) {
             $this->logger?->warning('GeoIP city lookup failed.', [
                 'ip' => $ip,
@@ -46,6 +55,13 @@ class GeoIpCityResolver
 
             return null;
         }
+    }
+
+    public function resolveCityFromIp(?string $ip): ?string
+    {
+        $location = $this->resolveLocationFromIp($ip);
+
+        return $location !== null && $location['city'] !== '' ? $location['city'] : null;
     }
 
     private function isPrivateIp(string $ip): bool

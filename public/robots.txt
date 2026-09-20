@@ -1,0 +1,9 @@
+User-agent: *
+Disallow: /admser
+Disallow: /uk/admser
+Disallow: /en/admser
+Disallow: /checkout
+Disallow: /uk/checkout
+Disallow: /en/checkout
+
+Sitemap: /sitemap.xml

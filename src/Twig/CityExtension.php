@@ -24,6 +24,7 @@ class CityExtension extends AbstractExtension
             new TwigFunction('shop_city_data', [$this, 'getCityData']),
             new TwigFunction('nova_poshta_enabled', [$this, 'isNovaPoshtaEnabled']),
             new TwigFunction('shop_popular_cities', [$this, 'getPopularCities']),
+            new TwigFunction('shop_is_ukraine_visitor', [$this, 'isUkraineVisitor']),
         ];
     }
 
@@ -47,5 +48,10 @@ class CityExtension extends AbstractExtension
     public function isNovaPoshtaEnabled(): bool
     {
         return $this->novaPoshtaClient->isConfigured();
+    }
+
+    public function isUkraineVisitor(): bool
+    {
+        return $this->userCityService->isUkraineVisitor($this->requestStack->getCurrentRequest());
     }
 }

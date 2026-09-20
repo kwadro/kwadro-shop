@@ -6,6 +6,7 @@ use App\Service\NovaPoshtaClient;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Intl\Countries;
 
 class UserCityService
 {
@@ -13,6 +14,7 @@ class UserCityService
     public const COOKIE_DATA_NAME = 'user_city_data';
     public const SESSION_KEY = 'shop_user_city';
     public const REQUEST_DATA_ATTRIBUTE = '_user_city_data';
+    public const REQUEST_IP_LOCATION_ATTRIBUTE = '_user_ip_location';
     public const ATTACH_COOKIE_ATTRIBUTE = '_user_city_attach';
     private const COOKIE_TTL = 31536000;
 
@@ -35,7 +37,7 @@ class UserCityService
     ) {
     }
 
-    /** @return array{name: string, ref: string, subtitle: string, label: string, settlementRef: string, warehouseCityRef: string, hasLocalWarehouses: bool} */
+    /** @return array{name: string, ref: string, subtitle: string, label: string, settlementRef: string, warehouseCityRef: string, hasLocalWarehouses: bool, isOutsideUkraine: bool, countryCode: string} */
     public function resolveData(?Request $request = null): array
     {
         $request ??= $this->requestStack->getCurrentRequest();
@@ -50,6 +52,13 @@ class UserCityService
             }
         }
 
+        if (!$this->isUkraineVisitor($request)) {
+            $data = $this->buildOutsideUkraineData($request);
+            $request->attributes->set(self::REQUEST_DATA_ATTRIBUTE, $data);
+
+            return $data;
+        }
+
         $stored = $this->readStoredData($request);
         if ($stored !== null) {
             $request->attributes->set(self::REQUEST_DATA_ATTRIBUTE, $stored);
@@ -57,11 +66,46 @@ class UserCityService
             return $stored;
         }
 
-        $detectedName = $this->geoIpCityResolver->resolveCityFromIp($request->getClientIp());
+        $location = $this->resolveIpLocation($request);
+        $detectedName = $location['city'] ?? null;
+        if ($detectedName === null || $detectedName === '') {
+            $detectedName = $this->geoIpCityResolver->resolveCityFromIp($request->getClientIp());
+        }
+
         $data = $this->buildCityData($detectedName ?? $this->defaultCity);
         $this->stageCityData($request, $data);
 
         return $data;
+    }
+
+    public function isUkraineVisitor(?Request $request = null): bool
+    {
+        $location = $this->resolveIpLocation($request);
+        if ($location === null) {
+            return true;
+        }
+
+        return $location['countryCode'] === 'UA';
+    }
+
+    /** @return array{countryCode: string, countryName: string, city: string}|null */
+    public function resolveIpLocation(?Request $request = null): ?array
+    {
+        $request ??= $this->requestStack->getCurrentRequest();
+        if ($request === null) {
+            return null;
+        }
+
+        if ($request->attributes->has(self::REQUEST_IP_LOCATION_ATTRIBUTE)) {
+            $cached = $request->attributes->get(self::REQUEST_IP_LOCATION_ATTRIBUTE);
+
+            return \is_array($cached) ? $cached : null;
+        }
+
+        $location = $this->geoIpCityResolver->resolveLocationFromIp($request->getClientIp());
+        $request->attributes->set(self::REQUEST_IP_LOCATION_ATTRIBUTE, $location);
+
+        return $location;
     }
 
     public function resolve(?Request $request = null): string
@@ -216,6 +260,8 @@ class UserCityService
             'settlementRef' => $settlementRef,
             'warehouseCityRef' => $warehouseCityRef,
             'hasLocalWarehouses' => (bool) ($data['hasLocalWarehouses'] ?? false),
+            'isOutsideUkraine' => (bool) ($data['isOutsideUkraine'] ?? false),
+            'countryCode' => trim((string) ($data['countryCode'] ?? '')),
         ];
     }
 
@@ -247,7 +293,42 @@ class UserCityService
             'settlementRef' => '',
             'warehouseCityRef' => '',
             'hasLocalWarehouses' => false,
+            'isOutsideUkraine' => false,
+            'countryCode' => 'UA',
         ];
+    }
+
+    /** @return array{name: string, ref: string, subtitle: string, label: string, settlementRef: string, warehouseCityRef: string, hasLocalWarehouses: bool, isOutsideUkraine: bool, countryCode: string} */
+    private function buildOutsideUkraineData(Request $request): array
+    {
+        $location = $this->resolveIpLocation($request);
+        $countryCode = strtoupper(trim((string) ($location['countryCode'] ?? '')));
+        $countryName = $this->resolveCountryDisplayName($countryCode, $location['countryName'] ?? '', $request->getLocale());
+
+        return [
+            'name' => $countryName,
+            'ref' => '',
+            'subtitle' => '',
+            'label' => '',
+            'settlementRef' => '',
+            'warehouseCityRef' => '',
+            'hasLocalWarehouses' => false,
+            'isOutsideUkraine' => true,
+            'countryCode' => $countryCode,
+        ];
+    }
+
+    private function resolveCountryDisplayName(string $countryCode, string $fallbackName, string $locale): string
+    {
+        if ($countryCode !== '' && Countries::exists($countryCode)) {
+            return Countries::getName($countryCode, $locale);
+        }
+
+        if ($fallbackName !== '') {
+            return $fallbackName;
+        }
+
+        return $countryCode;
     }
 
     /** @return array{name: string, ref: string, subtitle: string, label: string, settlementRef: string, warehouseCityRef: string, hasLocalWarehouses: bool} */
@@ -260,7 +341,9 @@ class UserCityService
     private function stageCityData(Request $request, array $data): void
     {
         $request->attributes->set(self::REQUEST_DATA_ATTRIBUTE, $data);
-        $request->attributes->set(self::ATTACH_COOKIE_ATTRIBUTE, $data);
+        if (empty($data['isOutsideUkraine'])) {
+            $request->attributes->set(self::ATTACH_COOKIE_ATTRIBUTE, $data);
+        }
     }
 
     private function normalizeCity(string $city): string

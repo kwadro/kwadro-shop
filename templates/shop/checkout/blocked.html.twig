@@ -1,0 +1,19 @@
+{% extends 'shop/layout.html.twig' %}
+
+{% set block_search_engines = true %}
+
+{% block title %}{{ 'shop.checkout.outside_ukraine_title'|trans }}{% endblock %}
+
+{% block main %}
+    <article class="shop-page shop-checkout">
+        <h1 class="shop-page__title">{{ 'shop.checkout.outside_ukraine_title'|trans }}</h1>
+
+        <div class="shop-checkout__alert shop-checkout__alert--error">
+            {{ 'shop.checkout.outside_ukraine_message'|trans }}
+        </div>
+
+        <a href="{{ path('shop_home', {_locale: app.request.locale}) }}" class="shop-checkout__back">
+            ← {{ 'shop.checkout.back_to_shop'|trans }}
+        </a>
+    </article>
+{% endblock %}
