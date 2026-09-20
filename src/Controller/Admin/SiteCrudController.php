@@ -39,21 +39,27 @@ class SiteCrudController extends AbstractCrudController
             MoneyField::new('courierDeliveryCost', $this->translator->trans('admin.site.courier_delivery_cost', [], 'messages'))
                 ->setCurrency('UAH')
                 ->setStoredAsCents(false)
-                ->setHelp($this->translator->trans('admin.site.courier_delivery_cost_help', [], 'messages')),
+                ->setHelp($this->translator->trans('admin.site.courier_delivery_cost_help', [], 'messages'))
+                ->hideOnIndex(),
             NumberField::new('codStandardPercent', $this->translator->trans('admin.site.cod_standard_percent', [], 'messages'))
                 ->setNumDecimals(2)
-                ->setHelp($this->translator->trans('admin.site.cod_standard_percent_help', [], 'messages')),
+                ->setHelp($this->translator->trans('admin.site.cod_standard_percent_help', [], 'messages'))
+                ->hideOnIndex(),
             NumberField::new('codNovapayPercent', $this->translator->trans('admin.site.cod_novapay_percent', [], 'messages'))
                 ->setNumDecimals(2)
-                ->setHelp($this->translator->trans('admin.site.cod_novapay_percent_help', [], 'messages')),
+                ->setHelp($this->translator->trans('admin.site.cod_novapay_percent_help', [], 'messages'))
+                ->hideOnIndex(),
             MoneyField::new('codPrepaymentAmount', $this->translator->trans('admin.site.cod_prepayment_amount', [], 'messages'))
                 ->setCurrency('UAH')
                 ->setStoredAsCents(false)
-                ->setHelp($this->translator->trans('admin.site.cod_prepayment_amount_help', [], 'messages')),
+                ->setHelp($this->translator->trans('admin.site.cod_prepayment_amount_help', [], 'messages'))
+                ->hideOnIndex(),
             TextareaField::new('codCommissionNoticeUk', $this->translator->trans('admin.site.cod_commission_notice_uk', [], 'messages'))
-                ->setHelp($this->translator->trans('admin.site.cod_commission_notice_help', [], 'messages')),
+                ->setHelp($this->translator->trans('admin.site.cod_commission_notice_help', [], 'messages'))
+                ->hideOnIndex(),
             TextareaField::new('codCommissionNoticeEn', $this->translator->trans('admin.site.cod_commission_notice_en', [], 'messages'))
-                ->setHelp($this->translator->trans('admin.site.cod_commission_notice_help', [], 'messages')),
+                ->setHelp($this->translator->trans('admin.site.cod_commission_notice_help', [], 'messages'))
+                ->hideOnIndex(),
             ChoiceField::new('activePaymentMethods', $this->translator->trans('admin.site.active_payment_methods', [], 'messages'))
                 ->setChoices([
                     $this->translator->trans('admin.site.payment.on_delivery', [], 'messages') => ShopPaymentMethod::OnDelivery,
@@ -62,7 +68,8 @@ class SiteCrudController extends AbstractCrudController
                 ])
                 ->allowMultipleChoices()
                 ->renderExpanded(false)
-                ->setHelp($this->translator->trans('admin.site.active_payment_methods_help', [], 'messages')),
+                ->setHelp($this->translator->trans('admin.site.active_payment_methods_help', [], 'messages'))
+                ->hideOnIndex(),
             ChoiceField::new('activeDeliveryMethods', $this->translator->trans('admin.site.active_delivery_methods', [], 'messages'))
                 ->setChoices([
                     $this->translator->trans('admin.site.delivery.courier', [], 'messages') => ShopDeliveryMethod::Courier,
@@ -71,12 +78,13 @@ class SiteCrudController extends AbstractCrudController
                 ])
                 ->allowMultipleChoices()
                 ->renderExpanded(false)
-                ->setHelp($this->translator->trans('admin.site.active_delivery_methods_help', [], 'messages')),
-            AssociationField::new('headersettingsites')->setFormTypeOption('by_reference', false)->hideOnForm(),
-            AssociationField::new('seosettingsites')->setFormTypeOption('by_reference', false)->hideOnForm(),
-            AssociationField::new('footersettingsites')->setFormTypeOption('by_reference', false)->hideOnForm(),
-            AssociationField::new('megamenusites')->setFormTypeOption('by_reference', false)->hideOnForm(),
-            AssociationField::new('popularsearchsites')->setFormTypeOption('by_reference', false)->hideOnForm(),
+                ->setHelp($this->translator->trans('admin.site.active_delivery_methods_help', [], 'messages'))
+                ->hideOnIndex(),
+            AssociationField::new('headersettingsites')->setFormTypeOption('by_reference', false)->hideOnForm()->hideOnIndex(),
+            AssociationField::new('seosettingsites')->setFormTypeOption('by_reference', false)->hideOnForm()->hideOnIndex(),
+            AssociationField::new('footersettingsites')->setFormTypeOption('by_reference', false)->hideOnForm()->hideOnIndex(),
+            AssociationField::new('megamenusites')->setFormTypeOption('by_reference', false)->hideOnForm()->hideOnIndex(),
+            AssociationField::new('popularsearchsites')->setFormTypeOption('by_reference', false)->hideOnForm()->hideOnIndex(),
         ];
     }
 
