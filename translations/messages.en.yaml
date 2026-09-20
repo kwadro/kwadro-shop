@@ -46,6 +46,7 @@ admin.order.created_at: Created at
 admin.order.updated_at: Updated at
 admin.order.currency: Currency
 admin.order.locale: Locale
+admin.order.site: Site
 admin.order.amounts: Order amount
 admin.order.order_total: Order total
 admin.order.paid_amount: Paid

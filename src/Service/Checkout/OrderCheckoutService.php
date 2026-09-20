@@ -10,9 +10,11 @@ use App\Entity\OrderStatus;
 use App\Entity\Payment;
 use App\Entity\PaymentStatus;
 use App\Entity\ShopPaymentMethod;
+use App\Entity\Site;
 use App\Entity\User;
 use App\Repository\OrderRepository;
 use App\Repository\PaymentRepository;
+use App\Repository\SiteRepository;
 use App\Service\Cart\CartStorageService;
 use App\Service\Mail\OrderEmailMailer;
 use App\Service\NovaPoshta\NovaPoshtaWaybillService;
@@ -30,6 +32,7 @@ class OrderCheckoutService
         private readonly OrderNumberGenerator $orderNumberGenerator,
         private readonly OrderEmailMailer $orderEmailMailer,
         private readonly NovaPoshtaWaybillService $novaPoshtaWaybillService,
+        private readonly SiteRepository $siteRepository,
     ) {
     }
 
@@ -43,15 +46,21 @@ class OrderCheckoutService
         ?User $customer,
         ?string $visitorId,
         string $locale,
+        ?string $domain = null,
     ): Order {
+        $site = $this->resolveSiteForDomain($domain);
         $existing = $this->resolveOrderFromCartSession();
         if ($existing !== null && $existing->getStatus() !== OrderStatus::Paid) {
             $this->syncOrderTotalsFromCheckout($existing, $cart, $checkoutData);
+            if ($existing->getSite() === null && $site !== null) {
+                $existing->setSite($site);
+                $this->entityManager->flush();
+            }
 
             return $existing;
         }
 
-        return $this->createOrder($cart, $checkoutData, $customer, $visitorId, $locale);
+        return $this->createOrder($cart, $checkoutData, $customer, $visitorId, $locale, $site);
     }
 
     /**
@@ -77,6 +86,7 @@ class OrderCheckoutService
         ?User $customer,
         ?string $visitorId,
         string $locale,
+        ?Site $site = null,
     ): Order {
         $subtotal = $this->resolveCartSubtotal($cart);
         $shippingCost = $this->extractShippingCost($checkoutData);
@@ -90,6 +100,7 @@ class OrderCheckoutService
             ->setOrderNumber($this->orderNumberGenerator->generateNext())
             ->setStatus(OrderStatus::Created)
             ->setCustomer($customer)
+            ->setSite($site)
             ->setVisitorId($visitorId !== '' ? $visitorId : null)
             ->setCartData($cart)
             ->applyContactData($contactData)
@@ -117,21 +128,31 @@ class OrderCheckoutService
         return $order;
     }
 
-    public function createPendingPayment(Order $order, string $method, ?float $paymentAmount = null): Payment
-    {
+    public function createPendingPayment(
+        Order $order,
+        string $method,
+        ?float $paymentAmount = null,
+        ?Site $site = null,
+    ): Payment {
         $this->failPendingPayments($order);
 
         $order->setStatus(
-            $method === 'on_delivery'
+            $method === ShopPaymentMethod::OnDelivery
                 ? OrderStatus::AwaitingDepositForShipment
                 : OrderStatus::InProcess,
         );
+
+        $site ??= $order->getSite();
+        $payAmount = $paymentAmount ?? $order->getAmount();
+        if ($method === ShopPaymentMethod::OnDelivery && $site !== null) {
+            $payAmount = max(0.0, round($payAmount - $site->getCodPrepaymentAmount(), 2));
+        }
 
         $payment = (new Payment())
             ->setOrder($order)
             ->setMethod($method)
             ->setStatus(PaymentStatus::Pending)
-            ->setAmount($paymentAmount ?? $order->getAmount())
+            ->setAmount($payAmount)
             ->setCurrency($order->getCurrency())
             ->setGatewayReference($order->getOrderNumber());
 
@@ -497,5 +518,15 @@ class OrderCheckoutService
 
         $customer->applyContactData($contactData);
         $this->entityManager->flush();
+    }
+
+    private function resolveSiteForDomain(?string $domain): ?Site
+    {
+        $domain = trim((string) $domain);
+        if ($domain === '') {
+            return null;
+        }
+
+        return $this->siteRepository->findOneBy(['domain' => $domain]);
     }
 }

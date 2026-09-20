@@ -50,20 +50,24 @@ class PaymentCheckoutService
         string $locale,
         ?User $customer = null,
         ?string $visitorId = null,
+        ?string $domain = null,
     ): PaymentRedirectResult {
+
         $order = $this->orderCheckoutService->resolveOrCreateOrderForCheckout(
             $cart,
             $checkoutData,
             $customer,
             $visitorId,
             $locale,
+            $domain,
         );
 
         $paymentAmount = $method === ShopPaymentMethod::Privatbank
             ? max(0.0, round($this->orderCheckoutService->resolveCartSubtotal($cart), 2))
             : $order->getAmount();
 
-        $payment = $this->orderCheckoutService->createPendingPayment($order, $method, $paymentAmount);
+        $site = $order->getSite();
+        $payment = $this->orderCheckoutService->createPendingPayment($order, $method, $paymentAmount, $site);
 
         $gatewayReference = (string) $payment->getGatewayReference();
         $amount = $paymentAmount;

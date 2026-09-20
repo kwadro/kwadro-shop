@@ -31,6 +31,10 @@ class Order
     #[ORM\JoinColumn(name: 'customer_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
     private ?User $customer = null;
 
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(name: 'site_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+    private ?Site $site = null;
+
     #[ORM\Column(length: 36, nullable: true)]
     private ?string $visitor_id = null;
 
@@ -133,6 +137,18 @@ class Order
     public function setCustomer(?User $customer): static
     {
         $this->customer = $customer;
+
+        return $this;
+    }
+
+    public function getSite(): ?Site
+    {
+        return $this->site;
+    }
+
+    public function setSite(?Site $site): static
+    {
+        $this->site = $site;
 
         return $this;
     }

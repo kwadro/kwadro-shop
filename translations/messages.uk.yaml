@@ -46,6 +46,7 @@ admin.order.created_at: Створено
 admin.order.updated_at: Оновлено
 admin.order.currency: Валюта
 admin.order.locale: Локаль
+admin.order.site: Сайт
 admin.order.amounts: Сума замовлення
 admin.order.order_total: Сума замовлення
 admin.order.paid_amount: Оплачено

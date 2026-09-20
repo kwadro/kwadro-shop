@@ -18,7 +18,7 @@ final class OrderEmailContextFactory
     public function create(Order $order, ?Payment $payment = null): array
     {
         $delivery = $order->getDeliveryData();
-        $site = $this->shipmentPayUrlGenerator->resolveSite();
+        $site = $order->getSite() ?? $this->shipmentPayUrlGenerator->resolveSite();
         $prepaymentAmount = $site?->getCodPrepaymentAmount() ?? 0.0;
 
         return [

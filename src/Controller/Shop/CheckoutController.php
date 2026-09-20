@@ -250,6 +250,7 @@ class CheckoutController extends AbstractController
                             $_locale,
                             $this->getUser() instanceof User ? $this->getUser() : null,
                             (string) $request->cookies->get(VisitorIdResolver::COOKIE_NAME, ''),
+                            $request->getHost(),
                         );
 
                         if ($result->getType() === 'success') {
