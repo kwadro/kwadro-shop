@@ -275,7 +275,7 @@ admin.email_sender.email_unique: Відправник з такою електр
 
 admin.order_email.name: Назва листа
 admin.order_email.code: Код листа
-admin.order_email.code_help: 'Коди подій: order_created, wait_payment_for_shipment, order_paid, register_user (реєстрація користувача).'
+admin.order_email.code_help: 'Коди подій: order_created, wait_payment_for_shipment, deposit_pay, order_paid, register_user (реєстрація користувача).'
 admin.order_email.code_unique: Лист з таким кодом вже існує.
 admin.order_email.code_format: 'Код може містити лише малі латинські літери, цифри та символ _.'
 admin.order_email.template: Шаблон

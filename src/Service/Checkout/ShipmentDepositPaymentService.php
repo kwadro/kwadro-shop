@@ -9,6 +9,7 @@ use App\Entity\PaymentStatus;
 use App\Entity\ShopPaymentMethod;
 use App\Entity\Site;
 use App\Repository\PaymentRepository;
+use App\Service\Checkout\Monobank\MonobankInvoiceStatusClient;
 use Psr\Log\LoggerInterface;
 
 final class ShipmentDepositPaymentService
@@ -17,6 +18,8 @@ final class ShipmentDepositPaymentService
         private readonly PaymentRepository $paymentRepository,
         private readonly OrderCheckoutService $orderCheckoutService,
         private readonly PaymentCheckoutService $paymentCheckoutService,
+        private readonly ShipmentPayTokenService $tokenService,
+        private readonly MonobankInvoiceStatusClient $monobankInvoiceStatusClient,
         private readonly LoggerInterface $logger,
     ) {
     }
@@ -27,6 +30,8 @@ final class ShipmentDepositPaymentService
         if ($amount <= 0) {
             return ShipmentDepositCheckoutResult::unavailable(0.0);
         }
+
+        $this->syncPendingDepositFromGateway($order);
 
         if ($order->getStatus() === OrderStatus::DepositPaid || $this->isDepositPaid($order, $amount)) {
             return ShipmentDepositCheckoutResult::paid($amount);
@@ -155,6 +160,95 @@ final class ShipmentDepositPaymentService
         return false;
     }
 
+    /**
+     * Syncs pending Monobank deposit payment with gateway status (browser return / missed webhook).
+     */
+    public function syncPendingDepositFromGateway(Order $order): bool
+    {
+        if ($order->getStatus() === OrderStatus::DepositPaid) {
+            return true;
+        }
+
+        $payment = $this->findPendingMonobankDepositPayment($order);
+        if ($payment === null) {
+            return $this->isDepositPaid($order, max(0.0, round($order->getSite()?->getCodPrepaymentAmount() ?? 0.0, 2)));
+        }
+
+        $invoiceId = $this->resolveMonobankInvoiceId($payment);
+        if ($invoiceId === null) {
+            return false;
+        }
+
+        $payload = $this->monobankInvoiceStatusClient->fetchStatus($invoiceId);
+        if ($payload === null) {
+            $this->logger->warning('Monobank invoice status sync failed.', [
+                'order_id' => $order->getId(),
+                'payment_id' => $payment->getId(),
+                'invoiceId' => $invoiceId,
+            ]);
+
+            return false;
+        }
+
+        $status = (string) ($payload['status'] ?? '');
+        if ($status === 'success') {
+            if ($payment->getMonobankInvoiceId() === null) {
+                $payment->setMonobankInvoiceId($invoiceId);
+            }
+            $this->orderCheckoutService->markPaymentSuccessful($payment, $payload);
+
+            return true;
+        }
+
+        if (in_array($status, ['failure', 'expired', 'reversed'], true)) {
+            $this->orderCheckoutService->markPaymentFailed($payment, $payload);
+        }
+
+        return false;
+    }
+
+    private function findPendingMonobankDepositPayment(Order $order): ?Payment
+    {
+        $payment = $this->paymentRepository->findLatestPendingGatewayByOrder($order);
+        if ($payment !== null && $payment->getMethod() === ShopPaymentMethod::Monobank) {
+            return $payment;
+        }
+
+        foreach ($order->getPayments() as $candidate) {
+            if ($candidate->getMethod() !== ShopPaymentMethod::Monobank) {
+                continue;
+            }
+            if ($candidate->getStatus() !== PaymentStatus::Pending) {
+                continue;
+            }
+            if (!str_contains((string) $candidate->getGatewayReference(), '-D')) {
+                continue;
+            }
+
+            return $candidate;
+        }
+
+        return null;
+    }
+
+    private function resolveMonobankInvoiceId(Payment $payment): ?string
+    {
+        $invoiceId = trim((string) ($payment->getMonobankInvoiceId() ?? ''));
+        if ($invoiceId !== '') {
+            return $invoiceId;
+        }
+
+        $gatewayResponse = $payment->getGatewayResponse();
+        if (\is_array($gatewayResponse)) {
+            $fromResponse = trim((string) ($gatewayResponse['invoiceId'] ?? ''));
+            if ($fromResponse !== '') {
+                return $fromResponse;
+            }
+        }
+
+        return null;
+    }
+
     private function resolveGatewayMethod(Site $site): ?string
     {
         $enabled = $site->getActivePaymentMethods();
@@ -183,6 +277,7 @@ final class ShipmentDepositPaymentService
         $redirectParams = [
             '_locale' => $locale,
             'orderNumber' => $order->getOrderNumber(),
+            'token' => $this->tokenService->generateForOrder($order),
             'return' => '1',
         ];
 

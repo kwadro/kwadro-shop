@@ -272,7 +272,7 @@ class OrderCheckoutService
             }
 
             if ($wasPending && $isShipmentDeposit) {
-                $this->orderEmailMailer->sendForOrder($order, OrderEmailEvent::OrderPaid, $payment);
+                $this->orderEmailMailer->sendForOrder($order, OrderEmailEvent::DepositPay, $payment);
             }
 
             $this->cartStorage->deactivateCartForOrder($order);

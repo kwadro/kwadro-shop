@@ -28,6 +28,36 @@ class PaymentRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
+    /**
+     * @return list<Payment>
+     */
+    public function findAllByOrder(Order $order): array
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.order = :order')
+            ->setParameter('order', $order)
+            ->orderBy('p.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return list<int>
+     */
+    public function findIdsByOrder(Order $order): array
+    {
+        /** @var list<int|string> $ids */
+        $ids = $this->createQueryBuilder('p')
+            ->select('p.id')
+            ->andWhere('p.order = :order')
+            ->setParameter('order', $order)
+            ->orderBy('p.id', 'ASC')
+            ->getQuery()
+            ->getSingleColumnResult();
+
+        return array_map(static fn (int|string $id): int => (int) $id, $ids);
+    }
+
     public function findLatestByOrder(Order $order): ?Payment
     {
         return $this->findLatestPendingByOrder($order);

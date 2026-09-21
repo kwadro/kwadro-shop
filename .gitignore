@@ -1,5 +1,7 @@
 
 ###> symfony/framework-bundle ###
+/deploy-stage.php
+/deploy.php
 /111
 /bash
 /export

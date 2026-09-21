@@ -54,7 +54,7 @@ class ShipmentPayController extends AbstractController
     {
         [$order, , $site] = $this->resolveAccess($orderNumber, $request);
         $checkout = $this->depositPaymentService->resolveCheckout($order, $site, $_locale);
-        if ($redirect = $this->redirectIfDepositPaid($order, $checkout, $_locale, $request)) {
+        if ($redirect = $this->redirectIfDepositPaid($order, $checkout, $_locale)) {
             return $redirect;
         }
         $ibanDetails = $this->ibanDetailsProvider->createForOrder($order, $site, $_locale);
@@ -113,9 +113,13 @@ class ShipmentPayController extends AbstractController
     )]
     public function pay(string $_locale, string $orderNumber, Request $request): Response
     {
+        if ($request->query->getBoolean('return')) {
+            return $this->handleBankReturn($orderNumber, $_locale, $request);
+        }
+
         [$order, , $site] = $this->resolveAccess($orderNumber, $request);
         $checkout = $this->depositPaymentService->resolveCheckout($order, $site, $_locale);
-        if ($redirect = $this->redirectIfDepositPaid($order, $checkout, $_locale, $request)) {
+        if ($redirect = $this->redirectIfDepositPaid($order, $checkout, $_locale)) {
             return $redirect;
         }
         $qrPayload = $this->depositPaymentService->resolveQrPayload($checkout);
@@ -183,6 +187,37 @@ class ShipmentPayController extends AbstractController
         return $response;
     }
 
+    private function handleBankReturn(string $orderNumber, string $locale, Request $request): RedirectResponse
+    {
+        $order = $this->orderRepository->findOneByOrderNumber($orderNumber);
+        if ($order === null) {
+            throw new NotFoundHttpException();
+        }
+
+        if ($this->hasAccessToken($request)) {
+            $legacyCodPayment = $this->paymentRepository->findOnDeliveryByOrder($order);
+            $token = (string) $request->query->get('token', '');
+            $tokenValid = $this->tokenService->matchesOrder($order, $token)
+                || ($legacyCodPayment !== null && $this->tokenService->matches($order, $legacyCodPayment, $token));
+            if (!$tokenValid) {
+                throw new AccessDeniedHttpException();
+            }
+        }
+
+        $this->depositPaymentService->syncPendingDepositFromGateway($order);
+
+        $this->addFlash('success', $this->translator->trans('shop.shipment_pay.deposit_paid_success', [
+            '%order_number%' => $order->getOrderNumber(),
+        ], 'messages'));
+
+        return $this->redirectToRoute('shop_home', ['_locale' => $locale]);
+    }
+
+    private function hasAccessToken(Request $request): bool
+    {
+        return trim((string) $request->query->get('token', '')) !== '';
+    }
+
     /** @return array{0: Order, 1: Payment|null, 2: Site} */
     private function resolveAccess(string $orderNumber, Request $request): array
     {
@@ -212,17 +247,13 @@ class ShipmentPayController extends AbstractController
         Order $order,
         ShipmentDepositCheckoutResult $checkout,
         string $locale,
-        Request $request,
     ): ?RedirectResponse {
         if ($checkout->state !== ShipmentDepositCheckoutResult::STATE_PAID
             && $order->getStatus() !== OrderStatus::DepositPaid) {
             return null;
         }
 
-        $flashKey = $request->query->getBoolean('return')
-            ? 'shop.shipment_pay.deposit_paid_success'
-            : 'shop.shipment_pay.already_paid';
-        $this->addFlash('success', $this->translator->trans($flashKey, [
+        $this->addFlash('success', $this->translator->trans('shop.shipment_pay.already_paid', [
             '%order_number%' => $order->getOrderNumber(),
         ], 'messages'));
 

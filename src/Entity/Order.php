@@ -367,6 +367,22 @@ class Order
         return $this->payments;
     }
 
+    /**
+     * @return list<int>
+     */
+    public function getPaymentIds(): array
+    {
+        $ids = [];
+        foreach ($this->payments as $payment) {
+            $id = $payment->getId();
+            if ($id !== null) {
+                $ids[] = $id;
+            }
+        }
+
+        return $ids;
+    }
+
     public function addPayment(Payment $payment): static
     {
         if (!$this->payments->contains($payment)) {

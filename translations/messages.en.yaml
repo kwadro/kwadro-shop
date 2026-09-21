@@ -275,7 +275,7 @@ admin.email_sender.email_unique: A sender with this email already exists.
 
 admin.order_email.name: Letter name
 admin.order_email.code: Letter code
-admin.order_email.code_help: 'Event codes: order_created, wait_payment_for_shipment, order_paid, register_user (user registration).'
+admin.order_email.code_help: 'Event codes: order_created, wait_payment_for_shipment, deposit_pay, order_paid, register_user (user registration).'
 admin.order_email.code_unique: An order email with this code already exists.
 admin.order_email.code_format: 'Code may contain only lowercase Latin letters, digits and underscore.'
 admin.order_email.template: Template
