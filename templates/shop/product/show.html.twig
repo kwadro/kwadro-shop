@@ -1,0 +1,14 @@
+{% extends 'shop/layout.html.twig' %}
+{% set setting = site_settings() %}
+{% block title %}{{ product.name }} — {{ setting.seo.meta_title|default('') }}{% endblock %}
+{% block og_title %}{{ product.name }}{% endblock %}
+{% block og_url %}{{ absolute_url(path('shop_product', {_locale: app.request.locale, slug: product.slug})) }}{% endblock %}
+{% block canonical_url %}{{ absolute_url(path('shop_product', {_locale: app.request.locale, slug: product.slug})) }}{% endblock %}
+
+{% block main %}
+    {% include 'shop/partials/_product_view.html.twig' %}
+{% endblock %}
+
+{% block javascripts %}
+    {% include 'shop/partials/_product_view_scripts.html.twig' %}
+{% endblock %}

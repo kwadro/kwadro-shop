@@ -1,7 +1,9 @@
 #@GENERATE TRANSLATE START
+admin.dashboard_title: Kvadro Admin
 menu.dashboard: Dashboard
 menu.group_setting: Setting Site
 menu.group_catalog: Product catalog
+menu.group_orders: Orders
 menu.group_email: Email
 menu.group_bank: Bank
 menu.link_email_template: Email templates
@@ -24,6 +26,8 @@ menu.link_user: Users
 menu.link_user_single: User
 menu.link_product: Products
 menu.link_product_single: Product
+menu.link_category: Categories
+menu.link_category_single: Category
 menu.link_supplier: Suppliers
 menu.link_supplier_single: Supplier
 menu.link_product_offer: Product offers
@@ -145,7 +149,10 @@ admin.site.delivery.np_branch: Nova Poshta — branch
 admin.site.delivery.np_postomat: Nova Poshta — parcel locker
 admin.product.name: Name
 admin.product.sku: SKU
+admin.product.slug: URL slug
+admin.product.slug_help: Leave empty to generate from the product name. Used in /product/{slug}.
 admin.product.category: Category
+admin.product.categories: Categories
 admin.product.weight: Weight (kg)
 admin.product.package_height: Package height (cm)
 admin.product.package_width: Package width (cm)
@@ -178,6 +185,34 @@ admin.product_offer.price: Price
 admin.product_offer.old_price: Old price
 admin.product_offer.qty: Stock qty
 admin.product_offer.qty_help: Available quantity from this supplier offer.
+admin.category.name: Name
+admin.category.slug: URL slug
+admin.category.enabled: Enabled
+admin.category.enabled_yes: Yes
+admin.category.enabled_no: No
+admin.category.meta_title: Meta title
+admin.category.meta_description: Meta description
+admin.category.parent: Parent category
+admin.category.parent_help: Leave empty for a root category. New categories usually go under Default.
+admin.category.level: Level
+admin.category.level_help: Calculated automatically from the parent category (Default = 0).
+admin.category.position: Position
+admin.category.children: Subcategories
+admin.category.products: Products
+admin.category.cannot_delete_default: The Default category cannot be deleted.
+admin.category.tree_title: Categories
+admin.category.tree: Category tree
+admin.category.tree_empty: No categories yet
+admin.category.add_root: Add Root Category
+admin.category.add_subcategory: Add Subcategory
+admin.category.edit: Edit
+admin.category.delete: Delete
+admin.category.delete_confirm: Delete this category?
+admin.category.select_hint: Select a category in the tree on the left
+admin.category.product_count: Products in category
+admin.category.default_badge: Default
+admin.category.id: ID
+admin.category.toggle: Collapse / expand
 admin.supplier.name: Name
 admin.supplier.description: Description
 admin.supplier.phone: Phone
@@ -303,6 +338,11 @@ menu.link_site: Sites
 shop.about: About Us
 shop.my_account: My Account
 shop.welcome: Welcome!
+shop.category.menu_label: Product categories
+shop.category.menu_toggle: Categories
+shop.category.home: Home
+shop.category.subcategories: Subcategories
+shop.category.empty_products: There are no products in this category yet.
 shop.login: Log In
 shop.register: Register
 shop.logout: Log Out

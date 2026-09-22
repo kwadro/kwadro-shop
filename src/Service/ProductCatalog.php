@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Entity\Category;
 use App\Repository\ProductRepository;
 
 class ProductCatalog
@@ -25,6 +26,27 @@ class ProductCatalog
         $product = $this->productRepository->findOneWithOffers($id);
 
         return $product?->toCatalogArray();
+    }
+
+    /** @return array<string, mixed>|null */
+    public function findBySlug(string $slug): ?array
+    {
+        $product = $this->productRepository->findOneBySlugWithOffers($slug);
+
+        return $product?->toCatalogArray();
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    public function findByCategory(Category $category): array
+    {
+        $products = $this->productRepository->findByCategoryWithOffers($category);
+
+        return array_map(
+            static fn ($product): array => $product->toCatalogArray(),
+            $products,
+        );
     }
 
     /** @param array<string, mixed> $product */

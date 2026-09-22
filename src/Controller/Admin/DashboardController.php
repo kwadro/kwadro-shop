@@ -34,6 +34,7 @@ use App\Controller\Admin\OrderCrudController;
 use App\Controller\Admin\OrderItemCrudController;
 use App\Controller\Admin\PaymentCrudController;
 use App\Controller\Admin\ProductCrudController;
+use App\Controller\Admin\CategoryCrudController;
 use App\Controller\Admin\ProductOfferCrudController;
 use App\Controller\Admin\ShipmentAddressCrudController;
 use App\Controller\Admin\SupplierCrudController;
@@ -92,7 +93,7 @@ class DashboardController extends AbstractDashboardController
     public function configureDashboard(): Dashboard
     {
         return Dashboard::new()
-            ->setTitle($this->translator->trans('catalog_recipe', [], 'messages'))
+            ->setTitle($this->translator->trans('admin.dashboard_title', [], 'messages'))
             // set this option if you prefer the page content to span the entire
             // browser width, instead of the default design which sets a max width
             ->renderContentMaximized()
@@ -109,8 +110,10 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkToDashboard($this->translator->trans('menu.dashboard', [], 'messages'), 'fa fa-home');
         yield MenuItem::section($this->translator->trans('menu.group_catalog', [], 'messages'));
         yield MenuItem::linkTo(ProductCrudController::class, $this->translator->trans('menu.link_product', [], 'messages'), 'fas fa-box');
+        yield MenuItem::linkTo(CategoryCrudController::class, $this->translator->trans('menu.link_category', [], 'messages'), 'fas fa-folder');
         yield MenuItem::linkTo(SupplierCrudController::class, $this->translator->trans('menu.link_supplier', [], 'messages'), 'fas fa-truck');
         yield MenuItem::linkTo(ProductOfferCrudController::class, $this->translator->trans('menu.link_product_offer', [], 'messages'), 'fas fa-tags');
+        yield MenuItem::section($this->translator->trans('menu.group_orders', [], 'messages'));
         yield MenuItem::linkTo(CartCrudController::class, $this->translator->trans('menu.link_cart', [], 'messages'), 'fas fa-shopping-cart');
         yield MenuItem::linkTo(CartItemCrudController::class, $this->translator->trans('menu.link_cart_item', [], 'messages'), 'fas fa-list');
         yield MenuItem::linkTo(OrderCrudController::class, $this->translator->trans('menu.link_order', [], 'messages'), 'fas fa-receipt');

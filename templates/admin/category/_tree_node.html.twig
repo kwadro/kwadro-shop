@@ -1,0 +1,36 @@
+<li class="mage-category__node{% if node.children is not empty %} has-children{% endif %}{% if selectedId == node.id %} is-selected{% endif %}"
+    role="treeitem"
+    data-id="{{ node.id }}"
+    aria-expanded="true">
+    <div class="mage-category__row">
+        {% if node.children is not empty %}
+            <button type="button" class="mage-category__toggle" aria-label="{{ 'admin.category.toggle'|trans }}" data-mage-toggle>
+                <i class="fa fa-caret-down"></i>
+            </button>
+        {% else %}
+            <span class="mage-category__toggle mage-category__toggle--spacer"></span>
+        {% endif %}
+
+        <a class="mage-category__link"
+           href="{{ selectBase }}{% if '?' in selectBase %}&{% else %}?{% endif %}selectedId={{ node.id }}"
+           title="{{ node.name }}">
+            <span class="mage-category__name">{{ node.name }}</span>
+            {% if not node.enabled %}
+                <span class="mage-category__disabled">{{ 'admin.category.enabled_no'|trans }}</span>
+            {% endif %}
+            <span class="mage-category__count">({{ node.productCount }})</span>
+        </a>
+    </div>
+
+    {% if node.children is not empty %}
+        <ul class="mage-category__children" role="group">
+            {% for child in node.children %}
+                {% include 'admin/category/_tree_node.html.twig' with {
+                    node: child,
+                    selectedId: selectedId,
+                    selectBase: selectBase
+                } only %}
+            {% endfor %}
+        </ul>
+    {% endif %}
+</li>

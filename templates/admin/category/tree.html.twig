@@ -1,0 +1,124 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block content_title %}{{ 'admin.category.tree_title'|trans }}{% endblock %}
+
+{% block main %}
+    <div class="mage-category" data-select-base="{{ urls.selectBase|e('html_attr') }}">
+        <div class="mage-category__toolbar">
+            <div class="mage-category__toolbar-title">
+                {{ 'admin.category.tree_title'|trans }}
+            </div>
+            <div class="mage-category__toolbar-actions">
+                <a class="btn btn-secondary" href="{{ urls.addRoot }}">
+                    <i class="fa fa-plus"></i> {{ 'admin.category.add_root'|trans }}
+                </a>
+                {% if urls.addSubcategory %}
+                    <a class="btn btn-primary" href="{{ urls.addSubcategory }}">
+                        <i class="fa fa-sitemap"></i> {{ 'admin.category.add_subcategory'|trans }}
+                    </a>
+                {% else %}
+                    <button type="button" class="btn btn-primary" disabled>
+                        <i class="fa fa-sitemap"></i> {{ 'admin.category.add_subcategory'|trans }}
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="mage-category__layout">
+            <aside class="mage-category__tree-panel">
+                <div class="mage-category__tree-heading">{{ 'admin.category.tree'|trans }}</div>
+                <ul class="mage-category__tree" role="tree">
+                    {% for node in tree %}
+                        {% include 'admin/category/_tree_node.html.twig' with {
+                            node: node,
+                            selectedId: selected ? selected.id : null,
+                            selectBase: urls.selectBase
+                        } only %}
+                    {% else %}
+                        <li class="mage-category__empty">{{ 'admin.category.tree_empty'|trans }}</li>
+                    {% endfor %}
+                </ul>
+            </aside>
+
+            <section class="mage-category__details-panel">
+                {% if selected %}
+                    <div class="mage-category__details-header">
+                        <h2 class="mage-category__details-title">{{ selected.name }}</h2>
+                        {% if selected.isDefault %}
+                            <span class="badge text-bg-secondary">{{ 'admin.category.default_badge'|trans }}</span>
+                        {% endif %}
+                        {% if selected.enabled %}
+                            <span class="badge text-bg-success">{{ 'admin.category.enabled_yes'|trans }}</span>
+                        {% else %}
+                            <span class="badge text-bg-danger">{{ 'admin.category.enabled_no'|trans }}</span>
+                        {% endif %}
+                    </div>
+
+                    <dl class="mage-category__meta">
+                        <div>
+                            <dt>{{ 'admin.category.id'|trans }}</dt>
+                            <dd>{{ selected.id }}</dd>
+                        </div>
+                        <div>
+                            <dt>{{ 'admin.category.slug'|trans }}</dt>
+                            <dd><code>{{ selected.slug }}</code></dd>
+                        </div>
+                        <div>
+                            <dt>{{ 'admin.category.enabled'|trans }}</dt>
+                            <dd>{{ selected.enabled ? 'admin.category.enabled_yes'|trans : 'admin.category.enabled_no'|trans }}</dd>
+                        </div>
+                        <div>
+                            <dt>{{ 'admin.category.level'|trans }}</dt>
+                            <dd>{{ selected.level }}</dd>
+                        </div>
+                        <div>
+                            <dt>{{ 'admin.category.position'|trans }}</dt>
+                            <dd>{{ selected.position }}</dd>
+                        </div>
+                        <div>
+                            <dt>{{ 'admin.category.product_count'|trans }}</dt>
+                            <dd><strong>{{ selectedProductCount }}</strong></dd>
+                        </div>
+                        <div>
+                            <dt>{{ 'admin.category.parent'|trans }}</dt>
+                            <dd>{{ selected.parent ? selected.parent.name : '—' }}</dd>
+                        </div>
+                        <div>
+                            <dt>{{ 'admin.category.meta_title'|trans }}</dt>
+                            <dd>{{ selected.metaTitle ?: '—' }}</dd>
+                        </div>
+                        <div>
+                            <dt>{{ 'admin.category.meta_description'|trans }}</dt>
+                            <dd>{{ selected.metaDescription ?: '—' }}</dd>
+                        </div>
+                    </dl>
+
+                    <div class="mage-category__details-actions">
+                        {% if urls.edit %}
+                            <a class="btn btn-primary" href="{{ urls.edit }}">
+                                <i class="fa fa-edit"></i> {{ 'admin.category.edit'|trans }}
+                            </a>
+                        {% endif %}
+                        {% if urls.addSubcategory %}
+                            <a class="btn btn-secondary" href="{{ urls.addSubcategory }}">
+                                <i class="fa fa-plus"></i> {{ 'admin.category.add_subcategory'|trans }}
+                            </a>
+                        {% endif %}
+                        {% if urls.delete %}
+                            <form method="post" action="{{ urls.delete }}" class="d-inline" onsubmit="return confirm('{{ 'admin.category.delete_confirm'|trans|e('js') }}');">
+                                <input type="hidden" name="token" value="{{ csrf_token('ea-delete') }}">
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="fa fa-trash"></i> {{ 'admin.category.delete'|trans }}
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="mage-category__placeholder">
+                        {{ 'admin.category.select_hint'|trans }}
+                    </div>
+                {% endif %}
+            </section>
+        </div>
+    </div>
+{% endblock %}

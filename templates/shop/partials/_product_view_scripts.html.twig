@@ -1,0 +1,235 @@
+<script>
+    document.querySelectorAll('.shop-product__thumb').forEach((thumb) => {
+        thumb.addEventListener('click', () => {
+            const mainImage = document.getElementById('product-main-image');
+            mainImage.src = thumb.dataset.full;
+            mainImage.alt = thumb.dataset.alt;
+
+            document.querySelectorAll('.shop-product__thumb').forEach((item) => {
+                item.classList.remove('is-active');
+            });
+            thumb.classList.add('is-active');
+        });
+    });
+
+    const offersBox = document.querySelector('[data-product-offers]');
+    const offersModal = document.getElementById('shop-offers-modal');
+    const offerIdInput = document.querySelector('[data-offer-id-input]');
+
+    const formatPrice = (value) => {
+        const amount = Number(value);
+        if (Number.isNaN(amount)) {
+            return '';
+        }
+
+        return amount.toLocaleString('uk-UA', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        }) + ' ₴';
+    };
+
+    const applyOffer = (offer) => {
+        if (!offer || !offersBox) {
+            return;
+        }
+
+        const priceEl = offersBox.querySelector('[data-offer-price]');
+        const oldPriceEl = offersBox.querySelector('[data-offer-old-price]');
+        const supplierEl = offersBox.querySelector('[data-offer-supplier]');
+        const saveEl = offersBox.querySelector('[data-offer-save]');
+        const discountBadge = document.getElementById('product-discount-badge');
+        const supplierLabel = offersBox.dataset.supplierLabel || 'Supplier';
+        const youSaveLabel = offersBox.dataset.youSaveLabel || 'You save %amount%';
+
+        if (priceEl) {
+            priceEl.textContent = formatPrice(offer.price);
+        }
+
+        if (oldPriceEl) {
+            if (offer.oldPrice) {
+                oldPriceEl.textContent = formatPrice(offer.oldPrice);
+                oldPriceEl.hidden = false;
+            } else {
+                oldPriceEl.hidden = true;
+            }
+        }
+
+        if (supplierEl && offer.supplier) {
+            supplierEl.hidden = false;
+            supplierEl.replaceChildren();
+
+            supplierEl.append(`${supplierLabel}: `);
+
+            const nameEl = document.createElement('strong');
+            nameEl.textContent = offer.supplier.name;
+            supplierEl.append(nameEl);
+
+            if (offer.supplier.phone) {
+                const phoneEl = document.createElement('span');
+                phoneEl.className = 'shop-product__supplier-meta';
+                phoneEl.textContent = offer.supplier.phone;
+                supplierEl.append(phoneEl);
+            }
+        }
+
+        if (saveEl) {
+            if (offer.oldPrice && offer.oldPrice > offer.price) {
+                const saved = formatPrice(offer.oldPrice - offer.price);
+                saveEl.textContent = youSaveLabel.replace('%amount%', saved);
+                saveEl.hidden = false;
+            } else {
+                saveEl.hidden = true;
+            }
+        }
+
+        if (discountBadge) {
+            if (offer.discountPercent) {
+                discountBadge.textContent = `-${offer.discountPercent}%`;
+                discountBadge.hidden = false;
+            } else {
+                discountBadge.hidden = true;
+            }
+        }
+
+        if (offerIdInput) {
+            offerIdInput.value = String(offer.id);
+        }
+
+        const stockBox = document.getElementById('product-stock');
+        const stockText = stockBox?.querySelector('[data-offer-stock-text]');
+        const qtyInput = document.querySelector('[data-offer-qty-input]');
+        const buyButton = document.getElementById('product-buy-button');
+        const productInStock = offersBox?.dataset.productInStock === '1';
+        const offerQty = Math.max(0, Number(offer.qty) || 0);
+        const offerAvailable = productInStock && offerQty > 0;
+
+        if (stockBox && stockText) {
+            stockBox.classList.toggle('shop-product__stock--in', offerAvailable);
+            stockBox.classList.toggle('shop-product__stock--out', !offerAvailable);
+            if (offerAvailable) {
+                stockText.textContent = (stockBox.dataset.inStockLabel || 'In stock (%qty% pcs.)')
+                    .replace('__QTY__', String(offerQty));
+            } else {
+                stockText.textContent = stockBox.dataset.outOfStockLabel || 'Out of stock';
+            }
+        }
+
+        if (qtyInput) {
+            qtyInput.max = String(Math.max(1, offerQty));
+            qtyInput.value = String(Math.min(Number(qtyInput.value) || 1, Math.max(1, offerQty)));
+            qtyInput.disabled = !offerAvailable;
+        }
+
+        if (buyButton) {
+            buyButton.disabled = !offerAvailable;
+        }
+
+        offersModal?.querySelectorAll('[data-offer-id]').forEach((button) => {
+            const isActive = Number(button.dataset.offerId) === Number(offer.id);
+            button.classList.toggle('is-active', isActive);
+            button.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        });
+    };
+
+    const openOffersModal = () => {
+        if (!offersModal) {
+            return;
+        }
+
+        offersModal.hidden = false;
+        offersModal.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('shop-offers-modal-open');
+    };
+
+    const closeOffersModal = () => {
+        if (!offersModal) {
+            return;
+        }
+
+        offersModal.hidden = true;
+        offersModal.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('shop-offers-modal-open');
+    };
+
+    document.querySelector('[data-offers-open]')?.addEventListener('click', openOffersModal);
+
+    offersModal?.querySelectorAll('[data-offers-close]').forEach((element) => {
+        element.addEventListener('click', closeOffersModal);
+    });
+
+    offersModal?.querySelectorAll('[data-offer-id]').forEach((button) => {
+        button.addEventListener('click', () => {
+            const offers = JSON.parse(offersBox?.dataset.offers || '[]');
+            const offer = offers.find((item) => Number(item.id) === Number(button.dataset.offerId));
+            if (!offer) {
+                return;
+            }
+
+            applyOffer(offer);
+            closeOffersModal();
+        });
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && offersModal && !offersModal.hidden) {
+            closeOffersModal();
+        }
+    });
+
+    const addForm = document.querySelector('[data-add-to-cart]');
+    if (addForm) {
+        addForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const submitBtn = addForm.querySelector('.shop-product__buy');
+            const mainImage = document.getElementById('product-main-image');
+            const defaultLabel = addForm.dataset.defaultLabel || submitBtn.textContent;
+            const addedLabel = addForm.dataset.addedLabel || defaultLabel;
+
+            submitBtn.disabled = true;
+
+            try {
+                const response = await fetch(addForm.action, {
+                    method: 'POST',
+                    body: new FormData(addForm),
+                    headers: {
+                        Accept: 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    throw new Error(data.error || 'Request failed');
+                }
+
+                if (window.ShopCart) {
+                    if (data.added_item) {
+                        window.ShopCart.trackAddToCart(data.added_item);
+                    }
+
+                    window.ShopCart.flyToCart(mainImage);
+                    window.ShopCart.update(data.cart, {
+                        open: true,
+                        highlight: true,
+                        scrollToTop: true,
+                    });
+                }
+
+                submitBtn.classList.add('shop-product__buy--added');
+                submitBtn.textContent = addedLabel;
+
+                window.setTimeout(() => {
+                    submitBtn.classList.remove('shop-product__buy--added');
+                    submitBtn.textContent = defaultLabel;
+                    submitBtn.disabled = false;
+                }, 1800);
+            } catch (error) {
+                submitBtn.disabled = false;
+                submitBtn.classList.add('shop-product__buy--error');
+                window.setTimeout(() => submitBtn.classList.remove('shop-product__buy--error'), 1200);
+            }
+        });
+    }
+</script>

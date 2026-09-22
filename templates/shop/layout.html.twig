@@ -14,15 +14,15 @@
         <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet"/>
     {% else %}
         <meta name="robots" content="index,follow"/>
-        <meta name="description" content="{{setting.seo.meta_description}}"/>
+        <meta name="description" content="{% block meta_description %}{{ setting.seo.meta_description }}{% endblock %}"/>
         <meta name="keywords" content="{{setting.seo.meta_keywords}}"/>
         <meta name="author" content="{{setting.seo.author}}"/>
-        <meta property="og:title" content="{{setting.seo.og_title}}"/>
-        <meta property="og:description" content="{{setting.seo.og_description}}"/>
+        <meta property="og:title" content="{% block og_title %}{{ setting.seo.og_title }}{% endblock %}"/>
+        <meta property="og:description" content="{% block og_description %}{{ setting.seo.og_description }}{% endblock %}"/>
         <meta property="og:type" content="{{setting.seo.og_type}}"/>
-        <meta property="og:url" content="{{ absolute_url(path('shop_home')) }}"/>
+        <meta property="og:url" content="{% block og_url %}{{ absolute_url(path('shop_home')) }}{% endblock %}"/>
         <meta property="og:image" content="{{ absolute_url(asset('uploads/images/' ~ setting.seo.og_image)) }}"/>
-        <link rel="canonical" href="{{ absolute_url(path('shop_home')) }}"/>
+        <link rel="canonical" href="{% block canonical_url %}{{ absolute_url(path('shop_home')) }}{% endblock %}"/>
     {% endif %}
     <link rel="icon" type="image/x-icon" href="{{ absolute_url(asset('uploads/images/' ~ setting.header.favicon)) }}"/>
     <link rel="stylesheet" href="{{ asset('css/shop.css') }}">
@@ -32,6 +32,7 @@
 <body class="shop-body">
     {% include 'shop/partials/_gtm.html.twig' with { placement: 'body', setting: setting } only %}
     {% include 'shop/partials/_header.html.twig' %}
+    {% include 'shop/partials/_category_nav.html.twig' %}
 
     <div class="shop-layout">
         <div class="shop-layout__inner">
@@ -55,6 +56,7 @@
 
     <script src="{{ asset('js/shop-cart.js') }}" defer></script>
     <script src="{{ asset('js/shop-city.js') }}" defer></script>
+    <script src="{{ asset('js/shop-category-nav.js') }}" defer></script>
     {% block javascripts %}{% endblock %}
 </body>
 </html>

@@ -10,6 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
 #[ORM\Table(name: 'shop_product')]
+#[ORM\UniqueConstraint(name: 'uniq_shop_product_slug', columns: ['slug'])]
 #[ORM\HasLifecycleCallbacks]
 class Product
 {
@@ -26,8 +27,16 @@ class Product
     #[ORM\Column(length: 64)]
     private string $sku = '';
 
-    #[ORM\Column(length: 120)]
-    private string $category = '';
+    #[ORM\Column(length: 255)]
+    private string $slug = '';
+
+    /** @var Collection<int, Category> */
+    #[ORM\ManyToMany(targetEntity: Category::class, inversedBy: 'products')]
+    #[ORM\JoinTable(name: 'shop_product_category')]
+    #[ORM\JoinColumn(name: 'product_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    #[ORM\InverseJoinColumn(name: 'category_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    #[ORM\OrderBy(['level' => 'ASC', 'position' => 'ASC', 'name' => 'ASC'])]
+    private Collection $categories;
 
     #[ORM\Column(type: 'decimal', precision: 8, scale: 3, options: ['default' => '1.000'])]
     private string $weight = '1.000';
@@ -83,6 +92,7 @@ class Product
 
     public function __construct()
     {
+        $this->categories = new ArrayCollection();
         $this->offers = new ArrayCollection();
     }
 
@@ -115,16 +125,89 @@ class Product
         return $this;
     }
 
-    public function getCategory(): string
+    public function getSlug(): string
     {
-        return $this->category;
+        return $this->slug;
     }
 
-    public function setCategory(string $category): static
+    public function setSlug(string $slug): static
     {
-        $this->category = trim($category);
+        $this->slug = trim($slug);
 
         return $this;
+    }
+
+    public function ensureSlug(): static
+    {
+        if ($this->slug !== '') {
+            return $this;
+        }
+
+        $base = $this->slugify($this->name !== '' ? $this->name : $this->sku);
+        $this->slug = $base !== '' ? $base : 'product';
+
+        return $this;
+    }
+
+    private function slugify(string $value): string
+    {
+        $map = [
+            'а' => 'a', 'б' => 'b', 'в' => 'v', 'г' => 'h', 'ґ' => 'g', 'д' => 'd', 'е' => 'e', 'є' => 'ye',
+            'ж' => 'zh', 'з' => 'z', 'и' => 'y', 'і' => 'i', 'ї' => 'yi', 'й' => 'y', 'к' => 'k', 'л' => 'l',
+            'м' => 'm', 'н' => 'n', 'о' => 'o', 'п' => 'p', 'р' => 'r', 'с' => 's', 'т' => 't', 'у' => 'u',
+            'ф' => 'f', 'х' => 'kh', 'ц' => 'ts', 'ч' => 'ch', 'ш' => 'sh', 'щ' => 'shch', 'ь' => '', 'ю' => 'yu',
+            'я' => 'ya', 'ы' => 'y', 'э' => 'e', 'ъ' => '',
+        ];
+
+        $value = mb_strtolower(trim($value));
+        $value = strtr($value, $map);
+        $value = preg_replace('/[^a-z0-9]+/', '-', $value) ?? '';
+        $value = trim($value, '-');
+
+        return $value;
+    }
+
+    /** @return Collection<int, Category> */
+    public function getCategories(): Collection
+    {
+        return $this->categories;
+    }
+
+    public function addCategory(Category $category): static
+    {
+        if (!$this->categories->contains($category)) {
+            $this->categories->add($category);
+        }
+
+        return $this;
+    }
+
+    public function removeCategory(Category $category): static
+    {
+        $this->categories->removeElement($category);
+
+        return $this;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function getCategoryNames(): array
+    {
+        $names = [];
+        foreach ($this->categories as $category) {
+            $name = trim($category->getName());
+            if ($name !== '') {
+                $names[] = $name;
+            }
+        }
+
+        return $names;
+    }
+
+    public function getCategoriesLabel(): string
+    {
+        return implode(', ', $this->getCategoryNames());
     }
 
     public function getWeight(): float
@@ -638,7 +721,17 @@ class Product
             'id' => $this->id,
             'name' => $this->name,
             'sku' => $this->sku,
-            'category' => $this->category,
+            'slug' => $this->slug,
+            'category' => $this->getCategoriesLabel(),
+            'categories' => array_map(
+                static fn (Category $category): array => [
+                    'id' => $category->getId(),
+                    'name' => $category->getName(),
+                    'slug' => $category->getSlug(),
+                    'level' => $category->getLevel(),
+                ],
+                $this->categories->toArray(),
+            ),
             'hasPrice' => $hasPrice,
             'price' => $price,
             'weight' => $this->getWeight(),

@@ -3,10 +3,12 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Product;
+use App\Repository\ProductRepository;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use Doctrine\ORM\EntityManagerInterface;
@@ -24,6 +26,7 @@ class ProductCrudController extends AbstractCrudController
     public function __construct(
         private readonly TranslatorInterface $translator,
         private readonly AdminUrlGenerator $adminUrlGenerator,
+        private readonly ProductRepository $productRepository,
     ) {
     }
 
@@ -64,7 +67,14 @@ class ProductCrudController extends AbstractCrudController
         yield IdField::new('id')->hideOnForm();
         yield TextField::new('name', $this->translator->trans('admin.product.name', [], 'messages'));
         yield TextField::new('sku', $this->translator->trans('admin.product.sku', [], 'messages'));
-        yield TextField::new('category', $this->translator->trans('admin.product.category', [], 'messages'));
+        yield TextField::new('slug', $this->translator->trans('admin.product.slug', [], 'messages'))
+            ->setHelp($this->translator->trans('admin.product.slug_help', [], 'messages'));
+        yield AssociationField::new('categories', $this->translator->trans('admin.product.categories', [], 'messages'))
+            ->setFormTypeOption('by_reference', false)
+            ->setRequired(false)
+            ->formatValue(static fn ($value, Product $product): string => $product->getCategoriesLabel() !== ''
+                ? $product->getCategoriesLabel()
+                : '—');
         yield NumberField::new('weight', $this->translator->trans('admin.product.weight', [], 'messages'))
             ->setNumDecimals(3)
             ->hideOnIndex();
@@ -159,6 +169,7 @@ class ProductCrudController extends AbstractCrudController
     {
         if ($entityInstance instanceof Product) {
             $entityInstance->syncGalleryFromFormFields();
+            $this->ensureUniqueSlug($entityInstance);
         }
 
         parent::persistEntity($entityManager, $entityInstance);
@@ -168,8 +179,24 @@ class ProductCrudController extends AbstractCrudController
     {
         if ($entityInstance instanceof Product) {
             $entityInstance->syncGalleryFromFormFields();
+            $this->ensureUniqueSlug($entityInstance);
         }
 
         parent::updateEntity($entityManager, $entityInstance);
+    }
+
+    private function ensureUniqueSlug(Product $product): void
+    {
+        $product->ensureSlug();
+        $base = $product->getSlug();
+        $slug = $base;
+        $suffix = 1;
+
+        while ($this->productRepository->slugExists($slug, $product->getId())) {
+            $slug = $base . '-' . $suffix;
+            ++$suffix;
+        }
+
+        $product->setSlug($slug);
     }
 }

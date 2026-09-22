@@ -1,0 +1,164 @@
+{% if not product %}
+    <section class="shop-product-empty">
+        <h1 class="shop-product-empty__title">{{ 'shop.product.empty_catalog_title'|trans }}</h1>
+        <p class="shop-product-empty__text">{{ 'shop.product.empty_catalog_text'|trans }}</p>
+    </section>
+{% else %}
+    {% set gallery = product.gallery|default([]) %}
+    {% set defaultProductImage = {
+        full: asset('uploads/images/' ~ (setting.header.logo|default('favicon.png'))),
+        thumb: asset('uploads/images/' ~ (setting.header.logo|default('favicon.png'))),
+        alt: product.name,
+    } %}
+    {% set mainImage = gallery|length > 0 ? gallery[0] : defaultProductImage %}
+    <article class="shop-product">
+        <div class="shop-product__gallery">
+            <div class="shop-product__main-image{% if gallery|length == 0 %} shop-product__main-image--placeholder{% endif %}">
+                {% if product.badge %}
+                    <span class="shop-product__badge">{{ product.badge }}</span>
+                {% endif %}
+                <span class="shop-product__discount" id="product-discount-badge"{% if not product.discountPercent %} hidden{% endif %}>
+                    {%- if product.discountPercent -%}-{{ product.discountPercent }}%{%- endif -%}
+                </span>
+                <img
+                    id="product-main-image"
+                    src="{{ mainImage.full }}"
+                    alt="{{ mainImage.alt|default(product.name) }}"
+                >
+            </div>
+
+            {% if gallery|length > 1 %}
+            <div class="shop-product__thumbs" role="list">
+                {% for image in gallery %}
+                    <button
+                        type="button"
+                        class="shop-product__thumb{% if loop.first %} is-active{% endif %}"
+                        data-full="{{ image.full }}"
+                        data-alt="{{ image.alt }}"
+                        aria-label="{{ image.alt }}"
+                    >
+                        <img src="{{ image.thumb }}" alt="{{ image.alt }}">
+                    </button>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="shop-product__info">
+            <p class="shop-product__category">{{ product.category }}</p>
+            <h1 class="shop-product__title">{{ product.name }}</h1>
+            <p class="shop-product__sku">{{ 'shop.product.sku'|trans }}: {{ product.sku }}</p>
+            <div class="shop-product__lead">{{ product.shortDescription|raw }}</div>
+
+            <div
+                class="shop-product__price-box"
+                data-product-offers
+                data-offers='{{ product.offers|json_encode|e('html_attr') }}'
+                data-you-save-label="{{ 'shop.product.you_save'|trans|e('html_attr') }}"
+                data-supplier-label="{{ 'shop.product.supplier'|trans|e('html_attr') }}"
+                data-product-in-stock="{{ product.productInStock ? '1' : '0' }}"
+            >
+                <div class="shop-product__price-row">
+                    <div class="shop-product__price{% if not product.hasPrice %} shop-product__price--unavailable{% endif %}">
+                        {% if product.hasPrice %}
+                            <strong data-offer-price>{{ product.price|number_format(2, ',', ' ') }} ₴</strong>
+                            <del data-offer-old-price{% if not product.oldPrice %} hidden{% endif %}>{{ product.oldPrice|number_format(2, ',', ' ') }} ₴</del>
+                        {% else %}
+                            <strong>{{ 'shop.product.no_price'|trans }}</strong>
+                        {% endif %}
+                    </div>
+                    {% if (product.offers|default([])|length) > 1 %}
+                        <button type="button" class="shop-product__offers-btn" data-offers-open>
+                            {{ 'shop.product.all_offers'|trans }}
+                        </button>
+                    {% endif %}
+                </div>
+                {% if product.hasPrice and product.supplier %}
+                    <p class="shop-product__supplier" data-offer-supplier>
+                        {{ 'shop.product.supplier'|trans }}:
+                        <strong>{{ product.supplier.name }}</strong>
+                        {% if product.supplier.phone and (product.offers|default([])|length > 1) %}
+                            <span class="shop-product__supplier-meta">{{ product.supplier.phone }}</span>
+                        {% endif %}
+                    </p>
+                {% else %}
+                    <p class="shop-product__supplier" data-offer-supplier hidden></p>
+                {% endif %}
+                <span
+                    class="shop-product__save"
+                    data-offer-save
+                    {% if not product.hasPrice or not product.discountPercent %}hidden{% endif %}
+                >
+                    {% if product.hasPrice and product.oldPrice %}
+                        {{ 'shop.product.you_save'|trans({
+                            '%amount%': (product.oldPrice - product.price)|number_format(2, ',', ' ') ~ ' ₴'
+                        }) }}
+                    {% endif %}
+                </span>
+            </div>
+
+            <div
+                id="product-stock"
+                class="shop-product__stock{% if product.inStock %} shop-product__stock--in{% else %} shop-product__stock--out{% endif %}"
+                data-in-stock-label="{{ 'shop.product.in_stock'|trans({'%qty%': '__QTY__'})|e('html_attr') }}"
+                data-out-of-stock-label="{{ 'shop.product.out_of_stock'|trans|e('html_attr') }}"
+            >
+                <span class="shop-product__stock-dot"></span>
+                <span data-offer-stock-text>
+                    {% if product.inStock %}
+                        {{ 'shop.product.in_stock'|trans({'%qty%': product.stockQty}) }}
+                    {% else %}
+                        {{ 'shop.product.out_of_stock'|trans }}
+                    {% endif %}
+                </span>
+            </div>
+
+            <form
+                method="post"
+                action="{{ path('shop_cart_add', {_locale: app.request.locale}) }}"
+                class="shop-product__actions"
+                id="product-add-to-cart-form"
+                data-add-to-cart
+                data-added-label="{{ 'shop.cart.added_short'|trans }}"
+                data-default-label="{{ 'shop.add_to_cart'|trans }}"
+            >
+                <input type="hidden" name="product_id" value="{{ product.id }}">
+                {% if product.selectedOfferId %}
+                    <input type="hidden" name="offer_id" value="{{ product.selectedOfferId }}" data-offer-id-input>
+                {% endif %}
+                <input type="hidden" name="_token" value="{{ csrf_token('cart_add') }}">
+
+                <label class="shop-product__qty">
+                    {{ 'shop.product.quantity'|trans }}
+                    <input
+                        type="number"
+                        name="quantity"
+                        min="1"
+                        max="{{ product.stockQty > 0 ? product.stockQty : 1 }}"
+                        value="1"
+                        data-offer-qty-input
+                        required
+                    >
+                </label>
+                <button type="submit" class="shop-product__buy" id="product-buy-button"{% if not product.inStock or not product.hasPrice %} disabled{% endif %}>
+                    {{ 'shop.add_to_cart'|trans }}
+                </button>
+            </form>
+
+            <ul class="shop-product__features">
+                {% for feature in product.features %}
+                    <li>{{ feature }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </article>
+
+    <section class="shop-product__description">
+        <h2>{{ 'shop.product.description_title'|trans }}</h2>
+        <p>{{ product.description|raw }}</p>
+    </section>
+
+    {% if (product.offers|default([])|length) > 1 %}
+        {% include 'shop/partials/_product_offers_modal.html.twig' %}
+    {% endif %}
+{% endif %}

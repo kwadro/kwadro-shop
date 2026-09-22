@@ -1,7 +1,9 @@
 #@GENERATE TRANSLATE START
+admin.dashboard_title: Адмінпанель Квадро
 menu.dashboard: Головна
 menu.group_setting: Настройки Сайта
 menu.group_catalog: Каталог товарів
+menu.group_orders: Замовлення
 menu.group_email: Пошта
 menu.group_bank: Банк
 menu.link_email_template: Шаблони листів
@@ -24,6 +26,8 @@ menu.link_user: Користувачі
 menu.link_user_single: Користувач
 menu.link_product: Товари
 menu.link_product_single: Товар
+menu.link_category: Категорії
+menu.link_category_single: Категорія
 menu.link_supplier: Постачальники
 menu.link_supplier_single: Постачальник
 menu.link_product_offer: Цінові пропозиції
@@ -145,7 +149,10 @@ admin.site.delivery.np_branch: Нова Пошта — відділення
 admin.site.delivery.np_postomat: Нова Пошта — поштомат
 admin.product.name: Назва
 admin.product.sku: Артикул
+admin.product.slug: URL-slug
+admin.product.slug_help: Залиште порожнім — згенерується з назви. Використовується в /product/{slug}.
 admin.product.category: Категорія
+admin.product.categories: Категорії
 admin.product.weight: Вага (кг)
 admin.product.package_height: Висота упаковки (см)
 admin.product.package_width: Ширина упаковки (см)
@@ -178,6 +185,34 @@ admin.product_offer.price: Ціна
 admin.product_offer.old_price: Стара ціна
 admin.product_offer.qty: Залишок
 admin.product_offer.qty_help: Кількість товару в наявності у цього постачальника.
+admin.category.name: Назва
+admin.category.slug: URL-slug
+admin.category.enabled: Включено
+admin.category.enabled_yes: Так
+admin.category.enabled_no: Ні
+admin.category.meta_title: Meta title
+admin.category.meta_description: Meta description
+admin.category.parent: Батьківська категорія
+admin.category.parent_help: Залиште порожнім для кореневої категорії. Нові категорії зазвичай створюють під Default.
+admin.category.level: Рівень
+admin.category.level_help: Обчислюється автоматично від батьківської категорії (Default = 0).
+admin.category.position: Порядок
+admin.category.children: Підкатегорії
+admin.category.products: Товари
+admin.category.cannot_delete_default: Категорію Default не можна видалити.
+admin.category.tree_title: Категорії
+admin.category.tree: Дерево категорій
+admin.category.tree_empty: Категорій ще немає
+admin.category.add_root: Додати кореневу категорію
+admin.category.add_subcategory: Додати підкатегорію
+admin.category.edit: Редагувати
+admin.category.delete: Видалити
+admin.category.delete_confirm: Видалити цю категорію?
+admin.category.select_hint: Оберіть категорію в дереві зліва
+admin.category.product_count: Товарів у категорії
+admin.category.default_badge: Default
+admin.category.id: ID
+admin.category.toggle: Згорнути / розгорнути
 admin.supplier.name: Назва
 admin.supplier.description: Опис
 admin.supplier.phone: Телефон
@@ -302,6 +337,11 @@ menu.link_site: Сайти
 shop.about: Про нас
 shop.my_account: Мій кабінет
 shop.welcome: Ласкаво просимо!
+shop.category.menu_label: Категорії товарів
+shop.category.menu_toggle: Категорії
+shop.category.home: Головна
+shop.category.subcategories: Підкатегорії
+shop.category.empty_products: У цій категорії поки немає товарів.
 shop.login: Увійти
 shop.register: Реєстрація
 shop.logout: Вийти

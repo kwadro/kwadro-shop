@@ -8,7 +8,7 @@ final class ShopRoutes
 
     public const SITEMAP_LOCALE = 'uk';
 
-    public const PAGE_SLUG_REQUIREMENTS = '(?!login|logout|register|admin|checkout|admser|uk|en)[a-z0-9][a-z0-9\-]*';
+    public const PAGE_SLUG_REQUIREMENTS = '(?!login|logout|register|admin|checkout|admser|category|product|uk|en)[a-z0-9][a-z0-9\-]*';
 
     /** @var list<string> */
     public const INDEXABLE_MENU_TYPES = ['Link', 'FooterLink'];

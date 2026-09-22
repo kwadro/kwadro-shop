@@ -1,0 +1,45 @@
+{% set categoryMenu = shop_category_menu() %}
+{% if categoryMenu is not empty %}
+<nav class="shop-category-nav" aria-label="{{ 'shop.category.menu_label'|trans }}">
+    <div class="shop-category-nav__inner">
+        <button
+            type="button"
+            class="shop-category-nav__toggle"
+            data-category-nav-toggle
+            aria-expanded="false"
+            aria-controls="shop-category-nav-list"
+        >
+            <span>{{ 'shop.category.menu_toggle'|trans }}</span>
+            <i class="shop-category-nav__toggle-icon" aria-hidden="true"></i>
+        </button>
+
+        <ul id="shop-category-nav-list" class="shop-category-nav__list" data-category-nav-list>
+            {% for item in categoryMenu %}
+                <li class="shop-category-nav__item{% if item.children is not empty %} shop-category-nav__item--has-children{% endif %}">
+                    <a
+                        class="shop-category-nav__link"
+                        href="{{ path('shop_category', {_locale: app.request.locale, slug: item.slug}) }}"
+                    >
+                        {{ item.name }}
+                        {% if item.children is not empty %}
+                            <span class="shop-category-nav__caret" aria-hidden="true"></span>
+                        {% endif %}
+                    </a>
+
+                    {% if item.children is not empty %}
+                        <ul class="shop-category-nav__submenu">
+                            {% for child in item.children %}
+                                <li>
+                                    <a href="{{ path('shop_category', {_locale: app.request.locale, slug: child.slug}) }}">
+                                        {{ child.name }}
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</nav>
+{% endif %}

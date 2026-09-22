@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\Category;
 use App\Entity\Product;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -41,5 +42,58 @@ class ProductRepository extends ServiceEntityRepository
             ->setParameter('id', $id)
             ->getQuery()
             ->getOneOrNullResult();
+    }
+
+    public function findOneBySlugWithOffers(string $slug): ?Product
+    {
+        $slug = trim($slug);
+        if ($slug === '') {
+            return null;
+        }
+
+        return $this->createQueryBuilder('p')
+            ->leftJoin('p.offers', 'o')
+            ->addSelect('o')
+            ->leftJoin('o.supplier', 's')
+            ->addSelect('s')
+            ->leftJoin('p.categories', 'c')
+            ->addSelect('c')
+            ->andWhere('p.slug = :slug')
+            ->setParameter('slug', $slug)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    public function slugExists(string $slug, ?int $excludeId = null): bool
+    {
+        $qb = $this->createQueryBuilder('p')
+            ->select('COUNT(p.id)')
+            ->andWhere('p.slug = :slug')
+            ->setParameter('slug', $slug);
+
+        if ($excludeId !== null) {
+            $qb->andWhere('p.id != :excludeId')
+                ->setParameter('excludeId', $excludeId);
+        }
+
+        return (int) $qb->getQuery()->getSingleScalarResult() > 0;
+    }
+
+    /**
+     * @return list<Product>
+     */
+    public function findByCategoryWithOffers(Category $category): array
+    {
+        return $this->createQueryBuilder('p')
+            ->innerJoin('p.categories', 'c')
+            ->leftJoin('p.offers', 'o')
+            ->addSelect('o')
+            ->leftJoin('o.supplier', 's')
+            ->addSelect('s')
+            ->andWhere('c = :category')
+            ->setParameter('category', $category)
+            ->orderBy('p.name', 'ASC')
+            ->getQuery()
+            ->getResult();
     }
 }

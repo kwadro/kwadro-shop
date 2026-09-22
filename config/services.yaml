@@ -54,6 +54,9 @@ services:
     App\Twig\CityExtension:
         tags: ['twig.extension']
 
+    App\Twig\CategoryExtension:
+        tags: ['twig.extension']
+
     App\Service\GeoIp\GeoIpFileLogger:
         arguments:
             $logFile: '%kernel.logs_dir%/geoip.log'
