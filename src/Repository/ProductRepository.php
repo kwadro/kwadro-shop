@@ -96,4 +96,33 @@ class ProductRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Products assigned to at least one public (enabled, non-default) category.
+     *
+     * @return list<array{slug: string, updatedAt: \DateTimeImmutable|null}>
+     */
+    public function findPublishedSitemapEntries(): array
+    {
+        $rows = $this->createQueryBuilder('p')
+            ->select('p.slug AS slug', 'p.updated_at AS updatedAt')
+            ->innerJoin('p.categories', 'c')
+            ->andWhere('c.enabled = true')
+            ->andWhere('c.slug != :defaultSlug')
+            ->andWhere('c.name != :defaultName')
+            ->andWhere("p.slug != ''")
+            ->setParameter('defaultSlug', Category::DEFAULT_SLUG)
+            ->setParameter('defaultName', Category::DEFAULT_NAME)
+            ->groupBy('p.id')
+            ->addGroupBy('p.slug')
+            ->addGroupBy('p.updated_at')
+            ->orderBy('p.slug', 'ASC')
+            ->getQuery()
+            ->getArrayResult();
+
+        return array_values(array_filter(
+            $rows,
+            static fn (array $row): bool => \is_string($row['slug'] ?? null) && $row['slug'] !== '',
+        ));
+    }
 }

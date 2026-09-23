@@ -219,4 +219,27 @@ class CategoryRepository extends ServiceEntityRepository
 
         return $this->findOneBy(['slug' => $slug]);
     }
+
+    /**
+     * @return list<array{slug: string, updatedAt: \DateTimeImmutable|null}>
+     */
+    public function findPublishedSitemapEntries(): array
+    {
+        $rows = $this->createQueryBuilder('c')
+            ->select('c.slug AS slug', 'c.updated_at AS updatedAt')
+            ->andWhere('c.enabled = true')
+            ->andWhere('c.slug != :defaultSlug')
+            ->andWhere('c.name != :defaultName')
+            ->setParameter('defaultSlug', Category::DEFAULT_SLUG)
+            ->setParameter('defaultName', Category::DEFAULT_NAME)
+            ->andWhere("c.slug != ''")
+            ->orderBy('c.slug', 'ASC')
+            ->getQuery()
+            ->getArrayResult();
+
+        return array_values(array_filter(
+            $rows,
+            static fn (array $row): bool => \is_string($row['slug'] ?? null) && $row['slug'] !== '',
+        ));
+    }
 }
