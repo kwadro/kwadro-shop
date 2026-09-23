@@ -100,4 +100,19 @@ class PaymentRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
+
+    public function findLatestPendingGatewayByOrderAndMethod(Order $order, string $method): ?Payment
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.order = :order')
+            ->andWhere('p.method = :method')
+            ->andWhere('p.status = :status')
+            ->setParameter('order', $order)
+            ->setParameter('method', $method)
+            ->setParameter('status', PaymentStatus::Pending)
+            ->orderBy('p.id', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }

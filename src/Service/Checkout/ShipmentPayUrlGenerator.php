@@ -46,11 +46,11 @@ final class ShipmentPayUrlGenerator
         $locale = $order->getLocale() !== '' ? $order->getLocale() : 'uk';
         $this->applySiteRoutingContext();
 
-        return $this->urlGenerator->generate('shop_order_shipment_pay_iban', [
+        return $this->urlGenerator->generate('shop_order_shipment_pay', [
             '_locale' => $locale,
             'orderNumber' => $order->getOrderNumber(),
             'token' => $this->tokenService->generateForOrder($order),
-        ], UrlGeneratorInterface::ABSOLUTE_URL);
+        ], UrlGeneratorInterface::ABSOLUTE_URL) . '#iban';
     }
 
     private function canGenerateShipmentPayUrl(Order $order): bool

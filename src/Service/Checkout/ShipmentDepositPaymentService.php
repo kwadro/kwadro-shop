@@ -41,123 +41,50 @@ final class ShipmentDepositPaymentService
             return ShipmentDepositCheckoutResult::unavailable($amount);
         }
 
-        $gatewayMethod = $this->resolveGatewayMethod($site);
-        if ($gatewayMethod === null) {
+        $methods = $this->resolveAvailableGatewayMethods($site);
+        if ($methods === []) {
             return ShipmentDepositCheckoutResult::unavailable($amount);
         }
 
-        $payment = $this->paymentRepository->findLatestPendingGatewayByOrder($order);
-        if ($payment === null || abs($payment->getAmount() - $amount) > 0.009) {
-            $payment = $this->orderCheckoutService->createShipmentDepositPayment($order, $amount, $gatewayMethod);
-        }
-
-        $payUrl = trim((string) ($payment->getRedirectUrl() ?? ''));
-        if ($payUrl === '') {
-            try {
-                $result = $this->createGatewayInvoice($payment, $amount, $order, $locale);
-                $payUrl = $result->getType() === 'redirect'
-                    ? (string) $result->getUrl()
-                    : 'https://www.liqpay.ua/api/3/checkout';
-            } catch (\Throwable $exception) {
-                $this->logger->error('Shipment deposit invoice creation failed.', [
-                    'order_id' => $order->getId(),
-                    'payment_id' => $payment->getId(),
-                    'error' => $exception->getMessage(),
-                ]);
-
-                return ShipmentDepositCheckoutResult::unavailable($amount);
+        $gateways = [];
+        foreach ($methods as $method) {
+            $option = $this->resolveGatewayOption($order, $amount, $locale, $method);
+            if ($option !== null) {
+                $gateways[] = $option;
             }
         }
 
-        if ($payUrl === '') {
+        if ($gateways === []) {
             return ShipmentDepositCheckoutResult::unavailable($amount);
         }
 
-        return ShipmentDepositCheckoutResult::pending($amount, $payment, $payUrl, $gatewayMethod);
+        return ShipmentDepositCheckoutResult::pending($amount, $gateways);
     }
 
-    public function resolveQrPayload(ShipmentDepositCheckoutResult $checkout): ?string
+    public function resolveQrPayloadForMethod(ShipmentDepositCheckoutResult $checkout, string $method): ?string
     {
-        if ($checkout->state !== ShipmentDepositCheckoutResult::STATE_PENDING || $checkout->payUrl === null) {
+        $gateway = $checkout->gateway($method);
+        if ($gateway === null) {
             return null;
         }
 
-        if ($checkout->gatewayMethod === ShopPaymentMethod::Monobank) {
-            return $checkout->payUrl;
+        if ($method === ShopPaymentMethod::Monobank) {
+            return $gateway->payUrl !== '' ? $gateway->payUrl : null;
         }
 
-        $payment = $checkout->payment;
-        if ($payment === null) {
-            return $checkout->payUrl;
-        }
-
-        $gatewayResponse = $payment->getGatewayResponse();
-        if (\is_array($gatewayResponse) && ($gatewayResponse['type'] ?? '') === 'liqpay_form') {
-            return sprintf(
-                'https://www.liqpay.ua/api/3/checkout?data=%s&signature=%s',
-                rawurlencode((string) ($gatewayResponse['data'] ?? '')),
-                rawurlencode((string) ($gatewayResponse['signature'] ?? '')),
-            );
-        }
-
-        return $checkout->payUrl;
-    }
-
-    /** @return array{data: string, signature: string}|null */
-    public function resolveLiqPayWidget(ShipmentDepositCheckoutResult $checkout): ?array
-    {
-        if ($checkout->state !== ShipmentDepositCheckoutResult::STATE_PENDING) {
-            return null;
-        }
-
-        if ($checkout->gatewayMethod !== ShopPaymentMethod::Privatbank) {
-            return null;
-        }
-
-        $payment = $checkout->payment;
-        if ($payment === null) {
-            return null;
-        }
-
-        $gatewayResponse = $payment->getGatewayResponse();
-        if (!\is_array($gatewayResponse) || ($gatewayResponse['type'] ?? '') !== 'liqpay_form') {
-            return null;
-        }
-
-        $data = trim((string) ($gatewayResponse['data'] ?? ''));
-        $signature = trim((string) ($gatewayResponse['signature'] ?? ''));
-
-        if ($data === '' || $signature === '') {
-            return null;
-        }
-
-        return [
-            'data' => $data,
-            'signature' => $signature,
-        ];
-    }
-
-    private function isDepositPaid(Order $order, float $amount): bool
-    {
-        if ($order->getStatus() === OrderStatus::DepositPaid) {
-            return true;
-        }
-
-        if ($order->getPayAmount() + 0.009 >= $amount) {
-            return true;
-        }
-
-        foreach ($order->getPayments() as $payment) {
-            if ($payment->getMethod() === ShopPaymentMethod::OnDelivery) {
-                continue;
+        if ($method === ShopPaymentMethod::Privatbank) {
+            if ($gateway->liqpayWidget !== null) {
+                return sprintf(
+                    'https://www.liqpay.ua/api/3/checkout?data=%s&signature=%s',
+                    rawurlencode($gateway->liqpayWidget['data']),
+                    rawurlencode($gateway->liqpayWidget['signature']),
+                );
             }
 
-            if ($payment->getStatus() === PaymentStatus::Success && $payment->getAmount() + 0.009 >= $amount) {
-                return true;
-            }
+            return $gateway->payUrl !== '' ? $gateway->payUrl : null;
         }
 
-        return false;
+        return null;
     }
 
     /**
@@ -207,10 +134,142 @@ final class ShipmentDepositPaymentService
         return false;
     }
 
+    private function resolveGatewayOption(
+        Order $order,
+        float $amount,
+        string $locale,
+        string $method,
+    ): ?ShipmentDepositGatewayOption {
+        $payment = $this->paymentRepository->findLatestPendingGatewayByOrderAndMethod($order, $method);
+        if ($payment === null || abs($payment->getAmount() - $amount) > 0.009) {
+            $payment = $this->orderCheckoutService->createShipmentDepositPayment($order, $amount, $method);
+        }
+
+        $payUrl = trim((string) ($payment->getRedirectUrl() ?? ''));
+        if ($payUrl === '' || ($method === ShopPaymentMethod::Privatbank && !str_contains($payUrl, 'data='))) {
+            try {
+                if ($payUrl === '' || $payment->getGatewayResponse() === null) {
+                    $result = $this->createGatewayInvoice($payment, $amount, $order, $locale);
+                    $payUrl = $result->getType() === 'redirect'
+                        ? (string) $result->getUrl()
+                        : $this->buildLiqPayCheckoutUrl(
+                            (string) $result->getData(),
+                            (string) $result->getSignature(),
+                        );
+                } else {
+                    $payUrl = $this->buildLiqPayPayUrlFromPayment($payment) ?? $payUrl;
+                }
+            } catch (\Throwable $exception) {
+                $this->logger->error('Shipment deposit invoice creation failed.', [
+                    'order_id' => $order->getId(),
+                    'payment_id' => $payment->getId(),
+                    'method' => $method,
+                    'error' => $exception->getMessage(),
+                ]);
+
+                return null;
+            }
+        }
+
+        if ($method === ShopPaymentMethod::Privatbank) {
+            $payUrl = $this->buildLiqPayPayUrlFromPayment($payment) ?? $payUrl;
+            if ($payUrl !== '' && !str_contains($payUrl, 'data=')) {
+                return null;
+            }
+            if ($payUrl !== trim((string) ($payment->getRedirectUrl() ?? ''))) {
+                $this->orderCheckoutService->updatePaymentGatewayData(
+                    $payment,
+                    $payUrl,
+                    $payment->getGatewayResponse(),
+                );
+            }
+        }
+
+        if ($payUrl === '') {
+            return null;
+        }
+
+        return new ShipmentDepositGatewayOption(
+            method: $method,
+            payment: $payment,
+            payUrl: $payUrl,
+            liqpayWidget: $this->extractLiqPayWidget($payment, $method),
+        );
+    }
+
+    private function buildLiqPayPayUrlFromPayment(Payment $payment): ?string
+    {
+        $widget = $this->extractLiqPayWidget($payment, ShopPaymentMethod::Privatbank);
+        if ($widget === null) {
+            return null;
+        }
+
+        return $this->buildLiqPayCheckoutUrl($widget['data'], $widget['signature']);
+    }
+
+    private function buildLiqPayCheckoutUrl(string $data, string $signature): string
+    {
+        return sprintf(
+            'https://www.liqpay.ua/api/3/checkout?data=%s&signature=%s',
+            rawurlencode($data),
+            rawurlencode($signature),
+        );
+    }
+
+    /** @return array{data: string, signature: string}|null */
+    private function extractLiqPayWidget(Payment $payment, string $method): ?array
+    {
+        if ($method !== ShopPaymentMethod::Privatbank) {
+            return null;
+        }
+
+        $gatewayResponse = $payment->getGatewayResponse();
+        if (!\is_array($gatewayResponse) || ($gatewayResponse['type'] ?? '') !== 'liqpay_form') {
+            return null;
+        }
+
+        $data = trim((string) ($gatewayResponse['data'] ?? ''));
+        $signature = trim((string) ($gatewayResponse['signature'] ?? ''));
+        if ($data === '' || $signature === '') {
+            return null;
+        }
+
+        return [
+            'data' => $data,
+            'signature' => $signature,
+        ];
+    }
+
+    private function isDepositPaid(Order $order, float $amount): bool
+    {
+        if ($order->getStatus() === OrderStatus::DepositPaid) {
+            return true;
+        }
+
+        if ($order->getPayAmount() + 0.009 >= $amount) {
+            return true;
+        }
+
+        foreach ($order->getPayments() as $payment) {
+            if ($payment->getMethod() === ShopPaymentMethod::OnDelivery) {
+                continue;
+            }
+
+            if ($payment->getStatus() === PaymentStatus::Success && $payment->getAmount() + 0.009 >= $amount) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private function findPendingMonobankDepositPayment(Order $order): ?Payment
     {
-        $payment = $this->paymentRepository->findLatestPendingGatewayByOrder($order);
-        if ($payment !== null && $payment->getMethod() === ShopPaymentMethod::Monobank) {
+        $payment = $this->paymentRepository->findLatestPendingGatewayByOrderAndMethod(
+            $order,
+            ShopPaymentMethod::Monobank,
+        );
+        if ($payment !== null) {
             return $payment;
         }
 
@@ -249,26 +308,23 @@ final class ShipmentDepositPaymentService
         return null;
     }
 
-    private function resolveGatewayMethod(Site $site): ?string
+    /** @return list<string> */
+    private function resolveAvailableGatewayMethods(Site $site): array
     {
         $enabled = $site->getActivePaymentMethods();
-        if (in_array(ShopPaymentMethod::Monobank, $enabled, true) && $this->paymentCheckoutService->isMonobankConfigured()) {
-            return ShopPaymentMethod::Monobank;
+        $methods = [];
+
+        $monoAllowed = $enabled === [] || in_array(ShopPaymentMethod::Monobank, $enabled, true);
+        $privatAllowed = $enabled === [] || in_array(ShopPaymentMethod::Privatbank, $enabled, true);
+
+        if ($monoAllowed && $this->paymentCheckoutService->isMonobankConfigured()) {
+            $methods[] = ShopPaymentMethod::Monobank;
+        }
+        if ($privatAllowed && $this->paymentCheckoutService->isPrivatBankConfigured()) {
+            $methods[] = ShopPaymentMethod::Privatbank;
         }
 
-        if (in_array(ShopPaymentMethod::Privatbank, $enabled, true) && $this->paymentCheckoutService->isPrivatBankConfigured()) {
-            return ShopPaymentMethod::Privatbank;
-        }
-
-        if ($this->paymentCheckoutService->isMonobankConfigured()) {
-            return ShopPaymentMethod::Monobank;
-        }
-
-        if ($this->paymentCheckoutService->isPrivatBankConfigured()) {
-            return ShopPaymentMethod::Privatbank;
-        }
-
-        return null;
+        return $methods;
     }
 
     private function createGatewayInvoice(Payment $payment, float $amount, Order $order, string $locale): PaymentRedirectResult

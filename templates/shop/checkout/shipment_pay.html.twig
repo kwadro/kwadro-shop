@@ -15,73 +15,151 @@
             <div class="shop-checkout__alert shop-checkout__alert--success">
                 <p>{{ 'shop.shipment_pay.already_paid'|trans }}</p>
             </div>
-        {% elseif checkout.state == 'unavailable' %}
+        {% elseif checkout.state == 'unavailable' and not has_payment_options %}
             <div class="shop-checkout__alert shop-checkout__alert--error">
                 <p>{{ 'shop.shipment_pay.unavailable'|trans }}</p>
             </div>
         {% else %}
             <p class="shop-shipment-pay__hint">{{ 'shop.shipment_pay.hint'|trans }}</p>
 
-            {% if gateway_method == 'monobank' and qr_url %}
-                <div class="shop-shipment-pay__qr-desktop">
-                    <img
-                        src="{{ qr_url }}"
-                        alt="{{ 'shop.shipment_pay.qr_alt'|trans }}"
-                        width="220"
-                        height="220"
-                        class="shop-shipment-pay__qr-image"
-                    >
-                    <p class="shop-shipment-pay__qr-caption">{{ 'shop.shipment_pay.qr_caption_monobank'|trans }}</p>
-                </div>
+            <div class="shop-shipment-pay__options">
+                {% if privatbank or monobank %}
+                    <div class="shop-shipment-pay__card-row">
+                        {% if privatbank %}
+                            <section class="shop-shipment-pay__option" id="pay-privatbank">
+                                <h2 class="shop-shipment-pay__option-title">{{ 'shop.shipment_pay.option_card_privat'|trans }}</h2>
 
-                <div class="shop-shipment-pay__qr-mobile">
-                    {% if qr_download_url %}
-                        <a href="{{ qr_download_url }}" class="shop-shipment-pay__download-btn" download>
-                            {{ 'shop.shipment_pay.save_qr'|trans }}
-                        </a>
-                    {% endif %}
-                    <p class="shop-shipment-pay__qr-caption">{{ 'shop.shipment_pay.mobile_hint'|trans }}</p>
-                </div>
-            {% elseif gateway_method == 'privatbank' and liqpay_widget %}
-                <div class="shop-shipment-pay__qr-desktop shop-shipment-pay__qr-desktop--liqpay">
-                    <div class="shop-shipment-pay__liqpay-widget">
-                        <lp-provider
-                            lp-data="{{ liqpay_widget.data|e('html_attr') }}"
-                            lp-signature="{{ liqpay_widget.signature|e('html_attr') }}"
-                            language="{{ app.request.locale == 'en' ? 'en' : 'uk' }}"
-                        >
-                            <lp-qr></lp-qr>
-                        </lp-provider>
-                    </div>
-                    <p class="shop-shipment-pay__qr-caption">{{ 'shop.shipment_pay.qr_caption_privatbank'|trans }}</p>
-                </div>
+                                {% if privatbank.liqpayWidget %}
+                                    <div class="shop-shipment-pay__qr-desktop shop-shipment-pay__qr-desktop--liqpay">
+                                        <div class="shop-shipment-pay__liqpay-widget" aria-hidden="true">
+                                            <lp-provider
+                                                lp-data="{{ privatbank.liqpayWidget.data|e('html_attr') }}"
+                                                lp-signature="{{ privatbank.liqpayWidget.signature|e('html_attr') }}"
+                                                language="uk"
+                                            >
+                                                <lp-qr></lp-qr>
+                                            </lp-provider>
+                                        </div>
+                                        <p class="shop-shipment-pay__qr-caption">{{ 'shop.shipment_pay.qr_caption_privatbank'|trans }}</p>
+                                    </div>
+                                {% endif %}
 
-                <div class="shop-shipment-pay__qr-mobile shop-shipment-pay__qr-mobile--liqpay">
-                    <div class="shop-shipment-pay__liqpay-widget">
-                        <lp-provider
-                            lp-data="{{ liqpay_widget.data|e('html_attr') }}"
-                            lp-signature="{{ liqpay_widget.signature|e('html_attr') }}"
-                            language="{{ app.request.locale == 'en' ? 'en' : 'uk' }}"
-                        >
-                            <lp-qr></lp-qr>
-                        </lp-provider>
+                                <p class="shop-shipment-pay__actions">
+                                    <a href="{{ privatbank.payUrl }}" class="shop-shipment-pay__pay-btn" target="_blank" rel="noopener noreferrer">
+                                        {{ 'shop.shipment_pay.open_payment_privat'|trans }}
+                                    </a>
+                                </p>
+                            </section>
+                        {% endif %}
+
+                        {% if monobank %}
+                            <section class="shop-shipment-pay__option" id="pay-monobank">
+                                <h2 class="shop-shipment-pay__option-title">{{ 'shop.shipment_pay.option_card_mono'|trans }}</h2>
+
+                                {% if monobank_qr_url %}
+                                    <div class="shop-shipment-pay__qr-desktop">
+                                        <img
+                                            src="{{ monobank_qr_url }}"
+                                            alt="{{ 'shop.shipment_pay.qr_alt'|trans }}"
+                                            width="220"
+                                            height="220"
+                                            class="shop-shipment-pay__qr-image"
+                                        >
+                                        <p class="shop-shipment-pay__qr-caption">{{ 'shop.shipment_pay.qr_caption_monobank'|trans }}</p>
+                                    </div>
+                                {% endif %}
+
+                                <p class="shop-shipment-pay__actions">
+                                    <a href="{{ monobank.payUrl }}" class="shop-shipment-pay__pay-btn" target="_blank" rel="noopener noreferrer">
+                                        {{ 'shop.shipment_pay.open_payment_mono'|trans }}
+                                    </a>
+                                </p>
+                            </section>
+                        {% endif %}
                     </div>
-                    <p class="shop-shipment-pay__qr-caption">{{ 'shop.shipment_pay.qr_caption_privatbank'|trans }}</p>
-                </div>
+                {% endif %}
+
+                {% if iban_accounts is not empty %}
+                    <div class="shop-shipment-pay__card-row shop-shipment-pay__card-row--iban">
+                        {% for iban in iban_accounts %}
+                            {% set isMono = iban.bankKey == 'monobank' %}
+                            <section class="shop-shipment-pay__option shop-shipment-pay__option--iban" id="iban-{{ iban.bankKey }}">
+                                <h2 class="shop-shipment-pay__option-title">
+                                    {{ isMono ? 'shop.shipment_pay.option_iban_mono'|trans : 'shop.shipment_pay.option_iban_privat'|trans }}
+                                </h2>
+
+                                {% set ibanQr = iban_qr_urls[iban.bankKey]|default(null) %}
+                                {% if ibanQr %}
+                                    <div class="shop-shipment-pay__qr-desktop shop-shipment-pay__qr-desktop--iban">
+                                        <img
+                                            src="{{ ibanQr }}"
+                                            alt="{{ 'shop.shipment_pay_iban.qr_alt'|trans }}"
+                                            width="220"
+                                            height="220"
+                                            class="shop-shipment-pay__qr-image"
+                                        >
+                                        <p class="shop-shipment-pay__qr-caption">{{ 'shop.shipment_pay_iban.qr_caption'|trans }}</p>
+                                    </div>
+                                {% endif %}
+
+                                <dl class="shop-shipment-pay__iban-list">
+                                    <div class="shop-shipment-pay__iban-row">
+                                        <dt>{{ 'shop.shipment_pay_iban.recipient'|trans }}</dt>
+                                        <dd>
+                                            <span class="shop-shipment-pay__copy-value" data-copy-value="{{ iban.recipient }}">{{ iban.recipient }}</span>
+                                            <button type="button" class="shop-shipment-pay__copy-btn" data-copy-target="{{ iban.recipient }}">{{ 'shop.shipment_pay_iban.copy'|trans }}</button>
+                                        </dd>
+                                    </div>
+                                    {% if iban.edrpou %}
+                                        <div class="shop-shipment-pay__iban-row">
+                                            <dt>{{ 'shop.shipment_pay_iban.edrpou'|trans }}</dt>
+                                            <dd>
+                                                <span class="shop-shipment-pay__copy-value" data-copy-value="{{ iban.edrpou }}">{{ iban.edrpou }}</span>
+                                                <button type="button" class="shop-shipment-pay__copy-btn" data-copy-target="{{ iban.edrpou }}">{{ 'shop.shipment_pay_iban.copy'|trans }}</button>
+                                            </dd>
+                                        </div>
+                                    {% endif %}
+                                    {% if iban.bankName %}
+                                        <div class="shop-shipment-pay__iban-row">
+                                            <dt>{{ 'shop.shipment_pay_iban.bank'|trans }}</dt>
+                                            <dd>{{ iban.bankName }}</dd>
+                                        </div>
+                                    {% endif %}
+                                    <div class="shop-shipment-pay__iban-row">
+                                        <dt>{{ 'shop.shipment_pay_iban.iban'|trans }}</dt>
+                                        <dd>
+                                            <span class="shop-shipment-pay__copy-value shop-shipment-pay__copy-value--iban" data-copy-value="{{ iban.iban }}">{{ iban.iban }}</span>
+                                            <button type="button" class="shop-shipment-pay__copy-btn" data-copy-target="{{ iban.iban }}">{{ 'shop.shipment_pay_iban.copy'|trans }}</button>
+                                        </dd>
+                                    </div>
+                                    <div class="shop-shipment-pay__iban-row">
+                                        <dt>{{ 'shop.shipment_pay_iban.amount'|trans }}</dt>
+                                        <dd>
+                                            <strong>{{ checkout.amount|number_format(2, ',', ' ') }} ₴</strong>
+                                        </dd>
+                                    </div>
+                                    <div class="shop-shipment-pay__iban-row">
+                                        <dt>{{ 'shop.shipment_pay_iban.purpose'|trans }}</dt>
+                                        <dd>
+                                            <span class="shop-shipment-pay__copy-value" data-copy-value="{{ iban.paymentPurpose }}">{{ iban.paymentPurpose }}</span>
+                                            <button type="button" class="shop-shipment-pay__copy-btn" data-copy-target="{{ iban.paymentPurpose }}">{{ 'shop.shipment_pay_iban.copy'|trans }}</button>
+                                        </dd>
+                                    </div>
+                                </dl>
+                            </section>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            {% if iban_accounts is not empty %}
+                <p class="shop-shipment-pay__note" id="iban">{{ 'shop.shipment_pay_iban.note'|trans }}</p>
             {% endif %}
 
-            {% if pay_url %}
-                <p class="shop-shipment-pay__actions">
-                    <a href="{{ pay_url }}" class="shop-shipment-pay__pay-btn" target="_blank" rel="noopener noreferrer">
-                        {{ 'shop.shipment_pay.open_payment'|trans }}
-                    </a>
-                </p>
-            {% endif %}
-
-            {% if iban_pay_url %}
-                <p class="shop-shipment-pay__alt-link">
-                    <a href="{{ iban_pay_url }}">{{ 'shop.shipment_pay.iban_link'|trans }}</a>
-                </p>
+            {% if not has_payment_options %}
+                <div class="shop-checkout__alert shop-checkout__alert--error">
+                    <p>{{ 'shop.shipment_pay.unavailable'|trans }}</p>
+                </div>
             {% endif %}
         {% endif %}
 
@@ -93,7 +171,29 @@
 
 {% block javascripts %}
     {{ parent() }}
-    {% if gateway_method == 'privatbank' and liqpay_widget %}
+    {% if privatbank and privatbank.liqpayWidget %}
         <script src="https://static.liqpay.ua/elements/customElements.js" defer></script>
+    {% endif %}
+    {% if iban_accounts is not empty %}
+        <script>
+            document.querySelectorAll('.shop-shipment-pay__copy-btn').forEach((button) => {
+                button.addEventListener('click', async () => {
+                    const value = button.dataset.copyTarget || '';
+                    if (!value) {
+                        return;
+                    }
+
+                    try {
+                        await navigator.clipboard.writeText(value);
+                        button.textContent = {{ 'shop.shipment_pay_iban.copied'|trans|json_encode|raw }};
+                        window.setTimeout(() => {
+                            button.textContent = {{ 'shop.shipment_pay_iban.copy'|trans|json_encode|raw }};
+                        }, 1600);
+                    } catch (error) {
+                        window.prompt({{ 'shop.shipment_pay_iban.copy_fallback'|trans|json_encode|raw }}, value);
+                    }
+                });
+            });
+        </script>
     {% endif %}
 {% endblock %}

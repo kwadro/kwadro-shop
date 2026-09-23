@@ -45,6 +45,22 @@ class BankAccountRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
+    /**
+     * @return list<BankAccount>
+     */
+    public function findAllForSiteAndLocale(Site $site, Locale $locale): array
+    {
+        return $this->createQueryBuilder('a')
+            ->andWhere('a.site = :site')
+            ->andWhere('a.locale = :locale')
+            ->setParameter('site', $site)
+            ->setParameter('locale', $locale)
+            ->orderBy('a.is_default', 'DESC')
+            ->addOrderBy('a.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     public function clearDefaultExcept(BankAccount $account): void
     {
         if ($account->getSite() === null || $account->getLocale() === null) {

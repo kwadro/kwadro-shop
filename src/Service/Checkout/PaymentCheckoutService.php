@@ -86,12 +86,8 @@ class PaymentCheckoutService
 
         if ($result->getType() === 'redirect') {
             $this->orderCheckoutService->updatePaymentGatewayData($payment, $result->getUrl(), null);
-        } else {
-            $this->orderCheckoutService->updatePaymentGatewayData($payment, null, [
-                'type' => 'liqpay_form',
-                'action' => $result->getAction(),
-            ]);
         }
+        // liqpay_form is already persisted inside createPrivatBankInvoice with data/signature.
 
         return $result;
     }
@@ -191,8 +187,14 @@ class PaymentCheckoutService
 
         $data = base64_encode(json_encode($params, JSON_UNESCAPED_UNICODE));
         $signature = base64_encode(sha1($this->liqpayPrivateKey . $data . $this->liqpayPrivateKey, true));
+        $checkoutUrl = sprintf(
+            '%s?data=%s&signature=%s',
+            self::LIQPAY_CHECKOUT_URL,
+            rawurlencode($data),
+            rawurlencode($signature),
+        );
 
-        $this->orderCheckoutService->updatePaymentGatewayData($payment, self::LIQPAY_CHECKOUT_URL, [
+        $this->orderCheckoutService->updatePaymentGatewayData($payment, $checkoutUrl, [
             'type' => 'liqpay_form',
             'action' => self::LIQPAY_CHECKOUT_URL,
             'data' => $data,

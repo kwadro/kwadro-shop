@@ -52,32 +52,14 @@ class ShipmentPayController extends AbstractController
     )]
     public function iban(string $_locale, string $orderNumber, Request $request): Response
     {
-        [$order, , $site] = $this->resolveAccess($orderNumber, $request);
-        $checkout = $this->depositPaymentService->resolveCheckout($order, $site, $_locale);
-        if ($redirect = $this->redirectIfDepositPaid($order, $checkout, $_locale)) {
-            return $redirect;
-        }
-        $ibanDetails = $this->ibanDetailsProvider->createForOrder($order, $site, $_locale);
-        $token = $this->tokenService->generateForOrder($order);
-        $qrPayload = $this->resolveIbanQrPayload($ibanDetails, $checkout->amount);
+        $this->resolveAccess($orderNumber, $request);
+        $token = (string) $request->query->get('token', '');
 
-        return $this->render('shop/checkout/shipment_pay_iban.html.twig', [
-            'order' => $order,
-            'checkout' => $checkout,
-            'iban' => $ibanDetails,
-            'qr_url' => $qrPayload !== null
-                ? $this->generateUrl('shop_order_shipment_pay_iban_qr', [
-                    '_locale' => $_locale,
-                    'orderNumber' => $orderNumber,
-                    'token' => $token,
-                ])
-                : null,
-            'card_pay_url' => $this->generateUrl('shop_order_shipment_pay', [
-                '_locale' => $_locale,
-                'orderNumber' => $orderNumber,
-                'token' => $token,
-            ]),
-        ]);
+        return $this->redirectToRoute('shop_order_shipment_pay', [
+            '_locale' => $_locale,
+            'orderNumber' => $orderNumber,
+            'token' => $token,
+        ], Response::HTTP_MOVED_PERMANENTLY);
     }
 
     #[Route(
@@ -90,7 +72,9 @@ class ShipmentPayController extends AbstractController
     {
         [$order, , $site] = $this->resolveAccess($orderNumber, $request);
         $checkout = $this->depositPaymentService->resolveCheckout($order, $site, $_locale);
-        $ibanDetails = $this->ibanDetailsProvider->createForOrder($order, $site, $_locale);
+        $bankKey = (string) $request->query->get('bank', ShipmentIbanDetails::BANK_MONOBANK);
+        $ibanDetails = $this->ibanDetailsProvider->createForOrderAndBank($order, $site, $_locale, $bankKey)
+            ?? $this->ibanDetailsProvider->createForOrder($order, $site, $_locale);
         $qrPayload = $this->resolveIbanQrPayload($ibanDetails, $checkout->amount);
 
         if ($qrPayload === null) {
@@ -122,38 +106,45 @@ class ShipmentPayController extends AbstractController
         if ($redirect = $this->redirectIfDepositPaid($order, $checkout, $_locale)) {
             return $redirect;
         }
-        $qrPayload = $this->depositPaymentService->resolveQrPayload($checkout);
-        $liqpayWidget = $this->depositPaymentService->resolveLiqPayWidget($checkout);
 
         $token = $this->tokenService->generateForOrder($order);
+        $ibanAccounts = $this->ibanDetailsProvider->createAllForOrder($order, $site, $_locale);
+        $mono = $checkout->gateway(ShopPaymentMethod::Monobank);
+        $privat = $checkout->gateway(ShopPaymentMethod::Privatbank);
+
+        $ibanQrUrls = [];
+        foreach ($ibanAccounts as $iban) {
+            if ($iban->bankKey === null || !$iban->isConfigured()) {
+                continue;
+            }
+            if ($this->resolveIbanQrPayload($iban, $checkout->amount) === null) {
+                continue;
+            }
+            $ibanQrUrls[$iban->bankKey] = $this->generateUrl('shop_order_shipment_pay_iban_qr', [
+                '_locale' => $_locale,
+                'orderNumber' => $orderNumber,
+                'token' => $token,
+                'bank' => $iban->bankKey,
+            ]);
+        }
 
         return $this->render('shop/checkout/shipment_pay.html.twig', [
             'order' => $order,
             'checkout' => $checkout,
             'token' => $token,
-            'iban_pay_url' => $this->generateUrl('shop_order_shipment_pay_iban', [
-                '_locale' => $_locale,
-                'orderNumber' => $orderNumber,
-                'token' => $token,
-            ]),
-            'qr_url' => $checkout->gatewayMethod === ShopPaymentMethod::Monobank && $qrPayload !== null
+            'monobank' => $mono,
+            'privatbank' => $privat,
+            'monobank_qr_url' => $mono !== null
                 ? $this->generateUrl('shop_order_shipment_pay_qr', [
                     '_locale' => $_locale,
                     'orderNumber' => $orderNumber,
                     'token' => $token,
+                    'method' => ShopPaymentMethod::Monobank,
                 ])
                 : null,
-            'qr_download_url' => $checkout->gatewayMethod === ShopPaymentMethod::Monobank && $qrPayload !== null
-                ? $this->generateUrl('shop_order_shipment_pay_qr', [
-                    '_locale' => $_locale,
-                    'orderNumber' => $orderNumber,
-                    'token' => $token,
-                    'download' => 1,
-                ])
-                : null,
-            'liqpay_widget' => $liqpayWidget,
-            'pay_url' => $checkout->payUrl,
-            'gateway_method' => $checkout->gatewayMethod,
+            'iban_accounts' => $ibanAccounts,
+            'iban_qr_urls' => $ibanQrUrls,
+            'has_payment_options' => $mono !== null || $privat !== null || $ibanAccounts !== [],
         ]);
     }
 
@@ -167,8 +158,12 @@ class ShipmentPayController extends AbstractController
     {
         [$order, , $site] = $this->resolveAccess($orderNumber, $request);
         $checkout = $this->depositPaymentService->resolveCheckout($order, $site, $_locale);
-        $qrPayload = $this->depositPaymentService->resolveQrPayload($checkout);
+        $method = (string) $request->query->get('method', ShopPaymentMethod::Monobank);
+        if (!in_array($method, [ShopPaymentMethod::Monobank, ShopPaymentMethod::Privatbank], true)) {
+            throw new NotFoundHttpException();
+        }
 
+        $qrPayload = $this->depositPaymentService->resolveQrPayloadForMethod($checkout, $method);
         if ($qrPayload === null) {
             throw new NotFoundHttpException();
         }
@@ -180,7 +175,7 @@ class ShipmentPayController extends AbstractController
         ]);
 
         if ($request->query->getBoolean('download')) {
-            $filename = sprintf('shipment-pay-%s.png', $order->getOrderNumber());
+            $filename = sprintf('shipment-pay-%s-%s.png', $order->getOrderNumber(), $method);
             $response->headers->set('Content-Disposition', sprintf('attachment; filename="%s"', $filename));
         }
 

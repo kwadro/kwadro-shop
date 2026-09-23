@@ -491,13 +491,19 @@ shop.checkout.success_deposit_waybill: 'We will ship the goods after receiving t
 shop.shipment_pay.title: Shipping prepayment
 shop.shipment_pay.order_number: 'Order: %order_number%'
 shop.shipment_pay.amount: 'Amount due: %amount%'
-shop.shipment_pay.hint: 'Pay the shipping prepayment configured in the shop settings so we can ship your order.'
+shop.shipment_pay.hint: 'Choose a convenient way to pay the shipping prepayment so we can ship your order.'
+shop.shipment_pay.option_card_privat: Pay by Privat card
+shop.shipment_pay.option_card_mono: Pay by Mono card
+shop.shipment_pay.option_iban_mono: Pay via IBAN (Mono)
+shop.shipment_pay.option_iban_privat: Pay via IBAN (Privat)
 shop.shipment_pay.qr_alt: Payment QR code
 shop.shipment_pay.qr_caption_monobank: Scan the QR code in the Monobank app
 shop.shipment_pay.qr_caption_privatbank: Scan the QR code in the Privat24 app
 shop.shipment_pay.save_qr: Save QR code as image
-shop.shipment_pay.mobile_hint: Save the QR code to your gallery and scan it in your banking app.
+shop.shipment_pay.mobile_hint: On mobile, open the payment link below.
 shop.shipment_pay.open_payment: Open payment page
+shop.shipment_pay.open_payment_privat: Pay with Privat card
+shop.shipment_pay.open_payment_mono: Pay with Mono card
 shop.shipment_pay.already_paid: Deposit paid
 shop.shipment_pay.deposit_paid_success: 'You have successfully paid the deposit for order #%order_number%'
 shop.shipment_pay.unavailable: Payment is currently unavailable. Please contact shop support.

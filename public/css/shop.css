@@ -2974,6 +2974,49 @@ body.shop-offers-modal-open {
     color: var(--shop-text);
 }
 
+.shop-shipment-pay__options {
+    display: grid;
+    gap: 1.25rem;
+    margin: 0 0 1.25rem;
+}
+
+.shop-shipment-pay__card-row {
+    display: grid;
+    gap: 1.25rem;
+}
+
+@media (min-width: 769px) {
+    .shop-shipment-pay__card-row {
+        grid-template-columns: 1fr 1fr;
+        align-items: stretch;
+    }
+
+    .shop-shipment-pay__card-row .shop-shipment-pay__option {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .shop-shipment-pay__card-row .shop-shipment-pay__actions {
+        margin-top: auto;
+    }
+}
+
+.shop-shipment-pay__option {
+    margin: 0;
+    padding: 1.15rem 1.2rem;
+    border: 1px solid var(--shop-border);
+    border-radius: var(--shop-radius);
+    background: #fff;
+}
+
+.shop-shipment-pay__option-title {
+    margin: 0 0 0.85rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--shop-text);
+}
+
 .shop-shipment-pay__qr-desktop {
     display: block;
     margin: 0 0 1rem;
@@ -2999,18 +3042,22 @@ body.shop-offers-modal-open {
 
 .shop-shipment-pay__liqpay-widget {
     display: inline-block;
-    min-width: 220px;
+    width: 220px;
     max-width: 100%;
-    padding: 0.75rem;
+    max-height: 220px;
+    overflow: hidden;
+    padding: 0.5rem;
     border: 1px solid var(--shop-border);
     border-radius: 8px;
     background: #fff;
+    /* Clip LiqPay Russian captions under the QR; keep our Ukrainian caption below */
 }
 
 .shop-shipment-pay__liqpay-widget lp-provider,
 .shop-shipment-pay__liqpay-widget lp-qr {
     display: block;
     margin: 0 auto;
+    line-height: 0;
 }
 
 .shop-shipment-pay__qr-caption {
@@ -3020,7 +3067,7 @@ body.shop-offers-modal-open {
 }
 
 .shop-shipment-pay__actions {
-    margin: 0 0 1.25rem;
+    margin: 0;
 }
 
 .shop-shipment-pay__pay-btn,
@@ -3039,6 +3086,7 @@ body.shop-offers-modal-open {
 .shop-shipment-pay__pay-btn {
     background: var(--shop-green);
     color: #fff;
+    width: 100%;
 }
 
 .shop-shipment-pay__download-btn {
@@ -3059,23 +3107,11 @@ body.shop-offers-modal-open {
     }
 }
 
-.shop-shipment-pay__alt-link {
-    margin: 0 0 1.25rem;
-    font-size: 0.92rem;
-}
-
-.shop-shipment-pay__alt-link a {
-    color: var(--shop-green-dark);
-    font-weight: 600;
-    text-decoration: none;
-}
-
 .shop-shipment-pay__iban-list {
-    margin: 0 0 1rem;
-    padding: 1rem;
-    border: 1px solid var(--shop-border);
-    border-radius: var(--shop-radius);
-    background: #fff;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
 }
 
 .shop-shipment-pay__iban-row {

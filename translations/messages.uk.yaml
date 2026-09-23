@@ -490,13 +490,19 @@ shop.checkout.success_deposit_waybill: 'Ми надішлемо товар пі�
 shop.shipment_pay.title: Оплата передоплати для відправки
 shop.shipment_pay.order_number: 'Замовлення: %order_number%'
 shop.shipment_pay.amount: 'Сума до оплати: %amount%'
-shop.shipment_pay.hint: 'Сплатіть передоплату, щоб ми могли відправити замовлення.'
+shop.shipment_pay.hint: 'Оберіть зручний спосіб оплати передоплати, щоб ми могли відправити замовлення.'
+shop.shipment_pay.option_card_privat: Оплатити карткою Приват
+shop.shipment_pay.option_card_mono: Оплатити карткою Моно
+shop.shipment_pay.option_iban_mono: Оплатити на IBAN з Mono
+shop.shipment_pay.option_iban_privat: Оплатити на IBAN з Приват
 shop.shipment_pay.qr_alt: QR-код для оплати
 shop.shipment_pay.qr_caption_monobank: Відскануйте QR-код у застосунку Monobank
 shop.shipment_pay.qr_caption_privatbank: Відскануйте QR-код у застосунку Приват24
 shop.shipment_pay.save_qr: Зберегти QR-код як зображення
-shop.shipment_pay.mobile_hint: Збережіть QR-код у галерею та проскануйте його в застосунку банку.
+shop.shipment_pay.mobile_hint: На смартфоні відкрийте посилання для оплати нижче.
 shop.shipment_pay.open_payment: Перейти до оплати
+shop.shipment_pay.open_payment_privat: Оплатити карткою Приват
+shop.shipment_pay.open_payment_mono: Оплатити карткою Моно
 shop.shipment_pay.already_paid: Аванс оплачено
 shop.shipment_pay.deposit_paid_success: 'Ви успішно оплатили аванс для замовлення №%order_number%'
 shop.shipment_pay.unavailable: Оплата зараз недоступна. Зверніться до підтримки магазину.

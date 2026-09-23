@@ -196,6 +196,8 @@ class OrderCheckoutService
 
     public function createShipmentDepositPayment(Order $order, float $amount, string $gatewayMethod): Payment
     {
+        $amount = round(max(0, $amount), 2);
+
         foreach ($order->getPayments() as $existingPayment) {
             if ($existingPayment->getStatus() !== PaymentStatus::Pending) {
                 continue;
@@ -203,6 +205,15 @@ class OrderCheckoutService
 
             if ($existingPayment->getMethod() === ShopPaymentMethod::OnDelivery) {
                 continue;
+            }
+
+            if ($existingPayment->getMethod() !== $gatewayMethod) {
+                continue;
+            }
+
+            if (abs($existingPayment->getAmount() - $amount) <= 0.009
+                && trim((string) ($existingPayment->getRedirectUrl() ?? '')) !== '') {
+                return $existingPayment;
             }
 
             $existingPayment->setStatus(PaymentStatus::Failed);
@@ -213,7 +224,7 @@ class OrderCheckoutService
             ->setOrder($order)
             ->setMethod($gatewayMethod)
             ->setStatus(PaymentStatus::Pending)
-            ->setAmount(round(max(0, $amount), 2))
+            ->setAmount($amount)
             ->setCurrency($order->getCurrency())
             ->setGatewayReference($order->getOrderNumber());
 
