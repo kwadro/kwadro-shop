@@ -12,6 +12,7 @@ use App\Repository\MegaMenuTranslationRepository;
 use App\Entity\MegaMenuSetting;
 use App\Entity\Locale;
 use App\Entity\MegaMenuType;
+use App\Routing\ShopRoutes;
 
 #[ORM\Entity(repositoryClass: MegaMenuTranslationRepository::class)]
 #[ORM\HasLifecycleCallbacks]
@@ -52,6 +53,10 @@ class MegaMenuTranslation
     private ?int $position;
 
     #[ORM\Column(type:"string", nullable:true)]
+    #[Assert\Regex(
+        pattern: '#^(?:'.ShopRoutes::PAGE_SLUG_REQUIREMENTS.')?$#',
+        message: 'URL may contain only letters, digits, hyphen and underscore.',
+    )]
     private ?string $url;
 
     #[ORM\Column(type:"text", nullable:true)]

@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Category;
 use App\Entity\Product;
+use App\Entity\Supplier;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -15,8 +16,15 @@ class ProductRepository extends ServiceEntityRepository
         parent::__construct($registry, Product::class);
     }
 
-    public function findFeatured(): ?Product
+    public function findFeatured(?int $featureId = null): ?Product
     {
+        if ($featureId !== null && $featureId > 0) {
+            $product = $this->findOneWithOffers($featureId);
+            if ($product !== null) {
+                return $product;
+            }
+        }
+
         $featured = $this->createQueryBuilder('p')
             ->select('p.id')
             ->orderBy('p.id', 'ASC')
@@ -38,6 +46,8 @@ class ProductRepository extends ServiceEntityRepository
             ->addSelect('o')
             ->leftJoin('o.supplier', 's')
             ->addSelect('s')
+            ->leftJoin('p.categories', 'c')
+            ->addSelect('c')
             ->andWhere('p.id = :id')
             ->setParameter('id', $id)
             ->getQuery()
@@ -92,6 +102,25 @@ class ProductRepository extends ServiceEntityRepository
             ->addSelect('s')
             ->andWhere('c = :category')
             ->setParameter('category', $category)
+            ->orderBy('p.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return list<Product>
+     */
+    public function findBySupplierWithOffers(Supplier $supplier): array
+    {
+        return $this->createQueryBuilder('p')
+            ->innerJoin('p.offers', 'o')
+            ->addSelect('o')
+            ->innerJoin('o.supplier', 's')
+            ->addSelect('s')
+            ->leftJoin('p.categories', 'c')
+            ->addSelect('c')
+            ->andWhere('s = :supplier')
+            ->setParameter('supplier', $supplier)
             ->orderBy('p.name', 'ASC')
             ->getQuery()
             ->getResult();

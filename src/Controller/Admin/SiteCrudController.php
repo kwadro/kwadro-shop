@@ -36,6 +36,9 @@ class SiteCrudController extends AbstractCrudController
             IdField::new('id')->hideOnForm(),
             TextField::new('code')->setRequired(true),
             TextField::new('domain')->setRequired(true),
+            AssociationField::new('featuredProduct', $this->translator->trans('admin.site.featured_product', [], 'messages'))
+                ->setRequired(false)
+                ->setHelp($this->translator->trans('admin.site.featured_product_help', [], 'messages')),
             MoneyField::new('courierDeliveryCost', $this->translator->trans('admin.site.courier_delivery_cost', [], 'messages'))
                 ->setCurrency('UAH')
                 ->setStoredAsCents(false)

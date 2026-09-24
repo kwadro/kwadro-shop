@@ -4,9 +4,11 @@ namespace App\Entity;
 
 use App\Entity\Traits\TimeStampAbleTrait;
 use App\Repository\CategoryRepository;
+use App\Routing\ShopRoutes;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]
 #[ORM\Table(name: 'shop_category')]
@@ -28,6 +30,10 @@ class Category
     private string $name = '';
 
     #[ORM\Column(length: 255)]
+    #[Assert\Regex(
+        pattern: '#^(?:'.ShopRoutes::SLUG_REQUIREMENTS.')?$#',
+        message: 'Slug may contain only letters, digits, hyphen and underscore.',
+    )]
     private string $slug = '';
 
     #[ORM\Column(options: ['default' => true])]

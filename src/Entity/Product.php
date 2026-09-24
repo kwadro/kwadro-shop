@@ -4,9 +4,11 @@ namespace App\Entity;
 
 use App\Entity\Traits\TimeStampAbleTrait;
 use App\Repository\ProductRepository;
+use App\Routing\ShopRoutes;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
 #[ORM\Table(name: 'shop_product')]
@@ -28,6 +30,10 @@ class Product
     private string $sku = '';
 
     #[ORM\Column(length: 255)]
+    #[Assert\Regex(
+        pattern: '#^(?:'.ShopRoutes::SLUG_REQUIREMENTS.')?$#',
+        message: 'Slug may contain only letters, digits, hyphen and underscore.',
+    )]
     private string $slug = '';
 
     /** @var Collection<int, Category> */
@@ -161,8 +167,8 @@ class Product
 
         $value = mb_strtolower(trim($value));
         $value = strtr($value, $map);
-        $value = preg_replace('/[^a-z0-9]+/', '-', $value) ?? '';
-        $value = trim($value, '-');
+        $value = preg_replace('/[^a-z0-9_-]+/', '-', $value) ?? '';
+        $value = trim($value, '-_');
 
         return $value;
     }
@@ -672,6 +678,7 @@ class Product
             'supplier' => $supplier !== null ? [
                 'id' => $supplier->getId(),
                 'name' => $supplier->getName(),
+                'slug' => $supplier->getSlug(),
                 'description' => $supplier->getDescription() ?? '',
                 'phone' => $supplier->getPhone() ?? '',
                 'email' => $supplier->getEmail() ?? '',
@@ -723,15 +730,17 @@ class Product
             'sku' => $this->sku,
             'slug' => $this->slug,
             'category' => $this->getCategoriesLabel(),
-            'categories' => array_map(
-                static fn (Category $category): array => [
-                    'id' => $category->getId(),
-                    'name' => $category->getName(),
-                    'slug' => $category->getSlug(),
-                    'level' => $category->getLevel(),
-                ],
+            'categories' => array_values(array_filter(array_map(
+                static fn (Category $category): ?array => ($category->isDefault() || !$category->isEnabled())
+                    ? null
+                    : [
+                        'id' => $category->getId(),
+                        'name' => $category->getName(),
+                        'slug' => $category->getSlug(),
+                        'level' => $category->getLevel(),
+                    ],
                 $this->categories->toArray(),
-            ),
+            ))),
             'hasPrice' => $hasPrice,
             'price' => $price,
             'weight' => $this->getWeight(),

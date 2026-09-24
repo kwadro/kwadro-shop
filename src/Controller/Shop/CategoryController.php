@@ -23,7 +23,7 @@ class CategoryController extends AbstractController
         name: 'shop_category',
         requirements: [
             '_locale' => ShopRoutes::LOCALE_REQUIREMENTS,
-            'slug' => '[a-z0-9][a-z0-9\-]*',
+            'slug' => ShopRoutes::SLUG_REQUIREMENTS,
         ],
         methods: ['GET'],
     )]

@@ -134,6 +134,8 @@ admin.site.cod_novapay_percent: Комісія NovaPay, %
 admin.site.cod_novapay_percent_help: Відсоток комісії NovaPay за повернення коштів.
 admin.site.cod_prepayment_amount: Передоплата для відправки
 admin.site.cod_prepayment_amount_help: Сума передоплати для відправки товару при оплаті післяплатою.
+admin.site.featured_product: Товар на головній (feature_id)
+admin.site.featured_product_help: Якщо порожньо — на головній показується перший товар з каталогу.
 admin.site.cod_commission_notice_uk: Повідомлення про комісію (UK)
 admin.site.cod_commission_notice_en: Повідомлення про комісію (EN)
 admin.site.cod_commission_notice_help: 'Плейсхолдери: %standard_percent%, %novapay_percent%, %standard_amount%, %novapay_amount%, %prepayment_amount%. HTML дозволено.'
@@ -150,7 +152,7 @@ admin.site.delivery.np_postomat: Нова Пошта — поштомат
 admin.product.name: Назва
 admin.product.sku: Артикул
 admin.product.slug: URL-slug
-admin.product.slug_help: Залиште порожнім — згенерується з назви. Використовується в /product/{slug}.
+admin.product.slug_help: 'Залиште порожнім — згенерується з назви. Дозволені латиниця, цифри, "-" і "_". Приклад: powerbank-20k.'
 admin.product.category: Категорія
 admin.product.categories: Категорії
 admin.product.weight: Вага (кг)
@@ -187,6 +189,7 @@ admin.product_offer.qty: Залишок
 admin.product_offer.qty_help: Кількість товару в наявності у цього постачальника.
 admin.category.name: Назва
 admin.category.slug: URL-slug
+admin.category.slug_help: 'Залиште порожнім — згенерується з назви. Дозволені латиниця, цифри, "-" і "_". Приклад: powerbanks-and-chargers.'
 admin.category.enabled: Включено
 admin.category.enabled_yes: Так
 admin.category.enabled_no: Ні
@@ -214,6 +217,8 @@ admin.category.default_badge: Default
 admin.category.id: ID
 admin.category.toggle: Згорнути / розгорнути
 admin.supplier.name: Назва
+admin.supplier.slug: URL-slug
+admin.supplier.slug_help: 'Залиште порожнім — згенерується з назви. Дозволені латиниця, цифри, "-" і "_". Використовується в /supplier/{slug}.'
 admin.supplier.description: Опис
 admin.supplier.phone: Телефон
 admin.supplier.email: Електронна пошта
@@ -342,6 +347,8 @@ shop.category.menu_toggle: Категорії
 shop.category.home: Головна
 shop.category.subcategories: Підкатегорії
 shop.category.empty_products: У цій категорії поки немає товарів.
+shop.supplier.empty_products: У цього постачальника поки немає товарів.
+shop.supplier.meta_description: 'Товари постачальника %name%. Купуйте онлайн з доставкою.'
 shop.login: Увійти
 shop.register: Реєстрація
 shop.logout: Вийти

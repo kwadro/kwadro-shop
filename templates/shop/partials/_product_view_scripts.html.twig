@@ -62,7 +62,17 @@
 
             const nameEl = document.createElement('strong');
             nameEl.textContent = offer.supplier.name;
-            supplierEl.append(nameEl);
+
+            if (offer.supplier.slug) {
+                const template = offersBox.dataset.supplierUrlTemplate || '';
+                const href = template.replace('__SLUG__', encodeURIComponent(offer.supplier.slug));
+                const linkEl = document.createElement('a');
+                linkEl.href = href;
+                linkEl.append(nameEl);
+                supplierEl.append(linkEl);
+            } else {
+                supplierEl.append(nameEl);
+            }
 
             if (offer.supplier.phone) {
                 const phoneEl = document.createElement('span');

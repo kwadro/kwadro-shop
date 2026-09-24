@@ -156,7 +156,8 @@ class CategoryCrudController extends AbstractCrudController
     {
         yield IdField::new('id')->hideOnForm();
         yield TextField::new('name', $this->translator->trans('admin.category.name', [], 'messages'));
-        yield TextField::new('slug', $this->translator->trans('admin.category.slug', [], 'messages'));
+        yield TextField::new('slug', $this->translator->trans('admin.category.slug', [], 'messages'))
+            ->setHelp($this->translator->trans('admin.category.slug_help', [], 'messages'));
         yield BooleanField::new('enabled', $this->translator->trans('admin.category.enabled', [], 'messages'));
         yield AssociationField::new('parent', $this->translator->trans('admin.category.parent', [], 'messages'))
             ->setRequired(false)
@@ -238,10 +239,18 @@ class CategoryCrudController extends AbstractCrudController
 
     private function slugify(string $value): string
     {
+        $map = [
+            'а' => 'a', 'б' => 'b', 'в' => 'v', 'г' => 'h', 'ґ' => 'g', 'д' => 'd', 'е' => 'e', 'є' => 'ye',
+            'ж' => 'zh', 'з' => 'z', 'и' => 'y', 'і' => 'i', 'ї' => 'yi', 'й' => 'y', 'к' => 'k', 'л' => 'l',
+            'м' => 'm', 'н' => 'n', 'о' => 'o', 'п' => 'p', 'р' => 'r', 'с' => 's', 'т' => 't', 'у' => 'u',
+            'ф' => 'f', 'х' => 'kh', 'ц' => 'ts', 'ч' => 'ch', 'ш' => 'sh', 'щ' => 'shch', 'ь' => '', 'ю' => 'yu',
+            'я' => 'ya', 'ы' => 'y', 'э' => 'e', 'ъ' => '',
+        ];
+
         $value = mb_strtolower(trim($value));
-        $value = preg_replace('/[^a-z0-9а-яіїєґ\-_\s]+/u', '', $value) ?? '';
-        $value = preg_replace('/[\s_]+/u', '-', $value) ?? '';
-        $value = trim($value, '-');
+        $value = strtr($value, $map);
+        $value = preg_replace('/[^a-z0-9_-]+/', '-', $value) ?? '';
+        $value = trim($value, '-_');
 
         return $value !== '' ? $value : 'category';
     }

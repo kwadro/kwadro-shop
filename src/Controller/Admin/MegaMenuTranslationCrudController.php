@@ -39,7 +39,8 @@ class MegaMenuTranslationCrudController extends AbstractCrudController
             IntegerField::new('position')
                 ->setFormTypeOption('attr', ['min' => 0, 'max' => 1000])
                 ->setHelp('Enter a positive number only'),
-            TextField::new('url'),
+            TextField::new('url')
+                ->setHelp('URL-slug сторінки: латиниця, цифри, "-" і "_". Приклади: delivery, account-setting, account_setting'),
         
             TextareaField::new('content')->setHelp('Enter full text here')->setNumOfRows('10'),
         ];

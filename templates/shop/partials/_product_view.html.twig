@@ -45,7 +45,17 @@
         </div>
 
         <div class="shop-product__info">
-            <p class="shop-product__category">{{ product.category }}</p>
+            <p class="shop-product__category">
+                {% set linkedCategories = product.categories|default([]) %}
+                {% if linkedCategories|length > 0 %}
+                    {% for category in linkedCategories %}
+                        {% if not loop.first %}<span class="shop-product__category-sep">,</span> {% endif %}
+                        <a href="{{ path('shop_category', {_locale: app.request.locale, slug: category.slug}) }}">{{ category.name }}</a>
+                    {% endfor %}
+                {% elseif product.category %}
+                    {{ product.category }}
+                {% endif %}
+            </p>
             <h1 class="shop-product__title">{{ product.name }}</h1>
             <p class="shop-product__sku">{{ 'shop.product.sku'|trans }}: {{ product.sku }}</p>
             <div class="shop-product__lead">{{ product.shortDescription|raw }}</div>
@@ -56,6 +66,7 @@
                 data-offers='{{ product.offers|json_encode|e('html_attr') }}'
                 data-you-save-label="{{ 'shop.product.you_save'|trans|e('html_attr') }}"
                 data-supplier-label="{{ 'shop.product.supplier'|trans|e('html_attr') }}"
+                data-supplier-url-template="{{ path('shop_supplier', {_locale: app.request.locale, slug: 'placeholder'})|replace({'placeholder': '__SLUG__'})|e('html_attr') }}"
                 data-product-in-stock="{{ product.productInStock ? '1' : '0' }}"
             >
                 <div class="shop-product__price-row">
@@ -76,7 +87,11 @@
                 {% if product.hasPrice and product.supplier %}
                     <p class="shop-product__supplier" data-offer-supplier>
                         {{ 'shop.product.supplier'|trans }}:
-                        <strong>{{ product.supplier.name }}</strong>
+                        {% if product.supplier.slug %}
+                            <a href="{{ path('shop_supplier', {_locale: app.request.locale, slug: product.supplier.slug}) }}"><strong>{{ product.supplier.name }}</strong></a>
+                        {% else %}
+                            <strong>{{ product.supplier.name }}</strong>
+                        {% endif %}
                         {% if product.supplier.phone and (product.offers|default([])|length > 1) %}
                             <span class="shop-product__supplier-meta">{{ product.supplier.phone }}</span>
                         {% endif %}

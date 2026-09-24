@@ -8,7 +8,14 @@ final class ShopRoutes
 
     public const SITEMAP_LOCALE = 'uk';
 
-    public const PAGE_SLUG_REQUIREMENTS = '(?!login|logout|register|admin|checkout|admser|category|product|uk|en)[a-z0-9][a-z0-9\-]*';
+    /** Hyphen and underscore allowed. */
+    public const SLUG_REQUIREMENTS = '[a-z0-9][a-z0-9_-]*';
+
+    /** Reserved exact slugs that must not collide with shop routes / locales. */
+    public const RESERVED_PAGE_SLUGS = 'login|logout|register|admin|checkout|admser|category|product|supplier|uk|en';
+
+    /** Menu / static page slugs: same charset as SLUG_REQUIREMENTS, minus reserved names. */
+    public const PAGE_SLUG_REQUIREMENTS = '(?!(?:'.self::RESERVED_PAGE_SLUGS.')$)'.self::SLUG_REQUIREMENTS;
 
     /** @var list<string> */
     public const INDEXABLE_MENU_TYPES = ['Link', 'FooterLink'];

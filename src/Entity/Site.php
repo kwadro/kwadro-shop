@@ -60,6 +60,10 @@ class Site
     #[ORM\Column(type: 'json', nullable: true)]
     private ?array $active_delivery_methods = null;
 
+    #[ORM\ManyToOne(targetEntity: Product::class)]
+    #[ORM\JoinColumn(name: 'feature_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+    private ?Product $featuredProduct = null;
+
     #[ORM\OneToMany(
         targetEntity: HeaderSetting::class,
         mappedBy: 'site',
@@ -230,6 +234,23 @@ class Site
         $this->cod_commission_notice_en = $codCommissionNoticeEn;
 
         return $this;
+    }
+
+    public function getFeaturedProduct(): ?Product
+    {
+        return $this->featuredProduct;
+    }
+
+    public function setFeaturedProduct(?Product $featuredProduct): self
+    {
+        $this->featuredProduct = $featuredProduct;
+
+        return $this;
+    }
+
+    public function getFeatureId(): ?int
+    {
+        return $this->featuredProduct?->getId();
     }
 
     /** @return list<string> */

@@ -1498,6 +1498,21 @@ body.shop-minicart-open {
     letter-spacing: 0.04em;
 }
 
+.shop-product__category a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.shop-product__category a:hover {
+    text-decoration: underline;
+}
+
+.shop-product__category-sep {
+    margin-right: 0.15rem;
+    color: inherit;
+    font-weight: 700;
+}
+
 .shop-product__title {
     margin: 0 0 0.5rem;
     font-size: clamp(1.35rem, 2.2vw, 1.85rem);
@@ -1575,9 +1590,26 @@ body.shop-minicart-open {
     color: var(--shop-text);
 }
 
+.shop-product__supplier a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+}
+
+.shop-product__supplier a:hover {
+    color: var(--shop-green-dark);
+}
+
 .shop-product__supplier-meta {
     color: var(--shop-muted);
     margin-left: 0.35rem;
+}
+
+.shop-supplier-page__description {
+    margin-top: 0.65rem;
+    color: var(--shop-muted);
+    line-height: 1.55;
+    max-width: 48rem;
 }
 
 body.shop-offers-modal-open {

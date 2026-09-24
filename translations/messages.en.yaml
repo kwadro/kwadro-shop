@@ -134,6 +134,8 @@ admin.site.cod_novapay_percent: NovaPay commission, %
 admin.site.cod_novapay_percent_help: NovaPay money transfer commission percent.
 admin.site.cod_prepayment_amount: Shipping prepayment
 admin.site.cod_prepayment_amount_help: Prepayment amount required to ship the order for cash-on-delivery.
+admin.site.featured_product: Homepage product (feature_id)
+admin.site.featured_product_help: If empty, the first catalog product is shown on the homepage.
 admin.site.cod_commission_notice_uk: Commission notice (UK)
 admin.site.cod_commission_notice_en: Commission notice (EN)
 admin.site.cod_commission_notice_help: 'Placeholders: %standard_percent%, %novapay_percent%, %standard_amount%, %novapay_amount%, %prepayment_amount%. HTML allowed.'
@@ -150,7 +152,7 @@ admin.site.delivery.np_postomat: Nova Poshta — parcel locker
 admin.product.name: Name
 admin.product.sku: SKU
 admin.product.slug: URL slug
-admin.product.slug_help: Leave empty to generate from the product name. Used in /product/{slug}.
+admin.product.slug_help: 'Leave empty to generate from the name. Allowed: letters, digits, "-" and "_". Example: powerbank-20k.'
 admin.product.category: Category
 admin.product.categories: Categories
 admin.product.weight: Weight (kg)
@@ -187,6 +189,7 @@ admin.product_offer.qty: Stock qty
 admin.product_offer.qty_help: Available quantity from this supplier offer.
 admin.category.name: Name
 admin.category.slug: URL slug
+admin.category.slug_help: 'Leave empty to generate from the name. Allowed: letters, digits, "-" and "_". Example: powerbanks-and-chargers.'
 admin.category.enabled: Enabled
 admin.category.enabled_yes: Yes
 admin.category.enabled_no: No
@@ -214,6 +217,8 @@ admin.category.default_badge: Default
 admin.category.id: ID
 admin.category.toggle: Collapse / expand
 admin.supplier.name: Name
+admin.supplier.slug: URL slug
+admin.supplier.slug_help: 'Leave empty to generate from the name. Allowed: letters, digits, "-" and "_". Used in /supplier/{slug}.'
 admin.supplier.description: Description
 admin.supplier.phone: Phone
 admin.supplier.email: Email
@@ -343,6 +348,8 @@ shop.category.menu_toggle: Categories
 shop.category.home: Home
 shop.category.subcategories: Subcategories
 shop.category.empty_products: There are no products in this category yet.
+shop.supplier.empty_products: This supplier has no products yet.
+shop.supplier.meta_description: 'Products from supplier %name%. Buy online with delivery.'
 shop.login: Log In
 shop.register: Register
 shop.logout: Log Out
