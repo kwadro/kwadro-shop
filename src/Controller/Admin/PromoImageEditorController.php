@@ -275,7 +275,7 @@ final class PromoImageEditorController extends AbstractController
         return [
             'canvasSize' => self::CANVAS_SIZE,
             'backgroundUrl' => '/uploads/promo/default-bg.jpg',
-            'productUrl' => '/uploads/promo/products/111142.png',
+            'productUrl' => '/uploads/promo/default-product.png',
             'brandName' => 'KVADRO',
             'brandTagline' => 'МАГАЗИН ТОВАРІВ ДЛЯ ДОМУ',
             'title' => 'ТВ антена DVB-T2',
