@@ -1,0 +1,33 @@
+{
+    "filename": "promo-product-delta-3000.jpg",
+    "savedAt": "2026-09-27T14:12:42+00:00",
+    "content": {
+        "canvasSize": 526,
+        "backgroundUrl": "\/uploads\/promo\/default-bg.jpg",
+        "productUrl": "\/uploads\/products\/111142 (1).jpg",
+        "brandName": "KVADRO",
+        "brandTagline": "МАГАЗИН ТОВАРІВ ДЛЯ ДОМУ",
+        "title": "ТВ антена DVB-T2",
+        "model": "Delta 3000",
+        "slogan": "Більше улюблених каналів!",
+        "features": [
+            "Вбудований підсилювач",
+            "Прийом DVB-T \/ DVB-T2",
+            "Просте встановлення",
+            "Компактний розмір",
+            "Кабель 1,5 м"
+        ],
+        "discount": "-17%",
+        "price": "300 ₴",
+        "oldPrice": "360 ₴",
+        "stockText": "В наявності",
+        "footerLeft": "Цифрове телебачення у вашому домі!",
+        "footerRight": "Замовляйте на сайті kvadro.if.ua",
+        "showDiscount": true,
+        "showOldPrice": true,
+        "showStock": true,
+        "featuresOffsetY": 0,
+        "productSlug": "delta-3000",
+        "productId": 1
+    }
+}
