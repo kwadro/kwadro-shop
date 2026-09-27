@@ -348,33 +348,49 @@
             ctx.fillRect(0, 0, size, size);
         }
 
-        // Product under text overlays (transparent studio background), shifted right
+        // Product under text overlays (transparent studio background), shifted right (+30%)
         if (images.product) {
-            const pw = 250;
-            const ph = 280;
-            const px = 250;
-            const py = 120;
+            const pw = 325;
+            const ph = 364;
+            const px = 200;
+            const py = 100;
             containImage(images.product, px, py, pw, ph);
         }
 
-        // Soft light panels for readability (height fits features + offset)
+        // Left content block — always vertically centered between header & footer.
+        // Offset moves Model + Features together; title stays at top of the block.
+        const headerBottom = 78;
+        const footerTop = 480;
         const featuresOffset = Math.max(0, Math.min(100, Number(state.featuresOffsetY) || 0));
         const features = (state.features || []).filter(Boolean).slice(0, 5);
-        const featureStartY = 198 + featuresOffset;
         const featureStep = 32;
-        const lastFeatureY = features.length > 0
-            ? featureStartY + (features.length - 1) * featureStep
-            : 165 + featuresOffset;
-        const panelTop = 86;
-        const panelHeight = Math.max(200, lastFeatureY + 28 - panelTop);
+        const titleRel = 26;
+        const modelRel = 62 + featuresOffset;
+        const featureRel = 112 + featuresOffset;
+        const lastFeatureRel = features.length > 0
+            ? featureRel + (features.length - 1) * featureStep
+            : modelRel + 24;
+        const panelHeight = Math.max(200, lastFeatureRel + 28);
+        const showStock = !!(state.showStock && state.stockText);
+        const stockGap = showStock ? 14 : 0;
+        const stockH = showStock ? 28 : 0;
+        const totalBlockH = panelHeight + stockGap + stockH;
+        const available = footerTop - headerBottom;
+        let panelTop = headerBottom + Math.max(6, Math.round((available - totalBlockH) / 2));
+        panelTop = Math.max(headerBottom + 4, Math.min(panelTop, footerTop - totalBlockH - 4));
+
+        const titleY = panelTop + titleRel;
+        const modelY = panelTop + modelRel;
+        const featureStartY = panelTop + featureRel;
+        const stockY = panelTop + panelHeight + stockGap;
 
         ctx.fillStyle = 'rgba(255,255,255,0.18)';
-        ctx.fillRect(0, 0, size, 78);
+        ctx.fillRect(0, 0, size, headerBottom);
         ctx.fillStyle = 'rgba(255,255,255,0.55)';
         roundRect(12, panelTop, 230, panelHeight, 10);
         ctx.fill();
 
-        // Brand
+        // Brand (header — fixed)
         drawLogoMark(18, 16);
         ctx.fillStyle = '#1a1a1a';
         ctx.font = '800 22px Montserrat, Arial, sans-serif';
@@ -384,7 +400,7 @@
         ctx.letterSpacing = '0.5px';
         ctx.fillText((state.brandTagline || '').toUpperCase(), 42, 44);
 
-        // Slogan
+        // Slogan (header — fixed)
         ctx.save();
         ctx.translate(360, 42);
         ctx.rotate(-0.08);
@@ -394,21 +410,21 @@
         wrapText(state.slogan || '', 0, 0, 170, 22);
         ctx.restore();
 
-        // Title (stays fixed)
+        // Title (top of centered block)
         ctx.textAlign = 'left';
         ctx.fillStyle = '#111';
         ctx.font = '800 22px Montserrat, Arial, sans-serif';
-        wrapText(state.title || '', 22, 112, 200, 24);
+        wrapText(state.title || '', 22, titleY, 200, 24);
 
-        // Model + features block (movable down)
+        // Model + features (move together with featuresOffset)
         const model = state.model || '';
         ctx.font = '700 14px Montserrat, Arial, sans-serif';
         const modelW = Math.max(88, ctx.measureText(model).width + 18);
         ctx.fillStyle = '#f5c518';
-        roundRect(22, 148 + featuresOffset, modelW, 24, 6);
+        roundRect(22, modelY, modelW, 24, 6);
         ctx.fill();
         ctx.fillStyle = '#111';
-        ctx.fillText(model, 31, 165 + featuresOffset);
+        ctx.fillText(model, 31, modelY + 17);
 
         features.forEach((text, i) => {
             const y = featureStartY + i * featureStep;
@@ -418,10 +434,8 @@
             ctx.fillText(text, 52, y + 4);
         });
 
-        // Stock just under the features panel
-        const stockY = panelTop + panelHeight + 14;
-        if (state.showStock && state.stockText) {
-            drawBrush(18, stockY, 130, 28, '#2e9b3a');
+        if (showStock) {
+            drawBrush(18, stockY, 130, stockH, '#2e9b3a');
             ctx.fillStyle = '#fff';
             ctx.font = '700 13px Montserrat, Arial, sans-serif';
             ctx.textAlign = 'left';

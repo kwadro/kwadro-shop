@@ -237,7 +237,7 @@ final class GeneratePromoFromProductsCommand extends Command
 
         $prod = $this->loadImage($this->projectDir.'/public'.(string) ($c['productUrl'] ?? ''));
         if ($prod instanceof \GdImage) {
-            $this->contain($im, $prod, 250, 120, 250, 280);
+            $this->contain($im, $prod, 200, 100, 325, 364);
             imagedestroy($prod);
         }
 
@@ -255,26 +255,45 @@ final class GeneratePromoFromProductsCommand extends Command
         /** @var list<string> $features */
         $features = array_values(array_filter(array_map('strval', (array) ($c['features'] ?? []))));
         $features = \array_slice($features, 0, 5);
-        $featureStartY = 198 + $offset;
-        $lastFeatureY = $features !== [] ? $featureStartY + (\count($features) - 1) * 32 : 165 + $offset;
-        $panelHeight = max(200, $lastFeatureY + 28 - 86);
 
-        imagefilledrectangle($im, 0, 0, $size, 78, imagecolorallocatealpha($im, 255, 255, 255, 90));
-        $this->roundRect($im, 12, 86, 230, $panelHeight, 10, imagecolorallocatealpha($im, 255, 255, 255, 50));
+        $headerBottom = 78;
+        $footerTop = 480;
+        $featureStep = 32;
+        $titleRel = 26;
+        $modelRel = 62 + $offset;
+        $featureRel = 112 + $offset;
+        $lastFeatureRel = $features !== []
+            ? $featureRel + (\count($features) - 1) * $featureStep
+            : $modelRel + 24;
+        $panelHeight = max(200, $lastFeatureRel + 28);
+        $showStock = !empty($c['showStock']) && (string) ($c['stockText'] ?? '') !== '';
+        $stockGap = $showStock ? 14 : 0;
+        $stockH = $showStock ? 28 : 0;
+        $totalBlockH = $panelHeight + $stockGap + $stockH;
+        $available = $footerTop - $headerBottom;
+        $panelTop = $headerBottom + max(6, (int) round(($available - $totalBlockH) / 2));
+        $panelTop = max($headerBottom + 4, min($panelTop, $footerTop - $totalBlockH - 4));
+        $titleY = $panelTop + $titleRel;
+        $modelY = $panelTop + $modelRel;
+        $featureStartY = $panelTop + $featureRel;
+        $stockY = $panelTop + $panelHeight + $stockGap;
+
+        imagefilledrectangle($im, 0, 0, $size, $headerBottom, imagecolorallocatealpha($im, 255, 255, 255, 90));
+        $this->roundRect($im, 12, $panelTop, 230, $panelHeight, 10, imagecolorallocatealpha($im, 255, 255, 255, 50));
 
         $this->text($im, $fontBold, 18, 42, 30, (string) $c['brandName'], $ink);
         $this->text($im, $fontReg, 7, 42, 44, mb_strtoupper((string) $c['brandTagline']), $muted);
         $this->text($im, $fontBold, 14, 370, 38, (string) $c['slogan'], $sloganColor, 'center');
-        $this->wrapText($im, $fontBold, 15, 22, 112, (string) $c['title'], $ink, 210, 20);
+        $this->wrapText($im, $fontBold, 15, 22, $titleY, (string) $c['title'], $ink, 210, 20);
 
         $model = (string) $c['model'];
         $bbox = imagettfbbox(11, 0, $fontBold, $model);
         $modelW = max(88, ($bbox[2] - $bbox[0]) + 18);
-        $this->roundRect($im, 22, 148 + $offset, (int) $modelW, 24, 6, $yellow);
-        $this->text($im, $fontBold, 11, 31, 165 + $offset, $model, $ink);
+        $this->roundRect($im, 22, $modelY, (int) $modelW, 24, 6, $yellow);
+        $this->text($im, $fontBold, 11, 31, $modelY + 17, $model, $ink);
 
         foreach ($features as $i => $feat) {
-            $y = $featureStartY + $i * 32;
+            $y = $featureStartY + $i * $featureStep;
             imagefilledellipse($im, 34, $y, 22, 22, $yellow);
             $this->text($im, $fontReg, 10, 52, $y + 4, $feat, $ink);
         }
@@ -294,13 +313,12 @@ final class GeneratePromoFromProductsCommand extends Command
             imageline($im, 425, 310, 495, 298, $red);
         }
 
-        $stockY = 86 + $panelHeight + 14;
-        if (!empty($c['showStock']) && (string) $c['stockText'] !== '') {
-            $this->roundRect($im, 18, $stockY, 130, 28, 8, $green);
+        if ($showStock) {
+            $this->roundRect($im, 18, $stockY, 130, $stockH, 8, $green);
             $this->text($im, $fontBold, 10, 28, $stockY + 19, '✓  '.$c['stockText'], $white);
         }
 
-        imagefilledrectangle($im, 0, 480, $size, $size, imagecolorallocatealpha($im, 255, 255, 255, 25));
+        imagefilledrectangle($im, 0, $footerTop, $size, $size, imagecolorallocatealpha($im, 255, 255, 255, 25));
         $this->text($im, $fontReg, 8, 14, 508, (string) $c['footerLeft'], $ink);
         $this->text($im, $fontReg, 8, $size - 14, 508, (string) $c['footerRight'].' ›', $ink, 'right');
 

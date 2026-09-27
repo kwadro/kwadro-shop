@@ -329,7 +329,7 @@ admin.promo_image_editor.model: Model
 admin.promo_image_editor.slogan: Slogan
 admin.promo_image_editor.features_help: 5 feature items. Empty lines are hidden.
 admin.promo_image_editor.features_offset: Shift features block down
-admin.promo_image_editor.features_offset_help: Moves the model badge and features list down (0–100 px). Title stays fixed.
+admin.promo_image_editor.features_offset_help: Shifts model and features; the whole left block re-centers between header and footer.
 admin.promo_image_editor.feature: Item
 admin.promo_image_editor.discount: Discount
 admin.promo_image_editor.price: Price
