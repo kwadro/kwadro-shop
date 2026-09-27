@@ -6,6 +6,8 @@ menu.group_catalog: Product catalog
 menu.group_orders: Orders
 menu.group_email: Email
 menu.group_bank: Bank
+menu.group_marketing: Marketing
+menu.link_promo_image_editor: Promo image editor
 menu.link_email_template: Email templates
 menu.link_email_template_single: Email template
 menu.link_email_template_section: Email sections
@@ -308,6 +310,56 @@ admin.email_template_test.preview_empty: Select a template and click Preview or 
 admin.email_template_test.sent: Test email sent successfully.
 admin.email_template_test.send_failed: Failed to send email. Check mail settings and the email log.
 admin.email_template_test.hint: After selecting a template, a context field appears — orders or users depending on the template setting. Sent emails appear in the Email log.
+
+admin.promo_image_editor.title: Promo image editor
+admin.promo_image_editor.fields: Image content
+admin.promo_image_editor.preview: Preview
+admin.promo_image_editor.section_images: Images
+admin.promo_image_editor.section_brand: Brand
+admin.promo_image_editor.section_title: Title
+admin.promo_image_editor.section_features: Features
+admin.promo_image_editor.section_price: Price
+admin.promo_image_editor.section_footer: Stock & footer
+admin.promo_image_editor.bg: Background
+admin.promo_image_editor.product: Product (PNG/JPG)
+admin.promo_image_editor.brand_name: Brand name
+admin.promo_image_editor.brand_tagline: Brand tagline
+admin.promo_image_editor.title_field: Product title
+admin.promo_image_editor.model: Model
+admin.promo_image_editor.slogan: Slogan
+admin.promo_image_editor.features_help: 5 feature items. Empty lines are hidden.
+admin.promo_image_editor.features_offset: Shift features block down
+admin.promo_image_editor.features_offset_help: Moves the model badge and features list down (0–100 px). Title stays fixed.
+admin.promo_image_editor.feature: Item
+admin.promo_image_editor.discount: Discount
+admin.promo_image_editor.price: Price
+admin.promo_image_editor.old_price: Old price
+admin.promo_image_editor.show_discount: Show discount
+admin.promo_image_editor.show_old_price: Show old price
+admin.promo_image_editor.stock: In-stock text
+admin.promo_image_editor.show_stock: Show in-stock badge
+admin.promo_image_editor.footer_left: Footer left text
+admin.promo_image_editor.footer_right: Footer right text
+admin.promo_image_editor.save: Save image
+admin.promo_image_editor.save_as_new: Save as new
+admin.promo_image_editor.save_update: Update image
+admin.promo_image_editor.reset: Reset to defaults
+admin.promo_image_editor.saving: Saving…
+admin.promo_image_editor.saved: Image saved for publication.
+admin.promo_image_editor.updated: Image updated.
+admin.promo_image_editor.save_error: Failed to save image.
+admin.promo_image_editor.upload_error: Failed to upload file.
+admin.promo_image_editor.load_error: Failed to load saved image.
+admin.promo_image_editor.saved_list: Saved images
+admin.promo_image_editor.saved_empty: No saved images yet.
+admin.promo_image_editor.edit: Edit
+admin.promo_image_editor.delete: Delete
+admin.promo_image_editor.delete_confirm: Delete this promo image?
+admin.promo_image_editor.deleted: Image deleted.
+admin.promo_image_editor.delete_error: Failed to delete image.
+admin.promo_image_editor.open: Open
+admin.promo_image_editor.editing: Editing
+admin.promo_image_editor.no_edit_data: No edit data
 
 admin.email_sender.name: Name
 admin.email_sender.email: Email

@@ -120,6 +120,13 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkTo(OrderItemCrudController::class, $this->translator->trans('menu.link_order_item', [], 'messages'), 'fas fa-list-ul');
         yield MenuItem::linkTo(PaymentCrudController::class, $this->translator->trans('menu.link_payment', [], 'messages'), 'fas fa-credit-card');
         yield MenuItem::linkTo(ShipmentAddressCrudController::class, $this->translator->trans('menu.link_shipment_address', [], 'messages'), 'fas fa-map-marker-alt');
+        yield MenuItem::section($this->translator->trans('menu.group_marketing', [], 'messages'));
+        yield MenuItem::linkToRoute(
+            $this->translator->trans('menu.link_promo_image_editor', [], 'messages'),
+            'fas fa-image',
+            'admin_promo_image_editor',
+            ['_locale' => 'uk'],
+        );
         yield MenuItem::section($this->translator->trans('menu.group_email', [], 'messages'));
         yield MenuItem::linkTo(EmailTemplateCrudController::class, $this->translator->trans('menu.link_email_template', [], 'messages'), 'fas fa-envelope');
         yield MenuItem::linkTo(EmailTemplateSectionCrudController::class, $this->translator->trans('menu.link_email_template_section', [], 'messages'), 'fas fa-layer-group');

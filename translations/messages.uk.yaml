@@ -6,6 +6,8 @@ menu.group_catalog: Каталог товарів
 menu.group_orders: Замовлення
 menu.group_email: Пошта
 menu.group_bank: Банк
+menu.group_marketing: Маркетинг
+menu.link_promo_image_editor: Редактор промо-картинок
 menu.link_email_template: Шаблони листів
 menu.link_email_template_single: Шаблон листа
 menu.link_email_template_section: Секції листів
@@ -308,6 +310,56 @@ admin.email_template_test.preview_empty: Оберіть шаблон і нати
 admin.email_template_test.sent: Тестовий лист надіслано.
 admin.email_template_test.send_failed: Не вдалося надіслати лист. Перевірте налаштування пошти та журнал листів.
 admin.email_template_test.hint: Після вибору шаблону зʼявляється поле контексту — список замовлень або користувачів залежно від налаштування шаблону. Відправлені листи потрапляють у «Журнал листів».
+
+admin.promo_image_editor.title: Редактор промо-картинок
+admin.promo_image_editor.fields: Контент картинки
+admin.promo_image_editor.preview: Перегляд
+admin.promo_image_editor.section_images: Зображення
+admin.promo_image_editor.section_brand: Бренд
+admin.promo_image_editor.section_title: Заголовок
+admin.promo_image_editor.section_features: Переваги
+admin.promo_image_editor.section_price: Ціна
+admin.promo_image_editor.section_footer: Наявність і футер
+admin.promo_image_editor.bg: Фон
+admin.promo_image_editor.product: Товар (PNG/JPG)
+admin.promo_image_editor.brand_name: Назва бренду
+admin.promo_image_editor.brand_tagline: Підзаголовок бренду
+admin.promo_image_editor.title_field: Заголовок товару
+admin.promo_image_editor.model: Модель
+admin.promo_image_editor.slogan: Слоган
+admin.promo_image_editor.features_help: 5 пунктів переваг. Порожні рядки не показуються.
+admin.promo_image_editor.features_offset: Зсув блоку переваг вниз
+admin.promo_image_editor.features_offset_help: Зсуває модель і список переваг вниз (0–100 px). Заголовок залишається на місці.
+admin.promo_image_editor.feature: Пункт
+admin.promo_image_editor.discount: Знижка
+admin.promo_image_editor.price: Ціна
+admin.promo_image_editor.old_price: Стара ціна
+admin.promo_image_editor.show_discount: Показати знижку
+admin.promo_image_editor.show_old_price: Показати стару ціну
+admin.promo_image_editor.stock: Текст наявності
+admin.promo_image_editor.show_stock: Показати наявність
+admin.promo_image_editor.footer_left: Текст зліва внизу
+admin.promo_image_editor.footer_right: Текст справа внизу
+admin.promo_image_editor.save: Зберегти картинку
+admin.promo_image_editor.save_as_new: Зберегти як нову
+admin.promo_image_editor.save_update: Оновити картинку
+admin.promo_image_editor.reset: Скинути до дефолту
+admin.promo_image_editor.saving: Збереження…
+admin.promo_image_editor.saved: Картинку збережено для публікації.
+admin.promo_image_editor.updated: Картинку оновлено.
+admin.promo_image_editor.save_error: Не вдалося зберегти картинку.
+admin.promo_image_editor.upload_error: Не вдалося завантажити файл.
+admin.promo_image_editor.load_error: Не вдалося завантажити збережену картинку.
+admin.promo_image_editor.saved_list: Збережені картинки
+admin.promo_image_editor.saved_empty: Поки немає збережених картинок.
+admin.promo_image_editor.edit: Редагувати
+admin.promo_image_editor.delete: Видалити
+admin.promo_image_editor.delete_confirm: Видалити цю промо-картинку?
+admin.promo_image_editor.deleted: Картинку видалено.
+admin.promo_image_editor.delete_error: Не вдалося видалити картинку.
+admin.promo_image_editor.open: Відкрити
+admin.promo_image_editor.editing: Редагування
+admin.promo_image_editor.no_edit_data: Немає даних для редагування
 
 admin.email_sender.name: Назва
 admin.email_sender.email: Електронна пошта

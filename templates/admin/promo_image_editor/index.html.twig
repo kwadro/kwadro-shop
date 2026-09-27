@@ -1,0 +1,220 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block head_stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('lib/admin-promo-image-editor.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block body_javascript %}
+    {{ parent() }}
+    <script>
+        window.PromoImageEditorConfig = {
+            defaults: {{ defaults|json_encode(constant('JSON_UNESCAPED_UNICODE'))|raw }},
+            saveUrl: {{ save_url|json_encode|raw }},
+            uploadUrl: {{ upload_url|json_encode|raw }},
+            loadUrlTemplate: {{ load_url_template|json_encode|raw }},
+            deleteUrlTemplate: {{ delete_url_template|json_encode|raw }},
+            canvasSize: {{ canvas_size }},
+            i18n: {
+                saving: {{ 'admin.promo_image_editor.saving'|trans({}, 'messages')|json_encode|raw }},
+                saved: {{ 'admin.promo_image_editor.saved'|trans({}, 'messages')|json_encode|raw }},
+                updated: {{ 'admin.promo_image_editor.updated'|trans({}, 'messages')|json_encode|raw }},
+                deleted: {{ 'admin.promo_image_editor.deleted'|trans({}, 'messages')|json_encode|raw }},
+                saveError: {{ 'admin.promo_image_editor.save_error'|trans({}, 'messages')|json_encode|raw }},
+                uploadError: {{ 'admin.promo_image_editor.upload_error'|trans({}, 'messages')|json_encode|raw }},
+                loadError: {{ 'admin.promo_image_editor.load_error'|trans({}, 'messages')|json_encode|raw }},
+                deleteError: {{ 'admin.promo_image_editor.delete_error'|trans({}, 'messages')|json_encode|raw }},
+                deleteConfirm: {{ 'admin.promo_image_editor.delete_confirm'|trans({}, 'messages')|json_encode|raw }},
+                editing: {{ 'admin.promo_image_editor.editing'|trans({}, 'messages')|json_encode|raw }},
+                edit: {{ 'admin.promo_image_editor.edit'|trans({}, 'messages')|json_encode|raw }},
+                delete: {{ 'admin.promo_image_editor.delete'|trans({}, 'messages')|json_encode|raw }},
+                open: {{ 'admin.promo_image_editor.open'|trans({}, 'messages')|json_encode|raw }},
+                saveAsNew: {{ 'admin.promo_image_editor.save_as_new'|trans({}, 'messages')|json_encode|raw }},
+                saveUpdate: {{ 'admin.promo_image_editor.save_update'|trans({}, 'messages')|json_encode|raw }},
+                savedEmpty: {{ 'admin.promo_image_editor.saved_empty'|trans({}, 'messages')|json_encode|raw }},
+            }
+        };
+    </script>
+    <script src="{{ asset('lib/admin-promo-image-editor.js') }}" defer></script>
+{% endblock %}
+
+{% block content_title %}{{ page_title }}{% endblock %}
+
+{% block main %}
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="promo-editor" id="promo-image-editor">
+        <div class="promo-editor__layout">
+            <div class="promo-editor__form card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center gap-2 flex-wrap">
+                    <strong>{{ 'admin.promo_image_editor.fields'|trans({}, 'messages') }}</strong>
+                    <span class="badge text-bg-info" data-promo-editing-badge hidden></span>
+                </div>
+                <div class="card-body">
+                    <div class="promo-editor__section">
+                        <h3>{{ 'admin.promo_image_editor.section_images'|trans({}, 'messages') }}</h3>
+                        <label class="form-label">{{ 'admin.promo_image_editor.bg'|trans({}, 'messages') }}</label>
+                        <input type="file" class="form-control form-control-sm" accept="image/*" data-promo-upload="bg">
+                        <label class="form-label mt-2">{{ 'admin.promo_image_editor.product'|trans({}, 'messages') }}</label>
+                        <input type="file" class="form-control form-control-sm" accept="image/*" data-promo-upload="product">
+                    </div>
+
+                    <div class="promo-editor__section">
+                        <h3>{{ 'admin.promo_image_editor.section_brand'|trans({}, 'messages') }}</h3>
+                        <label class="form-label">{{ 'admin.promo_image_editor.brand_name'|trans({}, 'messages') }}</label>
+                        <input type="text" class="form-control form-control-sm" data-promo-field="brandName">
+                        <label class="form-label mt-2">{{ 'admin.promo_image_editor.brand_tagline'|trans({}, 'messages') }}</label>
+                        <input type="text" class="form-control form-control-sm" data-promo-field="brandTagline">
+                    </div>
+
+                    <div class="promo-editor__section">
+                        <h3>{{ 'admin.promo_image_editor.section_title'|trans({}, 'messages') }}</h3>
+                        <label class="form-label">{{ 'admin.promo_image_editor.title_field'|trans({}, 'messages') }}</label>
+                        <input type="text" class="form-control form-control-sm" data-promo-field="title">
+                        <label class="form-label mt-2">{{ 'admin.promo_image_editor.model'|trans({}, 'messages') }}</label>
+                        <input type="text" class="form-control form-control-sm" data-promo-field="model">
+                        <label class="form-label mt-2">{{ 'admin.promo_image_editor.slogan'|trans({}, 'messages') }}</label>
+                        <input type="text" class="form-control form-control-sm" data-promo-field="slogan">
+                    </div>
+
+                    <div class="promo-editor__section">
+                        <h3>{{ 'admin.promo_image_editor.section_features'|trans({}, 'messages') }}</h3>
+                        <p class="text-muted small mb-2">{{ 'admin.promo_image_editor.features_help'|trans({}, 'messages') }}</p>
+                        {% for i in 0..4 %}
+                            <input type="text" class="form-control form-control-sm mb-1" data-promo-feature="{{ i }}" placeholder="{{ 'admin.promo_image_editor.feature'|trans({}, 'messages') }} {{ i + 1 }}">
+                        {% endfor %}
+                        <label class="form-label mt-2" for="promo-features-offset">{{ 'admin.promo_image_editor.features_offset'|trans({}, 'messages') }}</label>
+                        <div class="promo-editor__offset-row">
+                            <input
+                                type="range"
+                                class="form-range"
+                                id="promo-features-offset"
+                                min="0"
+                                max="100"
+                                step="1"
+                                data-promo-number="featuresOffsetY"
+                            >
+                            <input
+                                type="number"
+                                class="form-control form-control-sm promo-editor__offset-value"
+                                min="0"
+                                max="100"
+                                step="1"
+                                data-promo-number="featuresOffsetY"
+                                aria-label="{{ 'admin.promo_image_editor.features_offset'|trans({}, 'messages') }}"
+                            >
+                            <span class="text-muted small">px</span>
+                        </div>
+                        <p class="text-muted small mb-0">{{ 'admin.promo_image_editor.features_offset_help'|trans({}, 'messages') }}</p>
+                    </div>
+
+                    <div class="promo-editor__section">
+                        <h3>{{ 'admin.promo_image_editor.section_price'|trans({}, 'messages') }}</h3>
+                        <div class="row g-2">
+                            <div class="col-4">
+                                <label class="form-label">{{ 'admin.promo_image_editor.discount'|trans({}, 'messages') }}</label>
+                                <input type="text" class="form-control form-control-sm" data-promo-field="discount">
+                            </div>
+                            <div class="col-4">
+                                <label class="form-label">{{ 'admin.promo_image_editor.price'|trans({}, 'messages') }}</label>
+                                <input type="text" class="form-control form-control-sm" data-promo-field="price">
+                            </div>
+                            <div class="col-4">
+                                <label class="form-label">{{ 'admin.promo_image_editor.old_price'|trans({}, 'messages') }}</label>
+                                <input type="text" class="form-control form-control-sm" data-promo-field="oldPrice">
+                            </div>
+                        </div>
+                        <div class="form-check mt-2">
+                            <input class="form-check-input" type="checkbox" id="promo-show-discount" data-promo-toggle="showDiscount">
+                            <label class="form-check-label" for="promo-show-discount">{{ 'admin.promo_image_editor.show_discount'|trans({}, 'messages') }}</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="promo-show-old" data-promo-toggle="showOldPrice">
+                            <label class="form-check-label" for="promo-show-old">{{ 'admin.promo_image_editor.show_old_price'|trans({}, 'messages') }}</label>
+                        </div>
+                    </div>
+
+                    <div class="promo-editor__section">
+                        <h3>{{ 'admin.promo_image_editor.section_footer'|trans({}, 'messages') }}</h3>
+                        <label class="form-label">{{ 'admin.promo_image_editor.stock'|trans({}, 'messages') }}</label>
+                        <input type="text" class="form-control form-control-sm" data-promo-field="stockText">
+                        <div class="form-check mt-1 mb-2">
+                            <input class="form-check-input" type="checkbox" id="promo-show-stock" data-promo-toggle="showStock">
+                            <label class="form-check-label" for="promo-show-stock">{{ 'admin.promo_image_editor.show_stock'|trans({}, 'messages') }}</label>
+                        </div>
+                        <label class="form-label">{{ 'admin.promo_image_editor.footer_left'|trans({}, 'messages') }}</label>
+                        <input type="text" class="form-control form-control-sm" data-promo-field="footerLeft">
+                        <label class="form-label mt-2">{{ 'admin.promo_image_editor.footer_right'|trans({}, 'messages') }}</label>
+                        <input type="text" class="form-control form-control-sm" data-promo-field="footerRight">
+                    </div>
+
+                    <div class="promo-editor__actions">
+                        <button type="button" class="btn btn-outline-secondary" data-promo-reset>
+                            {{ 'admin.promo_image_editor.reset'|trans({}, 'messages') }}
+                        </button>
+                        <button type="button" class="btn btn-outline-primary" data-promo-save-new hidden>
+                            {{ 'admin.promo_image_editor.save_as_new'|trans({}, 'messages') }}
+                        </button>
+                        <button type="button" class="btn btn-primary" data-promo-save>
+                            {{ 'admin.promo_image_editor.save'|trans({}, 'messages') }}
+                        </button>
+                    </div>
+                    <div class="promo-editor__status" data-promo-status hidden></div>
+                </div>
+            </div>
+
+            <div class="promo-editor__preview card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <strong>{{ 'admin.promo_image_editor.preview'|trans({}, 'messages') }}</strong>
+                    <span class="badge text-bg-light">{{ canvas_size }}×{{ canvas_size }} px</span>
+                </div>
+                <div class="card-body promo-editor__canvas-wrap">
+                    <canvas id="promo-canvas" width="{{ canvas_size }}" height="{{ canvas_size }}" aria-label="{{ 'admin.promo_image_editor.preview'|trans({}, 'messages') }}"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="promo-editor__saved card shadow-sm mt-4">
+            <div class="card-header"><strong>{{ 'admin.promo_image_editor.saved_list'|trans({}, 'messages') }}</strong></div>
+            <div class="card-body">
+                <div class="promo-editor__saved-grid" data-promo-saved-grid>
+                    {% for item in saved_images %}
+                        <div class="promo-editor__saved-item" data-promo-saved-item data-filename="{{ item.filename|e('html_attr') }}">
+                            <a href="{{ item.url }}" target="_blank" rel="noopener">
+                                <img src="{{ item.url }}" alt="{{ item.filename }}">
+                            </a>
+                            <span class="promo-editor__saved-name">{{ item.filename }}</span>
+                            <div class="promo-editor__saved-actions">
+                                {% if item.hasContent %}
+                                    <button type="button" class="btn btn-sm btn-primary" data-promo-edit="{{ item.filename|e('html_attr') }}">
+                                        {{ 'admin.promo_image_editor.edit'|trans({}, 'messages') }}
+                                    </button>
+                                {% else %}
+                                    <span class="text-muted small">{{ 'admin.promo_image_editor.no_edit_data'|trans({}, 'messages') }}</span>
+                                {% endif %}
+                                <a class="btn btn-sm btn-outline-secondary" href="{{ item.url }}" target="_blank" rel="noopener">
+                                    {{ 'admin.promo_image_editor.open'|trans({}, 'messages') }}
+                                </a>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-promo-delete="{{ item.filename|e('html_attr') }}">
+                                    {{ 'admin.promo_image_editor.delete'|trans({}, 'messages') }}
+                                </button>
+                            </div>
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0" data-promo-saved-empty>{{ 'admin.promo_image_editor.saved_empty'|trans({}, 'messages') }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,31 @@
+{
+    "filename": "promo-20260927-133447-02.jpg",
+    "savedAt": "2026-09-27T13:54:22+00:00",
+    "content": {
+        "canvasSize": 120,
+        "backgroundUrl": "\/uploads\/promo\/default-bg.jpg",
+        "productUrl": "\/uploads\/promo\/products\/11074.png",
+        "brandName": "KVADRO",
+        "brandTagline": "МАГАЗИН ТОВАРІВ ДЛЯ ДОМУ",
+        "title": "Цифровий приймач DVB-T2",
+        "model": "World Vision T624",
+        "slogan": "Більше улюблених каналів!",
+        "features": [
+            "DVB-T \/ DVB-T2 \/ DVB-C",
+            "HDMI та AV виходи",
+            "Пульт у комплекті",
+            "Просте налаштування",
+            "Підтримка USB медіа"
+        ],
+        "discount": "",
+        "price": "590 ₴",
+        "oldPrice": "",
+        "stockText": "В наявності",
+        "footerLeft": "Цифрове телебачення у домі!",
+        "footerRight": "Замовляйте на сайті kvadro.if.ua",
+        "showDiscount": true,
+        "showOldPrice": true,
+        "showStock": true,
+        "featuresOffsetY": 30
+    }
+}
