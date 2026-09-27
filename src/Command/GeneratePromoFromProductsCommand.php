@@ -281,8 +281,8 @@ final class GeneratePromoFromProductsCommand extends Command
         imagefilledrectangle($im, 0, 0, $size, $headerBottom, imagecolorallocatealpha($im, 255, 255, 255, 90));
         $this->roundRect($im, 12, $panelTop, 230, $panelHeight, 10, imagecolorallocatealpha($im, 255, 255, 255, 50));
 
-        $this->text($im, $fontBold, 18, 42, 30, (string) $c['brandName'], $ink);
-        $this->text($im, $fontReg, 7, 42, 44, mb_strtoupper((string) $c['brandTagline']), $muted);
+        $this->text($im, $fontBold, 23, 48, 34, (string) $c['brandName'], $ink);
+        $this->text($im, $fontReg, 9, 48, 52, mb_strtoupper((string) $c['brandTagline']), $muted);
         $this->text($im, $fontBold, 14, 370, 38, (string) $c['slogan'], $sloganColor, 'center');
         $this->wrapText($im, $fontBold, 15, 22, $titleY, (string) $c['title'], $ink, 210, 20);
 
@@ -319,7 +319,7 @@ final class GeneratePromoFromProductsCommand extends Command
         }
 
         imagefilledrectangle($im, 0, $footerTop, $size, $size, imagecolorallocatealpha($im, 255, 255, 255, 25));
-        $this->text($im, $fontReg, 8, 14, 508, (string) $c['footerLeft'], $ink);
+        $this->text($im, $fontReg, 10, 14, 508, (string) $c['footerLeft'], $ink);
         $this->text($im, $fontReg, 8, $size - 14, 508, (string) $c['footerRight'].' ›', $ink, 'right');
 
         imagejpeg($im, $path, 92);

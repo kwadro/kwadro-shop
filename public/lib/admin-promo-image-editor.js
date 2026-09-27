@@ -275,8 +275,8 @@
     }
 
     function drawLogoMark(x, y) {
-        const s = 7;
-        const gap = 2;
+        const s = 9;
+        const gap = 3;
         const colors = ['#2f6fed', '#f5c518', '#8a8a8a', '#f0a020'];
         colors.forEach((color, i) => {
             const col = i % 2;
@@ -390,15 +390,15 @@
         roundRect(12, panelTop, 230, panelHeight, 10);
         ctx.fill();
 
-        // Brand (header — fixed)
-        drawLogoMark(18, 16);
+        // Brand (header — fixed, +30% type size)
+        drawLogoMark(16, 14);
         ctx.fillStyle = '#1a1a1a';
-        ctx.font = '800 22px Montserrat, Arial, sans-serif';
-        ctx.fillText(state.brandName || '', 42, 30);
+        ctx.font = '800 29px Montserrat, Arial, sans-serif';
+        ctx.fillText(state.brandName || '', 48, 34);
         ctx.fillStyle = '#666';
-        ctx.font = '600 8px Montserrat, Arial, sans-serif';
+        ctx.font = '600 10px Montserrat, Arial, sans-serif';
         ctx.letterSpacing = '0.5px';
-        ctx.fillText((state.brandTagline || '').toUpperCase(), 42, 44);
+        ctx.fillText((state.brandTagline || '').toUpperCase(), 48, 52);
 
         // Slogan (header — fixed)
         ctx.save();
@@ -477,9 +477,10 @@
         ctx.fillStyle = 'rgba(255,255,255,0.82)';
         ctx.fillRect(0, 480, size, 46);
         ctx.fillStyle = '#222';
-        ctx.font = '600 11px Montserrat, Arial, sans-serif';
         ctx.textAlign = 'left';
-        ctx.fillText('📺  ' + (state.footerLeft || ''), 14, 508);
+        ctx.font = '600 13px Montserrat, Arial, sans-serif';
+        ctx.fillText(state.footerLeft || '', 14, 508);
+        ctx.font = '600 11px Montserrat, Arial, sans-serif';
         ctx.textAlign = 'right';
         ctx.fillText('🌐  ' + (state.footerRight || '') + '  ›', size - 14, 508);
         ctx.textAlign = 'left';
