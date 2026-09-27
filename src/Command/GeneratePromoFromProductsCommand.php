@@ -179,12 +179,32 @@ final class GeneratePromoFromProductsCommand extends Command
             ];
         }
 
+        if (
+            str_contains($slug, 'gear')
+            || str_contains($sku, 'wp952')
+            || str_contains(mb_strtolower($name), 'powerbank')
+            || str_contains(mb_strtolower($name), 'повербанк')
+        ) {
+            return [
+                'Повербанк 20000 mAh',
+                'GEAR 20000',
+                'Заряд завжди з вами!',
+                [
+                    'Ємність 20000 mAh',
+                    'Power Delivery 22.5W',
+                    'Цифровий дисплей',
+                    '4 порти зарядки',
+                    'Для телефону й роутера',
+                ],
+            ];
+        }
+
         $model = $product->getSku() !== '' ? $product->getSku() : mb_substr($name, 0, 24);
 
         return [
             $name,
             $model,
-            'Більше улюблених каналів!',
+            'Вигідна пропозиція!',
             [
                 'Якісний товар',
                 'Швидка доставка',
@@ -197,6 +217,15 @@ final class GeneratePromoFromProductsCommand extends Command
 
     private function resolveProductImageUrl(Product $product): string
     {
+        $slug = $product->getSlug();
+        $cutouts = [
+            'delta-3000' => '/uploads/promo/products/111142.png',
+            'wv-t624' => '/uploads/promo/products/11074.png',
+        ];
+        if (isset($cutouts[$slug]) && is_file($this->projectDir.'/public'.$cutouts[$slug])) {
+            return $cutouts[$slug];
+        }
+
         $gallery = $product->getGallery();
         if (isset($gallery[0]['full']) && \is_string($gallery[0]['full']) && $gallery[0]['full'] !== '') {
             $full = $gallery[0]['full'];
@@ -205,15 +234,6 @@ final class GeneratePromoFromProductsCommand extends Command
             }
 
             return '/uploads/products/'.basename($full);
-        }
-
-        $slug = $product->getSlug();
-        $cutouts = [
-            'delta-3000' => '/uploads/promo/products/111142.png',
-            'wv-t624' => '/uploads/promo/products/11074.png',
-        ];
-        if (isset($cutouts[$slug]) && is_file($this->projectDir.'/public'.$cutouts[$slug])) {
-            return $cutouts[$slug];
         }
 
         return '/uploads/promo/default-product.png';
@@ -255,26 +275,48 @@ final class GeneratePromoFromProductsCommand extends Command
         /** @var list<string> $features */
         $features = array_values(array_filter(array_map('strval', (array) ($c['features'] ?? []))));
         $features = \array_slice($features, 0, 5);
-        $featureStartY = 198 + $offset;
-        $lastFeatureY = $features !== [] ? $featureStartY + (\count($features) - 1) * 32 : 165 + $offset;
-        $panelHeight = max(200, $lastFeatureY + 28 - 86);
 
-        imagefilledrectangle($im, 0, 0, $size, 78, imagecolorallocatealpha($im, 255, 255, 255, 90));
-        $this->roundRect($im, 12, 86, 230, $panelHeight, 10, imagecolorallocatealpha($im, 255, 255, 255, 50));
+        $headerBottom = 85;
+        $footerTop = 480;
+        $featureStep = 32;
+        $padTop = 22;
+        $titleBlockH = 48;
+        $modelRelY = $padTop + $titleBlockH;
+        $modelH = 24;
+        $featureRelBase = $modelRelY + $modelH + 26;
+        $featureRelStart = $featureRelBase + $offset;
+        $lastFeatureRel = $features !== []
+            ? $featureRelStart + (\count($features) - 1) * $featureStep
+            : $modelRelY + $modelH;
+        $panelHeight = max(160, $lastFeatureRel + 28);
+        $showStock = !empty($c['showStock']) && (string) ($c['stockText'] ?? '') !== '';
+        $stockGap = $showStock ? 12 : 0;
+        $stockH = $showStock ? 32 : 0;
+        $totalBlockH = $panelHeight + $stockGap + $stockH;
+        $available = $footerTop - $headerBottom;
+        $panelTop = $headerBottom + max(8, (int) round(($available - $totalBlockH) / 2));
+        $panelTop = max($headerBottom + 6, min($panelTop, $footerTop - $totalBlockH - 6));
+        $titleY = $panelTop + $padTop + 16;
+        $modelY = $panelTop + $modelRelY;
+        $featureStartY = $panelTop + $featureRelStart;
+        $stockY = $panelTop + $panelHeight + $stockGap;
 
-        $this->text($im, $fontBold, 18, 42, 30, (string) $c['brandName'], $ink);
-        $this->text($im, $fontReg, 7, 42, 44, mb_strtoupper((string) $c['brandTagline']), $muted);
-        $this->text($im, $fontBold, 14, 370, 38, (string) $c['slogan'], $sloganColor, 'center');
-        $this->wrapText($im, $fontBold, 15, 22, 112, (string) $c['title'], $ink, 210, 20);
+        imagefilledrectangle($im, 0, 0, $size, $headerBottom, imagecolorallocatealpha($im, 255, 255, 255, 90));
+        $this->roundRect($im, 12, $panelTop, 230, $panelHeight, 10, imagecolorallocatealpha($im, 255, 255, 255, 50));
+
+        $this->text($im, $fontBold, 24, 48, 38, (string) $c['brandName'], $ink);
+        $this->text($im, $fontReg, 7, 48, 54, mb_strtoupper((string) $c['brandTagline']), $muted);
+        $this->text($im, $fontBold, 14, 370, $featureStartY, (string) $c['slogan'], $sloganColor, 'center');
+        $this->wrapText($im, $fontBold, 15, 22, $titleY, (string) $c['title'], $ink, 210, 20);
 
         $model = (string) $c['model'];
         $bbox = imagettfbbox(11, 0, $fontBold, $model);
         $modelW = max(88, ($bbox[2] - $bbox[0]) + 18);
-        $this->roundRect($im, 22, 148 + $offset, (int) $modelW, 24, 6, $yellow);
-        $this->text($im, $fontBold, 11, 31, 165 + $offset, $model, $ink);
+        $this->roundRect($im, 22, $modelY, (int) $modelW, $modelH, 6, $yellow);
+        $this->text($im, $fontBold, 11, 31, $modelY + 17, $model, $ink);
 
         foreach ($features as $i => $feat) {
-            $y = $featureStartY + $i * 32;
+            $y = $featureStartY + $i * $featureStep;
             imagefilledellipse($im, 34, $y, 22, 22, $yellow);
             $this->text($im, $fontReg, 10, 52, $y + 4, $feat, $ink);
         }
@@ -294,13 +336,12 @@ final class GeneratePromoFromProductsCommand extends Command
             imageline($im, 425, 310, 495, 298, $red);
         }
 
-        $stockY = 86 + $panelHeight + 14;
-        if (!empty($c['showStock']) && (string) $c['stockText'] !== '') {
-            $this->roundRect($im, 18, $stockY, 130, 28, 8, $green);
-            $this->text($im, $fontBold, 10, 28, $stockY + 19, '✓  '.$c['stockText'], $white);
+        if ($showStock) {
+            $this->roundRect($im, 18, $stockY, 148, $stockH, 8, $green);
+            $this->text($im, $fontBold, 13, 28, $stockY + 22, (string) $c['stockText'], $white);
         }
 
-        imagefilledrectangle($im, 0, 480, $size, $size, imagecolorallocatealpha($im, 255, 255, 255, 25));
+        imagefilledrectangle($im, 0, $footerTop, $size, $size, imagecolorallocatealpha($im, 255, 255, 255, 25));
         $this->text($im, $fontReg, 8, 14, 508, (string) $c['footerLeft'], $ink);
         $this->text($im, $fontReg, 8, $size - 14, 508, (string) $c['footerRight'].' ›', $ink, 'right');
 

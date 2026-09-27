@@ -1,10 +1,10 @@
 {
     "filename": "promo-product-delta-3000.jpg",
-    "savedAt": "2026-09-27T14:12:42+00:00",
+    "savedAt": "2026-09-27T18:31:18+00:00",
     "content": {
-        "canvasSize": 526,
+        "canvasSize": 120,
         "backgroundUrl": "\/uploads\/promo\/default-bg.jpg",
-        "productUrl": "\/uploads\/products\/111142 (1).jpg",
+        "productUrl": "\/uploads\/promo\/products\/111142.png",
         "brandName": "KVADRO",
         "brandTagline": "МАГАЗИН ТОВАРІВ ДЛЯ ДОМУ",
         "title": "ТВ антена DVB-T2",
@@ -26,8 +26,6 @@
         "showDiscount": true,
         "showOldPrice": true,
         "showStock": true,
-        "featuresOffsetY": 0,
-        "productSlug": "delta-3000",
-        "productId": 1
+        "featuresOffsetY": 0
     }
 }

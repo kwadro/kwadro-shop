@@ -275,8 +275,8 @@
     }
 
     function drawLogoMark(x, y) {
-        const s = 7;
-        const gap = 2;
+        const s = 10;
+        const gap = 3;
         const colors = ['#2f6fed', '#f5c518', '#8a8a8a', '#f0a020'];
         colors.forEach((color, i) => {
             const col = i % 2;
@@ -357,36 +357,54 @@
             containImage(images.product, px, py, pw, ph);
         }
 
-        // Soft light panels for readability (height fits features + offset)
+        // Soft light panels — features offset expands height; whole block re-centers
+        const headerBottom = 85;
+        const footerTop = 480;
         const featuresOffset = Math.max(0, Math.min(100, Number(state.featuresOffsetY) || 0));
         const features = (state.features || []).filter(Boolean).slice(0, 5);
-        const featureStartY = 198 + featuresOffset;
         const featureStep = 32;
-        const lastFeatureY = features.length > 0
-            ? featureStartY + (features.length - 1) * featureStep
-            : 165 + featuresOffset;
-        const panelTop = 86;
-        const panelHeight = Math.max(200, lastFeatureY + 28 - panelTop);
+        const padTop = 22;
+        const titleBlockH = 48;
+        const modelRelY = padTop + titleBlockH; // 70
+        const modelH = 24;
+        const featureRelBase = modelRelY + modelH + 26; // 120
+        const featureRelStart = featureRelBase + featuresOffset;
+        const lastFeatureRel = features.length > 0
+            ? featureRelStart + (features.length - 1) * featureStep
+            : modelRelY + modelH;
+        const panelHeight = Math.max(160, lastFeatureRel + 28);
+        const showStock = !!(state.showStock && state.stockText);
+        const stockGap = showStock ? 12 : 0;
+        const stockH = showStock ? 32 : 0;
+        const totalBlockH = panelHeight + stockGap + stockH;
+        const available = footerTop - headerBottom;
+        let panelTop = headerBottom + Math.max(8, Math.round((available - totalBlockH) / 2));
+        panelTop = Math.max(headerBottom + 6, Math.min(panelTop, footerTop - totalBlockH - 6));
+
+        const titleY = panelTop + padTop + 16;
+        const modelY = panelTop + modelRelY;
+        const featureStartY = panelTop + featureRelStart;
+        const stockY = panelTop + panelHeight + stockGap;
 
         ctx.fillStyle = 'rgba(255,255,255,0.18)';
-        ctx.fillRect(0, 0, size, 78);
+        ctx.fillRect(0, 0, size, headerBottom);
         ctx.fillStyle = 'rgba(255,255,255,0.55)';
         roundRect(12, panelTop, 230, panelHeight, 10);
         ctx.fill();
 
         // Brand
-        drawLogoMark(18, 16);
+        drawLogoMark(16, 18);
         ctx.fillStyle = '#1a1a1a';
-        ctx.font = '800 22px Montserrat, Arial, sans-serif';
-        ctx.fillText(state.brandName || '', 42, 30);
+        ctx.font = '800 30px Montserrat, Arial, sans-serif';
+        ctx.fillText(state.brandName || '', 48, 38);
         ctx.fillStyle = '#666';
         ctx.font = '600 8px Montserrat, Arial, sans-serif';
         ctx.letterSpacing = '0.5px';
-        ctx.fillText((state.brandTagline || '').toUpperCase(), 42, 44);
+        ctx.fillText((state.brandTagline || '').toUpperCase(), 48, 54);
 
-        // Slogan
+        // Slogan — moves with features block
         ctx.save();
-        ctx.translate(360, 42);
+        ctx.translate(360, featureStartY);
         ctx.rotate(-0.08);
         ctx.fillStyle = '#1f2a44';
         ctx.font = '700 22px Caveat, cursive';
@@ -394,21 +412,20 @@
         wrapText(state.slogan || '', 0, 0, 170, 22);
         ctx.restore();
 
-        // Title (stays fixed)
+        // Title + model relative to panel; features shifted by offset inside panel
         ctx.textAlign = 'left';
         ctx.fillStyle = '#111';
         ctx.font = '800 22px Montserrat, Arial, sans-serif';
-        wrapText(state.title || '', 22, 112, 200, 24);
+        wrapText(state.title || '', 22, titleY, 200, 24);
 
-        // Model + features block (movable down)
         const model = state.model || '';
         ctx.font = '700 14px Montserrat, Arial, sans-serif';
         const modelW = Math.max(88, ctx.measureText(model).width + 18);
         ctx.fillStyle = '#f5c518';
-        roundRect(22, 148 + featuresOffset, modelW, 24, 6);
+        roundRect(22, modelY, modelW, modelH, 6);
         ctx.fill();
         ctx.fillStyle = '#111';
-        ctx.fillText(model, 31, 165 + featuresOffset);
+        ctx.fillText(model, 31, modelY + 17);
 
         features.forEach((text, i) => {
             const y = featureStartY + i * featureStep;
@@ -418,14 +435,12 @@
             ctx.fillText(text, 52, y + 4);
         });
 
-        // Stock just under the features panel
-        const stockY = panelTop + panelHeight + 14;
-        if (state.showStock && state.stockText) {
-            drawBrush(18, stockY, 130, 28, '#2e9b3a');
+        if (showStock) {
+            drawBrush(18, stockY, 148, stockH, '#2e9b3a');
             ctx.fillStyle = '#fff';
-            ctx.font = '700 13px Montserrat, Arial, sans-serif';
+            ctx.font = '700 17px Montserrat, Arial, sans-serif';
             ctx.textAlign = 'left';
-            ctx.fillText('✓  ' + state.stockText, 28, stockY + 19);
+            ctx.fillText(state.stockText, 28, stockY + 22);
         }
 
         // Price badges
@@ -465,7 +480,7 @@
         ctx.fillStyle = '#222';
         ctx.font = '600 11px Montserrat, Arial, sans-serif';
         ctx.textAlign = 'left';
-        ctx.fillText('📺  ' + (state.footerLeft || ''), 14, 508);
+        ctx.fillText(state.footerLeft || '', 14, 508);
         ctx.textAlign = 'right';
         ctx.fillText('🌐  ' + (state.footerRight || '') + '  ›', size - 14, 508);
         ctx.textAlign = 'left';

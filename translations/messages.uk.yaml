@@ -329,7 +329,7 @@ admin.promo_image_editor.model: Модель
 admin.promo_image_editor.slogan: Слоган
 admin.promo_image_editor.features_help: 5 пунктів переваг. Порожні рядки не показуються.
 admin.promo_image_editor.features_offset: Зсув блоку переваг вниз
-admin.promo_image_editor.features_offset_help: Зсуває модель і список переваг вниз (0–100 px). Заголовок залишається на місці.
+admin.promo_image_editor.features_offset_help: Зсуває список переваг вниз; увесь лівий блок знову центрується між header і footer.
 admin.promo_image_editor.feature: Пункт
 admin.promo_image_editor.discount: Знижка
 admin.promo_image_editor.price: Ціна
