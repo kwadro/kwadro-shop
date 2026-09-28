@@ -78,7 +78,7 @@ a {
 }
 
 .shop-topbar a:hover,
-.shop-footer a:hover {
+.shop-footer a:hover:not(.shop-footer__social-link) {
     color: var(--shop-green-dark);
 }
 
@@ -1175,6 +1175,10 @@ body.shop-minicart-open {
     padding-bottom: 2.5rem;
 }
 
+.shop-footer__inner--with-social {
+    grid-template-columns: repeat(3, minmax(180px, max-content));
+}
+
 .shop-footer h4 {
     margin: 0 0 0.85rem;
     color: #fff;
@@ -1188,6 +1192,37 @@ body.shop-minicart-open {
     display: grid;
     gap: 0.45rem;
     font-size: 0.9rem;
+}
+
+.shop-footer__social-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.shop-footer__social-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.45rem 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 999px;
+    color: #dbe4db;
+    text-decoration: none;
+    font-size: 0.88rem;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.shop-footer__social-link:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.28);
+    color: #fff;
+}
+
+.shop-footer__social-icon {
+    width: 1.1rem;
+    height: 1.1rem;
+    flex-shrink: 0;
 }
 
 .shop-footer__bottom {
@@ -2869,7 +2904,8 @@ body.shop-offers-modal-open {
     }
 
     /* Footer */
-    .shop-footer__inner {
+    .shop-footer__inner,
+    .shop-footer__inner--with-social {
         grid-template-columns: minmax(0, 1fr);
         justify-items: center;
         text-align: center;
@@ -2881,6 +2917,10 @@ body.shop-offers-modal-open {
 
     .shop-footer ul {
         justify-items: center;
+    }
+
+    .shop-footer__social-links {
+        justify-content: center;
     }
 
     /* Product / pages */

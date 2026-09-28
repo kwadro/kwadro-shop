@@ -6,6 +6,7 @@ use App\Entity\OrderEmail;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -44,5 +45,7 @@ class OrderEmailCrudController extends AbstractCrudController
             ->setRequired(true);
         yield AssociationField::new('sender', $this->translator->trans('admin.order_email.sender', [], 'messages'))
             ->setRequired(true);
+        yield BooleanField::new('sendCopyToAdmin', $this->translator->trans('admin.order_email.send_copy_to_admin', [], 'messages'))
+            ->setHelp($this->translator->trans('admin.order_email.send_copy_to_admin_help', [], 'messages'));
     }
 }

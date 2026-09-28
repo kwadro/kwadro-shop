@@ -42,6 +42,9 @@ class OrderEmail
     #[Assert\NotNull]
     private ?EmailSender $sender = null;
 
+    #[ORM\Column(options: ['default' => false])]
+    private bool $sendCopyToAdmin = false;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -91,6 +94,18 @@ class OrderEmail
     public function setSender(?EmailSender $sender): static
     {
         $this->sender = $sender;
+
+        return $this;
+    }
+
+    public function isSendCopyToAdmin(): bool
+    {
+        return $this->sendCopyToAdmin;
+    }
+
+    public function setSendCopyToAdmin(bool $sendCopyToAdmin): static
+    {
+        $this->sendCopyToAdmin = $sendCopyToAdmin;
 
         return $this;
     }

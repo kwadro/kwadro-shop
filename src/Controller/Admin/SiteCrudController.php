@@ -16,6 +16,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ImageField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\EmailField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\UrlField;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -36,6 +38,15 @@ class SiteCrudController extends AbstractCrudController
             IdField::new('id')->hideOnForm(),
             TextField::new('code')->setRequired(true),
             TextField::new('domain')->setRequired(true),
+            EmailField::new('adminEmail', $this->translator->trans('admin.site.admin_email', [], 'messages'))
+                ->setRequired(false)
+                ->setHelp($this->translator->trans('admin.site.admin_email_help', [], 'messages')),
+            UrlField::new('facebookUrl', $this->translator->trans('admin.site.facebook_url', [], 'messages'))
+                ->setRequired(false)
+                ->setHelp($this->translator->trans('admin.site.facebook_url_help', [], 'messages')),
+            UrlField::new('instagramUrl', $this->translator->trans('admin.site.instagram_url', [], 'messages'))
+                ->setRequired(false)
+                ->setHelp($this->translator->trans('admin.site.instagram_url_help', [], 'messages')),
             AssociationField::new('featuredProduct', $this->translator->trans('admin.site.featured_product', [], 'messages'))
                 ->setRequired(false)
                 ->setHelp($this->translator->trans('admin.site.featured_product_help', [], 'messages')),

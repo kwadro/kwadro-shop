@@ -23,6 +23,10 @@ menu.link_order_email_single: Order email
 menu.link_email_log: Email log
 menu.link_email_log_single: Email log entry
 menu.link_email_template_test: Template test
+menu.link_mailbox_account: Mailbox accounts
+menu.link_mailbox_account_single: Mailbox account
+menu.link_mailbox_message: Inbox messages
+menu.link_mailbox_message_single: Inbox message
 menu.users: Users
 menu.link_user: Users
 menu.link_user_single: User
@@ -128,6 +132,12 @@ admin.header.work_hours: Work hours
 admin.header.work_hours_help: 'HTML is supported. Example: 7 days a week from &lt;strong&gt;9:00&lt;/strong&gt; to &lt;strong&gt;19:00&lt;/strong&gt;'
 admin.header.courier_delivery_cost: Courier delivery cost
 admin.header.courier_delivery_cost_help: Fixed courier price within Ivano-Frankivsk, regardless of product quantity.
+admin.site.admin_email: Administrator email
+admin.site.admin_email_help: A copy of emails is sent here when “Send copy to administrator” is enabled on the letter settings.
+admin.site.facebook_url: Facebook page
+admin.site.facebook_url_help: Full URL to your Facebook page (e.g. https://www.facebook.com/yourpage).
+admin.site.instagram_url: Instagram page
+admin.site.instagram_url_help: Full URL to your Instagram profile (e.g. https://www.instagram.com/yourpage/).
 admin.site.courier_delivery_cost: Courier delivery cost
 admin.site.courier_delivery_cost_help: Fixed courier price within Ivano-Frankivsk, regardless of product quantity.
 admin.site.cod_standard_percent: NP commission, standard %
@@ -372,6 +382,38 @@ admin.order_email.code_unique: An order email with this code already exists.
 admin.order_email.code_format: 'Code may contain only lowercase Latin letters, digits and underscore.'
 admin.order_email.template: Template
 admin.order_email.sender: Sender
+admin.order_email.send_copy_to_admin: Send copy to administrator
+admin.order_email.send_copy_to_admin_help: If yes — BCC to the Administrator email from site settings.
+
+admin.mailbox_account.name: Name
+admin.mailbox_account.email: Email
+admin.mailbox_account.site: Site
+admin.mailbox_account.username: Username
+admin.mailbox_account.password: Password
+admin.mailbox_account.password_help: Leave empty on edit to keep the current password. Stored encrypted.
+admin.mailbox_account.password_required: Password is required for a new account.
+admin.mailbox_account.imap_host: IMAP host
+admin.mailbox_account.imap_port: IMAP port
+admin.mailbox_account.imap_encryption: IMAP encryption
+admin.mailbox_account.smtp_host: SMTP host
+admin.mailbox_account.smtp_port: SMTP port
+admin.mailbox_account.smtp_encryption: SMTP encryption
+admin.mailbox_account.is_active: Active
+admin.mailbox_account.last_synced_at: Last sync
+admin.mailbox_account.last_sync_error: Sync error
+admin.mailbox_account.sync: Sync now
+admin.mailbox_account.sync_ok: 'Synced. Imported: %imported%, updated: %updated%.'
+
+admin.mailbox_message.mailbox: Mailbox
+admin.mailbox_message.received_at: Received
+admin.mailbox_message.from: From
+admin.mailbox_message.subject: Subject
+admin.mailbox_message.is_seen: Seen
+admin.mailbox_message.has_attachments: Attachments
+admin.mailbox_message.preview: Preview
+admin.mailbox_message.body_text: Text body
+admin.mailbox_message.body_html: HTML body
+
 menu.link_headertranslation_single: Header Translation
 menu.link_headertranslation: Header Translations
 menu.link_locale_single: Locale
@@ -437,6 +479,9 @@ shop.footer.payment: Payment
 shop.footer.warranty: Warranty
 shop.footer.returns: Returns
 shop.footer.contacts: Contacts
+shop.footer.social: Follow us
+shop.footer.facebook: Facebook
+shop.footer.instagram: Instagram
 shop.error404.title: Page not found
 shop.error404.text: The page you requested does not exist or has been moved. Check the address or return to the homepage.
 shop.error404.back_home: Back to homepage

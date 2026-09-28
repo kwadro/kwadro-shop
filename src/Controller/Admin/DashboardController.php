@@ -46,6 +46,8 @@ use App\Controller\Admin\BankAccountCrudController;
 use App\Controller\Admin\EmailParameterCrudController;
 use App\Controller\Admin\EmailSenderCrudController;
 use App\Controller\Admin\OrderEmailCrudController;
+use App\Controller\Admin\MailboxAccountCrudController;
+use App\Controller\Admin\MailboxMessageCrudController;
 // @GENERATE USE FINISH
 
 #[AdminDashboard(routePath: '/admin/{_locale}', routeName: 'admin')]
@@ -134,6 +136,8 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkTo(EmailSenderCrudController::class, $this->translator->trans('menu.link_email_sender', [], 'messages'), 'fas fa-paper-plane');
         yield MenuItem::linkTo(OrderEmailCrudController::class, $this->translator->trans('menu.link_order_email', [], 'messages'), 'fas fa-envelope-open-text');
         yield MenuItem::linkTo(EmailLogCrudController::class, $this->translator->trans('menu.link_email_log', [], 'messages'), 'fas fa-inbox');
+        yield MenuItem::linkTo(MailboxAccountCrudController::class, $this->translator->trans('menu.link_mailbox_account', [], 'messages'), 'fas fa-at');
+        yield MenuItem::linkTo(MailboxMessageCrudController::class, $this->translator->trans('menu.link_mailbox_message', [], 'messages'), 'fas fa-envelope-open');
         yield MenuItem::linkToRoute(
             $this->translator->trans('menu.link_email_template_test', [], 'messages'),
             'fas fa-vial',
@@ -173,6 +177,7 @@ yield MenuItem::linkTo(SiteCrudController::class,$this->translator->trans('menu.
             ->addCssFile('https://cdn.jsdelivr.net/npm/jodit@4.2.27/es2021/jodit.min.css')
             ->addCssFile('lib/admin-html-editor.css')
             ->addJsFile('https://cdn.jsdelivr.net/npm/jodit@4.2.27/es2021/jodit.min.js')
-            ->addJsFile('lib/admin-html-editor.js');
+            ->addJsFile('lib/admin-html-editor.js')
+            ->addJsFile('lib/admin-mailbox-notifications.js');
     }
 }

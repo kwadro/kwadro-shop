@@ -133,6 +133,10 @@ class SiteSettingsProvider
                 'id' => $footerSetting->getId(),
                 'content' => $footerSetting->getTranslations()[0]->getContent()
             ] : [],
+            'social' => [
+                'facebook_url' => $site->getFacebookUrl(),
+                'instagram_url' => $site->getInstagramUrl(),
+            ],
             'menu_pages' => $menuPages ?: [],
             'menu_url_key' => $menuUrlKey,
             'menu' => $menuSetting ?: [],

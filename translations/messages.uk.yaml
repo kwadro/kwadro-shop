@@ -23,6 +23,10 @@ menu.link_order_email_single: Лист замовлення
 menu.link_email_log: Журнал листів
 menu.link_email_log_single: Запис листа
 menu.link_email_template_test: Тест шаблонів
+menu.link_mailbox_account: Поштові акаунти
+menu.link_mailbox_account_single: Поштовий акаунт
+menu.link_mailbox_message: Вхідні листи
+menu.link_mailbox_message_single: Вхідний лист
 menu.users: Користувачі
 menu.link_user: Користувачі
 menu.link_user_single: Користувач
@@ -128,6 +132,12 @@ admin.header.work_hours: Графік роботи
 admin.header.work_hours_help: 'Можна вводити HTML. Наприклад: 7 днів на тиждень з &lt;strong&gt;9:00&lt;/strong&gt; до &lt;strong&gt;19:00&lt;/strong&gt;'
 admin.header.courier_delivery_cost: Вартість кур'єрської доставки
 admin.header.courier_delivery_cost_help: Фіксована ціна кур'єра в межах Івано-Франківська, незалежно від кількості товару.
+admin.site.admin_email: Email адміністратора
+admin.site.admin_email_help: На цю адресу надсилається копія листів, якщо в налаштуваннях листа увімкнено «Відправити копію адміністратору».
+admin.site.facebook_url: Facebook сторінка
+admin.site.facebook_url_help: Повне посилання на сторінку Facebook (наприклад https://www.facebook.com/yourpage).
+admin.site.instagram_url: Instagram сторінка
+admin.site.instagram_url_help: Повне посилання на профіль Instagram (наприклад https://www.instagram.com/yourpage/).
 admin.site.courier_delivery_cost: Вартість кур'єрської доставки
 admin.site.courier_delivery_cost_help: Фіксована ціна кур'єра в межах Івано-Франківська, незалежно від кількості товару.
 admin.site.cod_standard_percent: Комісія НП, стандартний %
@@ -372,6 +382,38 @@ admin.order_email.code_unique: Лист з таким кодом вже існу
 admin.order_email.code_format: 'Код може містити лише малі латинські літери, цифри та символ _.'
 admin.order_email.template: Шаблон
 admin.order_email.sender: Відправник
+admin.order_email.send_copy_to_admin: Відправити копію адміністратору
+admin.order_email.send_copy_to_admin_help: Якщо так — BCC на Email адміністратора з налаштувань сайту.
+
+admin.mailbox_account.name: Назва
+admin.mailbox_account.email: Email
+admin.mailbox_account.site: Сайт
+admin.mailbox_account.username: Логін
+admin.mailbox_account.password: Пароль
+admin.mailbox_account.password_help: Залиште порожнім при редагуванні, щоб не змінювати. Зберігається в шифрованому вигляді.
+admin.mailbox_account.password_required: Пароль обовʼязковий для нового акаунта.
+admin.mailbox_account.imap_host: IMAP хост
+admin.mailbox_account.imap_port: IMAP порт
+admin.mailbox_account.imap_encryption: IMAP шифрування
+admin.mailbox_account.smtp_host: SMTP хост
+admin.mailbox_account.smtp_port: SMTP порт
+admin.mailbox_account.smtp_encryption: SMTP шифрування
+admin.mailbox_account.is_active: Активний
+admin.mailbox_account.last_synced_at: Остання синхронізація
+admin.mailbox_account.last_sync_error: Помилка синхронізації
+admin.mailbox_account.sync: Синхронізувати
+admin.mailbox_account.sync_ok: 'Синхронізовано. Нових: %imported%, оновлено: %updated%.'
+
+admin.mailbox_message.mailbox: Акаунт
+admin.mailbox_message.received_at: Отримано
+admin.mailbox_message.from: Від
+admin.mailbox_message.subject: Тема
+admin.mailbox_message.is_seen: Прочитано
+admin.mailbox_message.has_attachments: Вкладення
+admin.mailbox_message.preview: Превʼю
+admin.mailbox_message.body_text: Текст
+admin.mailbox_message.body_html: HTML
+
 menu.link_headertranslation_single: Переклад Заголовка
 menu.link_headertranslation: Переклад Заголовків
 menu.link_locale_single: Мова
@@ -436,6 +478,9 @@ shop.footer.payment: Оплата
 shop.footer.warranty: Гарантія
 shop.footer.returns: Повернення
 shop.footer.contacts: Контакти
+shop.footer.social: Ми в соцмережах
+shop.footer.facebook: Facebook
+shop.footer.instagram: Instagram
 shop.error404.title: Сторінку не знайдено
 shop.error404.text: Запитана сторінка не існує або була переміщена. Перевірте адресу або поверніться на головну.
 shop.error404.back_home: На головну

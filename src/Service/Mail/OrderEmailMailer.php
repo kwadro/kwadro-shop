@@ -4,6 +4,7 @@ namespace App\Service\Mail;
 
 use App\Entity\EmailTemplate;
 use App\Entity\Order;
+use App\Entity\OrderEmail;
 use App\Entity\OrderEmailEvent;
 use App\Entity\Payment;
 use App\Entity\User;
@@ -159,6 +160,11 @@ class OrderEmailMailer
             $message->text($rendered['body']);
         }
 
+        $adminCopy = $this->resolveAdminCopyAddress($orderEmail, $template->getSite()?->getAdminEmail(), $recipient);
+        if ($adminCopy !== null) {
+            $message->bcc($adminCopy);
+        }
+
         try {
             $this->mailer->send($message);
             $log = $this->emailLogService->logSent(
@@ -201,5 +207,30 @@ class OrderEmailMailer
                 ...$logContext,
             ]);
         }
+    }
+
+    private function resolveAdminCopyAddress(
+        OrderEmail $orderEmail,
+        ?string $adminEmail,
+        string $recipient,
+    ): ?string {
+        if (!$orderEmail->isSendCopyToAdmin()) {
+            return null;
+        }
+
+        $adminEmail = $adminEmail !== null ? trim($adminEmail) : '';
+        if ($adminEmail === '' || !filter_var($adminEmail, \FILTER_VALIDATE_EMAIL)) {
+            $this->logger->warning('Configured email admin copy skipped: admin email is empty or invalid.', [
+                'event' => $orderEmail->getCode(),
+            ]);
+
+            return null;
+        }
+
+        if (strcasecmp($adminEmail, $recipient) === 0) {
+            return null;
+        }
+
+        return $adminEmail;
     }
 }

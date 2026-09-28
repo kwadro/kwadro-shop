@@ -60,6 +60,21 @@ class Site
     #[ORM\Column(type: 'json', nullable: true)]
     private ?array $active_delivery_methods = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Email]
+    #[Assert\Length(max: 255)]
+    private ?string $adminEmail = null;
+
+    #[ORM\Column(length: 512, nullable: true)]
+    #[Assert\Url(requireTld: true)]
+    #[Assert\Length(max: 512)]
+    private ?string $facebookUrl = null;
+
+    #[ORM\Column(length: 512, nullable: true)]
+    #[Assert\Url(requireTld: true)]
+    #[Assert\Length(max: 512)]
+    private ?string $instagramUrl = null;
+
     #[ORM\ManyToOne(targetEntity: Product::class)]
     #[ORM\JoinColumn(name: 'feature_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
     private ?Product $featuredProduct = null;
@@ -154,6 +169,45 @@ class Site
     public function getDomain(): ?string
     {
         return $this->domain;
+    }
+
+    public function getAdminEmail(): ?string
+    {
+        return $this->adminEmail;
+    }
+
+    public function setAdminEmail(?string $adminEmail): self
+    {
+        $normalized = $adminEmail !== null ? trim($adminEmail) : null;
+        $this->adminEmail = $normalized !== '' ? $normalized : null;
+
+        return $this;
+    }
+
+    public function getFacebookUrl(): ?string
+    {
+        return $this->facebookUrl;
+    }
+
+    public function setFacebookUrl(?string $facebookUrl): self
+    {
+        $normalized = $facebookUrl !== null ? trim($facebookUrl) : null;
+        $this->facebookUrl = $normalized !== '' ? $normalized : null;
+
+        return $this;
+    }
+
+    public function getInstagramUrl(): ?string
+    {
+        return $this->instagramUrl;
+    }
+
+    public function setInstagramUrl(?string $instagramUrl): self
+    {
+        $normalized = $instagramUrl !== null ? trim($instagramUrl) : null;
+        $this->instagramUrl = $normalized !== '' ? $normalized : null;
+
+        return $this;
     }
 
     public function getCourierDeliveryCost(): ?float
