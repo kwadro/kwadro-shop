@@ -3,6 +3,8 @@
 namespace App\EventSubscriber;
 
 use App\Entity\RequestList;
+use App\Entity\Site;
+use App\Repository\SiteRepository;
 use App\Service\GeoIp\UserCityService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -18,6 +20,7 @@ class UserCityCookieSubscriber implements EventSubscriberInterface
     public function __construct(
         private readonly UserCityService $userCityService,
         private readonly EntityManagerInterface $em,
+        private readonly SiteRepository $siteRepository,
     ) {
     }
 
@@ -70,6 +73,13 @@ class UserCityCookieSubscriber implements EventSubscriberInterface
         }
 
         $ip = (string) ($request->getClientIp() ?? '');
+        $site = $this->resolveSite($request);
+        if ($site !== null && $site->isRequestIpIgnored($ip !== '' ? $ip : null)) {
+            $request->attributes->set(self::LOGGED_ATTRIBUTE, true);
+
+            return;
+        }
+
         $entry = (new RequestList())
             ->setIp($ip !== '' ? $ip : null)
             ->setPath($path);
@@ -78,6 +88,18 @@ class UserCityCookieSubscriber implements EventSubscriberInterface
         $this->em->flush();
 
         $request->attributes->set(self::LOGGED_ATTRIBUTE, true);
+    }
+
+    private function resolveSite(Request $request): ?Site
+    {
+        $site = $this->siteRepository->findOneBy(['domain' => $request->getHost()]);
+        if ($site instanceof Site) {
+            return $site;
+        }
+
+        $fallback = $this->siteRepository->find(1);
+
+        return $fallback instanceof Site ? $fallback : null;
     }
 
     private function shouldSkipPath(string $path): bool

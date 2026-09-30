@@ -47,6 +47,15 @@ class SiteCrudController extends AbstractCrudController
             UrlField::new('instagramUrl', $this->translator->trans('admin.site.instagram_url', [], 'messages'))
                 ->setRequired(false)
                 ->setHelp($this->translator->trans('admin.site.instagram_url_help', [], 'messages')),
+            TextareaField::new('ignoredRequestIps', $this->translator->trans('admin.site.ignored_request_ips', [], 'messages'))
+                ->setRequired(false)
+                ->setHelp($this->translator->trans('admin.site.ignored_request_ips_help', [], 'messages'))
+                ->setFormTypeOption('attr', [
+                    'data-no-html-editor' => '1',
+                    'rows' => 6,
+                    'placeholder' => "127.0.0.1\n192.168.0.10",
+                ])
+                ->hideOnIndex(),
             AssociationField::new('featuredProduct', $this->translator->trans('admin.site.featured_product', [], 'messages'))
                 ->setRequired(false)
                 ->setHelp($this->translator->trans('admin.site.featured_product_help', [], 'messages')),

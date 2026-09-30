@@ -75,6 +75,10 @@ class Site
     #[Assert\Length(max: 512)]
     private ?string $instagramUrl = null;
 
+    /** One IP per line (or comma-separated). These IPs are not written to RequestList. */
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $ignoredRequestIps = null;
+
     #[ORM\ManyToOne(targetEntity: Product::class)]
     #[ORM\JoinColumn(name: 'feature_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
     private ?Product $featuredProduct = null;
@@ -208,6 +212,51 @@ class Site
         $this->instagramUrl = $normalized !== '' ? $normalized : null;
 
         return $this;
+    }
+
+    public function getIgnoredRequestIps(): ?string
+    {
+        return $this->ignoredRequestIps;
+    }
+
+    public function setIgnoredRequestIps(?string $ignoredRequestIps): self
+    {
+        $normalized = $ignoredRequestIps !== null ? trim($ignoredRequestIps) : null;
+        $this->ignoredRequestIps = $normalized !== '' ? $normalized : null;
+
+        return $this;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function getIgnoredRequestIpList(): array
+    {
+        if ($this->ignoredRequestIps === null || trim($this->ignoredRequestIps) === '') {
+            return [];
+        }
+
+        $parts = preg_split('/[\s,;]+/u', $this->ignoredRequestIps) ?: [];
+        $ips = [];
+        foreach ($parts as $part) {
+            $ip = trim($part);
+            if ($ip === '') {
+                continue;
+            }
+            $ips[$ip] = true;
+        }
+
+        return array_keys($ips);
+    }
+
+    public function isRequestIpIgnored(?string $ip): bool
+    {
+        $ip = $ip !== null ? trim($ip) : '';
+        if ($ip === '') {
+            return false;
+        }
+
+        return \in_array($ip, $this->getIgnoredRequestIpList(), true);
     }
 
     public function getCourierDeliveryCost(): ?float

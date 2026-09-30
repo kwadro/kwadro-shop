@@ -145,6 +145,8 @@ admin.site.facebook_url: Facebook page
 admin.site.facebook_url_help: Full URL to your Facebook page (e.g. https://www.facebook.com/yourpage).
 admin.site.instagram_url: Instagram page
 admin.site.instagram_url_help: Full URL to your Instagram profile (e.g. https://www.instagram.com/yourpage/).
+admin.site.ignored_request_ips: Ignore IPs for RequestList
+admin.site.ignored_request_ips_help: 'IPs that will not be written to the request log. Multiple values — one per line, or separated by comma / space.'
 admin.site.courier_delivery_cost: Courier delivery cost
 admin.site.courier_delivery_cost_help: Fixed courier price within Ivano-Frankivsk, regardless of product quantity.
 admin.site.cod_standard_percent: NP commission, standard %

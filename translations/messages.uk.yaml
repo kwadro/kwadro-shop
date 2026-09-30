@@ -145,6 +145,8 @@ admin.site.facebook_url: Facebook сторінка
 admin.site.facebook_url_help: Повне посилання на сторінку Facebook (наприклад https://www.facebook.com/yourpage).
 admin.site.instagram_url: Instagram сторінка
 admin.site.instagram_url_help: Повне посилання на профіль Instagram (наприклад https://www.instagram.com/yourpage/).
+admin.site.ignored_request_ips: Ігнорувати IP для RequestList
+admin.site.ignored_request_ips_help: 'Список IP, які не записуються в таблицю запитів. Кілька значень — з нового рядка, або через кому / пробіл.'
 admin.site.courier_delivery_cost: Вартість кур'єрської доставки
 admin.site.courier_delivery_cost_help: Фіксована ціна кур'єра в межах Івано-Франківська, незалежно від кількості товару.
 admin.site.cod_standard_percent: Комісія НП, стандартний %
