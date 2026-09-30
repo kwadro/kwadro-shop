@@ -31,6 +31,8 @@ menu.link_mailbox_message_single: Inbox message
 menu.users: Users
 menu.link_user: Users
 menu.link_user_single: User
+menu.link_request_list: Requests (IP)
+menu.link_request_list_single: Request
 menu.link_product: Products
 menu.link_product_single: Product
 menu.link_category: Categories
@@ -290,6 +292,11 @@ admin.bank_account.iban: IBAN
 admin.bank_account.iban_help: Used on the IBAN prepayment page and in {{ shipment_pay_iban_url }} emails.
 admin.bank_account.is_default: Default for locale
 admin.email_log.created_at: Sent at
+admin.request_list.created_at: Time
+admin.request_list.ip: IP
+admin.request_list.path: Path
+admin.request_list.unique_ips_today: Unique IPs today
+admin.request_list.requests_today: Total requests today
 admin.email_log.status_label: Status
 admin.email_log.status.sent: Sent
 admin.email_log.status.failed: Failed

@@ -1,0 +1,16 @@
+{% extends '@EasyAdmin/crud/index.html.twig' %}
+
+{% block main %}
+    <div class="alert alert-info d-flex flex-wrap gap-4 align-items-center mb-3" role="status">
+        <div>
+            <strong>{{ 'admin.request_list.unique_ips_today'|trans }}:</strong>
+            <span class="fs-4 ms-1">{{ uniqueIpsToday|default(0) }}</span>
+        </div>
+        <div class="text-muted">
+            {{ 'admin.request_list.requests_today'|trans }}:
+            <strong>{{ requestsToday|default(0) }}</strong>
+        </div>
+    </div>
+
+    {{ parent() }}
+{% endblock %}

@@ -50,6 +50,7 @@ use App\Controller\Admin\MailboxAccountCrudController;
 use App\Controller\Admin\MailboxMessageCrudController;
 use App\Controller\Admin\BlogArticleCrudController;
 use App\Controller\Admin\BlogCategoryCrudController;
+use App\Controller\Admin\RequestListCrudController;
 // @GENERATE USE FINISH
 
 #[AdminDashboard(routePath: '/admin/{_locale}', routeName: 'admin')]
@@ -153,6 +154,7 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkTo(BankAccountCrudController::class, $this->translator->trans('menu.link_bank_account', [], 'messages'), 'fas fa-university');
         yield MenuItem::section($this->translator->trans('menu.users', [], 'messages'));
         yield MenuItem::linkTo(UserCrudController::class, $this->translator->trans('menu.link_user', [], 'messages'), 'fas fa-users');
+        yield MenuItem::linkTo(RequestListCrudController::class, $this->translator->trans('menu.link_request_list', [], 'messages'), 'fas fa-globe');
         // @GENERATE MENU START
 yield MenuItem::section($this->translator->trans('menu.group_setting', [], 'messages'));
 yield MenuItem::linkTo(FootersettingCrudController::class,$this->translator->trans('menu.link_footersetting', [], 'messages'), 'fas fa-list' );

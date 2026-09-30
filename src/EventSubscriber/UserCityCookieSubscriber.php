@@ -2,16 +2,22 @@
 
 namespace App\EventSubscriber;
 
+use App\Entity\RequestList;
 use App\Service\GeoIp\UserCityService;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 
 class UserCityCookieSubscriber implements EventSubscriberInterface
 {
+    private const LOGGED_ATTRIBUTE = '_user_ip_visit_logged';
+
     public function __construct(
         private readonly UserCityService $userCityService,
+        private readonly EntityManagerInterface $em,
     ) {
     }
 
@@ -29,7 +35,9 @@ class UserCityCookieSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $this->userCityService->resolveData($event->getRequest());
+        $request = $event->getRequest();
+        $this->userCityService->resolveData($request);
+        $this->logVisitorIp($request);
     }
 
     public function onKernelResponse(ResponseEvent $event): void
@@ -48,5 +56,38 @@ class UserCityCookieSubscriber implements EventSubscriberInterface
             $request,
             $this->userCityService->getCityDataForCookie($request),
         );
+    }
+
+    private function logVisitorIp(Request $request): void
+    {
+        if ($request->attributes->getBoolean(self::LOGGED_ATTRIBUTE)) {
+            return;
+        }
+
+        $path = $request->getPathInfo();
+        if ($this->shouldSkipPath($path)) {
+            return;
+        }
+
+        $ip = (string) ($request->getClientIp() ?? '');
+        $entry = (new RequestList())
+            ->setIp($ip !== '' ? $ip : null)
+            ->setPath($path);
+
+        $this->em->persist($entry);
+        $this->em->flush();
+
+        $request->attributes->set(self::LOGGED_ATTRIBUTE, true);
+    }
+
+    private function shouldSkipPath(string $path): bool
+    {
+        return str_starts_with($path, '/admin')
+            || str_starts_with($path, '/_wdt')
+            || str_starts_with($path, '/_profiler')
+            || str_starts_with($path, '/_fragment')
+            || str_starts_with($path, '/build/')
+            || str_starts_with($path, '/bundles/')
+            || str_starts_with($path, '/webhook');
     }
 }

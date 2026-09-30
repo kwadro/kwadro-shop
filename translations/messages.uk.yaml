@@ -31,6 +31,8 @@ menu.link_mailbox_message_single: Вхідний лист
 menu.users: Користувачі
 menu.link_user: Користувачі
 menu.link_user_single: Користувач
+menu.link_request_list: Запити (IP)
+menu.link_request_list_single: Запит
 menu.link_product: Товари
 menu.link_product_single: Товар
 menu.link_category: Категорії
@@ -290,6 +292,11 @@ admin.bank_account.iban: IBAN
 admin.bank_account.iban_help: Використовується на сторінці оплати на IBAN та в листах {{ shipment_pay_iban_url }}.
 admin.bank_account.is_default: Основний для локалі
 admin.email_log.created_at: Надіслано
+admin.request_list.created_at: Час
+admin.request_list.ip: IP
+admin.request_list.path: Path
+admin.request_list.unique_ips_today: Унікальних IP сьогодні
+admin.request_list.requests_today: Всього запитів сьогодні
 admin.email_log.status_label: Статус
 admin.email_log.status.sent: Надіслано
 admin.email_log.status.failed: Помилка
