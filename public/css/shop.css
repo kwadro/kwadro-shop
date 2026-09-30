@@ -2839,9 +2839,8 @@ body.shop-offers-modal-open {
     .shop-header__inner {
         flex-direction: column;
         align-items: stretch;
-        gap: 1rem;
-        padding-top: 1rem;
-        padding-bottom: 1rem;
+        gap: 0.5rem;
+        padding: 0.5rem;
     }
 
     .shop-header__inner-logo {
@@ -3237,3 +3236,20 @@ body.shop-offers-modal-open {
     line-height: 1.5;
     color: var(--shop-muted);
 }
+
+/* Blog */
+.shop-blog-page__empty{padding:1.5rem 0;color:#555}
+.shop-blog-list{display:grid;gap:1.25rem;margin-top:1rem}
+.shop-blog-card{padding:1.25rem 0;border-bottom:1px solid #e5e5e5}
+.shop-blog-card:last-child{border-bottom:0}
+.shop-blog-card__title{margin:0 0 .35rem;font-size:1.25rem;line-height:1.3}
+.shop-blog-card__title a{color:inherit;text-decoration:none}
+.shop-blog-card__title a:hover{text-decoration:underline}
+.shop-blog-card__date,.shop-blog-article__date{display:block;margin-bottom:.5rem;font-size:.875rem;color:#777}
+.shop-blog-card__excerpt{margin:0 0 .75rem;color:#444;line-height:1.5}
+.shop-blog-card__categories{display:flex;flex-wrap:wrap;gap:.4rem;list-style:none;margin:0 0 .75rem;padding:0}
+.shop-blog-card__categories li{padding:.15rem .55rem;border-radius:999px;background:#f0f0f0;font-size:.75rem;color:#555}
+.shop-blog-card__more{font-weight:600;text-decoration:none}
+.shop-blog-article__header{margin-bottom:1.25rem}
+.shop-blog-article__content{margin-top:.5rem}
+.shop-category-nav__link.is-active{font-weight:700}

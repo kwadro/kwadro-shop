@@ -1,0 +1,63 @@
+{% extends 'shop/layout.html.twig' %}
+{% set setting = site_settings() %}
+{% set pageTitle = ('shop.blog.title'|trans) ~ ' — ' ~ setting.seo.meta_title %}
+{% set pageDescription = 'shop.blog.index_description'|trans %}
+
+{% block title %}{{ pageTitle }}{% endblock %}
+{% block meta_description %}{{ pageDescription }}{% endblock %}
+{% block og_title %}{{ pageTitle }}{% endblock %}
+{% block og_description %}{{ pageDescription }}{% endblock %}
+{% block og_url %}{{ absolute_url(path('shop_blog_index', {_locale: app.request.locale})) }}{% endblock %}
+{% block canonical_url %}{{ absolute_url(path('shop_blog_index', {_locale: app.request.locale})) }}{% endblock %}
+
+{% block main %}
+    <article class="shop-page shop-blog-page">
+        <nav class="shop-category-page__breadcrumb" aria-label="breadcrumb">
+            <a href="{{ path('shop_home', {_locale: app.request.locale}) }}">{{ 'shop.category.home'|trans }}</a>
+            <span aria-hidden="true">/</span>
+            <span>{{ 'shop.blog.title'|trans }}</span>
+        </nav>
+
+        <header class="shop-category-page__header">
+            <h1 class="shop-page__title">{{ 'shop.blog.title'|trans }}</h1>
+        </header>
+
+        {% if articles is empty %}
+            <div class="shop-blog-page__empty">
+                <p>{{ 'shop.blog.empty'|trans }}</p>
+            </div>
+        {% else %}
+            <div class="shop-blog-list">
+                {% for article in articles %}
+                    <article class="shop-blog-card">
+                        <h2 class="shop-blog-card__title">
+                            <a href="{{ path('shop_blog_article', {_locale: app.request.locale, slug: article.slug}) }}">
+                                {{ article.title }}
+                            </a>
+                        </h2>
+                        {% if article.publishedAt %}
+                            <time class="shop-blog-card__date" datetime="{{ article.publishedAt|date('c') }}">
+                                {{ article.publishedAt|date('d.m.Y') }}
+                            </time>
+                        {% endif %}
+                        {% if article.metaDescription %}
+                            <p class="shop-blog-card__excerpt">{{ article.metaDescription }}</p>
+                        {% endif %}
+                        {% if article.categories is not empty %}
+                            <ul class="shop-blog-card__categories">
+                                {% for category in article.categories %}
+                                    {% if category.enabled %}
+                                        <li>{{ category.name }}</li>
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                        <a class="shop-blog-card__more" href="{{ path('shop_blog_article', {_locale: app.request.locale, slug: article.slug}) }}">
+                            {{ 'shop.blog.read_more'|trans }}
+                        </a>
+                    </article>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </article>
+{% endblock %}

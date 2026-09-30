@@ -1,5 +1,4 @@
 {% set categoryMenu = shop_category_menu() %}
-{% if categoryMenu is not empty %}
 <nav class="shop-category-nav" aria-label="{{ 'shop.category.menu_label'|trans }}">
     <div class="shop-category-nav__inner">
         <button
@@ -39,7 +38,15 @@
                     {% endif %}
                 </li>
             {% endfor %}
+
+            <li class="shop-category-nav__item">
+                <a
+                    class="shop-category-nav__link{% if app.request.attributes.get('_route') starts with 'shop_blog' %} is-active{% endif %}"
+                    href="{{ path('shop_blog_index', {_locale: app.request.locale}) }}"
+                >
+                    {{ 'shop.blog.menu'|trans }}
+                </a>
+            </li>
         </ul>
     </div>
 </nav>
-{% endif %}

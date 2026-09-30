@@ -3,6 +3,7 @@ admin.dashboard_title: Адмінпанель Квадро
 menu.dashboard: Головна
 menu.group_setting: Настройки Сайта
 menu.group_catalog: Каталог товарів
+menu.group_blog: Блог
 menu.group_orders: Замовлення
 menu.group_email: Пошта
 menu.group_bank: Банк
@@ -38,6 +39,10 @@ menu.link_supplier: Постачальники
 menu.link_supplier_single: Постачальник
 menu.link_product_offer: Цінові пропозиції
 menu.link_product_offer_single: Цінова пропозиція
+menu.link_blog_article: Статті блогу
+menu.link_blog_article_single: Стаття блогу
+menu.link_blog_category: Категорії блогу
+menu.link_blog_category_single: Категорія блогу
 menu.link_cart: Кошики
 menu.link_cart_single: Кошик
 menu.link_order: Замовлення
@@ -371,6 +376,36 @@ admin.promo_image_editor.open: Відкрити
 admin.promo_image_editor.editing: Редагування
 admin.promo_image_editor.no_edit_data: Немає даних для редагування
 
+admin.blog.site: Сайт
+admin.blog.locale: Мова
+admin.blog.enabled: Активно
+admin.blog.slug_help: Лише латиниця, цифри, дефіс і підкреслення. Якщо порожньо — згенерується з назви.
+admin.blog_category.name: Назва
+admin.blog_category.slug: URL (slug)
+admin.blog_category.parent: Батьківська категорія
+admin.blog_category.parent_help: Залиште порожнім для категорії верхнього рівня.
+admin.blog_category.position: Порядок
+admin.blog_category.level: Рівень
+admin.blog_article.title: Заголовок (title)
+admin.blog_article.slug: URL (slug)
+admin.blog_article.meta_title: Meta title
+admin.blog_article.meta_description: Meta description
+admin.blog_article.categories: Категорії
+admin.blog_article.content: Контент
+admin.blog_article.published_at: Дата публікації
+admin.blog_article.facebook_draft: Facebook пост
+admin.blog_article.facebook_draft_help: Facebook не підтримує HTML. Чернетка зберігається в базі — можна переглянути, відредагувати або скопіювати.
+admin.blog_article.facebook_draft_text: Текст для Facebook
+admin.blog_article.facebook_draft_field: Facebook чернетка
+admin.blog_article.facebook_draft_field_help: Звичайний текст без HTML. Якщо порожньо — згенерується автоматично при збереженні або кнопкою «Перегенерувати».
+admin.blog_article.facebook_copy: Скопіювати
+admin.blog_article.facebook_copied: Скопійовано в буфер обміну
+admin.blog_article.facebook_open_article: Відкрити статтю
+admin.blog_article.facebook_back: Назад
+admin.blog_article.facebook_regenerate: Перегенерувати
+admin.blog_article.facebook_regenerated: Чернетку Facebook оновлено
+admin.blog_article.facebook_edit: Редагувати чернетку
+
 admin.email_sender.name: Назва
 admin.email_sender.email: Електронна пошта
 admin.email_sender.email_unique: Відправник з такою електронною поштою вже існує.
@@ -441,6 +476,11 @@ shop.category.menu_toggle: Категорії
 shop.category.home: Головна
 shop.category.subcategories: Підкатегорії
 shop.category.empty_products: У цій категорії поки немає товарів.
+shop.blog.menu: Блог
+shop.blog.title: Блог
+shop.blog.index_description: Статті та новини магазину Квадро
+shop.blog.empty: Поки немає опублікованих статей.
+shop.blog.read_more: Читати далі
 shop.supplier.empty_products: У цього постачальника поки немає товарів.
 shop.supplier.meta_description: 'Товари постачальника %name%. Купуйте онлайн з доставкою.'
 shop.login: Увійти

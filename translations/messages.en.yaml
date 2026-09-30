@@ -3,6 +3,7 @@ admin.dashboard_title: Kvadro Admin
 menu.dashboard: Dashboard
 menu.group_setting: Setting Site
 menu.group_catalog: Product catalog
+menu.group_blog: Blog
 menu.group_orders: Orders
 menu.group_email: Email
 menu.group_bank: Bank
@@ -38,6 +39,10 @@ menu.link_supplier: Suppliers
 menu.link_supplier_single: Supplier
 menu.link_product_offer: Product offers
 menu.link_product_offer_single: Product offer
+menu.link_blog_article: Blog articles
+menu.link_blog_article_single: Blog article
+menu.link_blog_category: Blog categories
+menu.link_blog_category_single: Blog category
 menu.link_cart: Carts
 menu.link_cart_single: Cart
 menu.link_order: Orders
@@ -371,6 +376,36 @@ admin.promo_image_editor.open: Open
 admin.promo_image_editor.editing: Editing
 admin.promo_image_editor.no_edit_data: No edit data
 
+admin.blog.site: Site
+admin.blog.locale: Locale
+admin.blog.enabled: Enabled
+admin.blog.slug_help: Letters, digits, hyphen and underscore only. Empty slug is generated from the title.
+admin.blog_category.name: Name
+admin.blog_category.slug: URL (slug)
+admin.blog_category.parent: Parent category
+admin.blog_category.parent_help: Leave empty for a top-level category.
+admin.blog_category.position: Position
+admin.blog_category.level: Level
+admin.blog_article.title: Title
+admin.blog_article.slug: URL (slug)
+admin.blog_article.meta_title: Meta title
+admin.blog_article.meta_description: Meta description
+admin.blog_article.categories: Categories
+admin.blog_article.content: Content
+admin.blog_article.published_at: Published at
+admin.blog_article.facebook_draft: Facebook post
+admin.blog_article.facebook_draft_help: Facebook does not render HTML. The draft is stored in the database — view, edit or copy it.
+admin.blog_article.facebook_draft_text: Facebook text
+admin.blog_article.facebook_draft_field: Facebook draft
+admin.blog_article.facebook_draft_field_help: Plain text without HTML. If empty, it is generated on save or via «Regenerate».
+admin.blog_article.facebook_copy: Copy
+admin.blog_article.facebook_copied: Copied to clipboard
+admin.blog_article.facebook_open_article: Open article
+admin.blog_article.facebook_back: Back
+admin.blog_article.facebook_regenerate: Regenerate
+admin.blog_article.facebook_regenerated: Facebook draft updated
+admin.blog_article.facebook_edit: Edit draft
+
 admin.email_sender.name: Name
 admin.email_sender.email: Email
 admin.email_sender.email_unique: A sender with this email already exists.
@@ -442,6 +477,11 @@ shop.category.menu_toggle: Categories
 shop.category.home: Home
 shop.category.subcategories: Subcategories
 shop.category.empty_products: There are no products in this category yet.
+shop.blog.menu: Blog
+shop.blog.title: Blog
+shop.blog.index_description: Articles and news from Kvadro store
+shop.blog.empty: There are no published articles yet.
+shop.blog.read_more: Read more
 shop.supplier.empty_products: This supplier has no products yet.
 shop.supplier.meta_description: 'Products from supplier %name%. Buy online with delivery.'
 shop.login: Log In

@@ -48,6 +48,8 @@ use App\Controller\Admin\EmailSenderCrudController;
 use App\Controller\Admin\OrderEmailCrudController;
 use App\Controller\Admin\MailboxAccountCrudController;
 use App\Controller\Admin\MailboxMessageCrudController;
+use App\Controller\Admin\BlogArticleCrudController;
+use App\Controller\Admin\BlogCategoryCrudController;
 // @GENERATE USE FINISH
 
 #[AdminDashboard(routePath: '/admin/{_locale}', routeName: 'admin')]
@@ -115,6 +117,9 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkTo(CategoryCrudController::class, $this->translator->trans('menu.link_category', [], 'messages'), 'fas fa-folder');
         yield MenuItem::linkTo(SupplierCrudController::class, $this->translator->trans('menu.link_supplier', [], 'messages'), 'fas fa-truck');
         yield MenuItem::linkTo(ProductOfferCrudController::class, $this->translator->trans('menu.link_product_offer', [], 'messages'), 'fas fa-tags');
+        yield MenuItem::section($this->translator->trans('menu.group_blog', [], 'messages'));
+        yield MenuItem::linkTo(BlogArticleCrudController::class, $this->translator->trans('menu.link_blog_article', [], 'messages'), 'fas fa-newspaper');
+        yield MenuItem::linkTo(BlogCategoryCrudController::class, $this->translator->trans('menu.link_blog_category', [], 'messages'), 'fas fa-folder-open');
         yield MenuItem::section($this->translator->trans('menu.group_orders', [], 'messages'));
         yield MenuItem::linkTo(CartCrudController::class, $this->translator->trans('menu.link_cart', [], 'messages'), 'fas fa-shopping-cart');
         yield MenuItem::linkTo(CartItemCrudController::class, $this->translator->trans('menu.link_cart_item', [], 'messages'), 'fas fa-list');
