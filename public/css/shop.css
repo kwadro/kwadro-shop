@@ -409,8 +409,9 @@ a {
 
 .shop-header__inner-logo {
     display: flex;
-    min-width: 70%;
+    min-width: 48%;
     justify-content: space-between;
+    align-items: center;
 }
 
 .site-header__brand {
@@ -423,7 +424,7 @@ a {
 .site-header__logo {
     display: block;
     width: auto;
-    height: 72px;
+    height: 90px;
     max-width: min(220px, 42vw);
     object-fit: contain;
 }
@@ -455,6 +456,12 @@ a {
     gap: 0.85rem;
 }
 
+.shop-header__phone-container{
+    display: flex;
+    align-items: center;
+    column-gap: 10px;
+}
+
 .shop-header__phone-icon {
     width: 44px;
     height: 44px;
@@ -465,7 +472,9 @@ a {
     place-items: center;
     font-size: 1.1rem;
 }
-
+.shop-header__phone-icon:after{
+    content:'ssss'
+}
 .shop-header__phones {
     display: flex;
     flex-direction: column;
@@ -473,7 +482,7 @@ a {
 }
 
 .shop-header__phones strong {
-    font-size: 1.05rem;
+    font-size: 1.2rem;
 }
 
 .shop-header__phones a {
@@ -493,7 +502,7 @@ a {
 .shop-header__actions {
     display: flex;
     align-items: center;
-    gap: 1.25rem;
+    gap: 1.75rem;
     margin-left: auto;
     flex-wrap: wrap;
 }
@@ -504,7 +513,7 @@ a {
     align-items: center;
     justify-content: center;
     gap: 0.45rem;
-    min-width: 0;
+    min-width: 220px;
     max-width: min(100%, 220px);
     margin: 10px 0;
     padding: 0.45rem 0.85rem;
@@ -2787,9 +2796,27 @@ body.shop-offers-modal-open {
 .shop-checkout__step + .shop-checkout__section--locked {
     margin-top: 1.5rem;
 }
+@media (max-width: 1024px) {
+    .shop-header__inner-logo{
+        min-width: 35%;
+    }
+}
+@media (max-width: 800px) {
+    .shop-header__inner-logo{
+        min-width: auto;
+    }
+}
+/* ===== Mobile layout (max-width: 900px) ===== */
+@media (max-width: 900px) {
+    .shop-header__city-trigger {
+        min-width: 180px;
+    }
+}
+
+
 
 /* ===== Mobile layout (max-width: 640px) ===== */
-@media (max-width: 640px) {
+@media (max-width: 660px) {
     .shop-layout {
         padding: 1.25rem 0 2rem;
     }
@@ -2832,7 +2859,6 @@ body.shop-offers-modal-open {
 
     /* Header */
     .site-header__logo {
-        height: 56px;
         max-width: min(180px, 48vw);
     }
 
@@ -2840,23 +2866,28 @@ body.shop-offers-modal-open {
         flex-direction: column;
         align-items: stretch;
         gap: 0.5rem;
-        padding: 0.5rem;
+        padding: 0.5rem 15%;
     }
 
     .shop-header__inner-logo {
         min-width: 100%;
-        align-items: center;
         gap: 0.75rem;
     }
 
     .shop-header__city-trigger {
-        max-width: min(60vw, 205px);
         margin: 0;
-        padding: 0.4rem 0.7rem;
+        padding: 0.4rem 0.4rem;
+        border-radius: 50%;
+        min-width: auto;
+    }
+    .shop-header__city-trigger svg{
+        width: 25px;
+        height: 25px;
     }
 
     .shop-header__city-value {
-        font-size: 0.82rem;
+        font-size: 0;
+        display: none;
     }
 
     .shop-header__actions {
@@ -2877,13 +2908,14 @@ body.shop-offers-modal-open {
         flex-wrap: wrap;
         justify-content: flex-end;
         gap: 0.15rem 0.5rem;
-        font-size: 0.88rem;
+        font-size: 1.1rem;
         line-height: 1.35;
     }
 
     .shop-header__phones span {
         display: block;
         text-align: right;
+        font-size: 0.75rem;
     }
 
     .shop-minicart__panel {
@@ -3027,7 +3059,12 @@ body.shop-offers-modal-open {
         font-size: 1rem;
     }
 }
-
+/* ===== Mobile layout (max-width: 400px) ===== */
+@media (max-width: 450px)and (max-width: 400px) {
+    .shop-header__inner {
+        padding: 0.5rem 10%;
+    }
+}
 .shop-shipment-pay__meta {
     margin: 0 0 1rem;
     font-size: 0.92rem;

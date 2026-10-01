@@ -58,7 +58,7 @@
             </p>
             <h1 class="shop-product__title">{{ product.name }}</h1>
             <p class="shop-product__sku">{{ 'shop.product.sku'|trans }}: {{ product.sku }}</p>
-            <div class="shop-product__lead">{{ product.shortDescription|raw }}</div>
+
 
             <div
                 class="shop-product__price-box"
@@ -111,7 +111,7 @@
                     {% endif %}
                 </span>
             </div>
-
+            <div class="shop-product__lead">{{ product.shortDescription|raw }}</div>
             <div
                 id="product-stock"
                 class="shop-product__stock{% if product.inStock %} shop-product__stock--in{% else %} shop-product__stock--out{% endif %}"
