@@ -473,7 +473,7 @@ a {
     font-size: 1.1rem;
 }
 .shop-header__phone-icon:after{
-    content:'ssss'
+    content:'T'
 }
 .shop-header__phones {
     display: flex;
