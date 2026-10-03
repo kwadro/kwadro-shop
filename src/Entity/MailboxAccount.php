@@ -16,6 +16,8 @@ class MailboxAccount
 {
     use TimeStampAbleTrait;
 
+    public const DEFAULT_MESSAGE_GROUP = 'General';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -78,13 +80,17 @@ class MailboxAccount
 
     /**
      * Allowlist of sender emails (From). Empty = accept all.
-     * One address per line, or comma/semicolon separated.
+     * One entry per line (or comma/semicolon): email or email|Group name.
      */
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $allowedFromEmails = null;
 
     #[ORM\Column(type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeImmutable $lastSyncedAt = null;
+
+    /** Highest IMAP UID already considered by sync (new mail is UID > this). */
+    #[ORM\Column(length: 64, nullable: true)]
+    private ?string $lastSyncedRemoteUid = null;
 
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $lastSyncError = null;
@@ -264,30 +270,54 @@ class MailboxAccount
     }
 
     /**
-     * @return list<string> Lowercased unique emails.
+     * @return array<string, string> Lowercased email => group name
      */
-    public function getAllowedFromEmailList(): array
+    public function getAllowedFromEmailGroups(): array
     {
         if ($this->allowedFromEmails === null || trim($this->allowedFromEmails) === '') {
             return [];
         }
 
-        $parts = preg_split('/[\s,;]+/u', $this->allowedFromEmails) ?: [];
-        $emails = [];
-        foreach ($parts as $part) {
-            $email = strtolower(trim($part));
+        $map = [];
+        $lines = preg_split('/[\r\n,;]+/u', $this->allowedFromEmails) ?: [];
+        foreach ($lines as $line) {
+            $line = trim($line);
+            if ($line === '') {
+                continue;
+            }
+
+            $emailPart = $line;
+            $group = self::DEFAULT_MESSAGE_GROUP;
+            if (str_contains($line, '|')) {
+                [$emailPart, $groupPart] = explode('|', $line, 2);
+                $group = trim($groupPart);
+                if ($group === '') {
+                    $group = self::DEFAULT_MESSAGE_GROUP;
+                }
+            }
+
+            $email = strtolower(trim($emailPart));
             if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 continue;
             }
-            $emails[$email] = true;
+
+            $map[$email] = $group;
         }
 
-        return array_keys($emails);
+        return $map;
+    }
+
+    /**
+     * @return list<string> Lowercased unique emails.
+     */
+    public function getAllowedFromEmailList(): array
+    {
+        return array_keys($this->getAllowedFromEmailGroups());
     }
 
     public function isFromAddressAllowed(string $fromAddress): bool
     {
-        $allowed = $this->getAllowedFromEmailList();
+        $allowed = $this->getAllowedFromEmailGroups();
         if ($allowed === []) {
             return true;
         }
@@ -297,7 +327,19 @@ class MailboxAccount
             return false;
         }
 
-        return \in_array($from, $allowed, true);
+        return isset($allowed[$from]);
+    }
+
+    public function resolveMessageGroup(string $fromAddress): string
+    {
+        $allowed = $this->getAllowedFromEmailGroups();
+        if ($allowed === []) {
+            return self::DEFAULT_MESSAGE_GROUP;
+        }
+
+        $from = strtolower(trim($fromAddress));
+
+        return $allowed[$from] ?? self::DEFAULT_MESSAGE_GROUP;
     }
 
     public function getLastSyncedAt(): ?\DateTimeImmutable
@@ -308,6 +350,19 @@ class MailboxAccount
     public function setLastSyncedAt(?\DateTimeImmutable $lastSyncedAt): static
     {
         $this->lastSyncedAt = $lastSyncedAt;
+
+        return $this;
+    }
+
+    public function getLastSyncedRemoteUid(): ?string
+    {
+        return $this->lastSyncedRemoteUid;
+    }
+
+    public function setLastSyncedRemoteUid(?string $lastSyncedRemoteUid): static
+    {
+        $normalized = $lastSyncedRemoteUid !== null ? trim($lastSyncedRemoteUid) : null;
+        $this->lastSyncedRemoteUid = $normalized !== '' ? $normalized : null;
 
         return $this;
     }

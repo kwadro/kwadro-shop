@@ -461,9 +461,10 @@ admin.mailbox_account.last_sync_error: Sync error
 admin.mailbox_account.sync: Sync now
 admin.mailbox_account.sync_ok: 'Synced. Imported: %imported%, updated: %updated%.'
 admin.mailbox_account.allowed_from_emails: Message filter (from)
-admin.mailbox_account.allowed_from_emails_help: 'Sender emails to import. Empty = all. Multiple addresses, one per line or comma-separated.'
+admin.mailbox_account.allowed_from_emails_help: 'Format: email|Group name (one sender per line). Without | the group is General. Empty = all messages, group General.'
 
 admin.mailbox_message.mailbox: Mailbox
+admin.mailbox_message.group: Group
 admin.mailbox_message.received_at: Received
 admin.mailbox_message.from: From
 admin.mailbox_message.subject: Subject

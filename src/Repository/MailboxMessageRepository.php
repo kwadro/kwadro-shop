@@ -26,6 +26,27 @@ class MailboxMessageRepository extends ServiceEntityRepository
         return $message;
     }
 
+    /** Highest numeric IMAP UID already stored for this account. */
+    public function findMaxRemoteUid(MailboxAccount $mailbox): ?int
+    {
+        // remote_uid is a string column: order by length then value for numeric max.
+        $rows = $this->createQueryBuilder('m')
+            ->select('m.remoteUid')
+            ->andWhere('m.mailbox = :mailbox')
+            ->andWhere('m.remoteUid != :empty')
+            ->setParameter('mailbox', $mailbox)
+            ->setParameter('empty', '')
+            ->orderBy('LENGTH(m.remoteUid)', 'DESC')
+            ->addOrderBy('m.remoteUid', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getSingleColumnResult();
+
+        $uid = isset($rows[0]) ? (string) $rows[0] : '';
+
+        return $uid !== '' && ctype_digit($uid) ? (int) $uid : null;
+    }
+
     /** @return list<MailboxMessage> */
     public function findUnnotified(int $limit = 20): array
     {

@@ -108,7 +108,7 @@ class MailboxAccountCrudController extends AbstractCrudController
             ->setFormTypeOption('attr', [
                 'data-no-html-editor' => '1',
                 'rows' => 5,
-                'placeholder' => "client@example.com\npartner@shop.ua",
+                'placeholder' => "info@example.com|Info\nbank@example.com|Bank\nplain@example.com",
             ])
             ->hideOnIndex();
 

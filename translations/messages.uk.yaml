@@ -461,9 +461,10 @@ admin.mailbox_account.last_sync_error: Помилка синхронізації
 admin.mailbox_account.sync: Синхронізувати
 admin.mailbox_account.sync_ok: 'Синхронізовано. Нових: %imported%, оновлено: %updated%.'
 admin.mailbox_account.allowed_from_emails: Фільтр повідомлень (від кого)
-admin.mailbox_account.allowed_from_emails_help: 'Email відправників, від яких імпортувати листи. Порожньо — усі. Кілька адрес з нового рядка або через кому.'
+admin.mailbox_account.allowed_from_emails_help: 'Формат: email|Назва групи (один рядок — один відправник). Без | група буде General. Порожньо — усі листи, група General.'
 
 admin.mailbox_message.mailbox: Акаунт
+admin.mailbox_message.group: Група
 admin.mailbox_message.received_at: Отримано
 admin.mailbox_message.from: Від
 admin.mailbox_message.subject: Тема

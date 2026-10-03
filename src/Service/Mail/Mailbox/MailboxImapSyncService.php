@@ -61,14 +61,22 @@ final class MailboxImapSyncService
                 return ['imported' => 0, 'updated' => 0, 'error' => $error];
             }
 
-            $uids = $this->searchUids($mailbox, $account);
-            if ($uids !== []) {
-                rsort($uids, \SORT_NUMERIC);
-                $uids = \array_slice($uids, 0, self::FETCH_LIMIT);
-            }
+            $afterUid = $this->resolveLastSyncedUid($account);
+            $uids = $this->searchUidsAfter($mailbox, $account, $afterUid);
+            $maxSeenUid = $afterUid;
 
             foreach ($uids as $uid) {
+                $uidInt = (int) $uid;
                 $uid = (string) $uid;
+                if ($uidInt > $maxSeenUid) {
+                    $maxSeenUid = $uidInt;
+                }
+
+                // Already synced — never re-fetch or update.
+                if ($this->messageRepository->findOneByMailboxAndUid($account, $uid) !== null) {
+                    continue;
+                }
+
                 $overview = imap_fetch_overview($mailbox, $uid, \FT_UID);
                 $header = $overview[0] ?? null;
                 if ($header === null) {
@@ -80,14 +88,12 @@ final class MailboxImapSyncService
                     continue;
                 }
 
-                $existing = $this->messageRepository->findOneByMailboxAndUid($account, $uid);
-                $isNew = $existing === null;
-                $message = $existing ?? (new MailboxMessage())->setMailbox($account)->setRemoteUid($uid);
-
+                $message = (new MailboxMessage())->setMailbox($account)->setRemoteUid($uid);
                 $message
                     ->setMessageId(isset($header->message_id) ? (string) $header->message_id : null)
                     ->setFromAddress($from['email'])
                     ->setFromName($from['name'])
+                    ->setMessageGroup($account->resolveMessageGroup($from['email']))
                     ->setToAddresses(isset($header->to) ? (string) $header->to : null)
                     ->setSubject($this->decodeMime((string) ($header->subject ?? '(без теми)')))
                     ->setReceivedAt($this->resolveDate($header))
@@ -102,14 +108,13 @@ final class MailboxImapSyncService
                 $previewSource = $text !== null && $text !== '' ? $text : strip_tags((string) $html);
                 $message->setBodyPreview($previewSource !== '' ? $previewSource : null);
 
-                if ($isNew) {
-                    $this->entityManager->persist($message);
-                    ++$imported;
-                } else {
-                    ++$updated;
-                }
+                $this->entityManager->persist($message);
+                ++$imported;
             }
 
+            if ($maxSeenUid > 0) {
+                $account->setLastSyncedRemoteUid((string) $maxSeenUid);
+            }
             $account->setLastSyncError(null);
             $account->setLastSyncedAt(new \DateTimeImmutable());
             $this->entityManager->flush();
@@ -144,12 +149,49 @@ final class MailboxImapSyncService
         return sprintf('{%s:%d%s}INBOX', $account->getImapHost(), $account->getImapPort(), $flags);
     }
 
+    private function resolveLastSyncedUid(MailboxAccount $account): int
+    {
+        $stored = $account->getLastSyncedRemoteUid();
+        if ($stored !== null && ctype_digit($stored)) {
+            return (int) $stored;
+        }
+
+        return $this->messageRepository->findMaxRemoteUid($account) ?? 0;
+    }
+
     /**
      * @param resource|\IMAP\Connection $mailbox
      *
      * @return list<int|string>
      */
-    private function searchUids($mailbox, MailboxAccount $account): array
+    private function searchUidsAfter($mailbox, MailboxAccount $account, int $afterUid): array
+    {
+        if ($afterUid > 0) {
+            // Incremental: only UIDs newer than the cursor (oldest first, then cap).
+            $criteria = 'UID '.($afterUid + 1).':*';
+            $found = imap_search($mailbox, $criteria, \SE_UID) ?: [];
+            $uids = \is_array($found) ? array_values($found) : [];
+            sort($uids, \SORT_NUMERIC);
+
+            return \array_slice($uids, 0, self::FETCH_LIMIT);
+        }
+
+        // First sync: take the newest messages only.
+        $uids = $this->searchAllCandidateUids($mailbox, $account);
+        if ($uids === []) {
+            return [];
+        }
+        rsort($uids, \SORT_NUMERIC);
+
+        return \array_slice($uids, 0, self::FETCH_LIMIT);
+    }
+
+    /**
+     * @param resource|\IMAP\Connection $mailbox
+     *
+     * @return list<int|string>
+     */
+    private function searchAllCandidateUids($mailbox, MailboxAccount $account): array
     {
         $allowed = $account->getAllowedFromEmailList();
         if ($allowed === []) {

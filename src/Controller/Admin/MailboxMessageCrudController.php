@@ -78,6 +78,7 @@ class MailboxMessageCrudController extends AbstractCrudController
     {
         yield IdField::new('id')->hideOnForm();
         yield AssociationField::new('mailbox', $this->translator->trans('admin.mailbox_message.mailbox', [], 'messages'));
+        yield TextField::new('messageGroup', $this->translator->trans('admin.mailbox_message.group', [], 'messages'));
         yield DateTimeField::new('receivedAt', $this->translator->trans('admin.mailbox_message.received_at', [], 'messages'));
         yield TextField::new('fromDisplay', $this->translator->trans('admin.mailbox_message.from', [], 'messages'));
         yield TextField::new('subject', $this->translator->trans('admin.mailbox_message.subject', [], 'messages'));

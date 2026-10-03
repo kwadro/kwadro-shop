@@ -41,6 +41,10 @@ class MailboxMessage
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $fromName = null;
 
+    /** Filter group name (from account allowlist email|Group). */
+    #[ORM\Column(name: 'message_group', length: 255, options: ['default' => 'General'])]
+    private string $messageGroup = MailboxAccount::DEFAULT_MESSAGE_GROUP;
+
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $toAddresses = null;
 
@@ -138,6 +142,19 @@ class MailboxMessage
     {
         $normalized = $fromName !== null ? trim($fromName) : null;
         $this->fromName = $normalized !== '' ? $normalized : null;
+
+        return $this;
+    }
+
+    public function getMessageGroup(): string
+    {
+        return $this->messageGroup;
+    }
+
+    public function setMessageGroup(string $messageGroup): static
+    {
+        $normalized = trim($messageGroup);
+        $this->messageGroup = $normalized !== '' ? mb_substr($normalized, 0, 255) : MailboxAccount::DEFAULT_MESSAGE_GROUP;
 
         return $this;
     }
