@@ -33,6 +33,8 @@ menu.link_user: Користувачі
 menu.link_user_single: Користувач
 menu.link_request_list: Запити (IP)
 menu.link_request_list_single: Запит
+menu.link_redirect: Редіректи
+menu.link_redirect_single: Редірект
 menu.link_product: Товари
 menu.link_product_single: Товар
 menu.link_category: Категорії
@@ -299,6 +301,16 @@ admin.request_list.ip: IP
 admin.request_list.path: Path
 admin.request_list.unique_ips_today: Унікальних IP сьогодні
 admin.request_list.requests_today: Всього запитів сьогодні
+admin.redirect.type: Тип
+admin.redirect.type.base: base (старий сайт)
+admin.redirect.type.custom: custom
+admin.redirect.from_path: З URL (path)
+admin.redirect.from_path_help: Шлях старого сайту, наприклад /efirne-tb.html
+admin.redirect.to_path: Куди редіректити
+admin.redirect.to_path_help: Новий path (/uk/...) або повний URL. Порожньо — редірект ще не активний.
+admin.redirect.status_code: HTTP код
+admin.redirect.enabled: Активно
+admin.redirect.from_path_unique: Такий from path уже існує.
 admin.email_log.status_label: Статус
 admin.email_log.status.sent: Надіслано
 admin.email_log.status.failed: Помилка

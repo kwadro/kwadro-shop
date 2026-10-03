@@ -33,6 +33,8 @@ menu.link_user: Users
 menu.link_user_single: User
 menu.link_request_list: Requests (IP)
 menu.link_request_list_single: Request
+menu.link_redirect: Redirects
+menu.link_redirect_single: Redirect
 menu.link_product: Products
 menu.link_product_single: Product
 menu.link_category: Categories
@@ -299,6 +301,16 @@ admin.request_list.ip: IP
 admin.request_list.path: Path
 admin.request_list.unique_ips_today: Unique IPs today
 admin.request_list.requests_today: Total requests today
+admin.redirect.type: Type
+admin.redirect.type.base: base (legacy site)
+admin.redirect.type.custom: custom
+admin.redirect.from_path: From URL (path)
+admin.redirect.from_path_help: Legacy path, e.g. /efirne-tb.html
+admin.redirect.to_path: Redirect to
+admin.redirect.to_path_help: New path (/uk/...) or absolute URL. Empty = redirect not active yet.
+admin.redirect.status_code: HTTP status
+admin.redirect.enabled: Enabled
+admin.redirect.from_path_unique: This from path already exists.
 admin.email_log.status_label: Status
 admin.email_log.status.sent: Sent
 admin.email_log.status.failed: Failed
