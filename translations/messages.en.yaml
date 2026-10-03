@@ -189,6 +189,14 @@ admin.product.badge: Badge
 admin.product.short_description: Short description
 admin.product.description: Description
 admin.product.description_help: HTML is supported.
+admin.product.title: Title
+admin.product.meta_title: Meta title
+admin.product.meta_description: Meta description
+admin.product.og_title: OG Title
+admin.product.og_description: OG Description
+admin.product.og_type: OG Type
+admin.product.og_type_help: 'Example: product, website. Empty = product.'
+admin.product.og_image: OG Image
 admin.product.features: Features
 admin.product.features_help: One item per line.
 admin.product.gallery: Gallery

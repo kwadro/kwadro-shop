@@ -99,6 +99,26 @@ class ProductCrudController extends AbstractCrudController
             ->setFormTypeOption('attr', ['data-html-editor' => '1'])
             ->setHelp($this->translator->trans('admin.product.description_help', [], 'messages'));
 
+        yield TextField::new('title', $this->translator->trans('admin.product.title', [], 'messages'))
+            ->hideOnIndex();
+        yield TextField::new('metaTitle', $this->translator->trans('admin.product.meta_title', [], 'messages'))
+            ->hideOnIndex();
+        yield TextareaField::new('metaDescription', $this->translator->trans('admin.product.meta_description', [], 'messages'))
+            ->hideOnIndex()
+            ->setNumOfRows(3);
+        yield TextField::new('ogTitle', $this->translator->trans('admin.product.og_title', [], 'messages'))
+            ->hideOnIndex();
+        yield TextField::new('ogDescription', $this->translator->trans('admin.product.og_description', [], 'messages'))
+            ->hideOnIndex();
+        yield TextField::new('ogType', $this->translator->trans('admin.product.og_type', [], 'messages'))
+            ->hideOnIndex()
+            ->setHelp($this->translator->trans('admin.product.og_type_help', [], 'messages'));
+        yield ImageField::new('ogImage', $this->translator->trans('admin.product.og_image', [], 'messages'))
+            ->setBasePath('/uploads/images')
+            ->setUploadDir('public/uploads/images')
+            ->setRequired(false)
+            ->hideOnIndex();
+
         yield TextField::new('lowestOfferSummary', $this->translator->trans('admin.product.lowest_offer', [], 'messages'))
             ->onlyOnForms()
             ->setDisabled()

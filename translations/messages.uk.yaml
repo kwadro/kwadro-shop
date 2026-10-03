@@ -189,6 +189,14 @@ admin.product.badge: Бейдж
 admin.product.short_description: Короткий опис
 admin.product.description: Опис
 admin.product.description_help: Можна використовувати HTML.
+admin.product.title: Title
+admin.product.meta_title: Meta title
+admin.product.meta_description: Meta description
+admin.product.og_title: OG Title
+admin.product.og_description: OG Description
+admin.product.og_type: OG Type
+admin.product.og_type_help: 'Наприклад: product, website. Порожньо — product, інакше з SEO сайту.'
+admin.product.og_image: OG Image
 admin.product.features: Переваги
 admin.product.features_help: Один пункт на рядок.
 admin.product.gallery: Галерея
