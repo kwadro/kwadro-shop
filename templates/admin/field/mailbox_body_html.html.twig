@@ -1,0 +1,17 @@
+{# @var ea \EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext #}
+{# @var field \EasyCorp\Bundle\EasyAdminBundle\Dto\FieldDto #}
+{# @var entity \EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto #}
+{% set html = field.value %}
+{% if html is empty %}
+    <span class="text-muted">—</span>
+{% else %}
+    <div class="mailbox-html-frame">
+        <iframe
+            class="mailbox-html-frame__iframe"
+            title="{{ field.label }}"
+            sandbox=""
+            referrerpolicy="no-referrer"
+            srcdoc="{{ html|e('html_attr') }}"
+        ></iframe>
+    </div>
+{% endif %}
