@@ -1,6 +1,6 @@
 {% extends 'shop/layout.html.twig' %}
 {% set setting = site_settings() %}
-{% block title %}{% if product %}{{ product.name }} — {% endif %}{{ setting.seo.meta_title }}{% endblock %}
+{% block title %}{% if product %}{{ product.name }} — {% endif %}{{ setting.seo.title|default(setting.seo.meta_title) }}{% endblock %}
 
 {% block main %}
     {% include 'shop/partials/_product_view.html.twig' %}

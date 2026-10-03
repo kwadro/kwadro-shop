@@ -33,9 +33,12 @@ class SeoSettingsTranslationCrudController extends AbstractCrudController
             IdField::new('id')->hideOnForm(),
             AssociationField::new('seosetting'),
             AssociationField::new('locale'),
-            TextField::new('meta_title'),
-        
-            TextareaField::new('meta_description')->setHelp('Enter full text here')->setNumOfRows('3'),
+            TextField::new('title', $this->translator->trans('admin.seo_translation.title', [], 'messages')),
+            TextField::new('meta_title', $this->translator->trans('admin.seo_translation.meta_title', [], 'messages')),
+
+            TextareaField::new('meta_description', $this->translator->trans('admin.seo_translation.meta_description', [], 'messages'))
+                ->setHelp('Enter full text here')
+                ->setNumOfRows('3'),
             TextField::new('meta_keywords'),
             TextField::new('author'),
             TextField::new('og_title'),

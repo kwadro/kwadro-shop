@@ -19,8 +19,9 @@ class SeoSettingsTranslationType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('meta_title', TextType::class)
-            ->add('meta_description', TextareaType::class)
+            ->add('title', TextType::class, ['required' => false])
+            ->add('meta_title', TextType::class, ['required' => false])
+            ->add('meta_description', TextareaType::class, ['required' => false])
             ->add('meta_keywords', TextType::class)
             ->add('author', TextType::class)
             ->add('og_title', TextType::class)

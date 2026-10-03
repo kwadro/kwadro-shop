@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>
         {% block title %}
-            {{setting.seo.meta_title}}
+            {{ setting.seo.title|default(setting.seo.meta_title) }}
         {% endblock %}
     </title>
     {% if block_search_engines|default(false) %}

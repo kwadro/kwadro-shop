@@ -108,6 +108,7 @@ class SiteSettingsProvider
         return [
             'seo' => $seoSetting ? [
                 'id' => $seoSetting->getTranslations()[0]->getId(),
+                'title' => $seoSetting->getTranslations()[0]->getTitle(),
                 'meta_title' => $seoSetting->getTranslations()[0]->getMetaTitle(),
                 'meta_description' => $seoSetting->getTranslations()[0]->getMetaDescription(),
                 'meta_keywords' => $seoSetting->getTranslations()[0]->getMetaKeywords(),

@@ -36,6 +36,9 @@ class SeoSettingsTranslation
         private ?Locale $locale;
 
     #[ORM\Column(type:"string", nullable:true)]
+    private ?string $title;
+
+    #[ORM\Column(type:"string", nullable:true)]
     private ?string $meta_title;
 
     #[ORM\Column(type:"text", nullable:true)]
@@ -95,6 +98,19 @@ class SeoSettingsTranslation
         $this->locale = $locale;
         return $this;
     }
+    public function setTitle(?string $title): self
+    {
+        $title = $title !== null ? trim($title) : null;
+        $this->title = $title !== '' ? $title : null;
+
+        return $this;
+    }
+
+    public function getTitle(): ?string
+    {
+        return $this->title;
+    }
+
     public function setMetaTitle(?string $meta_title): self
     {
         $this->meta_title = $meta_title;
@@ -107,7 +123,7 @@ class SeoSettingsTranslation
     }
     public function __toString(): string
     {
-        return $this->meta_title;
+        return (string) ($this->title ?: $this->meta_title ?: '');
     }
     public function setMetaDescription(?string $meta_description): self
     {
