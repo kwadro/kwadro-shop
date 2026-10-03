@@ -2922,7 +2922,7 @@ body.shop-offers-modal-open {
     .shop-minicart__panel {
         position: fixed;
         top: auto;
-        bottom: 0;
+        bottom: 55px;
         left: 0;
         right: 0;
         width: auto;
