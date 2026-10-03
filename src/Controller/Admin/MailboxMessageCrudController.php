@@ -6,6 +6,7 @@ use App\Entity\MailboxMessage;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Assets;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
@@ -13,7 +14,6 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -41,6 +41,11 @@ class MailboxMessageCrudController extends AbstractCrudController
             ->setPaginatorPageSize(30)
             ->showEntityActionsInlined()
             ->setFormOptions(['csrf_protection' => false]);
+    }
+
+    public function configureAssets(Assets $assets): Assets
+    {
+        return $assets->addCssFile('lib/admin-mailbox-message.css');
     }
 
     public function configureActions(Actions $actions): Actions
@@ -79,12 +84,23 @@ class MailboxMessageCrudController extends AbstractCrudController
         yield BooleanField::new('isSeen', $this->translator->trans('admin.mailbox_message.is_seen', [], 'messages'));
         yield BooleanField::new('hasAttachments', $this->translator->trans('admin.mailbox_message.has_attachments', [], 'messages'))
             ->hideOnIndex();
-        yield TextareaField::new('bodyPreview', $this->translator->trans('admin.mailbox_message.preview', [], 'messages'))
-            ->onlyOnDetail();
-        yield TextareaField::new('bodyText', $this->translator->trans('admin.mailbox_message.body_text', [], 'messages'))
-            ->onlyOnDetail();
-        yield TextareaField::new('bodyHtml', $this->translator->trans('admin.mailbox_message.body_html', [], 'messages'))
-            ->onlyOnDetail();
+        yield TextField::new('bodyHtml', $this->translator->trans('admin.mailbox_message.body_html', [], 'messages'))
+            ->onlyOnDetail()
+            ->setTemplatePath('admin/field/mailbox_body_html.html.twig')
+            ->formatValue(static function (?string $value, MailboxMessage $message): string {
+                if ($value !== null && trim($value) !== '') {
+                    return $value;
+                }
+
+                $text = trim((string) $message->getBodyText());
+                if ($text === '') {
+                    return '';
+                }
+
+                return '<pre style="white-space:pre-wrap;font-family:inherit;margin:0">'
+                    .htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')
+                    .'</pre>';
+            });
     }
 
     public function configureResponseParameters(KeyValueStore $responseParameters): KeyValueStore

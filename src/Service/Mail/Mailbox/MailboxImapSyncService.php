@@ -10,7 +10,7 @@ use Psr\Log\LoggerInterface;
 
 final class MailboxImapSyncService
 {
-    private const FETCH_LIMIT = 50;
+    private const FETCH_LIMIT = 200;
 
     public function __construct(
         private readonly MailboxCredentialCipher $cipher,
