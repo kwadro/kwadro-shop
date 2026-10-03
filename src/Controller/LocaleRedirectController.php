@@ -7,6 +7,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
@@ -78,9 +79,18 @@ class LocaleRedirectController extends AbstractController
         ]);
     }
 
-    #[Route('/{slug}', name: 'shop_page_root_redirect', requirements: ['slug' => ShopRoutes::PAGE_SLUG_REQUIREMENTS])]
+    #[Route('/{slug}', name: 'shop_page_root_redirect', requirements: ['slug' => ShopRoutes::PAGE_SLUG_REQUIREMENTS], priority: -10)]
     public function redirectPage(string $slug): RedirectResponse
     {
+        // If a locale code somehow matches /{slug} (e.g. trailing-slash edge case), go to home.
+        if (preg_match('#^(?:'.ShopRoutes::LOCALE_REQUIREMENTS.')$#', $slug) === 1) {
+            return $this->redirectToRoute('shop_home', ['_locale' => $slug], Response::HTTP_MOVED_PERMANENTLY);
+        }
+
+        if (preg_match('#^(?:'.ShopRoutes::RESERVED_PAGE_SLUGS.')$#', $slug) === 1) {
+            throw new NotFoundHttpException();
+        }
+
         return $this->redirectToRoute('shop_page', ['_locale' => $this->defaultLocale, 'slug' => $slug]);
     }
 }
