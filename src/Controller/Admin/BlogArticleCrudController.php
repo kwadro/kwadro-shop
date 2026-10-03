@@ -111,19 +111,17 @@ class BlogArticleCrudController extends AbstractCrudController
         yield TextField::new('metaTitle', $this->translator->trans('admin.blog_article.meta_title', [], 'messages'))
             ->hideOnIndex();
         yield TextareaField::new('metaDescription', $this->translator->trans('admin.blog_article.meta_description', [], 'messages'))
-            ->setFormTypeOption('attr', ['data-no-html-editor' => '1'])
-            ->hideOnIndex();
+            ->hideOnIndex()
+            ->setNumOfRows(3);
         yield AssociationField::new('categories', $this->translator->trans('admin.blog_article.categories', [], 'messages'))
             ->setFormTypeOption('by_reference', false)
             ->autocomplete();
         yield TextareaField::new('content', $this->translator->trans('admin.blog_article.content', [], 'messages'))
-            ->hideOnIndex();
+            ->hideOnIndex()
+            ->setFormTypeOption('attr', ['data-html-editor' => '1']);
         yield TextareaField::new('facebookDraft', $this->translator->trans('admin.blog_article.facebook_draft_field', [], 'messages'))
             ->setHelp($this->translator->trans('admin.blog_article.facebook_draft_field_help', [], 'messages'))
-            ->setFormTypeOption('attr', [
-                'data-no-html-editor' => '1',
-                'rows' => 12,
-            ])
+            ->setFormTypeOption('attr', ['rows' => 12])
             ->hideOnIndex();
         yield BooleanField::new('enabled', $this->translator->trans('admin.blog.enabled', [], 'messages'));
         yield DateTimeField::new('publishedAt', $this->translator->trans('admin.blog_article.published_at', [], 'messages'));

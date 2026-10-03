@@ -33,8 +33,12 @@ class FooterTranslationCrudController extends AbstractCrudController
             IdField::new('id')->hideOnForm(),
             AssociationField::new('footersetting'),
             AssociationField::new('locale'),
-        
-            TextareaField::new('content')->setHelp('Enter full text here')->setNumOfRows('10'),
+
+            TextareaField::new('content')
+                ->setHelp('Enter full text here')
+                ->setNumOfRows('10')
+                ->setFormTypeOption('attr', ['data-html-editor' => '1'])
+                ->hideOnIndex(),
         ];
     }
 

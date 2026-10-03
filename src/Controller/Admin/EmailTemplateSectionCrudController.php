@@ -74,6 +74,7 @@ class EmailTemplateSectionCrudController extends AbstractCrudController
         yield TextareaField::new('content', $this->translator->trans('admin.email_template_section.content', [], 'messages'))
             ->setHelp($this->translator->trans('admin.email_template_section.content_help', [], 'messages'))
             ->hideOnIndex()
-            ->setNumOfRows(18);
+            ->setNumOfRows(18)
+            ->setFormTypeOption('attr', ['data-html-editor' => '1']);
     }
 }

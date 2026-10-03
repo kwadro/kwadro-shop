@@ -1,5 +1,6 @@
 (() => {
-    const EDITOR_SELECTOR = 'form textarea:not([readonly]):not([disabled]):not([data-no-html-editor])';
+    // Opt-in only: plain textareas stay plain unless marked with data-html-editor.
+    const EDITOR_SELECTOR = 'form textarea[data-html-editor]:not([readonly]):not([disabled])';
     const editorInstances = new Map();
 
     const editorConfig = {

@@ -219,6 +219,11 @@ admin.category.enabled_yes: Yes
 admin.category.enabled_no: No
 admin.category.meta_title: Meta title
 admin.category.meta_description: Meta description
+admin.category.og_title: OG Title
+admin.category.og_description: OG Description
+admin.category.og_type: OG Type
+admin.category.og_type_help: 'Example: website, article, product. Empty = site SEO default.'
+admin.category.og_image: OG Image
 admin.category.parent: Parent category
 admin.category.parent_help: Leave empty for a root category. New categories usually go under Default.
 admin.category.level: Level
@@ -246,6 +251,13 @@ admin.supplier.slug_help: 'Leave empty to generate from the name. Allowed: lette
 admin.supplier.description: Description
 admin.supplier.phone: Phone
 admin.supplier.email: Email
+admin.supplier.meta_title: Meta title
+admin.supplier.meta_description: Meta description
+admin.supplier.og_title: OG Title
+admin.supplier.og_description: OG Description
+admin.supplier.og_type: OG Type
+admin.supplier.og_type_help: 'Example: website, article, product. Empty = site SEO default.'
+admin.supplier.og_image: OG Image
 admin.supplier.offers: Product offers
 
 admin.email_template.site: Site
@@ -461,7 +473,7 @@ admin.mailbox_account.last_sync_error: Sync error
 admin.mailbox_account.sync: Sync now
 admin.mailbox_account.sync_ok: 'Synced. Imported: %imported%, updated: %updated%.'
 admin.mailbox_account.allowed_from_emails: Message filter (from)
-admin.mailbox_account.allowed_from_emails_help: 'Format: email|Group name (one sender per line). Without | the group is General. Empty = all messages, group General.'
+admin.mailbox_account.allowed_from_emails_help: 'Format: email|Group name. *|Group name = all messages in that group. Without | group is General. Empty = all messages, group General.'
 
 admin.mailbox_message.mailbox: Mailbox
 admin.mailbox_message.group: Group

@@ -194,7 +194,8 @@ final class MailboxImapSyncService
     private function searchAllCandidateUids($mailbox, MailboxAccount $account): array
     {
         $allowed = $account->getAllowedFromEmailList();
-        if ($allowed === []) {
+        // Empty filter or *|Group => fetch all senders.
+        if ($allowed === [] || $account->hasWildcardFromFilter()) {
             $uids = imap_search($mailbox, 'ALL', \SE_UID) ?: [];
 
             return \is_array($uids) ? array_values($uids) : [];

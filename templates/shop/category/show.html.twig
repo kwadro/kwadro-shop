@@ -1,12 +1,20 @@
 {% extends 'shop/layout.html.twig' %}
 {% set setting = site_settings() %}
-{% set pageTitle = category.metaTitle ?: (category.name ~ ' — ' ~ setting.seo.meta_title) %}
-{% set pageDescription = category.metaDescription ?: setting.seo.meta_description %}
+{% set pageMetaTitle = category.metaTitle ?: setting.seo.meta_title %}
+{% set pageMetaDescription = category.metaDescription ?: setting.seo.meta_description %}
+{% set pageOgTitle = category.ogTitle ?: setting.seo.og_title %}
+{% set pageOgDescription = category.ogDescription ?: setting.seo.og_description %}
+{% set pageOgType = category.ogType ?: setting.seo.og_type %}
+{% set pageOgImageFile = category.ogImage ?: setting.seo.og_image %}
+{% set pageOgImage = pageOgImageFile ? absolute_url(asset('uploads/images/' ~ pageOgImageFile)) : '' %}
 
-{% block title %}{{ pageTitle }}{% endblock %}
-{% block meta_description %}{{ pageDescription }}{% endblock %}
-{% block og_title %}{{ pageTitle }}{% endblock %}
-{% block og_description %}{{ pageDescription }}{% endblock %}
+{% block title %}{{ pageMetaTitle }}{% endblock %}
+{% block meta_title %}{{ pageMetaTitle }}{% endblock %}
+{% block meta_description %}{{ pageMetaDescription }}{% endblock %}
+{% block og_title %}{{ pageOgTitle }}{% endblock %}
+{% block og_description %}{{ pageOgDescription }}{% endblock %}
+{% block og_type %}{{ pageOgType }}{% endblock %}
+{% block og_image %}{{ pageOgImage }}{% endblock %}
 {% block og_url %}{{ absolute_url(path('shop_category', {_locale: app.request.locale, slug: category.slug})) }}{% endblock %}
 {% block canonical_url %}{{ absolute_url(path('shop_category', {_locale: app.request.locale, slug: category.slug})) }}{% endblock %}
 

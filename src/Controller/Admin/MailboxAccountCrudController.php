@@ -106,9 +106,8 @@ class MailboxAccountCrudController extends AbstractCrudController
         yield TextareaField::new('allowedFromEmails', $this->translator->trans('admin.mailbox_account.allowed_from_emails', [], 'messages'))
             ->setHelp($this->translator->trans('admin.mailbox_account.allowed_from_emails_help', [], 'messages'))
             ->setFormTypeOption('attr', [
-                'data-no-html-editor' => '1',
                 'rows' => 5,
-                'placeholder' => "info@example.com|Info\nbank@example.com|Bank\nplain@example.com",
+                'placeholder' => "info@example.com|Info\n*|Name Group",
             ])
             ->hideOnIndex();
 

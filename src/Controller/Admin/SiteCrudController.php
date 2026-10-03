@@ -51,7 +51,6 @@ class SiteCrudController extends AbstractCrudController
                 ->setRequired(false)
                 ->setHelp($this->translator->trans('admin.site.ignored_request_ips_help', [], 'messages'))
                 ->setFormTypeOption('attr', [
-                    'data-no-html-editor' => '1',
                     'rows' => 6,
                     'placeholder' => "127.0.0.1\n192.168.0.10",
                 ])
@@ -79,9 +78,11 @@ class SiteCrudController extends AbstractCrudController
                 ->hideOnIndex(),
             TextareaField::new('codCommissionNoticeUk', $this->translator->trans('admin.site.cod_commission_notice_uk', [], 'messages'))
                 ->setHelp($this->translator->trans('admin.site.cod_commission_notice_help', [], 'messages'))
+                ->setFormTypeOption('attr', ['data-html-editor' => '1'])
                 ->hideOnIndex(),
             TextareaField::new('codCommissionNoticeEn', $this->translator->trans('admin.site.cod_commission_notice_en', [], 'messages'))
                 ->setHelp($this->translator->trans('admin.site.cod_commission_notice_help', [], 'messages'))
+                ->setFormTypeOption('attr', ['data-html-editor' => '1'])
                 ->hideOnIndex(),
             ChoiceField::new('activePaymentMethods', $this->translator->trans('admin.site.active_payment_methods', [], 'messages'))
                 ->setChoices([

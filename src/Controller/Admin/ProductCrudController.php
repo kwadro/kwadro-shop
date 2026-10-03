@@ -96,6 +96,7 @@ class ProductCrudController extends AbstractCrudController
         yield TextareaField::new('description', $this->translator->trans('admin.product.description', [], 'messages'))
             ->hideOnIndex()
             ->setNumOfRows(8)
+            ->setFormTypeOption('attr', ['data-html-editor' => '1'])
             ->setHelp($this->translator->trans('admin.product.description_help', [], 'messages'));
 
         yield TextField::new('lowestOfferSummary', $this->translator->trans('admin.product.lowest_offer', [], 'messages'))
@@ -133,6 +134,7 @@ class ProductCrudController extends AbstractCrudController
         yield TextareaField::new('featuresText', $this->translator->trans('admin.product.features', [], 'messages'))
             ->hideOnIndex()
             ->setNumOfRows(6)
+            ->setFormTypeOption('attr', ['data-html-editor' => '1'])
             ->setHelp($this->translator->trans('admin.product.features_help', [], 'messages'));
 
         $galleryUploadDir = 'public/uploads/products';

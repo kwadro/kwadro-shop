@@ -15,6 +15,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\ImageField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
@@ -168,9 +169,22 @@ class CategoryCrudController extends AbstractCrudController
         yield IntegerField::new('position', $this->translator->trans('admin.category.position', [], 'messages'));
         yield TextField::new('metaTitle', $this->translator->trans('admin.category.meta_title', [], 'messages'))
             ->hideOnIndex();
-        yield TextareaField::new('metaDescription', $this->translator->trans('admin.category.meta_description', [], 'messages'))
+        yield TextareaField::new('metaDescription',
+            $this->translator->trans('admin.category.meta_description', [], 'messages'))
             ->hideOnIndex()
             ->setNumOfRows(3);
+        yield TextField::new('ogTitle', $this->translator->trans('admin.category.og_title', [], 'messages'))
+            ->hideOnIndex();
+        yield TextField::new('ogDescription', $this->translator->trans('admin.category.og_description', [], 'messages'))
+            ->hideOnIndex();
+        yield TextField::new('ogType', $this->translator->trans('admin.category.og_type', [], 'messages'))
+            ->hideOnIndex()
+            ->setHelp($this->translator->trans('admin.category.og_type_help', [], 'messages'));
+        yield ImageField::new('ogImage', $this->translator->trans('admin.category.og_image', [], 'messages'))
+            ->setBasePath('/uploads/images')
+            ->setUploadDir('public/uploads/images')
+            ->setRequired(false)
+            ->hideOnIndex();
         yield AssociationField::new('children', $this->translator->trans('admin.category.children', [], 'messages'))
             ->onlyOnDetail();
         yield AssociationField::new('products', $this->translator->trans('admin.category.products', [], 'messages'))

@@ -42,7 +42,10 @@ class MegaMenuTranslationCrudController extends AbstractCrudController
             TextField::new('url')
                 ->setHelp('URL-slug сторінки: латиниця, цифри, "-" і "_". Приклади: delivery, account-setting, account_setting'),
         
-            TextareaField::new('content')->setHelp('Enter full text here')->setNumOfRows('10'),
+            TextareaField::new('content')
+                ->setHelp('Enter full text here')
+                ->setNumOfRows('10')
+                ->setFormTypeOption('attr', ['data-html-editor' => '1']),
         ];
     }
 

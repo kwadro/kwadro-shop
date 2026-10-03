@@ -219,6 +219,11 @@ admin.category.enabled_yes: Так
 admin.category.enabled_no: Ні
 admin.category.meta_title: Meta title
 admin.category.meta_description: Meta description
+admin.category.og_title: OG Title
+admin.category.og_description: OG Description
+admin.category.og_type: OG Type
+admin.category.og_type_help: 'Наприклад: website, article, product. Порожньо — значення з SEO сайту.'
+admin.category.og_image: OG Image
 admin.category.parent: Батьківська категорія
 admin.category.parent_help: Залиште порожнім для кореневої категорії. Нові категорії зазвичай створюють під Default.
 admin.category.level: Рівень
@@ -246,6 +251,13 @@ admin.supplier.slug_help: 'Залиште порожнім — згенерує�
 admin.supplier.description: Опис
 admin.supplier.phone: Телефон
 admin.supplier.email: Електронна пошта
+admin.supplier.meta_title: Meta title
+admin.supplier.meta_description: Meta description
+admin.supplier.og_title: OG Title
+admin.supplier.og_description: OG Description
+admin.supplier.og_type: OG Type
+admin.supplier.og_type_help: 'Наприклад: website, article, product. Порожньо — значення з SEO сайту.'
+admin.supplier.og_image: OG Image
 admin.supplier.offers: Товарні пропозиції
 
 admin.email_template.site: Сайт
@@ -461,7 +473,7 @@ admin.mailbox_account.last_sync_error: Помилка синхронізації
 admin.mailbox_account.sync: Синхронізувати
 admin.mailbox_account.sync_ok: 'Синхронізовано. Нових: %imported%, оновлено: %updated%.'
 admin.mailbox_account.allowed_from_emails: Фільтр повідомлень (від кого)
-admin.mailbox_account.allowed_from_emails_help: 'Формат: email|Назва групи (один рядок — один відправник). Без | група буде General. Порожньо — усі листи, група General.'
+admin.mailbox_account.allowed_from_emails_help: 'Формат: email|Назва групи. *|Назва групи — усі листи в цю групу. Без | група General. Порожньо — усі листи, група General.'
 
 admin.mailbox_message.mailbox: Акаунт
 admin.mailbox_message.group: Група

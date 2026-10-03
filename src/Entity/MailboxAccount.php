@@ -18,6 +18,8 @@ class MailboxAccount
 
     public const DEFAULT_MESSAGE_GROUP = 'General';
 
+    public const WILDCARD_FROM = '*';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -263,14 +265,20 @@ class MailboxAccount
 
     public function setAllowedFromEmails(?string $allowedFromEmails): static
     {
-        $normalized = $allowedFromEmails !== null ? trim($allowedFromEmails) : null;
+        if ($allowedFromEmails === null) {
+            $this->allowedFromEmails = null;
+
+            return $this;
+        }
+
+        $normalized = trim($this->normalizeFilterRaw($allowedFromEmails));
         $this->allowedFromEmails = $normalized !== '' ? $normalized : null;
 
         return $this;
     }
 
     /**
-     * @return array<string, string> Lowercased email => group name
+     * @return array<string, string> Lowercased email (or *) => group name
      */
     public function getAllowedFromEmailGroups(): array
     {
@@ -278,8 +286,10 @@ class MailboxAccount
             return [];
         }
 
+        $raw = $this->normalizeFilterRaw($this->allowedFromEmails);
+
         $map = [];
-        $lines = preg_split('/[\r\n,;]+/u', $this->allowedFromEmails) ?: [];
+        $lines = preg_split('/[\n,;]+/u', $raw) ?: [];
         foreach ($lines as $line) {
             $line = trim($line);
             if ($line === '') {
@@ -296,7 +306,12 @@ class MailboxAccount
                 }
             }
 
-            $email = strtolower(trim($emailPart));
+            $email = $this->normalizeFilterSender(trim($emailPart));
+            if ($email === self::WILDCARD_FROM) {
+                $map[self::WILDCARD_FROM] = $group;
+                continue;
+            }
+
             if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 continue;
             }
@@ -307,18 +322,56 @@ class MailboxAccount
         return $map;
     }
 
+    private function normalizeFilterRaw(string $raw): string
+    {
+        // Keep line breaks if a WYSIWYG editor wrapped each rule in <p>/<div>/<br>.
+        $raw = preg_replace('/<\s*br\s*\/?\s*>/iu', "\n", $raw) ?? $raw;
+        $raw = preg_replace('/<\/\s*(p|div|li|tr|h[1-6])\s*>/iu', "\n", $raw) ?? $raw;
+        $raw = html_entity_decode(strip_tags($raw), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $raw = str_replace(["\r\n", "\r"], "\n", $raw);
+        $raw = preg_replace("/[ \t]+/u", ' ', $raw) ?? $raw;
+        $raw = preg_replace("/\n{2,}/u", "\n", $raw) ?? $raw;
+
+        return trim($raw);
+    }
+
+    private function normalizeFilterSender(string $sender): string
+    {
+        $sender = trim($sender);
+        // ASCII *, fullwidth ＊, and bullet-like chars used as "all senders".
+        if ($sender === '*' || $sender === '＊' || $sender === '✱' || $sender === '★') {
+            return self::WILDCARD_FROM;
+        }
+
+        return strtolower($sender);
+    }
+
     /**
-     * @return list<string> Lowercased unique emails.
+     * Concrete sender emails only (excludes * wildcard).
+     *
+     * @return list<string>
      */
     public function getAllowedFromEmailList(): array
     {
-        return array_keys($this->getAllowedFromEmailGroups());
+        $emails = [];
+        foreach (array_keys($this->getAllowedFromEmailGroups()) as $email) {
+            if ($email !== self::WILDCARD_FROM) {
+                $emails[] = $email;
+            }
+        }
+
+        return $emails;
+    }
+
+    public function hasWildcardFromFilter(): bool
+    {
+        return isset($this->getAllowedFromEmailGroups()[self::WILDCARD_FROM]);
     }
 
     public function isFromAddressAllowed(string $fromAddress): bool
     {
         $allowed = $this->getAllowedFromEmailGroups();
-        if ($allowed === []) {
+        if ($allowed === [] || isset($allowed[self::WILDCARD_FROM])) {
             return true;
         }
 
@@ -338,8 +391,11 @@ class MailboxAccount
         }
 
         $from = strtolower(trim($fromAddress));
+        if ($from !== '' && isset($allowed[$from])) {
+            return $allowed[$from];
+        }
 
-        return $allowed[$from] ?? self::DEFAULT_MESSAGE_GROUP;
+        return $allowed[self::WILDCARD_FROM] ?? self::DEFAULT_MESSAGE_GROUP;
     }
 
     public function getLastSyncedAt(): ?\DateTimeImmutable

@@ -34,10 +34,13 @@ class HeaderTranslationCrudController extends AbstractCrudController
             AssociationField::new('headersetting'),
             AssociationField::new('locale'),
             TextField::new('title'),
-            TextareaField::new('work_hours', $this->translator->trans('admin.header.work_hours', [], 'messages'))
+            TextareaField::new('work_hours',
+                $this->translator->trans('admin.header.work_hours', [], 'messages'))
                 ->setHelp($this->translator->trans('admin.header.work_hours_help', [], 'messages'))
                 ->setNumOfRows(4)
-                ->renderAsHtml(),
+                ->setFormTypeOption('attr', ['data-html-editor' => '1'])
+                ->renderAsHtml()
+                ->hideOnIndex(),
             TextField::new('menu_json')->hideOnIndex(),
         ];
     }
