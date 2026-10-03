@@ -15,6 +15,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class MailboxMessageCrudController extends AbstractCrudController
@@ -22,6 +23,7 @@ class MailboxMessageCrudController extends AbstractCrudController
     public function __construct(
         private readonly TranslatorInterface $translator,
         private readonly EntityManagerInterface $entityManager,
+        private readonly UrlGeneratorInterface $urlGenerator,
     ) {
     }
 
@@ -43,9 +45,28 @@ class MailboxMessageCrudController extends AbstractCrudController
 
     public function configureActions(Actions $actions): Actions
     {
+        $compose = Action::new('compose', $this->translator->trans('admin.mailbox_compose.title', [], 'messages'))
+            ->linkToUrl(fn (): string => $this->urlGenerator->generate('admin_mailbox_compose', ['_locale' => 'uk']))
+            ->createAsGlobalAction()
+            ->setIcon('fa fa-pen');
+
+        $reply = Action::new('reply', $this->translator->trans('admin.mailbox_compose.reply', [], 'messages'))
+            ->linkToUrl(function (MailboxMessage $message): string {
+                return $this->urlGenerator->generate('admin_mailbox_compose', [
+                    '_locale' => 'uk',
+                    'to' => $message->getFromAddress(),
+                    'subject' => $message->getSubject(),
+                    'mailbox' => $message->getMailbox()?->getId(),
+                ]);
+            })
+            ->setIcon('fa fa-reply');
+
         return $actions
             ->disable(Action::NEW, Action::EDIT, Action::DELETE)
-            ->add(Crud::PAGE_INDEX, Action::DETAIL);
+            ->add(Crud::PAGE_INDEX, Action::DETAIL)
+            ->add(Crud::PAGE_INDEX, $compose)
+            ->add(Crud::PAGE_INDEX, $reply)
+            ->add(Crud::PAGE_DETAIL, $reply);
     }
 
     public function configureFields(string $pageName): iterable

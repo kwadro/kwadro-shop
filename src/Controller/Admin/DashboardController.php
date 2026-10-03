@@ -146,6 +146,12 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkTo(MailboxAccountCrudController::class, $this->translator->trans('menu.link_mailbox_account', [], 'messages'), 'fas fa-at');
         yield MenuItem::linkTo(MailboxMessageCrudController::class, $this->translator->trans('menu.link_mailbox_message', [], 'messages'), 'fas fa-envelope-open');
         yield MenuItem::linkToRoute(
+            $this->translator->trans('menu.link_mailbox_compose', [], 'messages'),
+            'fas fa-pen',
+            'admin_mailbox_compose',
+            ['_locale' => 'uk'],
+        );
+        yield MenuItem::linkToRoute(
             $this->translator->trans('menu.link_email_template_test', [], 'messages'),
             'fas fa-vial',
             'admin_email_template_test',

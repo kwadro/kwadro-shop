@@ -28,6 +28,7 @@ menu.link_mailbox_account: Mailbox accounts
 menu.link_mailbox_account_single: Mailbox account
 menu.link_mailbox_message: Inbox messages
 menu.link_mailbox_message_single: Inbox message
+menu.link_mailbox_compose: Compose email
 menu.users: Users
 menu.link_user: Users
 menu.link_user_single: User
@@ -459,6 +460,8 @@ admin.mailbox_account.last_synced_at: Last sync
 admin.mailbox_account.last_sync_error: Sync error
 admin.mailbox_account.sync: Sync now
 admin.mailbox_account.sync_ok: 'Synced. Imported: %imported%, updated: %updated%.'
+admin.mailbox_account.allowed_from_emails: Message filter (from)
+admin.mailbox_account.allowed_from_emails_help: 'Sender emails to import. Empty = all. Multiple addresses, one per line or comma-separated.'
 
 admin.mailbox_message.mailbox: Mailbox
 admin.mailbox_message.received_at: Received
@@ -469,6 +472,25 @@ admin.mailbox_message.has_attachments: Attachments
 admin.mailbox_message.preview: Preview
 admin.mailbox_message.body_text: Text body
 admin.mailbox_message.body_html: HTML body
+
+admin.mailbox_compose.title: New message
+admin.mailbox_compose.reply: Reply
+admin.mailbox_compose.from: From
+admin.mailbox_compose.to: To
+admin.mailbox_compose.cc: Cc
+admin.mailbox_compose.bcc: Bcc
+admin.mailbox_compose.cc_bcc: Cc/Bcc
+admin.mailbox_compose.subject: Subject
+admin.mailbox_compose.body_placeholder: Write your message
+admin.mailbox_compose.send: Send
+admin.mailbox_compose.discard: Discard
+admin.mailbox_compose.close: Close
+admin.mailbox_compose.no_accounts: No active mailbox accounts.
+admin.mailbox_compose.invalid_account: Choose an active mailbox account.
+admin.mailbox_compose.to_required: Enter at least one recipient.
+admin.mailbox_compose.subject_required: Enter a subject.
+admin.mailbox_compose.body_required: Write a message body.
+admin.mailbox_compose.sent: Message sent.
 
 menu.link_headertranslation_single: Header Translation
 menu.link_headertranslation: Header Translations

@@ -103,6 +103,15 @@ class MailboxAccountCrudController extends AbstractCrudController
             ])
             ->hideOnIndex();
 
+        yield TextareaField::new('allowedFromEmails', $this->translator->trans('admin.mailbox_account.allowed_from_emails', [], 'messages'))
+            ->setHelp($this->translator->trans('admin.mailbox_account.allowed_from_emails_help', [], 'messages'))
+            ->setFormTypeOption('attr', [
+                'data-no-html-editor' => '1',
+                'rows' => 5,
+                'placeholder' => "client@example.com\npartner@shop.ua",
+            ])
+            ->hideOnIndex();
+
         yield BooleanField::new('isActive', $this->translator->trans('admin.mailbox_account.is_active', [], 'messages'));
         yield DateTimeField::new('lastSyncedAt', $this->translator->trans('admin.mailbox_account.last_synced_at', [], 'messages'))
             ->hideOnForm();

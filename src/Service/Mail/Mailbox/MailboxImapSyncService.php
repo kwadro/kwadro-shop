@@ -61,12 +61,10 @@ final class MailboxImapSyncService
                 return ['imported' => 0, 'updated' => 0, 'error' => $error];
             }
 
-            $uids = imap_search($mailbox, 'ALL', \SE_UID) ?: [];
-            if (\is_array($uids) && $uids !== []) {
+            $uids = $this->searchUids($mailbox, $account);
+            if ($uids !== []) {
                 rsort($uids, \SORT_NUMERIC);
                 $uids = \array_slice($uids, 0, self::FETCH_LIMIT);
-            } else {
-                $uids = [];
             }
 
             foreach ($uids as $uid) {
@@ -77,11 +75,15 @@ final class MailboxImapSyncService
                     continue;
                 }
 
+                $from = $this->parseAddress((string) ($header->from ?? ''));
+                if (!$account->isFromAddressAllowed($from['email'])) {
+                    continue;
+                }
+
                 $existing = $this->messageRepository->findOneByMailboxAndUid($account, $uid);
                 $isNew = $existing === null;
                 $message = $existing ?? (new MailboxMessage())->setMailbox($account)->setRemoteUid($uid);
 
-                $from = $this->parseAddress((string) ($header->from ?? ''));
                 $message
                     ->setMessageId(isset($header->message_id) ? (string) $header->message_id : null)
                     ->setFromAddress($from['email'])
@@ -140,6 +142,34 @@ final class MailboxImapSyncService
         };
 
         return sprintf('{%s:%d%s}INBOX', $account->getImapHost(), $account->getImapPort(), $flags);
+    }
+
+    /**
+     * @param resource|\IMAP\Connection $mailbox
+     *
+     * @return list<int|string>
+     */
+    private function searchUids($mailbox, MailboxAccount $account): array
+    {
+        $allowed = $account->getAllowedFromEmailList();
+        if ($allowed === []) {
+            $uids = imap_search($mailbox, 'ALL', \SE_UID) ?: [];
+
+            return \is_array($uids) ? array_values($uids) : [];
+        }
+
+        $uids = [];
+        foreach ($allowed as $email) {
+            $criteria = 'FROM "'.str_replace(['\\', '"'], ['\\\\', '\\"'], $email).'"';
+            $found = imap_search($mailbox, $criteria, \SE_UID) ?: [];
+            if (\is_array($found)) {
+                foreach ($found as $uid) {
+                    $uids[(string) $uid] = $uid;
+                }
+            }
+        }
+
+        return array_values($uids);
     }
 
     /** @return array{email: string, name: string|null} */

@@ -76,6 +76,13 @@ class MailboxAccount
     #[ORM\Column(options: ['default' => true])]
     private bool $isActive = true;
 
+    /**
+     * Allowlist of sender emails (From). Empty = accept all.
+     * One address per line, or comma/semicolon separated.
+     */
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $allowedFromEmails = null;
+
     #[ORM\Column(type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeImmutable $lastSyncedAt = null;
 
@@ -241,6 +248,56 @@ class MailboxAccount
         $this->isActive = $isActive;
 
         return $this;
+    }
+
+    public function getAllowedFromEmails(): ?string
+    {
+        return $this->allowedFromEmails;
+    }
+
+    public function setAllowedFromEmails(?string $allowedFromEmails): static
+    {
+        $normalized = $allowedFromEmails !== null ? trim($allowedFromEmails) : null;
+        $this->allowedFromEmails = $normalized !== '' ? $normalized : null;
+
+        return $this;
+    }
+
+    /**
+     * @return list<string> Lowercased unique emails.
+     */
+    public function getAllowedFromEmailList(): array
+    {
+        if ($this->allowedFromEmails === null || trim($this->allowedFromEmails) === '') {
+            return [];
+        }
+
+        $parts = preg_split('/[\s,;]+/u', $this->allowedFromEmails) ?: [];
+        $emails = [];
+        foreach ($parts as $part) {
+            $email = strtolower(trim($part));
+            if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                continue;
+            }
+            $emails[$email] = true;
+        }
+
+        return array_keys($emails);
+    }
+
+    public function isFromAddressAllowed(string $fromAddress): bool
+    {
+        $allowed = $this->getAllowedFromEmailList();
+        if ($allowed === []) {
+            return true;
+        }
+
+        $from = strtolower(trim($fromAddress));
+        if ($from === '') {
+            return false;
+        }
+
+        return \in_array($from, $allowed, true);
     }
 
     public function getLastSyncedAt(): ?\DateTimeImmutable

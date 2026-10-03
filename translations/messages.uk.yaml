@@ -28,6 +28,7 @@ menu.link_mailbox_account: Поштові акаунти
 menu.link_mailbox_account_single: Поштовий акаунт
 menu.link_mailbox_message: Вхідні листи
 menu.link_mailbox_message_single: Вхідний лист
+menu.link_mailbox_compose: Написати лист
 menu.users: Користувачі
 menu.link_user: Користувачі
 menu.link_user_single: Користувач
@@ -459,6 +460,8 @@ admin.mailbox_account.last_synced_at: Остання синхронізація
 admin.mailbox_account.last_sync_error: Помилка синхронізації
 admin.mailbox_account.sync: Синхронізувати
 admin.mailbox_account.sync_ok: 'Синхронізовано. Нових: %imported%, оновлено: %updated%.'
+admin.mailbox_account.allowed_from_emails: Фільтр повідомлень (від кого)
+admin.mailbox_account.allowed_from_emails_help: 'Email відправників, від яких імпортувати листи. Порожньо — усі. Кілька адрес з нового рядка або через кому.'
 
 admin.mailbox_message.mailbox: Акаунт
 admin.mailbox_message.received_at: Отримано
@@ -469,6 +472,25 @@ admin.mailbox_message.has_attachments: Вкладення
 admin.mailbox_message.preview: Превʼю
 admin.mailbox_message.body_text: Текст
 admin.mailbox_message.body_html: HTML
+
+admin.mailbox_compose.title: Новий лист
+admin.mailbox_compose.reply: Відповісти
+admin.mailbox_compose.from: Від
+admin.mailbox_compose.to: Кому
+admin.mailbox_compose.cc: Копія
+admin.mailbox_compose.bcc: Прихована
+admin.mailbox_compose.cc_bcc: Копія
+admin.mailbox_compose.subject: Тема
+admin.mailbox_compose.body_placeholder: Напишіть повідомлення
+admin.mailbox_compose.send: Надіслати
+admin.mailbox_compose.discard: Скасувати
+admin.mailbox_compose.close: Закрити
+admin.mailbox_compose.no_accounts: Немає активних поштових акаунтів.
+admin.mailbox_compose.invalid_account: Оберіть активний поштовий акаунт.
+admin.mailbox_compose.to_required: Вкажіть отримувача (Кому).
+admin.mailbox_compose.subject_required: Вкажіть тему листа.
+admin.mailbox_compose.body_required: Напишіть текст листа.
+admin.mailbox_compose.sent: Лист надіслано.
 
 menu.link_headertranslation_single: Переклад Заголовка
 menu.link_headertranslation: Переклад Заголовків
