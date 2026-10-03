@@ -1,5 +1,6 @@
 {% extends 'shop/layout.html.twig' %}
 {% set setting = site_settings() %}
+{% set pageTitle = supplier.metaTitle ?: (setting.seo.title|default(setting.seo.meta_title)) %}
 {% set pageMetaTitle = supplier.metaTitle ?: setting.seo.meta_title %}
 {% set pageMetaDescription = supplier.metaDescription ?: setting.seo.meta_description %}
 {% set pageOgTitle = supplier.ogTitle ?: setting.seo.og_title %}
@@ -8,7 +9,7 @@
 {% set pageOgImageFile = supplier.ogImage ?: setting.seo.og_image %}
 {% set pageOgImage = pageOgImageFile ? absolute_url(asset('uploads/images/' ~ pageOgImageFile)) : '' %}
 
-{% block title %}{{ pageMetaTitle }}{% endblock %}
+{% block title %}{{ pageTitle }}{% endblock %}
 {% block meta_title %}{{ pageMetaTitle }}{% endblock %}
 {% block meta_description %}{{ pageMetaDescription }}{% endblock %}
 {% block og_title %}{{ pageOgTitle }}{% endblock %}

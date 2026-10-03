@@ -521,6 +521,9 @@ menu.link_seosetting_single: Seo Настройка
 menu.link_seosetting: Seo Настройки
 menu.link_seosettingstranslation_single: Seo Настройка Переклад
 menu.link_seosettingstranslation: Seo Настройки Переклад
+admin.seo_translation.title: Title
+admin.seo_translation.meta_title: Meta Title
+admin.seo_translation.meta_description: Meta Description
 menu.link_site_single: Сайт
 menu.link_site: Сайти
 #@GENERATE TRANSLATE FINISH

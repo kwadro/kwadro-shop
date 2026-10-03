@@ -1,6 +1,6 @@
 {% extends 'shop/layout.html.twig' %}
 {% set setting = site_settings() %}
-{% set pageTitle = ('shop.blog.title'|trans) ~ ' — ' ~ setting.seo.meta_title %}
+{% set pageTitle = ('shop.blog.title'|trans) ~ ' — ' ~ (setting.seo.title|default(setting.seo.meta_title)) %}
 {% set pageDescription = 'shop.blog.index_description'|trans %}
 
 {% block title %}{{ pageTitle }}{% endblock %}
