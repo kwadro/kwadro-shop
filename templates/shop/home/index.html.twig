@@ -1,6 +1,16 @@
 {% extends 'shop/layout.html.twig' %}
 {% set setting = site_settings() %}
-{% block title %}{% if product %}{{ product.name }} — {% endif %}{{ setting.seo.title|default(setting.seo.meta_title) }}{% endblock %}
+
+{# Featured product on homepage is UI only — SEO always comes from site settings. #}
+{% block title %}{{ setting.seo.title|default(setting.seo.meta_title) }}{% endblock %}
+{% block meta_title %}{{ setting.seo.meta_title }}{% endblock %}
+{% block meta_description %}{{ setting.seo.meta_description }}{% endblock %}
+{% block og_title %}{{ setting.seo.og_title }}{% endblock %}
+{% block og_description %}{{ setting.seo.og_description }}{% endblock %}
+{% block og_type %}{{ setting.seo.og_type }}{% endblock %}
+{% block og_image %}{{ setting.seo.og_image ? absolute_url(asset('uploads/images/' ~ setting.seo.og_image)) : '' }}{% endblock %}
+{% block og_url %}{{ absolute_url(path('shop_home', {_locale: app.request.locale})) }}{% endblock %}
+{% block canonical_url %}{{ absolute_url(path('shop_home', {_locale: app.request.locale})) }}{% endblock %}
 
 {% block main %}
     {% include 'shop/partials/_product_view.html.twig' %}
