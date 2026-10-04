@@ -45,6 +45,18 @@ class BlogArticle
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $meta_description = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $og_title = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $og_description = null;
+
+    #[ORM\Column(length: 64, nullable: true)]
+    private ?string $og_type = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $og_image = null;
+
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank]
     #[Assert\Regex(
@@ -142,6 +154,58 @@ class BlogArticle
     {
         $metaDescription = $metaDescription !== null ? trim($metaDescription) : null;
         $this->meta_description = $metaDescription !== '' ? $metaDescription : null;
+
+        return $this;
+    }
+
+    public function getOgTitle(): ?string
+    {
+        return $this->og_title;
+    }
+
+    public function setOgTitle(?string $ogTitle): static
+    {
+        $ogTitle = $ogTitle !== null ? trim($ogTitle) : null;
+        $this->og_title = $ogTitle !== '' ? $ogTitle : null;
+
+        return $this;
+    }
+
+    public function getOgDescription(): ?string
+    {
+        return $this->og_description;
+    }
+
+    public function setOgDescription(?string $ogDescription): static
+    {
+        $ogDescription = $ogDescription !== null ? trim($ogDescription) : null;
+        $this->og_description = $ogDescription !== '' ? $ogDescription : null;
+
+        return $this;
+    }
+
+    public function getOgType(): ?string
+    {
+        return $this->og_type;
+    }
+
+    public function setOgType(?string $ogType): static
+    {
+        $ogType = $ogType !== null ? trim($ogType) : null;
+        $this->og_type = $ogType !== '' ? $ogType : null;
+
+        return $this;
+    }
+
+    public function getOgImage(): ?string
+    {
+        return $this->og_image;
+    }
+
+    public function setOgImage(?string $ogImage): static
+    {
+        $ogImage = $ogImage !== null ? trim($ogImage) : null;
+        $this->og_image = $ogImage !== '' ? $ogImage : null;
 
         return $this;
     }

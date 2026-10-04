@@ -1,0 +1,64 @@
+SEO parameters — blog article «Цифрове телебачення Т2»
+======================================================
+
+URL (uk)
+  /uk/blog/cyfrove-telebachennya-t2
+
+Slug
+  cyfrove-telebachennya-t2
+
+Locale
+  uk
+
+Category
+  Цифрове ТБ (cyfrove-tb)
+
+--------------------------------------------------
+Meta
+--------------------------------------------------
+Title (meta title, ~60 chars)
+  Цифрове телебачення Т2: як підключити DVB-T2 | Квадро
+
+Description (meta description, ~155 chars)
+  Що таке цифрове телебачення Т2 (DVB-T2) в Україні: обладнання, антена, налаштування тюнера та поради для стабільного ефірного сигналу.
+
+--------------------------------------------------
+Open Graph
+--------------------------------------------------
+og:title
+  Цифрове телебачення Т2 — повний гайд з підключення
+
+og:description
+  Пояснюємо DVB-T2 простими словами: який тюнер і антена потрібні, як налаштувати канали та уникнути слабкого сигналу.
+
+og:type
+  article
+
+og:image
+  /uploads/images/og-blog-cyfrove-telebachennya-t2.jpg
+  Size: 1200×630 px
+  Filename: og-blog-cyfrove-telebachennya-t2.jpg
+
+--------------------------------------------------
+Primary keywords
+--------------------------------------------------
+  цифрове телебачення Т2
+  DVB-T2 Україна
+  тюнер Т2
+  підключити цифрове ТБ
+  ефірне телебачення
+
+Secondary keywords
+  антена для Т2
+  налаштування тюнера Т2
+  канали Т2
+  цифровий ресивер
+
+H1
+  Цифрове телебачення Т2: що це і як підключити вдома
+
+Suggested internal links
+  /uk/category/tuner-t2
+  /uk/category/antenu
+  /uk/blog/yak-obraty-antenu-dlya-tunera-t2
+  /uk/blog/kanaly-t2-spysok-i-zhanry

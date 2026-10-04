@@ -15,6 +15,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\ImageField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
@@ -113,6 +114,20 @@ class BlogArticleCrudController extends AbstractCrudController
         yield TextareaField::new('metaDescription', $this->translator->trans('admin.blog_article.meta_description', [], 'messages'))
             ->hideOnIndex()
             ->setNumOfRows(3);
+        yield TextField::new('ogTitle', $this->translator->trans('admin.blog_article.og_title', [], 'messages'))
+            ->hideOnIndex();
+        yield TextareaField::new('ogDescription', $this->translator->trans('admin.blog_article.og_description', [], 'messages'))
+            ->hideOnIndex()
+            ->setNumOfRows(3);
+        yield TextField::new('ogType', $this->translator->trans('admin.blog_article.og_type', [], 'messages'))
+            ->setHelp($this->translator->trans('admin.blog_article.og_type_help', [], 'messages'))
+            ->hideOnIndex();
+        yield ImageField::new('ogImage', $this->translator->trans('admin.blog_article.og_image', [], 'messages'))
+            ->setBasePath('/uploads/images')
+            ->setUploadDir('public/uploads/images')
+            ->setRequired(false)
+            ->hideOnIndex();
+
         yield AssociationField::new('categories', $this->translator->trans('admin.blog_article.categories', [], 'messages'))
             ->setFormTypeOption('by_reference', false)
             ->autocomplete();

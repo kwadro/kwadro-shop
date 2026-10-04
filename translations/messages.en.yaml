@@ -443,7 +443,13 @@ admin.blog_article.title: Title
 admin.blog_article.slug: URL (slug)
 admin.blog_article.meta_title: Meta title
 admin.blog_article.meta_description: Meta description
+admin.blog_article.og_title: OG Title
+admin.blog_article.og_description: OG Description
+admin.blog_article.og_type: OG Type
+admin.blog_article.og_type_help: 'Example: article, website. Empty = article.'
+admin.blog_article.og_image: OG Image
 admin.blog_article.categories: Categories
+
 admin.blog_article.content: Content
 admin.blog_article.published_at: Published at
 admin.blog_article.facebook_draft: Facebook post
