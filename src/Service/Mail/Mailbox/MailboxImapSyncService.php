@@ -290,38 +290,62 @@ final class MailboxImapSyncService
             return [$raw !== '' ? $raw : null, null];
         }
 
+        return $this->extractBodiesFromPart($mailbox, $uid, $structure, '');
+    }
+
+    /**
+     * Recursively walk multipart trees (mixed/alternative/related).
+     *
+     * @param resource|\IMAP\Connection $mailbox
+     *
+     * @return array{0: ?string, 1: ?string}
+     */
+    private function extractBodiesFromPart($mailbox, string $uid, object $part, string $partNo): array
+    {
         $text = null;
         $html = null;
+        $subtype = strtoupper((string) ($part->subtype ?? 'PLAIN'));
+        $type = (int) ($part->type ?? 0); // 0 = text
 
-        if (!isset($structure->parts) || !\is_array($structure->parts)) {
-            $raw = $this->decodePart(
-                imap_body($mailbox, (int) $uid, \FT_UID | \FT_PEEK) ?: '',
-                (int) ($structure->encoding ?? 0),
-                $this->partCharset($structure),
-            );
-            if ((int) ($structure->subtype ?? 0) === 0 && strtoupper((string) ($structure->subtype ?? 'PLAIN')) === 'HTML') {
-                $html = $raw;
-            } else {
-                $text = $raw;
+        if (isset($part->parts) && \is_array($part->parts) && $part->parts !== []) {
+            foreach ($part->parts as $index => $child) {
+                if (!\is_object($child)) {
+                    continue;
+                }
+                $childNo = $partNo === '' ? (string) ($index + 1) : $partNo.'.'.($index + 1);
+                [$childText, $childHtml] = $this->extractBodiesFromPart($mailbox, $uid, $child, $childNo);
+                if ($text === null || $text === '') {
+                    $text = $childText;
+                }
+                if ($html === null || $html === '') {
+                    $html = $childHtml;
+                }
+                if (($text !== null && $text !== '') && ($html !== null && $html !== '')) {
+                    break;
+                }
             }
 
             return [$text, $html];
         }
 
-        foreach ($structure->parts as $index => $part) {
-            $partNo = (string) ($index + 1);
-            $subtype = strtoupper((string) ($part->subtype ?? 'PLAIN'));
-            $body = imap_fetchbody($mailbox, (int) $uid, $partNo, \FT_UID | \FT_PEEK) ?: '';
-            $decoded = $this->decodePart($body, (int) ($part->encoding ?? 0), $this->partCharset($part));
-            if ($subtype === 'PLAIN' && ($text === null || $text === '')) {
-                $text = $decoded;
-            }
-            if ($subtype === 'HTML' && ($html === null || $html === '')) {
-                $html = $decoded;
-            }
+        // Leaf part.
+        if ($type !== 0) {
+            return [null, null];
         }
 
-        return [$text, $html];
+        $raw = $partNo === ''
+            ? (imap_body($mailbox, (int) $uid, \FT_UID | \FT_PEEK) ?: '')
+            : (imap_fetchbody($mailbox, (int) $uid, $partNo, \FT_UID | \FT_PEEK) ?: '');
+        $decoded = $this->decodePart($raw, (int) ($part->encoding ?? 0), $this->partCharset($part));
+        if ($decoded === '') {
+            return [null, null];
+        }
+
+        if ($subtype === 'HTML') {
+            return [null, $decoded];
+        }
+
+        return [$decoded, null];
     }
 
     private function decodePart(string $body, int $encoding, string $charset): string

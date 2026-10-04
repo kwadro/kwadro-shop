@@ -8,7 +8,9 @@ use App\Repository\SiteRepository;
 use App\Service\GeoIp\UserCityService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
@@ -28,7 +30,11 @@ class UserCityCookieSubscriber implements EventSubscriberInterface
     {
         return [
             KernelEvents::REQUEST => ['onKernelRequest', 90],
-            KernelEvents::RESPONSE => 'onKernelResponse',
+            // After RedirectSubscriber (32) so we can store the redirect target.
+            KernelEvents::RESPONSE => [
+                ['onKernelResponse', 0],
+                ['logVisitorIp', -10],
+            ],
         ];
     }
 
@@ -38,9 +44,7 @@ class UserCityCookieSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $request = $event->getRequest();
-        $this->userCityService->resolveData($request);
-        $this->logVisitorIp($request);
+        $this->userCityService->resolveData($event->getRequest());
     }
 
     public function onKernelResponse(ResponseEvent $event): void
@@ -61,8 +65,13 @@ class UserCityCookieSubscriber implements EventSubscriberInterface
         );
     }
 
-    private function logVisitorIp(Request $request): void
+    public function logVisitorIp(ResponseEvent $event): void
     {
+        if (!$event->isMainRequest()) {
+            return;
+        }
+
+        $request = $event->getRequest();
         if ($request->attributes->getBoolean(self::LOGGED_ATTRIBUTE)) {
             return;
         }
@@ -82,12 +91,31 @@ class UserCityCookieSubscriber implements EventSubscriberInterface
 
         $entry = (new RequestList())
             ->setIp($ip !== '' ? $ip : null)
-            ->setPath($path);
+            ->setPath($path)
+            ->setUserAgent($request->headers->get('User-Agent'))
+            ->setPathAfterRedirect($this->resolvePathAfterRedirect($event->getResponse()));
 
         $this->em->persist($entry);
         $this->em->flush();
 
         $request->attributes->set(self::LOGGED_ATTRIBUTE, true);
+    }
+
+    private function resolvePathAfterRedirect(Response $response): ?string
+    {
+        if ($response instanceof RedirectResponse) {
+            $target = trim($response->getTargetUrl());
+
+            return $target !== '' ? $target : null;
+        }
+
+        if ($response->isRedirect()) {
+            $location = trim((string) $response->headers->get('Location', ''));
+
+            return $location !== '' ? $location : null;
+        }
+
+        return null;
     }
 
     private function resolveSite(Request $request): ?Site

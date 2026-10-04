@@ -34,6 +34,8 @@ menu.link_user: Користувачі
 menu.link_user_single: Користувач
 menu.link_request_list: Запити (IP)
 menu.link_request_list_single: Запит
+menu.link_blocked_ip: Заблоковані IP адреси
+menu.link_blocked_ip_single: Заблокована IP адреса
 menu.link_redirect: Редіректи
 menu.link_redirect_single: Редірект
 menu.link_product: Товари
@@ -319,9 +321,18 @@ admin.bank_account.is_default: Основний для локалі
 admin.email_log.created_at: Надіслано
 admin.request_list.created_at: Час
 admin.request_list.ip: IP
-admin.request_list.path: Path
+admin.request_list.path: URL (до редіректу)
+admin.request_list.path_after_redirect: URL після редіректу
+admin.request_list.user_agent: User-Agent
 admin.request_list.unique_ips_today: Унікальних IP сьогодні
 admin.request_list.requests_today: Всього запитів сьогодні
+
+admin.blocked_ip.ip: IP адреса
+admin.blocked_ip.ip_help: 'IPv4 або IPv6. Заблокований IP отримає 403 на вітрині (адмінка лишається доступною).'
+admin.blocked_ip.note: Примітка
+admin.blocked_ip.is_active: Активний
+admin.blocked_ip.created_at: Створено
+admin.blocked_ip.updated_at: Оновлено
 admin.redirect.type: Тип
 admin.redirect.type.base: base (старий сайт)
 admin.redirect.type.custom: custom

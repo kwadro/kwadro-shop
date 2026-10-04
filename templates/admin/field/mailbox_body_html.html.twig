@@ -1,17 +1,21 @@
 {# @var ea \EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext #}
 {# @var field \EasyCorp\Bundle\EasyAdminBundle\Dto\FieldDto #}
 {# @var entity \EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto #}
-{% set html = field.value %}
-{% if html is empty %}
+{% set messageId = entity.primaryKeyValue %}
+{% set hasHtml = field.value is not empty %}
+{% set hasText = entity.instance.bodyText is not empty %}
+
+{% if messageId is empty or (not hasHtml and not hasText) %}
     <span class="text-muted">—</span>
 {% else %}
     <div class="mailbox-html-frame">
         <iframe
             class="mailbox-html-frame__iframe"
             title="{{ field.label }}"
-            sandbox=""
+            sandbox="allow-same-origin allow-popups"
             referrerpolicy="no-referrer"
-            srcdoc="{{ html|e('html_attr') }}"
+            loading="lazy"
+            src="{{ path('admin_mailbox_message_html', {_locale: app.request.locale|default('uk'), id: messageId}) }}"
         ></iframe>
     </div>
 {% endif %}

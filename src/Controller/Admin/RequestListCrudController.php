@@ -35,7 +35,7 @@ class RequestListCrudController extends AbstractCrudController
             ->setEntityLabelInSingular($this->translator->trans('menu.link_request_list_single', [], 'messages'))
             ->setEntityLabelInPlural($this->translator->trans('menu.link_request_list', [], 'messages'))
             ->setDefaultSort(['createdAt' => 'DESC'])
-            ->setSearchFields(['ip', 'path'])
+            ->setSearchFields(['ip', 'path', 'pathAfterRedirect', 'userAgent'])
             ->setPaginatorPageSize(50)
             ->overrideTemplate('crud/index', 'admin/request_list/index.html.twig');
     }
@@ -51,7 +51,9 @@ class RequestListCrudController extends AbstractCrudController
     {
         return $filters
             ->add(TextFilter::new('ip'))
-            ->add(TextFilter::new('path'));
+            ->add(TextFilter::new('path'))
+            ->add(TextFilter::new('pathAfterRedirect'))
+            ->add(TextFilter::new('userAgent'));
     }
 
     public function configureFields(string $pageName): iterable
@@ -60,6 +62,9 @@ class RequestListCrudController extends AbstractCrudController
         yield DateTimeField::new('createdAt', $this->translator->trans('admin.request_list.created_at', [], 'messages'));
         yield TextField::new('ip', $this->translator->trans('admin.request_list.ip', [], 'messages'));
         yield TextField::new('path', $this->translator->trans('admin.request_list.path', [], 'messages'));
+        yield TextField::new('pathAfterRedirect', $this->translator->trans('admin.request_list.path_after_redirect', [], 'messages'));
+        yield TextField::new('userAgent', $this->translator->trans('admin.request_list.user_agent', [], 'messages'))
+            ->hideOnIndex();
     }
 
     public function configureResponseParameters(KeyValueStore $responseParameters): KeyValueStore

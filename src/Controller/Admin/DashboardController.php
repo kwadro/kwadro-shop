@@ -51,6 +51,7 @@ use App\Controller\Admin\MailboxMessageCrudController;
 use App\Controller\Admin\BlogArticleCrudController;
 use App\Controller\Admin\BlogCategoryCrudController;
 use App\Controller\Admin\RequestListCrudController;
+use App\Controller\Admin\BlockedIpCrudController;
 use App\Controller\Admin\RedirectCrudController;
 // @GENERATE USE FINISH
 
@@ -162,6 +163,7 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::section($this->translator->trans('menu.users', [], 'messages'));
         yield MenuItem::linkTo(UserCrudController::class, $this->translator->trans('menu.link_user', [], 'messages'), 'fas fa-users');
         yield MenuItem::linkTo(RequestListCrudController::class, $this->translator->trans('menu.link_request_list', [], 'messages'), 'fas fa-globe');
+        yield MenuItem::linkTo(BlockedIpCrudController::class, $this->translator->trans('menu.link_blocked_ip', [], 'messages'), 'fas fa-ban');
         yield MenuItem::linkTo(RedirectCrudController::class, $this->translator->trans('menu.link_redirect', [], 'messages'), 'fas fa-random');
         // @GENERATE MENU START
 yield MenuItem::section($this->translator->trans('menu.group_setting', [], 'messages'));

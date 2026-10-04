@@ -34,6 +34,8 @@ menu.link_user: Users
 menu.link_user_single: User
 menu.link_request_list: Requests (IP)
 menu.link_request_list_single: Request
+menu.link_blocked_ip: Blocked IP addresses
+menu.link_blocked_ip_single: Blocked IP address
 menu.link_redirect: Redirects
 menu.link_redirect_single: Redirect
 menu.link_product: Products
@@ -319,9 +321,18 @@ admin.bank_account.is_default: Default for locale
 admin.email_log.created_at: Sent at
 admin.request_list.created_at: Time
 admin.request_list.ip: IP
-admin.request_list.path: Path
+admin.request_list.path: URL (before redirect)
+admin.request_list.path_after_redirect: URL after redirect
+admin.request_list.user_agent: User-Agent
 admin.request_list.unique_ips_today: Unique IPs today
 admin.request_list.requests_today: Total requests today
+
+admin.blocked_ip.ip: IP address
+admin.blocked_ip.ip_help: 'IPv4 or IPv6. Blocked IPs get HTTP 403 on the storefront (admin stays accessible).'
+admin.blocked_ip.note: Note
+admin.blocked_ip.is_active: Active
+admin.blocked_ip.created_at: Created
+admin.blocked_ip.updated_at: Updated
 admin.redirect.type: Type
 admin.redirect.type.base: base (legacy site)
 admin.redirect.type.custom: custom

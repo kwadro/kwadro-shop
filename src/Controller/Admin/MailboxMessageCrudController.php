@@ -87,21 +87,8 @@ class MailboxMessageCrudController extends AbstractCrudController
             ->hideOnIndex();
         yield TextField::new('bodyHtml', $this->translator->trans('admin.mailbox_message.body_html', [], 'messages'))
             ->onlyOnDetail()
-            ->setTemplatePath('admin/field/mailbox_body_html.html.twig')
-            ->formatValue(static function (?string $value, MailboxMessage $message): string {
-                if ($value !== null && trim($value) !== '') {
-                    return $value;
-                }
-
-                $text = trim((string) $message->getBodyText());
-                if ($text === '') {
-                    return '';
-                }
-
-                return '<pre style="white-space:pre-wrap;font-family:inherit;margin:0">'
-                    .htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')
-                    .'</pre>';
-            });
+            ->renderAsHtml()
+            ->setTemplatePath('admin/field/mailbox_body_html.html.twig');
     }
 
     public function configureResponseParameters(KeyValueStore $responseParameters): KeyValueStore
