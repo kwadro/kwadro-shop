@@ -1,7 +1,7 @@
 {% set setting = site_settings() %}
 {% set gallery = product.gallery|default([]) %}
 {% set image = gallery|length > 0 ? gallery[0] : {
-    full: asset('uploads/images/' ~ (setting.header.logo|default('favicon.png'))),
+    full: asset('uploads/logo/' ~ (setting.header.logo|default('favicon.png'))),
     alt: product.name
 } %}
 <article class="shop-product-card">
