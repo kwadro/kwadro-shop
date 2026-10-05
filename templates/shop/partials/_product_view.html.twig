@@ -6,8 +6,8 @@
 {% else %}
     {% set gallery = product.gallery|default([]) %}
     {% set defaultProductImage = {
-        full: asset('uploads/images/' ~ (setting.header.logo|default('favicon.png'))),
-        thumb: asset('uploads/images/' ~ (setting.header.logo|default('favicon.png'))),
+        full: asset('uploads/logo/' ~ (setting.header.logo|default('favicon.png'))),
+        thumb: asset('uploads/logo/' ~ (setting.header.logo|default('favicon.png'))),
         alt: product.name,
     } %}
     {% set mainImage = gallery|length > 0 ? gallery[0] : defaultProductImage %}
