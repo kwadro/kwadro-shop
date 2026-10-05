@@ -1,0 +1,178 @@
+<?php
+
+namespace App\Command;
+
+use App\Entity\Product;
+use App\Repository\CategoryRepository;
+use App\Repository\ProductRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+
+#[AsCommand(
+    name: 'app:product:assign-kronshteyny-images',
+    description: 'Assign gallery images for Kronshteyny products from uploads/products/{model}.png pattern',
+)]
+final class ProductAssignKronshteynyImagesCommand extends Command
+{
+    /** @var list<string> */
+    private const SUFFIXES = ['', '_1', '_2', '_3', '_4'];
+
+    public function __construct(
+        private readonly EntityManagerInterface $em,
+        private readonly CategoryRepository $categoryRepository,
+        private readonly ProductRepository $productRepository,
+        #[Autowire('%kernel.project_dir%')]
+        private readonly string $projectDir,
+    ) {
+        parent::__construct();
+    }
+
+    protected function configure(): void
+    {
+        $this
+            ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Report only, do not write')
+            ->addOption(
+                'source-dir',
+                null,
+                InputOption::VALUE_REQUIRED,
+                'Optional source dir to copy missing images from',
+                $this->projectDir.'/data-product/image',
+            );
+    }
+
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
+        $io = new SymfonyStyle($input, $output);
+        $dryRun = (bool) $input->getOption('dry-run');
+        $sourceDir = rtrim((string) $input->getOption('source-dir'), '/');
+        $uploadsDir = $this->projectDir.'/public/uploads/products';
+
+        if (!is_dir($uploadsDir) && !$dryRun) {
+            mkdir($uploadsDir, 0775, true);
+        }
+
+        $copied = $this->copyFromSource($sourceDir, $uploadsDir, $dryRun, $io);
+
+        $category = $this->categoryRepository->findOneBy(['slug' => 'kronshteyny']);
+        if ($category === null) {
+            $io->error('Category kronshteyny not found.');
+
+            return Command::FAILURE;
+        }
+
+        $products = $this->productRepository->createQueryBuilder('p')
+            ->innerJoin('p.categories', 'c')
+            ->andWhere('c = :category')
+            ->setParameter('category', $category)
+            ->orderBy('p.model', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        $updated = 0;
+        $skipped = 0;
+        $missing = 0;
+
+        foreach ($products as $product) {
+            if (!$product instanceof Product) {
+                continue;
+            }
+
+            $model = trim((string) $product->getModel());
+            if ($model === '') {
+                ++$skipped;
+                continue;
+            }
+
+            $gallery = $this->buildGalleryForModel($model, $uploadsDir, $product->getName());
+            if ($gallery === []) {
+                ++$missing;
+                $io->text(sprintf('  ? no images for %s', $model));
+                continue;
+            }
+
+            if (!$dryRun) {
+                $product->setGallery($gallery);
+            }
+            ++$updated;
+            $io->text(sprintf('  ✓ %s (%d images)', $model, \count($gallery)));
+        }
+
+        if (!$dryRun) {
+            $this->em->flush();
+        }
+
+        $io->success(sprintf(
+            '%sUpdated: %d, missing images: %d, skipped: %d, copied files: %d',
+            $dryRun ? '[dry-run] ' : '',
+            $updated,
+            $missing,
+            $skipped,
+            $copied,
+        ));
+
+        return Command::SUCCESS;
+    }
+
+    private function copyFromSource(string $sourceDir, string $uploadsDir, bool $dryRun, SymfonyStyle $io): int
+    {
+        if (!is_dir($sourceDir)) {
+            return 0;
+        }
+
+        $copied = 0;
+        foreach (scandir($sourceDir) ?: [] as $file) {
+            if ($file === '.' || $file === '..') {
+                continue;
+            }
+            $src = $sourceDir.'/'.$file;
+            if (!is_file($src)) {
+                continue;
+            }
+            $dst = $uploadsDir.'/'.$file;
+            if (is_file($dst)) {
+                continue;
+            }
+            if (!$dryRun) {
+                if (!copy($src, $dst)) {
+                    $io->warning(sprintf('Failed to copy %s', $file));
+                    continue;
+                }
+            }
+            ++$copied;
+            $io->text(sprintf('  copy %s → uploads/products/', $file));
+        }
+
+        return $copied;
+    }
+
+    /**
+     * @return list<array{thumb: string, full: string, alt: string}>
+     */
+    private function buildGalleryForModel(string $model, string $uploadsDir, string $productName): array
+    {
+        $gallery = [];
+        foreach (self::SUFFIXES as $suffix) {
+            $filename = $model.$suffix.'.png';
+            $path = $uploadsDir.'/'.$filename;
+            if (!is_file($path)) {
+                // Also accept files already present with only basename match after copy.
+                continue;
+            }
+
+            $webPath = '/uploads/products/'.$filename;
+            $gallery[] = [
+                'thumb' => $webPath,
+                'full' => $webPath,
+                'alt' => $productName !== '' ? $productName : $model,
+            ];
+        }
+
+        return $gallery;
+    }
+}

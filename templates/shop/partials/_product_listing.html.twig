@@ -1,0 +1,167 @@
+{% set facetLabels = {
+    brand: 'shop.filter.brand'|trans,
+    color: 'shop.filter.color'|trans,
+    type: 'shop.filter.type'|trans,
+    model: 'shop.filter.model'|trans
+} %}
+
+{% set clearAllHref = filterAction %}
+{% if preserveQuery|default(false) and query|default('') != '' %}
+    {% set clearAllHref = filterAction ~ '?q=' ~ query|url_encode %}
+{% endif %}
+
+<div class="shop-catalog{% if showFilters|default(false) %} shop-catalog--with-filters{% endif %}">
+    {% if showFilters|default(false) %}
+        <aside class="shop-catalog__filters" aria-label="{{ 'shop.filter.title'|trans }}">
+            <form class="shop-filters" method="get" action="{{ filterAction }}">
+                {% if preserveQuery|default(false) and query|default('') != '' %}
+                    <input type="hidden" name="q" value="{{ query }}">
+                {% endif %}
+
+                <div class="shop-filters__header">
+                    <h2 class="shop-filters__title">{{ 'shop.filter.title'|trans }}</h2>
+                </div>
+
+                {% if activeFilters|default([]) is not empty %}
+                    <div class="shop-filters__selected" aria-label="{{ 'shop.filter.selected'|trans }}">
+                        <div class="shop-filters__chips">
+                            {% for item in activeFilters %}
+                                {% set chipHref = filterAction ~ (item.query is not empty ? '?' ~ item.query|url_encode : '') %}
+                                <a
+                                    class="shop-filters__chip"
+                                    href="{{ chipHref }}"
+                                    title="{{ 'shop.filter.remove'|trans }}"
+                                >
+                                    <span class="shop-filters__chip-label">{{ facetLabels[item.attr]|default(item.attr) }}: {{ item.value }}</span>
+                                    <span class="shop-filters__chip-remove" aria-hidden="true">×</span>
+                                    <span class="visually-hidden">{{ 'shop.filter.remove'|trans }}</span>
+                                </a>
+                            {% endfor %}
+                        </div>
+                        {% if activeFilters|length > 1 %}
+                            <a class="shop-filters__clear-all" href="{{ clearAllHref }}">
+                                {{ 'shop.filter.clear_all'|trans }}
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+                {% for attr, options in facets|default({}) %}
+                    {% if options|length > 1 %}
+                        {% set visibleLimit = 5 %}
+                        {% set hasMore = options|length > visibleLimit %}
+                        {% set extraOptions = hasMore ? options|slice(visibleLimit) : [] %}
+                        {% set selectedValues = filters[attr]|default([]) %}
+                        {% set extraValues = extraOptions|map(o => o.value) %}
+                        {% set hiddenChecked = selectedValues|filter(v => v in extraValues)|length > 0 %}
+                        <fieldset class="shop-filters__group">
+                            <legend class="shop-filters__legend">{{ facetLabels[attr]|default(attr) }}</legend>
+                            <div class="shop-filters__options">
+                                {% for option in options|slice(0, visibleLimit) %}
+                                    {% set checked = option.value in selectedValues %}
+                                    <label class="shop-filters__option">
+                                        <input
+                                            type="checkbox"
+                                            name="{{ attr }}[]"
+                                            value="{{ option.value }}"
+                                            {% if checked %}checked{% endif %}
+                                            onchange="this.form.submit()"
+                                        >
+                                        <span class="shop-filters__option-label">{{ option.value }}</span>
+                                        <span class="shop-filters__option-count">({{ option.count }})</span>
+                                    </label>
+                                {% endfor %}
+
+                                {% if hasMore %}
+                                    <div
+                                        class="shop-filters__options-extra"
+                                        {% if not hiddenChecked %}hidden{% endif %}
+                                        data-filter-extra
+                                    >
+                                        {% for option in extraOptions %}
+                                            {% set checked = option.value in selectedValues %}
+                                            <label class="shop-filters__option">
+                                                <input
+                                                    type="checkbox"
+                                                    name="{{ attr }}[]"
+                                                    value="{{ option.value }}"
+                                                    {% if checked %}checked{% endif %}
+                                                    onchange="this.form.submit()"
+                                                >
+                                                <span class="shop-filters__option-label">{{ option.value }}</span>
+                                                <span class="shop-filters__option-count">({{ option.count }})</span>
+                                            </label>
+                                        {% endfor %}
+                                    </div>
+                                    <button
+                                        type="button"
+                                        class="shop-filters__show-all"
+                                        data-filter-toggle
+                                        data-label-more="{{ 'shop.filter.show_all'|trans({'%count%': extraOptions|length}) }}"
+                                        data-label-less="{{ 'shop.filter.show_less'|trans }}"
+                                        aria-expanded="{{ hiddenChecked ? 'true' : 'false' }}"
+                                    >
+                                        {{ hiddenChecked
+                                            ? 'shop.filter.show_less'|trans
+                                            : 'shop.filter.show_all'|trans({'%count%': extraOptions|length})
+                                        }}
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </fieldset>
+                    {% endif %}
+                {% endfor %}
+
+                <noscript>
+                    <button class="shop-filters__submit" type="submit">{{ 'shop.filter.apply'|trans }}</button>
+                </noscript>
+            </form>
+        </aside>
+    {% endif %}
+
+    <div class="shop-catalog__main">
+        {% if products is empty %}
+            <div class="shop-category-page__empty">
+                <p>{{ emptyMessage }}</p>
+            </div>
+        {% else %}
+            {% if total is defined %}
+                <p class="shop-catalog__count">{{ 'shop.catalog.results_count'|trans({'%count%': total}) }}</p>
+            {% endif %}
+
+            <div class="shop-catalog-grid">
+                {% for product in products %}
+                    {% include 'shop/partials/_product_card.html.twig' with {product: product} only %}
+                {% endfor %}
+            </div>
+
+            {% if pages|default(1) > 1 %}
+                {% include 'shop/partials/_pagination.html.twig' with {
+                    page: page,
+                    pages: pages,
+                    paginationBasePath: paginationBasePath,
+                    paginationQuery: paginationQuery|default({})
+                } only %}
+            {% endif %}
+        {% endif %}
+    </div>
+</div>
+
+<script>
+(() => {
+    document.querySelectorAll('[data-filter-toggle]').forEach((button) => {
+        button.addEventListener('click', () => {
+            const extra = button.parentElement?.querySelector('[data-filter-extra]');
+            if (!extra) {
+                return;
+            }
+            const expanded = button.getAttribute('aria-expanded') === 'true';
+            extra.hidden = expanded;
+            button.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+            button.textContent = expanded
+                ? button.dataset.labelMore
+                : button.dataset.labelLess;
+        });
+    });
+})();
+</script>

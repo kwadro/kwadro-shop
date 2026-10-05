@@ -1,0 +1,67 @@
+{% extends 'shop/layout.html.twig' %}
+{% set setting = site_settings() %}
+{% set searchUrl = path('shop_search', {_locale: app.request.locale}) %}
+{% set pageTitle = query != ''
+    ? 'shop.search.title_query'|trans({'%query%': query})
+    : 'shop.search.title'|trans %}
+
+{% block title %}{{ pageTitle }}{% endblock %}
+{% block meta_title %}{{ pageTitle }}{% endblock %}
+{% block meta_description %}{{ 'shop.search.meta_description'|trans }}{% endblock %}
+{% block og_title %}{{ pageTitle }}{% endblock %}
+{% block og_description %}{{ 'shop.search.meta_description'|trans }}{% endblock %}
+{% block og_type %}website{% endblock %}
+{% block og_url %}{{ absolute_url(searchUrl) }}{% endblock %}
+{% block canonical_url %}{{ absolute_url(searchUrl) }}{% endblock %}
+
+{% block main %}
+    <article class="shop-page shop-category-page shop-search-page">
+        <nav class="shop-category-page__breadcrumb" aria-label="breadcrumb">
+            <a href="{{ path('shop_home', {_locale: app.request.locale}) }}">{{ 'shop.category.home'|trans }}</a>
+            <span aria-hidden="true">/</span>
+            <span>{{ 'shop.search.breadcrumb'|trans }}</span>
+        </nav>
+
+        <header class="shop-category-page__header">
+            <h1 class="shop-page__title">
+                {% if query != '' %}
+                    {{ 'shop.search.heading_query'|trans({'%query%': query}) }}
+                {% else %}
+                    {{ 'shop.search.heading'|trans }}
+                {% endif %}
+            </h1>
+        </header>
+
+        <form class="shop-search-page__form" action="{{ searchUrl }}" method="get" role="search">
+            <label class="visually-hidden" for="shop-search-page-q">{{ 'shop.search.label'|trans }}</label>
+            <input
+                id="shop-search-page-q"
+                class="shop-header-search__input"
+                type="search"
+                name="q"
+                value="{{ query }}"
+                placeholder="{{ 'shop.search.placeholder'|trans }}"
+                autocomplete="off"
+            >
+            <button class="shop-header-search__button" type="submit">{{ 'shop.search.button'|trans }}</button>
+        </form>
+
+        {% include 'shop/partials/_product_listing.html.twig' with {
+            products: products,
+            total: total,
+            page: page,
+            pages: pages,
+            facets: facets,
+            filters: filters,
+            query: query,
+            showFilters: showFilters,
+            filterAction: searchUrl,
+            preserveQuery: true,
+            emptyMessage: query != ''
+                ? 'shop.search.empty'|trans({'%query%': query})
+                : 'shop.search.empty_no_query'|trans,
+            paginationBasePath: searchUrl,
+            paginationQuery: paginationQuery
+        } %}
+    </article>
+{% endblock %}

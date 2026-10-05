@@ -1,0 +1,412 @@
+SEO parameters — category Кронштейни + SiViTek subcategories
+============================================================
+
+Source: data-price/прайс опт SiViTek.xls (sheet names, except "Price")
+OG images directory: public/uploads/images/
+OG size: 1200×630
+Seed command: php bin/console app:category:seed-kronshteyny
+
+--------------------------------------------------
+0) Parent: Кронштейни
+--------------------------------------------------
+URL
+  /uk/category/kronshteyny
+
+slug
+  kronshteyny
+
+Meta title
+  Кронштейни — купити кріплення для ТВ і техніки | Квадро
+
+Meta description
+  Кронштейни та кріплення для телевізорів, моніторів, мікрохвильовок, проекторів і планшетів. Доставка по Україні.
+
+og:title
+  Кронштейни та кріплення | Квадро
+
+og:description
+  Каталог кронштейнів і кріплень: ТВ, монітори, СВЧ, проектори, стійки та аксесуари.
+
+og:type
+  website
+
+og:image
+  /uploads/images/og-category-kronshteyny.jpg
+
+--------------------------------------------------
+1) UniBracket
+--------------------------------------------------
+URL
+  /uk/category/unibracket
+
+slug
+  unibracket
+
+Meta title
+  Кронштейни UniBracket — купити | Квадро
+
+Meta description
+  Кронштейни UniBracket для ТВ та техніки. Надійне кріплення, доставка по Україні.
+
+og:title
+  UniBracket — кронштейни | Квадро
+
+og:description
+  Каталог кронштейнів UniBracket для телевізорів і обладнання.
+
+og:type
+  website
+
+og:image
+  /uploads/images/og-category-unibracket.jpg
+
+--------------------------------------------------
+2) iTECHmount
+--------------------------------------------------
+URL
+  /uk/category/itechmount
+
+slug
+  itechmount
+
+Meta title
+  Кронштейни iTECHmount — купити | Квадро
+
+Meta description
+  Кронштейни iTECHmount для телевізорів і моніторів. Якісне кріплення з доставкою.
+
+og:title
+  iTECHmount — кронштейни | Квадро
+
+og:description
+  Каталог кріплень iTECHmount для ТВ і моніторів.
+
+og:type
+  website
+
+og:image
+  /uploads/images/og-category-itechmount.jpg
+
+--------------------------------------------------
+3) Brateck
+--------------------------------------------------
+URL
+  /uk/category/brateck
+
+slug
+  brateck
+
+Meta title
+  Кронштейни Brateck — купити | Квадро
+
+Meta description
+  Кронштейни Brateck для ТВ, моніторів та техніки. Широкий вибір моделей.
+
+og:title
+  Brateck — кронштейни | Квадро
+
+og:description
+  Каталог кронштейнів Brateck для дому та офісу.
+
+og:type
+  website
+
+og:image
+  /uploads/images/og-category-brateck.jpg
+
+--------------------------------------------------
+4) для СВЧ
+--------------------------------------------------
+URL
+  /uk/category/dlya-svch
+
+slug
+  dlya-svch
+
+Meta title
+  Кронштейни для СВЧ — купити кріплення | Квадро
+
+Meta description
+  Кронштейни та кріплення для мікрохвильових печей. Зручний монтаж, доставка по Україні.
+
+og:title
+  Кронштейни для СВЧ | Квадро
+
+og:description
+  Кріплення для мікрохвильовок: компактні рішення для кухні.
+
+og:type
+  website
+
+og:image
+  /uploads/images/og-category-dlya-svch.jpg
+
+--------------------------------------------------
+5) настольные для мониторов и тв
+--------------------------------------------------
+URL
+  /uk/category/nastolnye-dlya-monitorov-i-tv
+
+slug
+  nastolnye-dlya-monitorov-i-tv
+
+Meta title
+  Настільні кронштейни для моніторів і ТВ | Квадро
+
+Meta description
+  Настільні кронштейни та стійки для моніторів і телевізорів. Ергономіка робочого місця.
+
+og:title
+  Настільні кронштейни для моніторів і ТВ
+
+og:description
+  Настільні кріплення для моніторів і телевізорів — зручно для дому та офісу.
+
+og:type
+  website
+
+og:image
+  /uploads/images/og-category-nastolnye-monitorov-tv.jpg
+
+--------------------------------------------------
+6) Стійки, столи, тумби
+--------------------------------------------------
+URL
+  /uk/category/stiyky-stoly-tumby
+
+slug
+  stiyky-stoly-tumby
+
+Meta title
+  Стійки, столи, тумби для ТВ — купити | Квадро
+
+Meta description
+  ТВ-стійки, столи та тумби для техніки. Практичні рішення для вітальні та офісу.
+
+og:title
+  Стійки, столи, тумби | Квадро
+
+og:description
+  Каталог стійок, столів і тумб для телевізорів та техніки.
+
+og:type
+  website
+
+og:image
+  /uploads/images/og-category-stiyky-stoly-tumby.jpg
+
+--------------------------------------------------
+7) для проекторов
+--------------------------------------------------
+URL
+  /uk/category/dlya-proektorov
+
+slug
+  dlya-proektorov
+
+Meta title
+  Кронштейни для проекторів — купити | Квадро
+
+Meta description
+  Стельові та настінні кронштейни для проекторів. Надійний монтаж і доставка.
+
+og:title
+  Кронштейни для проекторів | Квадро
+
+og:description
+  Кріплення для проекторів: стеля, стіна, зручне налаштування.
+
+og:type
+  website
+
+og:image
+  /uploads/images/og-category-dlya-proektorov.jpg
+
+--------------------------------------------------
+8) Кабель TM Ultra
+--------------------------------------------------
+URL
+  /uk/category/kabel-tm-ultra
+
+slug
+  kabel-tm-ultra
+
+Meta title
+  Кабель TM Ultra — купити | Квадро
+
+Meta description
+  Кабелі TM Ultra для аудіо/відео та підключення техніки. Якість і доставка по Україні.
+
+og:title
+  Кабель TM Ultra | Квадро
+
+og:description
+  Асортимент кабелів TM Ultra для техніки та інсталяцій.
+
+og:type
+  website
+
+og:image
+  /uploads/images/og-category-kabel-tm-ultra.jpg
+
+--------------------------------------------------
+9) Кабель TM Prolink
+--------------------------------------------------
+URL
+  /uk/category/kabel-tm-prolink
+
+slug
+  kabel-tm-prolink
+
+Meta title
+  Кабель TM Prolink — купити | Квадро
+
+Meta description
+  Кабелі TM Prolink для підключення ТВ, аудіо та периферії. Доставка Новою Поштою.
+
+og:title
+  Кабель TM Prolink | Квадро
+
+og:description
+  Каталог кабелів TM Prolink для домашньої та офісної техніки.
+
+og:type
+  website
+
+og:image
+  /uploads/images/og-category-kabel-tm-prolink.jpg
+
+--------------------------------------------------
+10) Кабель TM Logan inc
+--------------------------------------------------
+URL
+  /uk/category/kabel-tm-logan-inc
+
+slug
+  kabel-tm-logan-inc
+
+Meta title
+  Кабель TM Logan inc — купити | Квадро
+
+Meta description
+  Кабелі TM Logan inc для електроніки та інсталяцій. Наявність і швидка доставка.
+
+og:title
+  Кабель TM Logan inc | Квадро
+
+og:description
+  Кабелі TM Logan inc — надійне підключення техніки.
+
+og:type
+  website
+
+og:image
+  /uploads/images/og-category-kabel-tm-logan.jpg
+
+--------------------------------------------------
+11) Подовжувачі ТМ Logan inc
+--------------------------------------------------
+URL
+  /uk/category/podovzhuvachi-tm-logan-inc
+
+slug
+  podovzhuvachi-tm-logan-inc
+
+Meta title
+  Подовжувачі ТМ Logan inc — купити | Квадро
+
+Meta description
+  Подовжувачі TM Logan inc для дому та офісу. Безпечне живлення техніки.
+
+og:title
+  Подовжувачі ТМ Logan inc | Квадро
+
+og:description
+  Каталог подовжувачів Logan inc для зручного підключення техніки.
+
+og:type
+  website
+
+og:image
+  /uploads/images/og-category-podovzhuvachi-logan.jpg
+
+--------------------------------------------------
+12) LED лампи
+--------------------------------------------------
+URL
+  /uk/category/led-lampy
+
+slug
+  led-lampy
+
+Meta title
+  LED лампи — купити | Квадро
+
+Meta description
+  Світлодіодні LED лампи для дому та офісу. Економія енергії, доставка по Україні.
+
+og:title
+  LED лампи | Квадро
+
+og:description
+  Каталог LED ламп для освітлення дому та робочого місця.
+
+og:type
+  website
+
+og:image
+  /uploads/images/og-category-led-lampy.jpg
+
+--------------------------------------------------
+13) Побутові товари
+--------------------------------------------------
+URL
+  /uk/category/pobutovi-tovary
+
+slug
+  pobutovi-tovary
+
+Meta title
+  Побутові товари — купити | Квадро
+
+Meta description
+  Побутові товари та корисні аксесуари для дому. Доставка Новою Поштою.
+
+og:title
+  Побутові товари | Квадро
+
+og:description
+  Аксесуари та побутові товари для дому в каталозі Квадро.
+
+og:type
+  website
+
+og:image
+  /uploads/images/og-category-pobutovi-tovary.jpg
+
+--------------------------------------------------
+14) Тримачі для планшетів
+--------------------------------------------------
+URL
+  /uk/category/trymachi-dlya-planshetiv
+
+slug
+  trymachi-dlya-planshetiv
+
+Meta title
+  Тримачі для планшетів — купити | Квадро
+
+Meta description
+  Тримачі та кріплення для планшетів. Зручний кут огляду для дому, авто та офісу.
+
+og:title
+  Тримачі для планшетів | Квадро
+
+og:description
+  Каталог тримачів для планшетів — комфортний перегляд і робота.
+
+og:type
+  website
+
+og:image
+  /uploads/images/og-category-trymachi-planshetiv.jpg

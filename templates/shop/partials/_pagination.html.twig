@@ -1,0 +1,36 @@
+{% set query = paginationQuery|default({}) %}
+{% set buildUrl = paginationBasePath %}
+<nav class="shop-pagination" aria-label="{{ 'shop.pagination.label'|trans }}">
+    <ul class="shop-pagination__list">
+        {% if page > 1 %}
+            {% set prevQuery = query|merge({page: page - 1}) %}
+            <li>
+                <a class="shop-pagination__link" href="{{ buildUrl }}?{{ prevQuery|url_encode }}" rel="prev">
+                    {{ 'shop.pagination.prev'|trans }}
+                </a>
+            </li>
+        {% endif %}
+
+        {% for p in 1..pages %}
+            {% if p == page %}
+                <li><span class="shop-pagination__link is-current" aria-current="page">{{ p }}</span></li>
+            {% elseif p == 1 or p == pages or (p >= page - 2 and p <= page + 2) %}
+                {% set pageQuery = query|merge({page: p}) %}
+                <li>
+                    <a class="shop-pagination__link" href="{{ buildUrl }}?{{ pageQuery|url_encode }}">{{ p }}</a>
+                </li>
+            {% elseif p == page - 3 or p == page + 3 %}
+                <li><span class="shop-pagination__ellipsis" aria-hidden="true">…</span></li>
+            {% endif %}
+        {% endfor %}
+
+        {% if page < pages %}
+            {% set nextQuery = query|merge({page: page + 1}) %}
+            <li>
+                <a class="shop-pagination__link" href="{{ buildUrl }}?{{ nextQuery|url_encode }}" rel="next">
+                    {{ 'shop.pagination.next'|trans }}
+                </a>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
