@@ -35,6 +35,24 @@ class BlogCategoryRepository extends ServiceEntityRepository
         return $items;
     }
 
+    public function findOneEnabledBySiteLocaleAndSlug(Site $site, Locale $locale, string $slug): ?BlogCategory
+    {
+        /** @var BlogCategory|null $category */
+        $category = $this->createQueryBuilder('c')
+            ->andWhere('c.site = :site')
+            ->andWhere('c.locale = :locale')
+            ->andWhere('c.slug = :slug')
+            ->andWhere('c.enabled = true')
+            ->setParameter('site', $site)
+            ->setParameter('locale', $locale)
+            ->setParameter('slug', $slug)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        return $category;
+    }
+
     public function slugExists(Site $site, Locale $locale, string $slug, ?int $excludeId = null): bool
     {
         $qb = $this->createQueryBuilder('c')

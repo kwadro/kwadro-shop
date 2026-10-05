@@ -1,23 +1,51 @@
 {% set categoryMenu = shop_category_menu() %}
+{% set currentRoute = app.request.attributes.get('_route') %}
+{% set currentSlug = app.request.attributes.get('slug') %}
+{% set isBlogSection = currentRoute starts with 'shop_blog' %}
+{% set isCategoryRoute = currentRoute == 'shop_category' %}
+{% set navCurrent = shop_category_nav_current(currentRoute, currentSlug) %}
+{% if navCurrent.is_blog %}
+    {% set activeNavLabel = 'shop.blog.menu'|trans %}
+    {% set activeNavParent = null %}
+{% else %}
+    {% set activeNavLabel = navCurrent.label %}
+    {% set activeNavParent = navCurrent.parent %}
+{% endif %}
+
 <nav class="shop-category-nav" aria-label="{{ 'shop.category.menu_label'|trans }}">
     <div class="shop-category-nav__inner">
         <button
             type="button"
-            class="shop-category-nav__toggle"
+            class="shop-category-nav__toggle{% if activeNavLabel %} shop-category-nav__toggle--has-current{% endif %}"
             data-category-nav-toggle
             aria-expanded="false"
             aria-controls="shop-category-nav-list"
         >
-            <span>{{ 'shop.category.menu_toggle'|trans }}</span>
+            <span class="shop-category-nav__toggle-text">
+                <span class="shop-category-nav__toggle-label">{{ 'shop.category.menu_toggle'|trans }}</span>
+                {% if activeNavLabel %}
+                    <span class="shop-category-nav__toggle-current">
+                        {% if activeNavParent %}
+                            <span class="shop-category-nav__toggle-parent">{{ activeNavParent }}</span>
+                            <span class="shop-category-nav__toggle-sep" aria-hidden="true">/</span>
+                        {% endif %}
+                        <span class="shop-category-nav__toggle-value">{{ activeNavLabel }}</span>
+                    </span>
+                {% endif %}
+            </span>
             <i class="shop-category-nav__toggle-icon" aria-hidden="true"></i>
         </button>
 
         <ul id="shop-category-nav-list" class="shop-category-nav__list" data-category-nav-list>
             {% for item in categoryMenu %}
-                <li class="shop-category-nav__item{% if item.children is not empty %} shop-category-nav__item--has-children{% endif %}">
+                {% set childSlugs = item.children|default([])|map(child => child.slug) %}
+                {% set childActive = isCategoryRoute and currentSlug in childSlugs %}
+                {% set itemActive = isCategoryRoute and (item.slug == currentSlug or childActive) %}
+                <li class="shop-category-nav__item{% if item.children is not empty %} shop-category-nav__item--has-children{% endif %}{% if itemActive %} is-active{% endif %}">
                     <a
-                        class="shop-category-nav__link"
+                        class="shop-category-nav__link{% if itemActive %} is-active{% endif %}"
                         href="{{ path('shop_category', {_locale: app.request.locale, slug: item.slug}) }}"
+                        {% if itemActive %}aria-current="page"{% endif %}
                     >
                         {{ item.name }}
                         {% if item.children is not empty %}
@@ -28,8 +56,13 @@
                     {% if item.children is not empty %}
                         <ul class="shop-category-nav__submenu">
                             {% for child in item.children %}
-                                <li>
-                                    <a href="{{ path('shop_category', {_locale: app.request.locale, slug: child.slug}) }}">
+                                {% set childIsActive = isCategoryRoute and child.slug == currentSlug %}
+                                <li{% if childIsActive %} class="is-active"{% endif %}>
+                                    <a
+                                        href="{{ path('shop_category', {_locale: app.request.locale, slug: child.slug}) }}"
+                                        class="{% if childIsActive %}is-active{% endif %}"
+                                        {% if childIsActive %}aria-current="page"{% endif %}
+                                    >
                                         {{ child.name }}
                                     </a>
                                 </li>
@@ -39,10 +72,11 @@
                 </li>
             {% endfor %}
 
-            <li class="shop-category-nav__item">
+            <li class="shop-category-nav__item{% if isBlogSection %} is-active{% endif %}">
                 <a
-                    class="shop-category-nav__link{% if app.request.attributes.get('_route') starts with 'shop_blog' %} is-active{% endif %}"
+                    class="shop-category-nav__link{% if isBlogSection %} is-active{% endif %}"
                     href="{{ path('shop_blog_index', {_locale: app.request.locale}) }}"
+                    {% if isBlogSection %}aria-current="page"{% endif %}
                 >
                     {{ 'shop.blog.menu'|trans }}
                 </a>

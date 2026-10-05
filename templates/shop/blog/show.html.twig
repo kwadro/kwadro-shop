@@ -19,7 +19,7 @@
 {% block canonical_url %}{{ absolute_url(path('shop_blog_article', {_locale: app.request.locale, slug: article.slug})) }}{% endblock %}
 
 {% block main %}
-    <article class="shop-page shop-blog-article">
+    <div class="shop-page shop-blog-page">
         <nav class="shop-category-page__breadcrumb" aria-label="breadcrumb">
             <a href="{{ path('shop_home', {_locale: app.request.locale}) }}">{{ 'shop.category.home'|trans }}</a>
             <span aria-hidden="true">/</span>
@@ -28,26 +28,49 @@
             <span>{{ article.title }}</span>
         </nav>
 
-        <header class="shop-blog-article__header">
-            <h1 class="shop-page__title">{{ article.title }}</h1>
-            {% if article.publishedAt %}
-                <time class="shop-blog-article__date" datetime="{{ article.publishedAt|date('c') }}">
-                    {{ article.publishedAt|date('d.m.Y') }}
-                </time>
-            {% endif %}
-            {% if article.categories is not empty %}
-                <ul class="shop-blog-card__categories">
-                    {% for category in article.categories %}
-                        {% if category.enabled %}
-                            <li>{{ category.name }}</li>
-                        {% endif %}
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        </header>
+        {% include 'shop/blog/_search.html.twig' with {searchQuery: ''} %}
 
-        <div class="shop-page__content shop-blog-article__content">
-            {{ article.content|raw }}
+        <div class="shop-blog-layout">
+            <article class="shop-blog-layout__main shop-blog-article">
+                <header class="shop-blog-article__header">
+                    <h1 class="shop-page__title">{{ article.title }}</h1>
+                    {% if article.publishedAt %}
+                        <time class="shop-blog-article__date" datetime="{{ article.publishedAt|date('c') }}">
+                            <a href="{{ path('shop_blog_archive_month', {_locale: app.request.locale, year: article.publishedAt|date('Y'), month: article.publishedAt|date('m')}) }}">
+                                {{ article.publishedAt|date('d.m.Y H:i') }}
+                            </a>
+                        </time>
+                    {% endif %}
+
+                    {% if article.categories is not empty %}
+                        <ul class="shop-blog-card__categories">
+                            {% for category in article.categories %}
+                                {% if category.enabled %}
+                                    <li>
+                                        <a href="{{ path('shop_blog_category', {_locale: app.request.locale, slug: category.slug}) }}">
+                                            {{ category.name }}
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                    {% if article.tagList is not empty %}
+                        <ul class="shop-blog-card__tags">
+                            {% for tag in article.tagList %}
+                                <li>
+                                    <a href="{{ path('shop_blog_search', {_locale: app.request.locale, q: tag}) }}">{{ tag }}</a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </header>
+
+                <div class="shop-page__content shop-blog-article__content">
+                    {{ article.content|raw }}
+                </div>
+            </article>
+            {% include 'shop/blog/_sidebar.html.twig' %}
         </div>
-    </article>
+    </div>
 {% endblock %}

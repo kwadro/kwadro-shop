@@ -1,0 +1,30 @@
+SEO / OG refresh — existing blog articles
+=========================================
+
+All OG images: 1200×630 in public/uploads/images/
+
+1) yak-obraty-powerbank
+   meta_title: Як обрати повербанк — ємність, PD і порти | Квадро
+   og_image: og-blog-yak-obraty-powerbank.jpg
+
+2) yak-obraty-antenu-dlya-tunera-t2
+   meta_title: Антена для тюнера T2 — як вибрати | Квадро
+   og_image: og-blog-yak-obraty-antenu-t2.jpg
+
+3) kanaly-t2-spysok-i-zhanry
+   meta_title: Список каналів Т2 з жанрами | Квадро
+   og_image: og-blog-kanaly-t2.jpg
+
+4) ukrayinski-kanaly-na-suputnykakh
+   meta_title: Українські супутникові канали: Amos, Hot Bird, Astra | Квадро
+   og_image: og-blog-ukrayinski-kanaly-suputnyk.jpg
+
+5) cyfrove-telebachennya-t2
+   og_image: og-blog-cyfrove-telebachennya-t2.jpg (existing)
+
+6) telebachennya-internet
+   og_image: og-blog-tv-internet-ecosystem.jpg (existing)
+
+7) istoriya-dzherel-bezperebiynogo-zhyvlennya (NEW, scheduled 2026-10-05 10:00)
+   og_image: og-blog-istoriya-dbzh.jpg
+   details: docs/seo/blog-istoriya-dbzh.txt

@@ -48,10 +48,25 @@ final class BlogContentPackageService
             foreach ($this->extractUploadPaths($article->getContent()) as $path) {
                 $assetPaths[$path] = true;
             }
+            $ogImage = $article->getOgImage();
+            if ($ogImage !== null && $ogImage !== '') {
+                $assetPaths['/uploads/images/'.ltrim($ogImage, '/')] = true;
+            }
+        }
+
+        foreach ($categories as $category) {
+            $ogImage = $category->getOgImage();
+            if ($ogImage !== null && $ogImage !== '') {
+                $assetPaths['/uploads/og-images/'.ltrim($ogImage, '/')] = true;
+            }
         }
 
         // Always include the whole blog uploads tree when present (logos etc.).
         foreach ($this->listBlogUploadFiles() as $path) {
+            $assetPaths[$path] = true;
+        }
+
+        foreach ($this->listOgImageFiles() as $path) {
             $assetPaths[$path] = true;
         }
 
@@ -162,6 +177,12 @@ final class BlogContentPackageService
 
                 $category
                     ->setName((string) ($row['name'] ?? $slug))
+                    ->setMetaTitle(isset($row['meta_title']) ? (string) $row['meta_title'] : null)
+                    ->setMetaDescription(isset($row['meta_description']) ? (string) $row['meta_description'] : null)
+                    ->setOgTitle(isset($row['og_title']) ? (string) $row['og_title'] : null)
+                    ->setOgDescription(isset($row['og_description']) ? (string) $row['og_description'] : null)
+                    ->setOgType(isset($row['og_type']) ? (string) $row['og_type'] : null)
+                    ->setOgImage(isset($row['og_image']) ? (string) $row['og_image'] : null)
                     ->setEnabled((bool) ($row['enabled'] ?? true))
                     ->setPosition((int) ($row['position'] ?? 0));
 
@@ -214,6 +235,11 @@ final class BlogContentPackageService
                     ->setTitle((string) ($row['title'] ?? $slug))
                     ->setMetaTitle(isset($row['meta_title']) ? (string) $row['meta_title'] : null)
                     ->setMetaDescription(isset($row['meta_description']) ? (string) $row['meta_description'] : null)
+                    ->setOgTitle(isset($row['og_title']) ? (string) $row['og_title'] : null)
+                    ->setOgDescription(isset($row['og_description']) ? (string) $row['og_description'] : null)
+                    ->setOgType(isset($row['og_type']) ? (string) $row['og_type'] : null)
+                    ->setOgImage(isset($row['og_image']) ? (string) $row['og_image'] : null)
+                    ->setTags(isset($row['tags']) ? (string) $row['tags'] : null)
                     ->setContent((string) ($row['content'] ?? ''))
                     ->setFacebookDraft(isset($row['facebook_draft']) ? (string) $row['facebook_draft'] : null)
                     ->setEnabled((bool) ($row['enabled'] ?? true));
@@ -319,6 +345,12 @@ final class BlogContentPackageService
             'locale_code' => $category->getLocale()?->getCode(),
             'name' => $category->getName(),
             'slug' => $category->getSlug(),
+            'meta_title' => $category->getMetaTitle(),
+            'meta_description' => $category->getMetaDescription(),
+            'og_title' => $category->getOgTitle(),
+            'og_description' => $category->getOgDescription(),
+            'og_type' => $category->getOgType(),
+            'og_image' => $category->getOgImage(),
             'enabled' => $category->isEnabled(),
             'position' => $category->getPosition(),
             'parent_slug' => $category->getParent()?->getSlug(),
@@ -340,6 +372,11 @@ final class BlogContentPackageService
             'slug' => $article->getSlug(),
             'meta_title' => $article->getMetaTitle(),
             'meta_description' => $article->getMetaDescription(),
+            'og_title' => $article->getOgTitle(),
+            'og_description' => $article->getOgDescription(),
+            'og_type' => $article->getOgType(),
+            'og_image' => $article->getOgImage(),
+            'tags' => $article->getTags(),
             'content' => $article->getContent(),
             'facebook_draft' => $article->getFacebookDraft(),
             'enabled' => $article->isEnabled(),
@@ -366,7 +403,19 @@ final class BlogContentPackageService
     /** @return list<string> */
     private function listBlogUploadFiles(): array
     {
-        $root = $this->projectDir.'/public/uploads/blog';
+        return $this->listUploadFilesUnder('uploads/blog');
+    }
+
+    /** @return list<string> */
+    private function listOgImageFiles(): array
+    {
+        return $this->listUploadFilesUnder('uploads/og-images');
+    }
+
+    /** @return list<string> */
+    private function listUploadFilesUnder(string $relativeDir): array
+    {
+        $root = $this->projectDir.'/public/'.$relativeDir;
         if (!is_dir($root)) {
             return [];
         }

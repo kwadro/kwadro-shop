@@ -435,11 +435,21 @@ admin.blog.enabled: Активно
 admin.blog.slug_help: Лише латиниця, цифри, дефіс і підкреслення. Якщо порожньо — згенерується з назви.
 admin.blog_category.name: Назва
 admin.blog_category.slug: URL (slug)
+admin.blog_category.meta_title: Meta title
+admin.blog_category.meta_description: Meta description
+admin.blog_category.og_title: OG Title
+admin.blog_category.og_description: OG Description
+admin.blog_category.og_type: OG Type
+admin.blog_category.og_type_help: 'Наприклад: website, article. Порожньо — website.'
+admin.blog_category.og_image: OG Image
 admin.blog_category.parent: Батьківська категорія
 admin.blog_category.parent_help: Залиште порожнім для категорії верхнього рівня.
 admin.blog_category.position: Порядок
 admin.blog_category.level: Рівень
+admin.blog_article.tags: Теги
+admin.blog_article.tags_help: 'Через кому, наприклад: т2, антена, dvb-t2'
 admin.blog_article.title: Заголовок (title)
+
 admin.blog_article.slug: URL (slug)
 admin.blog_article.meta_title: Meta title
 admin.blog_article.meta_description: Meta description
@@ -451,7 +461,9 @@ admin.blog_article.og_image: OG Image
 admin.blog_article.categories: Категорії
 
 admin.blog_article.content: Контент
-admin.blog_article.published_at: Дата публікації
+admin.blog_article.published_at: Дата і час публікації
+admin.blog_article.published_at_help: 'Формат: день, година і хвилини (Europe/Kyiv). Стаття з’явиться на сайті лише після цього моменту (і якщо увімкнено «Активно»).'
+
 admin.blog_article.facebook_draft: Facebook пост
 admin.blog_article.facebook_draft_help: Facebook не підтримує HTML. Чернетка зберігається в базі — можна переглянути, відредагувати або скопіювати.
 admin.blog_article.facebook_draft_text: Текст для Facebook
@@ -562,9 +574,39 @@ shop.category.subcategories: Підкатегорії
 shop.category.empty_products: У цій категорії поки немає товарів.
 shop.blog.menu: Блог
 shop.blog.title: Блог
-shop.blog.index_description: Статті та новини магазину Квадро
+shop.blog.index_description: Статті та новини магазину Квадро про цифрове ТБ, антени, тюнери Т2 та супутникове обладнання.
 shop.blog.empty: Поки немає опублікованих статей.
 shop.blog.read_more: Читати далі
+shop.blog.search: Пошук у блозі
+shop.blog.search_label: Пошук статей
+shop.blog.search_placeholder: Пошук за назвою або тегами
+shop.blog.search_button: Шукати
+shop.blog.search_hint: Введіть назву статті або тег.
+shop.blog.search_empty: За запитом «%query%» нічого не знайдено.
+shop.blog.search_results_for: Результати пошуку «%query%»
+shop.blog.search_count: 'Знайдено: %count%'
+shop.blog.search_description: Пошук статей блогу Квадро за назвою та тегами.
+shop.blog.categories: Категорії
+shop.blog.category_description: Статті блогу в категорії «%name%» — поради та огляди від магазину Квадро.
+shop.blog.category_empty: У цій категорії поки немає статей.
+shop.blog.archive: Архів
+shop.blog.archive_all: Усі місяці
+shop.blog.archive_description: Архів статей блогу Квадро за місяцями.
+shop.blog.archive_month_description: Статті блогу Квадро за %month%.
+shop.blog.archive_month_empty: За цей місяць статей немає.
+shop.blog.month.january: Січень
+shop.blog.month.february: Лютий
+shop.blog.month.march: Березень
+shop.blog.month.april: Квітень
+shop.blog.month.may: Травень
+shop.blog.month.june: Червень
+shop.blog.month.july: Липень
+shop.blog.month.august: Серпень
+shop.blog.month.september: Вересень
+shop.blog.month.october: Жовтень
+shop.blog.month.november: Листопад
+shop.blog.month.december: Грудень
+
 shop.supplier.empty_products: У цього постачальника поки немає товарів.
 shop.supplier.meta_description: 'Товари постачальника %name%. Купуйте онлайн з доставкою.'
 shop.login: Увійти

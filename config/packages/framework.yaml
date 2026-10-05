@@ -4,6 +4,7 @@ framework:
     default_locale: uk
     enabled_locales: ['uk', 'en']
 
+
     session:
         enabled: true
         cookie_secure: auto

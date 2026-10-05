@@ -1,0 +1,13 @@
+<form class="shop-blog-search" action="{{ path('shop_blog_search', {_locale: app.request.locale}) }}" method="get" role="search">
+    <label class="visually-hidden" for="blog-search-q">{{ 'shop.blog.search_label'|trans }}</label>
+    <input
+        id="blog-search-q"
+        class="shop-blog-search__input"
+        type="search"
+        name="q"
+        value="{{ searchQuery|default(query|default('')) }}"
+        placeholder="{{ 'shop.blog.search_placeholder'|trans }}"
+        autocomplete="off"
+    >
+    <button class="shop-blog-search__button" type="submit">{{ 'shop.blog.search_button'|trans }}</button>
+</form>

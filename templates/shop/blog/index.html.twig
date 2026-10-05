@@ -2,16 +2,20 @@
 {% set setting = site_settings() %}
 {% set pageTitle = ('shop.blog.title'|trans) ~ ' — ' ~ (setting.seo.title|default(setting.seo.meta_title)) %}
 {% set pageDescription = 'shop.blog.index_description'|trans %}
+{% set pageOgImage = absolute_url(asset('uploads/og-images/og-blog-index.jpg')) %}
 
 {% block title %}{{ pageTitle }}{% endblock %}
+{% block meta_title %}{{ pageTitle }}{% endblock %}
 {% block meta_description %}{{ pageDescription }}{% endblock %}
 {% block og_title %}{{ pageTitle }}{% endblock %}
 {% block og_description %}{{ pageDescription }}{% endblock %}
+{% block og_type %}website{% endblock %}
+{% block og_image %}{{ pageOgImage }}{% endblock %}
 {% block og_url %}{{ absolute_url(path('shop_blog_index', {_locale: app.request.locale})) }}{% endblock %}
 {% block canonical_url %}{{ absolute_url(path('shop_blog_index', {_locale: app.request.locale})) }}{% endblock %}
 
 {% block main %}
-    <article class="shop-page shop-blog-page">
+    <div class="shop-page shop-blog-page">
         <nav class="shop-category-page__breadcrumb" aria-label="breadcrumb">
             <a href="{{ path('shop_home', {_locale: app.request.locale}) }}">{{ 'shop.category.home'|trans }}</a>
             <span aria-hidden="true">/</span>
@@ -22,42 +26,32 @@
             <h1 class="shop-page__title">{{ 'shop.blog.title'|trans }}</h1>
         </header>
 
-        {% if articles is empty %}
-            <div class="shop-blog-page__empty">
-                <p>{{ 'shop.blog.empty'|trans }}</p>
-            </div>
-        {% else %}
-            <div class="shop-blog-list">
-                {% for article in articles %}
-                    <article class="shop-blog-card">
-                        <h2 class="shop-blog-card__title">
-                            <a href="{{ path('shop_blog_article', {_locale: app.request.locale, slug: article.slug}) }}">
-                                {{ article.title }}
-                            </a>
-                        </h2>
-                        {% if article.publishedAt %}
-                            <time class="shop-blog-card__date" datetime="{{ article.publishedAt|date('c') }}">
-                                {{ article.publishedAt|date('d.m.Y') }}
-                            </time>
-                        {% endif %}
-                        {% if article.metaDescription %}
-                            <p class="shop-blog-card__excerpt">{{ article.metaDescription }}</p>
-                        {% endif %}
-                        {% if article.categories is not empty %}
-                            <ul class="shop-blog-card__categories">
-                                {% for category in article.categories %}
-                                    {% if category.enabled %}
-                                        <li>{{ category.name }}</li>
-                                    {% endif %}
+        {% include 'shop/blog/_search.html.twig' with {searchQuery: ''} %}
+
+        <div class="shop-blog-layout">
+            <div class="shop-blog-layout__main">
+                {% if groupedArticles is empty %}
+                    <div class="shop-blog-page__empty">
+                        <p>{{ 'shop.blog.empty'|trans }}</p>
+                    </div>
+                {% else %}
+                    {% for group in groupedArticles %}
+                        <section class="shop-blog-month-group">
+                            <h2 class="shop-blog-month-group__title">
+                                <a href="{{ path('shop_blog_archive_month', {_locale: app.request.locale, year: group.year, month: '%02d'|format(group.month)}) }}">
+                                    {{ group.label }}
+                                </a>
+                            </h2>
+                            <div class="shop-blog-list">
+                                {% for article in group.articles %}
+                                    {% include 'shop/blog/_article_card.html.twig' with {article: article} %}
                                 {% endfor %}
-                            </ul>
-                        {% endif %}
-                        <a class="shop-blog-card__more" href="{{ path('shop_blog_article', {_locale: app.request.locale, slug: article.slug}) }}">
-                            {{ 'shop.blog.read_more'|trans }}
-                        </a>
-                    </article>
-                {% endfor %}
+                            </div>
+                        </section>
+                    {% endfor %}
+                {% endif %}
             </div>
-        {% endif %}
-    </article>
+            {% include 'shop/blog/_sidebar.html.twig' %}
+        </div>
+    </div>
 {% endblock %}

@@ -435,11 +435,21 @@ admin.blog.enabled: Enabled
 admin.blog.slug_help: Letters, digits, hyphen and underscore only. Empty slug is generated from the title.
 admin.blog_category.name: Name
 admin.blog_category.slug: URL (slug)
+admin.blog_category.meta_title: Meta title
+admin.blog_category.meta_description: Meta description
+admin.blog_category.og_title: OG Title
+admin.blog_category.og_description: OG Description
+admin.blog_category.og_type: OG Type
+admin.blog_category.og_type_help: 'Example: website, article. Empty = website.'
+admin.blog_category.og_image: OG Image
 admin.blog_category.parent: Parent category
 admin.blog_category.parent_help: Leave empty for a top-level category.
 admin.blog_category.position: Position
 admin.blog_category.level: Level
+admin.blog_article.tags: Tags
+admin.blog_article.tags_help: 'Comma-separated, e.g. t2, antenna, dvb-t2'
 admin.blog_article.title: Title
+
 admin.blog_article.slug: URL (slug)
 admin.blog_article.meta_title: Meta title
 admin.blog_article.meta_description: Meta description
@@ -451,7 +461,9 @@ admin.blog_article.og_image: OG Image
 admin.blog_article.categories: Categories
 
 admin.blog_article.content: Content
-admin.blog_article.published_at: Published at
+admin.blog_article.published_at: Publish date and time
+admin.blog_article.published_at_help: 'Day, hour and minutes (Europe/Kyiv). The article appears on the site only after this moment (and if Enabled).'
+
 admin.blog_article.facebook_draft: Facebook post
 admin.blog_article.facebook_draft_help: Facebook does not render HTML. The draft is stored in the database — view, edit or copy it.
 admin.blog_article.facebook_draft_text: Facebook text
@@ -563,9 +575,39 @@ shop.category.subcategories: Subcategories
 shop.category.empty_products: There are no products in this category yet.
 shop.blog.menu: Blog
 shop.blog.title: Blog
-shop.blog.index_description: Articles and news from Kvadro store
+shop.blog.index_description: Articles and news from Kvadro about digital TV, antennas, T2 tuners and satellite gear.
 shop.blog.empty: There are no published articles yet.
 shop.blog.read_more: Read more
+shop.blog.search: Blog search
+shop.blog.search_label: Search articles
+shop.blog.search_placeholder: Search by title or tags
+shop.blog.search_button: Search
+shop.blog.search_hint: Enter an article title or tag.
+shop.blog.search_empty: No results for “%query%”.
+shop.blog.search_results_for: Search results for “%query%”
+shop.blog.search_count: 'Found: %count%'
+shop.blog.search_description: Search Kvadro blog articles by title and tags.
+shop.blog.categories: Categories
+shop.blog.category_description: Blog articles in the “%name%” category — tips and guides from Kvadro.
+shop.blog.category_empty: No articles in this category yet.
+shop.blog.archive: Archive
+shop.blog.archive_all: All months
+shop.blog.archive_description: Kvadro blog archive by month.
+shop.blog.archive_month_description: Kvadro blog articles for %month%.
+shop.blog.archive_month_empty: No articles for this month.
+shop.blog.month.january: January
+shop.blog.month.february: February
+shop.blog.month.march: March
+shop.blog.month.april: April
+shop.blog.month.may: May
+shop.blog.month.june: June
+shop.blog.month.july: July
+shop.blog.month.august: August
+shop.blog.month.september: September
+shop.blog.month.october: October
+shop.blog.month.november: November
+shop.blog.month.december: December
+
 shop.supplier.empty_products: This supplier has no products yet.
 shop.supplier.meta_description: 'Products from supplier %name%. Buy online with delivery.'
 shop.login: Log In

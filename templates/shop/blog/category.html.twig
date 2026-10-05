@@ -1,0 +1,56 @@
+{% extends 'shop/layout.html.twig' %}
+{% set setting = site_settings() %}
+{% set pageTitle = category.metaTitle ?: (category.name ~ ' — ' ~ ('shop.blog.title'|trans) ~ ' — ' ~ (setting.seo.title|default(setting.seo.meta_title))) %}
+{% set pageDescription = category.metaDescription ?: ('shop.blog.category_description'|trans({ '%name%': category.name })) %}
+{% set pageOgTitle = category.ogTitle ?: pageTitle %}
+{% set pageOgDescription = category.ogDescription ?: pageDescription %}
+{% set pageOgType = category.ogType ?: 'website' %}
+{% set pageOgImageFile = category.ogImage %}
+{% set pageOgImage = pageOgImageFile
+    ? absolute_url(asset('uploads/og-images/' ~ pageOgImageFile))
+    : absolute_url(asset('uploads/og-images/og-blog-index.jpg')) %}
+
+{% block title %}{{ pageTitle }}{% endblock %}
+{% block meta_title %}{{ pageTitle }}{% endblock %}
+{% block meta_description %}{{ pageDescription }}{% endblock %}
+{% block og_title %}{{ pageOgTitle }}{% endblock %}
+{% block og_description %}{{ pageOgDescription }}{% endblock %}
+{% block og_type %}{{ pageOgType }}{% endblock %}
+{% block og_image %}{{ pageOgImage }}{% endblock %}
+{% block og_url %}{{ absolute_url(path('shop_blog_category', {_locale: app.request.locale, slug: category.slug})) }}{% endblock %}
+{% block canonical_url %}{{ absolute_url(path('shop_blog_category', {_locale: app.request.locale, slug: category.slug})) }}{% endblock %}
+
+{% block main %}
+    <div class="shop-page shop-blog-page">
+        <nav class="shop-category-page__breadcrumb" aria-label="breadcrumb">
+            <a href="{{ path('shop_home', {_locale: app.request.locale}) }}">{{ 'shop.category.home'|trans }}</a>
+            <span aria-hidden="true">/</span>
+            <a href="{{ path('shop_blog_index', {_locale: app.request.locale}) }}">{{ 'shop.blog.title'|trans }}</a>
+            <span aria-hidden="true">/</span>
+            <span>{{ category.name }}</span>
+        </nav>
+
+        <header class="shop-category-page__header">
+            <h1 class="shop-page__title">{{ category.name }}</h1>
+        </header>
+
+        {% include 'shop/blog/_search.html.twig' with {searchQuery: ''} %}
+
+        <div class="shop-blog-layout">
+            <div class="shop-blog-layout__main">
+                {% if articles is empty %}
+                    <div class="shop-blog-page__empty">
+                        <p>{{ 'shop.blog.category_empty'|trans }}</p>
+                    </div>
+                {% else %}
+                    <div class="shop-blog-list">
+                        {% for article in articles %}
+                            {% include 'shop/blog/_article_card.html.twig' with {article: article} %}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            {% include 'shop/blog/_sidebar.html.twig' %}
+        </div>
+    </div>
+{% endblock %}

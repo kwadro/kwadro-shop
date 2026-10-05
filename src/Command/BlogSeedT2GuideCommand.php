@@ -84,6 +84,7 @@ final class BlogSeedT2GuideCommand extends Command
             ->setOgDescription('Пояснюємо DVB-T2 простими словами: який тюнер і антена потрібні, як налаштувати канали та уникнути слабкого сигналу.')
             ->setOgType('article')
             ->setOgImage(self::OG_IMAGE)
+            ->setTags('цифрове телебачення, т2, dvb-t2, тюнер т2, антена')
             ->setContent($this->content())
             ->setEnabled(true)
             ->setPublishedAt(new \DateTimeImmutable('2026-10-03 12:00:00'));

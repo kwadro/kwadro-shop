@@ -1,0 +1,51 @@
+{% set currentRoute = app.request.attributes.get('_route') %}
+{% set currentSlug = app.request.attributes.get('slug') %}
+{% set currentYear = app.request.attributes.get('year') %}
+{% set currentMonth = app.request.attributes.get('month') %}
+
+<aside class="shop-blog-sidebar">
+    {% if blogCategories is defined and blogCategories is not empty %}
+        <section class="shop-blog-sidebar__section">
+            <h2 class="shop-blog-sidebar__title">{{ 'shop.blog.categories'|trans }}</h2>
+            <ul class="shop-blog-sidebar__list">
+                {% for category in blogCategories %}
+                    {% set isActive = currentRoute == 'shop_blog_category' and currentSlug == category.slug %}
+                    <li>
+                        <a
+                            class="shop-blog-sidebar__link{% if isActive %} is-active{% endif %}"
+                            href="{{ path('shop_blog_category', {_locale: app.request.locale, slug: category.slug}) }}"
+                            {% if isActive %}aria-current="page"{% endif %}
+                        >
+                            <span class="shop-blog-sidebar__link-text">{{ category.name }}</span>
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </section>
+    {% endif %}
+
+    {% if blogMonths is defined and blogMonths is not empty %}
+        <section class="shop-blog-sidebar__section">
+            <h2 class="shop-blog-sidebar__title">{{ 'shop.blog.archive'|trans }}</h2>
+            <ul class="shop-blog-sidebar__list">
+                {% for item in blogMonths %}
+                    {% set monthKey = '%02d'|format(item.month) %}
+                    {% set isActive = currentRoute == 'shop_blog_archive_month' and currentYear == item.year and currentMonth == monthKey %}
+                    <li>
+                        <a
+                            class="shop-blog-sidebar__link{% if isActive %} is-active{% endif %}"
+                            href="{{ path('shop_blog_archive_month', {_locale: app.request.locale, year: item.year, month: monthKey}) }}"
+                            {% if isActive %}aria-current="page"{% endif %}
+                        >
+                            <span class="shop-blog-sidebar__link-text">{{ item.label }}</span>
+                            <span class="shop-blog-sidebar__count">{{ item.count }}</span>
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+            <p class="shop-blog-sidebar__more">
+                <a href="{{ path('shop_blog_archive', {_locale: app.request.locale}) }}">{{ 'shop.blog.archive_all'|trans }}</a>
+            </p>
+        </section>
+    {% endif %}
+</aside>

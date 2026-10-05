@@ -1,0 +1,167 @@
+SEO parameters — blog pages (new)
+=================================
+
+OG images directory
+  public/uploads/og-images/
+
+--------------------------------------------------
+1) Blog index
+--------------------------------------------------
+URL
+  /uk/blog
+
+Meta title
+  Блог — Квадро
+
+Meta description
+  Статті та новини магазину Квадро про цифрове ТБ, антени, тюнери Т2 та супутникове обладнання.
+
+og:title
+  Блог — Квадро
+
+og:description
+  Статті та новини магазину Квадро про цифрове ТБ, антени, тюнери Т2 та супутникове обладнання.
+
+og:type
+  website
+
+og:image
+  /uploads/og-images/og-blog-index.jpg
+  1200×630
+
+--------------------------------------------------
+2) Search results
+--------------------------------------------------
+URL
+  /uk/blog/search?q={query}
+
+Meta title
+  Результати пошуку «{query}» — Блог
+  (або «Пошук у блозі — Блог» якщо запит порожній)
+
+Meta description
+  Пошук статей блогу Квадро за назвою та тегами.
+
+og:title
+  = meta title
+
+og:description
+  = meta description
+
+og:type
+  website
+
+og:image
+  /uploads/og-images/og-blog-search.jpg
+  1200×630
+
+Search fields
+  title, tags (comma-separated)
+
+--------------------------------------------------
+3) Archive index
+--------------------------------------------------
+URL
+  /uk/blog/archive
+
+Meta title
+  Архів — Блог
+
+Meta description
+  Архів статей блогу Квадро за місяцями.
+
+og:title
+  Архів — Блог
+
+og:description
+  Архів статей блогу Квадро за місяцями.
+
+og:type
+  website
+
+og:image
+  /uploads/og-images/og-blog-archive.jpg
+  1200×630
+
+--------------------------------------------------
+4) Archive month
+--------------------------------------------------
+URL
+  /uk/blog/archive/{year}/{month}
+  Example: /uk/blog/archive/2026/10
+
+Meta title
+  {Month} {Year} — Блог
+  Example: Жовтень 2026 — Блог
+
+Meta description
+  Статті блогу Квадро за {Month} {Year}.
+
+og:title
+  = meta title
+
+og:description
+  = meta description
+
+og:type
+  website
+
+og:image
+  /uploads/og-images/og-blog-archive.jpg
+  1200×630
+
+--------------------------------------------------
+5) Category pages
+--------------------------------------------------
+URL pattern
+  /uk/blog/category/{slug}
+
+--- porady ---
+Meta title: Поради покупцям — блог Квадро
+Meta description: Практичні поради з вибору тюнерів, антен, повербанків та цифрового ТБ від магазину Квадро.
+og:title: Поради покупцям | Блог Квадро
+og:description: Корисні гіди для покупців: як обрати обладнання для Т2, супутника та гаджетів.
+og:type: website
+og:image: /uploads/og-images/og-blog-category-porady.jpg
+
+--- cyfrove-tb ---
+Meta title: Цифрове ТБ — статті про DVB-T2 | Квадро
+Meta description: Статті про цифрове ефірне телебачення Т2: підключення, канали, тюнери та антени.
+og:title: Цифрове ТБ | Блог Квадро
+og:description: Гайди з цифрового телебачення DVB-T2 в Україні від магазину Квадро.
+og:type: website
+og:image: /uploads/og-images/og-blog-category-cyfrove-tb.jpg
+
+--- suputnykove-tb ---
+Meta title: Супутникове ТБ — статті та огляди | Квадро
+Meta description: Матеріали про супутникове телебачення: українські канали, супутники Amos, Hot Bird, Astra.
+og:title: Супутникове ТБ | Блог Квадро
+og:description: Огляди супутникових каналів і поради з налаштування від магазину Квадро.
+og:type: website
+og:image: /uploads/og-images/og-blog-category-suputnykove-tb.jpg
+
+--- powerbanky ---
+Meta title: Повербанки — поради з вибору | Квадро
+Meta description: Як обрати повербанк: ємність, потужність, порти та захист. Поради магазину Квадро.
+og:title: Повербанки | Блог Квадро
+og:description: Короткі гіди з вибору powerbank для телефону, роутера та подорожей.
+og:type: website
+og:image: /uploads/og-images/og-blog-category-powerbanky.jpg
+
+--------------------------------------------------
+Article tags (examples)
+--------------------------------------------------
+yak-obraty-powerbank
+  повербанк, powerbank, зарядка, поради
+
+yak-obraty-antenu-dlya-tunera-t2
+  антена, т2, dvb-t2, тюнер
+
+kanaly-t2-spysok-i-zhanry
+  канали т2, цифрове тб, dvb-t2
+
+ukrayinski-kanaly-na-suputnykakh
+  супутник, канали, amos, hot bird, astra
+
+cyfrove-telebachennya-t2
+  цифрове телебачення, т2, dvb-t2, тюнер т2, антена

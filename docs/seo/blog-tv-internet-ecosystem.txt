@@ -1,0 +1,73 @@
+SEO parameters — blog article «Телебачення і інтернет: одна екосистема»
+========================================================================
+
+Inspired by themes from Detector Media column (not a reprint):
+https://detector.media/rinok/article/243267/2025-08-09-telebachennya-yak-rushiy-dlya-internetu/
+
+URL (uk)
+  /uk/blog/telebachennya-i-internet-odna-ekosystema
+
+Slug
+  telebachennya-i-internet-odna-ekosystema
+
+Locale
+  uk
+
+Categories
+  Цифрове ТБ (cyfrove-tb)
+  Поради покупцям (porady)
+
+--------------------------------------------------
+Meta
+--------------------------------------------------
+Title (meta title)
+  Телебачення і інтернет: чому ТБ досі важливе | Квадро
+
+Description (meta description)
+  Чому цифрове ТБ і інтернет доповнюють одне одного: звички перегляду, довіра до ефіру, контент у соцмережах і роль Т2 вдома.
+
+--------------------------------------------------
+Open Graph
+--------------------------------------------------
+og:title
+  Телебачення і інтернет — одна медіаекосистема
+
+og:description
+  ТБ не змагається з інтернетом: ефір формує тренди, онлайн їх підхоплює. Як це працює для глядача в Україні.
+
+og:type
+  article
+
+og:image
+  /uploads/images/og-blog-tv-internet-ecosystem.jpg
+  Size: 1200×630 px
+  Filename: og-blog-tv-internet-ecosystem.jpg
+
+Article image
+  /uploads/blog/blog-tv-internet-ecosystem.jpg
+
+--------------------------------------------------
+Primary keywords
+--------------------------------------------------
+  телебачення і інтернет
+  цифрове телебачення
+  ТБ онлайн
+  ефірне ТБ
+  медіаекосистема
+
+Secondary keywords
+  DVB-T2
+  тюнер Т2
+  стримінг
+  телеконтент у соцмережах
+
+H1
+  Телебачення і інтернет: чому ефір досі рухає онлайн
+
+Tags
+  телебачення, інтернет, цифрове тб, т2, медіа, стримінг
+
+Suggested internal links
+  /uk/blog/cyfrove-telebachennya-t2
+  /uk/blog/kanaly-t2-spysok-i-zhanry
+  /uk/category/tuner-t2

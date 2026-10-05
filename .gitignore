@@ -1,6 +1,6 @@
 
 ###> symfony/framework-bundle ###
-/uploads
+/public/uploads
 /deploy-stage.php
 /deploy.php
 /111

@@ -57,6 +57,10 @@ class BlogArticle
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $og_image = null;
 
+    /** Comma-separated tags, e.g. "t2, antenna, dvb-t2". */
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $tags = null;
+
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank]
     #[Assert\Regex(
@@ -208,6 +212,39 @@ class BlogArticle
         $this->og_image = $ogImage !== '' ? $ogImage : null;
 
         return $this;
+    }
+
+    public function getTags(): ?string
+    {
+        return $this->tags;
+    }
+
+    public function setTags(?string $tags): static
+    {
+        if ($tags === null) {
+            $this->tags = null;
+
+            return $this;
+        }
+
+        $parts = array_filter(array_map(
+            static fn (string $tag): string => trim($tag),
+            preg_split('/\s*,\s*/', $tags) ?: [],
+        ), static fn (string $tag): bool => $tag !== '');
+
+        $this->tags = $parts !== [] ? implode(', ', array_values($parts)) : null;
+
+        return $this;
+    }
+
+    /** @return list<string> */
+    public function getTagList(): array
+    {
+        if ($this->tags === null || $this->tags === '') {
+            return [];
+        }
+
+        return array_values(array_filter(array_map('trim', explode(',', $this->tags))));
     }
 
     public function getSlug(): string

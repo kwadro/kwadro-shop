@@ -10,7 +10,9 @@ use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\ImageField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -46,6 +48,24 @@ class BlogCategoryCrudController extends AbstractCrudController
         yield TextField::new('name', $this->translator->trans('admin.blog_category.name', [], 'messages'));
         yield TextField::new('slug', $this->translator->trans('admin.blog_category.slug', [], 'messages'))
             ->setHelp($this->translator->trans('admin.blog.slug_help', [], 'messages'));
+        yield TextField::new('metaTitle', $this->translator->trans('admin.blog_category.meta_title', [], 'messages'))
+            ->hideOnIndex();
+        yield TextareaField::new('metaDescription', $this->translator->trans('admin.blog_category.meta_description', [], 'messages'))
+            ->hideOnIndex()
+            ->setNumOfRows(3);
+        yield TextField::new('ogTitle', $this->translator->trans('admin.blog_category.og_title', [], 'messages'))
+            ->hideOnIndex();
+        yield TextareaField::new('ogDescription', $this->translator->trans('admin.blog_category.og_description', [], 'messages'))
+            ->hideOnIndex()
+            ->setNumOfRows(3);
+        yield TextField::new('ogType', $this->translator->trans('admin.blog_category.og_type', [], 'messages'))
+            ->setHelp($this->translator->trans('admin.blog_category.og_type_help', [], 'messages'))
+            ->hideOnIndex();
+        yield ImageField::new('ogImage', $this->translator->trans('admin.blog_category.og_image', [], 'messages'))
+            ->setBasePath('/uploads/og-images')
+            ->setUploadDir('public/uploads/og-images')
+            ->setRequired(false)
+            ->hideOnIndex();
         yield AssociationField::new('parent', $this->translator->trans('admin.blog_category.parent', [], 'messages'))
             ->setRequired(false)
             ->setHelp($this->translator->trans('admin.blog_category.parent_help', [], 'messages'));

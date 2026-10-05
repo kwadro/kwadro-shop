@@ -1,0 +1,61 @@
+{% extends 'shop/layout.html.twig' %}
+{% set setting = site_settings() %}
+{% set pageTitle = (query ? ('shop.blog.search_results_for'|trans({ '%query%': query })) : ('shop.blog.search'|trans)) ~ ' — ' ~ ('shop.blog.title'|trans) %}
+{% set pageDescription = 'shop.blog.search_description'|trans %}
+{% set pageOgImage = absolute_url(asset('uploads/og-images/og-blog-search.jpg')) %}
+
+{% block title %}{{ pageTitle }}{% endblock %}
+{% block meta_title %}{{ pageTitle }}{% endblock %}
+{% block meta_description %}{{ pageDescription }}{% endblock %}
+{% block og_title %}{{ pageTitle }}{% endblock %}
+{% block og_description %}{{ pageDescription }}{% endblock %}
+{% block og_type %}website{% endblock %}
+{% block og_image %}{{ pageOgImage }}{% endblock %}
+{% block og_url %}{{ absolute_url(path('shop_blog_search', {_locale: app.request.locale, q: query})) }}{% endblock %}
+{% block canonical_url %}{{ absolute_url(path('shop_blog_search', {_locale: app.request.locale, q: query})) }}{% endblock %}
+
+{% block main %}
+    <div class="shop-page shop-blog-page">
+        <nav class="shop-category-page__breadcrumb" aria-label="breadcrumb">
+            <a href="{{ path('shop_home', {_locale: app.request.locale}) }}">{{ 'shop.category.home'|trans }}</a>
+            <span aria-hidden="true">/</span>
+            <a href="{{ path('shop_blog_index', {_locale: app.request.locale}) }}">{{ 'shop.blog.title'|trans }}</a>
+            <span aria-hidden="true">/</span>
+            <span>{{ 'shop.blog.search'|trans }}</span>
+        </nav>
+
+        <header class="shop-category-page__header">
+            <h1 class="shop-page__title">
+                {% if query %}
+                    {{ 'shop.blog.search_results_for'|trans({ '%query%': query }) }}
+                {% else %}
+                    {{ 'shop.blog.search'|trans }}
+                {% endif %}
+            </h1>
+        </header>
+
+        {% include 'shop/blog/_search.html.twig' with {searchQuery: query} %}
+
+        <div class="shop-blog-layout">
+            <div class="shop-blog-layout__main">
+                {% if query == '' %}
+                    <div class="shop-blog-page__empty">
+                        <p>{{ 'shop.blog.search_hint'|trans }}</p>
+                    </div>
+                {% elseif articles is empty %}
+                    <div class="shop-blog-page__empty">
+                        <p>{{ 'shop.blog.search_empty'|trans({ '%query%': query }) }}</p>
+                    </div>
+                {% else %}
+                    <p class="shop-blog-search__count">{{ 'shop.blog.search_count'|trans({ '%count%': articles|length }) }}</p>
+                    <div class="shop-blog-list">
+                        {% for article in articles %}
+                            {% include 'shop/blog/_article_card.html.twig' with {article: article} %}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            {% include 'shop/blog/_sidebar.html.twig' %}
+        </div>
+    </div>
+{% endblock %}

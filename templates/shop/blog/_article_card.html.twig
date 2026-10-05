@@ -1,0 +1,41 @@
+<article class="shop-blog-card">
+    <h2 class="shop-blog-card__title">
+        <a href="{{ path('shop_blog_article', {_locale: app.request.locale, slug: article.slug}) }}">
+            {{ article.title }}
+        </a>
+    </h2>
+    {% if article.publishedAt %}
+        <time class="shop-blog-card__date" datetime="{{ article.publishedAt|date('c') }}">
+            {{ article.publishedAt|date('d.m.Y H:i') }}
+        </time>
+    {% endif %}
+
+    {% if article.metaDescription %}
+        <p class="shop-blog-card__excerpt">{{ article.metaDescription }}</p>
+    {% endif %}
+    {% if article.categories is not empty %}
+        <ul class="shop-blog-card__categories">
+            {% for category in article.categories %}
+                {% if category.enabled %}
+                    <li>
+                        <a href="{{ path('shop_blog_category', {_locale: app.request.locale, slug: category.slug}) }}">
+                            {{ category.name }}
+                        </a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    {% endif %}
+    {% if article.tagList is not empty %}
+        <ul class="shop-blog-card__tags">
+            {% for tag in article.tagList %}
+                <li>
+                    <a href="{{ path('shop_blog_search', {_locale: app.request.locale, q: tag}) }}">{{ tag }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    <a class="shop-blog-card__more" href="{{ path('shop_blog_article', {_locale: app.request.locale, slug: article.slug}) }}">
+        {{ 'shop.blog.read_more'|trans }}
+    </a>
+</article>

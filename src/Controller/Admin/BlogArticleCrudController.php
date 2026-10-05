@@ -131,7 +131,11 @@ class BlogArticleCrudController extends AbstractCrudController
         yield AssociationField::new('categories', $this->translator->trans('admin.blog_article.categories', [], 'messages'))
             ->setFormTypeOption('by_reference', false)
             ->autocomplete();
+        yield TextField::new('tags', $this->translator->trans('admin.blog_article.tags', [], 'messages'))
+            ->setHelp($this->translator->trans('admin.blog_article.tags_help', [], 'messages'))
+            ->hideOnIndex();
         yield TextareaField::new('content', $this->translator->trans('admin.blog_article.content', [], 'messages'))
+
             ->hideOnIndex()
             ->setFormTypeOption('attr', ['data-html-editor' => '1']);
         yield TextareaField::new('facebookDraft', $this->translator->trans('admin.blog_article.facebook_draft_field', [], 'messages'))
@@ -139,7 +143,14 @@ class BlogArticleCrudController extends AbstractCrudController
             ->setFormTypeOption('attr', ['rows' => 12])
             ->hideOnIndex();
         yield BooleanField::new('enabled', $this->translator->trans('admin.blog.enabled', [], 'messages'));
-        yield DateTimeField::new('publishedAt', $this->translator->trans('admin.blog_article.published_at', [], 'messages'));
+        yield DateTimeField::new('publishedAt', $this->translator->trans('admin.blog_article.published_at', [], 'messages'))
+            ->setFormat('dd.MM.yyyy HH:mm')
+            ->setFormTypeOptions([
+                'widget' => 'single_text',
+                'html5' => true,
+                'with_seconds' => false,
+            ])
+            ->setHelp($this->translator->trans('admin.blog_article.published_at_help', [], 'messages'));
     }
 
     public function persistEntity(EntityManagerInterface $entityManager, $entityInstance): void
