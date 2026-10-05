@@ -162,6 +162,8 @@ admin.site.cod_prepayment_amount: Передоплата для відправк
 admin.site.cod_prepayment_amount_help: Сума передоплати для відправки товару при оплаті післяплатою.
 admin.site.featured_product: Товар на головній (feature_id)
 admin.site.featured_product_help: Якщо порожньо — на головній показується перший товар з каталогу.
+admin.site.products_per_page: Товарів на сторінці
+admin.site.products_per_page_help: Кількість товарів у списках категорій, постачальника та пошуку (1–100).
 admin.site.cod_commission_notice_uk: Повідомлення про комісію (UK)
 admin.site.cod_commission_notice_en: Повідомлення про комісію (EN)
 admin.site.cod_commission_notice_help: 'Плейсхолдери: %standard_percent%, %novapay_percent%, %standard_amount%, %novapay_amount%, %prepayment_amount%. HTML дозволено.'
@@ -176,6 +178,10 @@ admin.site.delivery.courier: Кур'єр по місту
 admin.site.delivery.np_branch: Нова Пошта — відділення
 admin.site.delivery.np_postomat: Нова Пошта — поштомат
 admin.product.name: Назва
+admin.product.model: Модель
+admin.product.brand: Бренд
+admin.product.color: Колір
+admin.product.type: Тип
 admin.product.sku: Артикул
 admin.product.slug: URL-slug
 admin.product.slug_help: 'Залиште порожнім — згенерується з назви. Дозволені латиниця, цифри, "-" і "_". Приклад: powerbank-20k.'
@@ -204,7 +210,7 @@ admin.product.features_help: Один пункт на рядок.
 admin.product.gallery: Галерея
 admin.product.gallery_image: 'Зображення %number%'
 admin.product.gallery_alt: 'Alt-текст (зображення %number%)'
-admin.product.gallery_help: До 3 фото товару. JSON у базі формується автоматично при збереженні.
+admin.product.gallery_help: До 5 фото товару. JSON у базі формується автоматично при збереженні.
 admin.product.pricing_panel: Ціни та пропозиції
 admin.product.content_panel: Контент
 admin.product.no_price: Ціни немає
@@ -227,6 +233,8 @@ admin.category.slug_help: 'Залиште порожнім — згенерує�
 admin.category.enabled: Включено
 admin.category.enabled_yes: Так
 admin.category.enabled_no: Ні
+admin.category.show_filters: Показувати фільтр
+admin.category.show_filters_help: Ліва колонка фільтрів за атрибутами на сторінці категорії.
 admin.category.meta_title: Meta title
 admin.category.meta_description: Meta description
 admin.category.og_title: OG Title
@@ -572,6 +580,33 @@ shop.category.menu_toggle: Категорії
 shop.category.home: Головна
 shop.category.subcategories: Підкатегорії
 shop.category.empty_products: У цій категорії поки немає товарів.
+shop.search.label: Пошук товарів
+shop.search.placeholder: Пошук товарів…
+shop.search.button: Знайти
+shop.search.breadcrumb: Пошук
+shop.search.title: Пошук товарів
+shop.search.title_query: 'Пошук: %query%'
+shop.search.heading: Пошук товарів
+shop.search.heading_query: 'Результати пошуку «%query%»'
+shop.search.meta_description: Пошук товарів у каталозі магазину Квадро.
+shop.search.empty: 'За запитом «%query%» товарів не знайдено.'
+shop.search.empty_no_query: Введіть назву товару для пошуку.
+shop.filter.title: Фільтри
+shop.filter.brand: Бренд
+shop.filter.color: Колір
+shop.filter.type: Тип
+shop.filter.model: Модель
+shop.filter.reset: Скинути
+shop.filter.apply: Застосувати
+shop.filter.selected: Вибрані фільтри
+shop.filter.remove: Видалити фільтр
+shop.filter.clear_all: Видалити всі
+shop.filter.show_all: 'Показати всі (+%count%)'
+shop.filter.show_less: Згорнути
+shop.catalog.results_count: 'Знайдено: %count%'
+shop.pagination.label: Пагінація
+shop.pagination.prev: Назад
+shop.pagination.next: Далі
 shop.blog.menu: Блог
 shop.blog.title: Блог
 shop.blog.index_description: Статті та новини магазину Квадро про цифрове ТБ, антени, тюнери Т2 та супутникове обладнання.
@@ -653,6 +688,7 @@ shop.error404.back_home: На головну
 
 shop.product.sku: Артикул
 shop.product.in_stock: 'В наявності (%qty% шт.)'
+shop.product.in_stock_available: В наявності
 shop.product.out_of_stock: Немає в наявності
 shop.product.no_price: Ціни немає
 shop.product.empty_catalog_title: Товари тимчасово недоступні

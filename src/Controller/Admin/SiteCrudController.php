@@ -58,6 +58,8 @@ class SiteCrudController extends AbstractCrudController
             AssociationField::new('featuredProduct', $this->translator->trans('admin.site.featured_product', [], 'messages'))
                 ->setRequired(false)
                 ->setHelp($this->translator->trans('admin.site.featured_product_help', [], 'messages')),
+            IntegerField::new('productsPerPage', $this->translator->trans('admin.site.products_per_page', [], 'messages'))
+                ->setHelp($this->translator->trans('admin.site.products_per_page_help', [], 'messages')),
             MoneyField::new('courierDeliveryCost', $this->translator->trans('admin.site.courier_delivery_cost', [], 'messages'))
                 ->setCurrency('UAH')
                 ->setStoredAsCents(false)

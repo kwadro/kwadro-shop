@@ -47,6 +47,24 @@
             </a>
             {% include 'shop/partials/_mini_cart.html.twig' %}
         </div>
+        <form
+            class="shop-header-search"
+            action="{{ path('shop_search', {_locale: app.request.locale}) }}"
+            method="get"
+            role="search"
+        >
+            <label class="visually-hidden" for="shop-header-search-q">{{ 'shop.search.label'|trans }}</label>
+            <input
+                id="shop-header-search-q"
+                class="shop-header-search__input"
+                type="search"
+                name="q"
+                value="{{ app.request.attributes.get('_route') == 'shop_search' ? app.request.query.get('q') : '' }}"
+                placeholder="{{ 'shop.search.placeholder'|trans }}"
+                autocomplete="off"
+            >
+            <button class="shop-header-search__button" type="submit">{{ 'shop.search.button'|trans }}</button>
+        </form>
         <div class="shop-header__actions">
             <div class="shop-header__phone-container">
                 {% set phoneLinks = setting.header.phone_links|default([

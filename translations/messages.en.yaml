@@ -162,6 +162,8 @@ admin.site.cod_prepayment_amount: Shipping prepayment
 admin.site.cod_prepayment_amount_help: Prepayment amount required to ship the order for cash-on-delivery.
 admin.site.featured_product: Homepage product (feature_id)
 admin.site.featured_product_help: If empty, the first catalog product is shown on the homepage.
+admin.site.products_per_page: Products per page
+admin.site.products_per_page_help: Number of products in category, supplier and search lists (1–100).
 admin.site.cod_commission_notice_uk: Commission notice (UK)
 admin.site.cod_commission_notice_en: Commission notice (EN)
 admin.site.cod_commission_notice_help: 'Placeholders: %standard_percent%, %novapay_percent%, %standard_amount%, %novapay_amount%, %prepayment_amount%. HTML allowed.'
@@ -176,6 +178,10 @@ admin.site.delivery.courier: Courier in city
 admin.site.delivery.np_branch: Nova Poshta — branch
 admin.site.delivery.np_postomat: Nova Poshta — parcel locker
 admin.product.name: Name
+admin.product.model: Model
+admin.product.brand: Brand
+admin.product.color: Color
+admin.product.type: Type
 admin.product.sku: SKU
 admin.product.slug: URL slug
 admin.product.slug_help: 'Leave empty to generate from the name. Allowed: letters, digits, "-" and "_". Example: powerbank-20k.'
@@ -204,7 +210,7 @@ admin.product.features_help: One item per line.
 admin.product.gallery: Gallery
 admin.product.gallery_image: 'Image %number%'
 admin.product.gallery_alt: 'Alt text (image %number%)'
-admin.product.gallery_help: Up to 3 product photos. Gallery JSON is saved automatically.
+admin.product.gallery_help: Up to 5 product photos. Gallery JSON is saved automatically.
 admin.product.pricing_panel: Pricing and offers
 admin.product.content_panel: Content
 admin.product.no_price: Price not available
@@ -227,6 +233,8 @@ admin.category.slug_help: 'Leave empty to generate from the name. Allowed: lette
 admin.category.enabled: Enabled
 admin.category.enabled_yes: Yes
 admin.category.enabled_no: No
+admin.category.show_filters: Show filters
+admin.category.show_filters_help: Left attribute filters column on the category page.
 admin.category.meta_title: Meta title
 admin.category.meta_description: Meta description
 admin.category.og_title: OG Title
@@ -573,6 +581,33 @@ shop.category.menu_toggle: Categories
 shop.category.home: Home
 shop.category.subcategories: Subcategories
 shop.category.empty_products: There are no products in this category yet.
+shop.search.label: Product search
+shop.search.placeholder: Search products…
+shop.search.button: Search
+shop.search.breadcrumb: Search
+shop.search.title: Product search
+shop.search.title_query: 'Search: %query%'
+shop.search.heading: Product search
+shop.search.heading_query: 'Search results for “%query%”'
+shop.search.meta_description: Search products in the Kvadro catalog.
+shop.search.empty: 'No products found for “%query%”.'
+shop.search.empty_no_query: Enter a product name to search.
+shop.filter.title: Filters
+shop.filter.brand: Brand
+shop.filter.color: Color
+shop.filter.type: Type
+shop.filter.model: Model
+shop.filter.reset: Reset
+shop.filter.apply: Apply
+shop.filter.selected: Selected filters
+shop.filter.remove: Remove filter
+shop.filter.clear_all: Remove all
+shop.filter.show_all: 'Show all (+%count%)'
+shop.filter.show_less: Show less
+shop.catalog.results_count: 'Found: %count%'
+shop.pagination.label: Pagination
+shop.pagination.prev: Previous
+shop.pagination.next: Next
 shop.blog.menu: Blog
 shop.blog.title: Blog
 shop.blog.index_description: Articles and news from Kvadro about digital TV, antennas, T2 tuners and satellite gear.
@@ -655,6 +690,7 @@ shop.footer.rights: All rights reserved.
 
 shop.product.sku: SKU
 shop.product.in_stock: 'In stock (%qty% pcs.)'
+shop.product.in_stock_available: In stock
 shop.product.out_of_stock: Out of stock
 shop.product.no_price: Price not available
 shop.product.empty_catalog_title: Products are temporarily unavailable

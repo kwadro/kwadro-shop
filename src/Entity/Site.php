@@ -37,6 +37,9 @@ class Site
     #[ORM\Column(type: 'decimal', precision: 12, scale: 2, options: ['default' => '100.00'])]
     private ?string $courier_delivery_cost = '100.00';
 
+    #[ORM\Column(type: 'integer', options: ['default' => 12])]
+    private int $products_per_page = 12;
+
     #[ORM\Column(type: 'decimal', precision: 5, scale: 2, options: ['default' => '2.00'])]
     private ?string $cod_standard_percent = '2.00';
 
@@ -269,6 +272,18 @@ class Site
         $this->courier_delivery_cost = $courierDeliveryCost !== null
             ? number_format(max(0, $courierDeliveryCost), 2, '.', '')
             : null;
+
+        return $this;
+    }
+
+    public function getProductsPerPage(): int
+    {
+        return max(1, $this->products_per_page);
+    }
+
+    public function setProductsPerPage(?int $productsPerPage): self
+    {
+        $this->products_per_page = max(1, min(100, $productsPerPage ?? 12));
 
         return $this;
     }

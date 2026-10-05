@@ -115,13 +115,13 @@
             <div
                 id="product-stock"
                 class="shop-product__stock{% if product.inStock %} shop-product__stock--in{% else %} shop-product__stock--out{% endif %}"
-                data-in-stock-label="{{ 'shop.product.in_stock'|trans({'%qty%': '__QTY__'})|e('html_attr') }}"
+                data-in-stock-label="{{ 'shop.product.in_stock_available'|trans|e('html_attr') }}"
                 data-out-of-stock-label="{{ 'shop.product.out_of_stock'|trans|e('html_attr') }}"
             >
                 <span class="shop-product__stock-dot"></span>
                 <span data-offer-stock-text>
                     {% if product.inStock %}
-                        {{ 'shop.product.in_stock'|trans({'%qty%': product.stockQty}) }}
+                        {{ 'shop.product.in_stock_available'|trans }}
                     {% else %}
                         {{ 'shop.product.out_of_stock'|trans }}
                     {% endif %}

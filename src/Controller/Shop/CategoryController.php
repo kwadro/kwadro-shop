@@ -4,8 +4,9 @@ namespace App\Controller\Shop;
 
 use App\Repository\CategoryRepository;
 use App\Routing\ShopRoutes;
-use App\Service\ProductCatalog;
+use App\Service\ProductListingService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
@@ -14,7 +15,7 @@ class CategoryController extends AbstractController
 {
     public function __construct(
         private readonly CategoryRepository $categoryRepository,
-        private readonly ProductCatalog $productCatalog,
+        private readonly ProductListingService $productListing,
     ) {
     }
 
@@ -27,7 +28,7 @@ class CategoryController extends AbstractController
         ],
         methods: ['GET'],
     )]
-    public function show(string $_locale, string $slug): Response
+    public function show(string $_locale, string $slug, Request $request): Response
     {
         $category = $this->categoryRepository->findOneBySlug($slug);
         if ($category === null || $category->isDefault() || !$category->isEnabled()) {
@@ -46,10 +47,16 @@ class CategoryController extends AbstractController
             ];
         }
 
+        $listing = $this->productListing->list(
+            ['category' => $category],
+            $request,
+            $category->isShowFilters(),
+        );
+
         return $this->render('shop/category/show.html.twig', [
             'category' => $category,
             'children' => $children,
-            'products' => $this->productCatalog->findByCategory($category),
+            ...$listing,
         ]);
     }
 }

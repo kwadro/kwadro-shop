@@ -1,6 +1,7 @@
 
 ###> symfony/framework-bundle ###
-/public/uploads
+/data-price/
+/public/uploads/
 /deploy-stage.php
 /deploy.php
 /111

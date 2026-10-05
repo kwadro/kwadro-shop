@@ -117,8 +117,7 @@
             stockBox.classList.toggle('shop-product__stock--in', offerAvailable);
             stockBox.classList.toggle('shop-product__stock--out', !offerAvailable);
             if (offerAvailable) {
-                stockText.textContent = (stockBox.dataset.inStockLabel || 'In stock (%qty% pcs.)')
-                    .replace('__QTY__', String(offerQty));
+                stockText.textContent = stockBox.dataset.inStockLabel || 'In stock';
             } else {
                 stockText.textContent = stockBox.dataset.outOfStockLabel || 'Out of stock';
             }

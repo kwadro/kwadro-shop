@@ -6,6 +6,7 @@ use App\Entity\Category;
 use App\Entity\Product;
 use App\Entity\Supplier;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /** @extends ServiceEntityRepository<Product> */
@@ -124,6 +125,156 @@ class ProductRepository extends ServiceEntityRepository
             ->orderBy('p.name', 'ASC')
             ->getQuery()
             ->getResult();
+    }
+
+    public const FILTER_ATTRIBUTES = ['brand', 'color', 'type', 'model'];
+
+    /**
+     * @param array{
+     *   category?: Category|null,
+     *   supplier?: Supplier|null,
+     *   query?: string|null,
+     *   filters?: array<string, list<string>>
+     * } $criteria
+     * @return array{items: list<Product>, total: int}
+     */
+    public function findCatalogPage(array $criteria, int $page, int $perPage): array
+    {
+        $page = max(1, $page);
+        $perPage = max(1, min(100, $perPage));
+
+        $countQb = $this->createCatalogQueryBuilder($criteria);
+        $total = (int) $countQb
+            ->select('COUNT(DISTINCT p.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        if ($total === 0) {
+            return ['items' => [], 'total' => 0];
+        }
+
+        $ids = $this->createCatalogQueryBuilder($criteria)
+            ->select('p.id')
+            ->groupBy('p.id')
+            ->addGroupBy('p.name')
+            ->orderBy('p.name', 'ASC')
+            ->setFirstResult(($page - 1) * $perPage)
+            ->setMaxResults($perPage)
+            ->getQuery()
+            ->getSingleColumnResult();
+
+        if ($ids === []) {
+            return ['items' => [], 'total' => $total];
+        }
+
+        $items = $this->createQueryBuilder('p')
+            ->leftJoin('p.offers', 'o')
+            ->addSelect('o')
+            ->leftJoin('o.supplier', 's')
+            ->addSelect('s')
+            ->leftJoin('p.categories', 'c')
+            ->addSelect('c')
+            ->andWhere('p.id IN (:ids)')
+            ->setParameter('ids', $ids)
+            ->orderBy('p.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        return ['items' => $items, 'total' => $total];
+    }
+
+    /**
+     * Facet values with product counts within the current catalog scope.
+     * Counts respect other selected filters, but ignore the filter of the facet attribute itself.
+     *
+     * @param array{
+     *   category?: Category|null,
+     *   supplier?: Supplier|null,
+     *   query?: string|null,
+     *   filters?: array<string, list<string>>
+     * } $criteria
+     * @return array<string, list<array{value: string, count: int}>>
+     */
+    public function findAttributeFacets(array $criteria): array
+    {
+        $filters = $criteria['filters'] ?? [];
+        $facets = [];
+
+        foreach (self::FILTER_ATTRIBUTES as $attribute) {
+            $facetCriteria = $criteria;
+            $facetCriteria['filters'] = $filters;
+            unset($facetCriteria['filters'][$attribute]);
+
+            $rows = $this->createCatalogQueryBuilder($facetCriteria)
+                ->select(sprintf('p.%s AS value', $attribute), 'COUNT(DISTINCT p.id) AS cnt')
+                ->andWhere(sprintf('p.%s IS NOT NULL', $attribute))
+                ->andWhere(sprintf("p.%s != ''", $attribute))
+                ->groupBy(sprintf('p.%s', $attribute))
+                ->orderBy('value', 'ASC')
+                ->getQuery()
+                ->getArrayResult();
+
+            $options = [];
+            foreach ($rows as $row) {
+                $value = trim((string) ($row['value'] ?? ''));
+                $count = (int) ($row['cnt'] ?? 0);
+                if ($value === '' || $count < 1) {
+                    continue;
+                }
+                $options[] = [
+                    'value' => $value,
+                    'count' => $count,
+                ];
+            }
+
+            $facets[$attribute] = $options;
+        }
+
+        return $facets;
+    }
+
+    /**
+     * @param array{
+     *   category?: Category|null,
+     *   supplier?: Supplier|null,
+     *   query?: string|null,
+     *   filters?: array<string, list<string>>
+     * } $criteria
+     */
+    private function createCatalogQueryBuilder(array $criteria): QueryBuilder
+    {
+        $qb = $this->createQueryBuilder('p');
+
+        if (($criteria['category'] ?? null) instanceof Category) {
+            $qb->innerJoin('p.categories', 'c_scope')
+                ->andWhere('c_scope = :category')
+                ->setParameter('category', $criteria['category']);
+        }
+
+        if (($criteria['supplier'] ?? null) instanceof Supplier) {
+            $qb->innerJoin('p.offers', 'o_scope')
+                ->innerJoin('o_scope.supplier', 's_scope')
+                ->andWhere('s_scope = :supplier')
+                ->setParameter('supplier', $criteria['supplier']);
+        }
+
+        $query = trim((string) ($criteria['query'] ?? ''));
+        if ($query !== '') {
+            $qb->andWhere('LOWER(p.name) LIKE :searchQuery')
+                ->setParameter('searchQuery', '%'.mb_strtolower($query).'%');
+        }
+
+        $filters = $criteria['filters'] ?? [];
+        foreach (self::FILTER_ATTRIBUTES as $attribute) {
+            $values = $filters[$attribute] ?? [];
+            if ($values === []) {
+                continue;
+            }
+            $qb->andWhere(sprintf('p.%s IN (:filter_%s)', $attribute, $attribute))
+                ->setParameter('filter_'.$attribute, $values);
+        }
+
+        return $qb;
     }
 
     /**

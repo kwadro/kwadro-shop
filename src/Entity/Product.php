@@ -36,6 +36,18 @@ class Product
     )]
     private string $slug = '';
 
+    #[ORM\Column(length: 120, nullable: true)]
+    private ?string $model = null;
+
+    #[ORM\Column(length: 120, nullable: true)]
+    private ?string $brand = null;
+
+    #[ORM\Column(length: 120, nullable: true)]
+    private ?string $color = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $type = null;
+
     /** @var Collection<int, Category> */
     #[ORM\ManyToMany(targetEntity: Category::class, inversedBy: 'products')]
     #[ORM\JoinTable(name: 'shop_product_category')]
@@ -106,11 +118,19 @@ class Product
 
     private ?string $galleryImage3 = null;
 
+    private ?string $galleryImage4 = null;
+
+    private ?string $galleryImage5 = null;
+
     private ?string $galleryAlt1 = null;
 
     private ?string $galleryAlt2 = null;
 
     private ?string $galleryAlt3 = null;
+
+    private ?string $galleryAlt4 = null;
+
+    private ?string $galleryAlt5 = null;
 
     /** @var Collection<int, ProductOffer> */
     #[ORM\OneToMany(mappedBy: 'product', targetEntity: ProductOffer::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
@@ -160,6 +180,75 @@ class Product
     public function setSlug(string $slug): static
     {
         $this->slug = trim($slug);
+
+        return $this;
+    }
+
+    public function getModel(): ?string
+    {
+        return $this->model;
+    }
+
+    public function setModel(?string $model): static
+    {
+        $model = $model !== null ? trim($model) : null;
+        $this->model = $model !== '' ? $model : null;
+
+        return $this;
+    }
+
+    public function getBrand(): ?string
+    {
+        return $this->brand;
+    }
+
+    public function setBrand(?string $brand): static
+    {
+        $brand = $brand !== null ? trim($brand) : null;
+        $this->brand = $brand !== '' ? $brand : null;
+
+        return $this;
+    }
+
+    public function getColor(): ?string
+    {
+        return $this->color;
+    }
+
+    public function setColor(?string $color): static
+    {
+        $color = $color !== null ? trim($color) : null;
+        $this->color = $color !== '' ? $color : null;
+
+        return $this;
+    }
+
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
+
+    public function setType(?string $type): static
+    {
+        $type = $type !== null ? trim($type) : null;
+        $this->type = $type !== '' ? $type : null;
+
+        return $this;
+    }
+
+    /**
+     * Builds product name as "Model Brand".
+     */
+    public function rebuildNameFromModelBrand(): static
+    {
+        $parts = array_values(array_filter([
+            $this->model !== null ? trim($this->model) : '',
+            $this->brand !== null ? trim($this->brand) : '',
+        ], static fn (string $part): bool => $part !== ''));
+
+        if ($parts !== []) {
+            $this->name = implode(' ', $parts);
+        }
 
         return $this;
     }
@@ -521,6 +610,30 @@ class Product
         return $this;
     }
 
+    public function getGalleryImage4(): ?string
+    {
+        return $this->galleryImage4;
+    }
+
+    public function setGalleryImage4(?string $galleryImage4): static
+    {
+        $this->galleryImage4 = $galleryImage4 !== null && trim($galleryImage4) !== '' ? trim($galleryImage4) : null;
+
+        return $this;
+    }
+
+    public function getGalleryImage5(): ?string
+    {
+        return $this->galleryImage5;
+    }
+
+    public function setGalleryImage5(?string $galleryImage5): static
+    {
+        $this->galleryImage5 = $galleryImage5 !== null && trim($galleryImage5) !== '' ? trim($galleryImage5) : null;
+
+        return $this;
+    }
+
     public function getGalleryAlt1(): ?string
     {
         return $this->galleryAlt1;
@@ -557,15 +670,43 @@ class Product
         return $this;
     }
 
+    public function getGalleryAlt4(): ?string
+    {
+        return $this->galleryAlt4;
+    }
+
+    public function setGalleryAlt4(?string $galleryAlt4): static
+    {
+        $this->galleryAlt4 = $galleryAlt4 !== null ? trim($galleryAlt4) : null;
+
+        return $this;
+    }
+
+    public function getGalleryAlt5(): ?string
+    {
+        return $this->galleryAlt5;
+    }
+
+    public function setGalleryAlt5(?string $galleryAlt5): static
+    {
+        $this->galleryAlt5 = $galleryAlt5 !== null ? trim($galleryAlt5) : null;
+
+        return $this;
+    }
+
     #[ORM\PostLoad]
     public function hydrateGalleryFormFields(): void
     {
         $this->galleryImage1 = null;
         $this->galleryImage2 = null;
         $this->galleryImage3 = null;
+        $this->galleryImage4 = null;
+        $this->galleryImage5 = null;
         $this->galleryAlt1 = null;
         $this->galleryAlt2 = null;
         $this->galleryAlt3 = null;
+        $this->galleryAlt4 = null;
+        $this->galleryAlt5 = null;
 
         if (isset($this->gallery[0]) && \is_array($this->gallery[0])) {
             $this->galleryImage1 = $this->extractGalleryFilename((string) ($this->gallery[0]['full'] ?? ''));
@@ -581,6 +722,16 @@ class Product
             $this->galleryImage3 = $this->extractGalleryFilename((string) ($this->gallery[2]['full'] ?? ''));
             $this->galleryAlt3 = trim((string) ($this->gallery[2]['alt'] ?? ''));
         }
+
+        if (isset($this->gallery[3]) && \is_array($this->gallery[3])) {
+            $this->galleryImage4 = $this->extractGalleryFilename((string) ($this->gallery[3]['full'] ?? ''));
+            $this->galleryAlt4 = trim((string) ($this->gallery[3]['alt'] ?? ''));
+        }
+
+        if (isset($this->gallery[4]) && \is_array($this->gallery[4])) {
+            $this->galleryImage5 = $this->extractGalleryFilename((string) ($this->gallery[4]['full'] ?? ''));
+            $this->galleryAlt5 = trim((string) ($this->gallery[4]['alt'] ?? ''));
+        }
     }
 
     public function syncGalleryFromFormFields(): void
@@ -590,6 +741,8 @@ class Product
             [$this->galleryImage1, $this->galleryAlt1],
             [$this->galleryImage2, $this->galleryAlt2],
             [$this->galleryImage3, $this->galleryAlt3],
+            [$this->galleryImage4, $this->galleryAlt4],
+            [$this->galleryImage5, $this->galleryAlt5],
         ] as [$image, $alt]) {
             if (!\is_string($image) || trim($image) === '') {
                 continue;
@@ -841,6 +994,10 @@ class Product
             'name' => $this->name,
             'sku' => $this->sku,
             'slug' => $this->slug,
+            'model' => $this->model,
+            'brand' => $this->brand,
+            'color' => $this->color,
+            'type' => $this->type,
             'category' => $this->getCategoriesLabel(),
             'categories' => array_values(array_filter(array_map(
                 static fn (Category $category): ?array => ($category->isDefault() || !$category->isEnabled())

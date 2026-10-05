@@ -66,6 +66,12 @@ class ProductCrudController extends AbstractCrudController
     {
         yield IdField::new('id')->hideOnForm();
         yield TextField::new('name', $this->translator->trans('admin.product.name', [], 'messages'));
+        yield TextField::new('model', $this->translator->trans('admin.product.model', [], 'messages'));
+        yield TextField::new('brand', $this->translator->trans('admin.product.brand', [], 'messages'));
+        yield TextField::new('color', $this->translator->trans('admin.product.color', [], 'messages'))
+            ->hideOnIndex();
+        yield TextField::new('type', $this->translator->trans('admin.product.type', [], 'messages'))
+            ->hideOnIndex();
         yield TextField::new('sku', $this->translator->trans('admin.product.sku', [], 'messages'));
         yield TextField::new('slug', $this->translator->trans('admin.product.slug', [], 'messages'))
             ->setHelp($this->translator->trans('admin.product.slug_help', [], 'messages'));
@@ -180,9 +186,25 @@ class ProductCrudController extends AbstractCrudController
             ->setBasePath($galleryBasePath)
             ->setUploadDir($galleryUploadDir)
             ->setRequired(false)
+            ->hideOnIndex();
+        yield TextField::new('galleryAlt3', $this->translator->trans('admin.product.gallery_alt', ['%number%' => 3], 'messages'))
+            ->setRequired(false)
+            ->hideOnIndex();
+        yield ImageField::new('galleryImage4', $this->translator->trans('admin.product.gallery_image', ['%number%' => 4], 'messages'))
+            ->setBasePath($galleryBasePath)
+            ->setUploadDir($galleryUploadDir)
+            ->setRequired(false)
+            ->hideOnIndex();
+        yield TextField::new('galleryAlt4', $this->translator->trans('admin.product.gallery_alt', ['%number%' => 4], 'messages'))
+            ->setRequired(false)
+            ->hideOnIndex();
+        yield ImageField::new('galleryImage5', $this->translator->trans('admin.product.gallery_image', ['%number%' => 5], 'messages'))
+            ->setBasePath($galleryBasePath)
+            ->setUploadDir($galleryUploadDir)
+            ->setRequired(false)
             ->hideOnIndex()
             ->setHelp($this->translator->trans('admin.product.gallery_help', [], 'messages'));
-        yield TextField::new('galleryAlt3', $this->translator->trans('admin.product.gallery_alt', ['%number%' => 3], 'messages'))
+        yield TextField::new('galleryAlt5', $this->translator->trans('admin.product.gallery_alt', ['%number%' => 5], 'messages'))
             ->setRequired(false)
             ->hideOnIndex();
     }
@@ -190,6 +212,7 @@ class ProductCrudController extends AbstractCrudController
     public function persistEntity(EntityManagerInterface $entityManager, $entityInstance): void
     {
         if ($entityInstance instanceof Product) {
+            $entityInstance->rebuildNameFromModelBrand();
             $entityInstance->syncGalleryFromFormFields();
             $this->ensureUniqueSlug($entityInstance);
         }
@@ -200,6 +223,7 @@ class ProductCrudController extends AbstractCrudController
     public function updateEntity(EntityManagerInterface $entityManager, $entityInstance): void
     {
         if ($entityInstance instanceof Product) {
+            $entityInstance->rebuildNameFromModelBrand();
             $entityInstance->syncGalleryFromFormFields();
             $this->ensureUniqueSlug($entityInstance);
         }

@@ -39,6 +39,9 @@ class Category
     #[ORM\Column(options: ['default' => true])]
     private bool $enabled = true;
 
+    #[ORM\Column(options: ['default' => true])]
+    private bool $show_filters = true;
+
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $meta_title = null;
 
@@ -119,6 +122,18 @@ class Category
     public function setEnabled(bool $enabled): static
     {
         $this->enabled = $enabled;
+
+        return $this;
+    }
+
+    public function isShowFilters(): bool
+    {
+        return $this->show_filters;
+    }
+
+    public function setShowFilters(bool $showFilters): static
+    {
+        $this->show_filters = $showFilters;
 
         return $this;
     }
