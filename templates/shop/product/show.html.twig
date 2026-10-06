@@ -13,7 +13,7 @@
 {% set pageOgDescription = product.ogDescription ?: pageMetaDescription %}
 {% set pageOgType = product.ogType ?: 'product' %}
 
-{% set galleryImage = product.gallery[0].full|default('') %}
+{% set galleryImage = product.gallery[0].full|default('')|product_image %}
 {% if product.ogImage %}
     {% set pageOgImage = absolute_url(asset('uploads/images/' ~ product.ogImage)) %}
 {% elseif galleryImage %}

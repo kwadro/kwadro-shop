@@ -19,6 +19,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\NumberField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class ProductCrudController extends AbstractCrudController
@@ -27,6 +28,8 @@ class ProductCrudController extends AbstractCrudController
         private readonly TranslatorInterface $translator,
         private readonly AdminUrlGenerator $adminUrlGenerator,
         private readonly ProductRepository $productRepository,
+        #[Autowire('%kernel.project_dir%')]
+        private readonly string $projectDir,
     ) {
     }
 
@@ -214,6 +217,7 @@ class ProductCrudController extends AbstractCrudController
         if ($entityInstance instanceof Product) {
             $entityInstance->rebuildNameFromModelBrand();
             $entityInstance->syncGalleryFromFormFields();
+            $entityInstance->relocateGalleryFiles($this->projectDir);
             $this->ensureUniqueSlug($entityInstance);
         }
 
@@ -225,6 +229,7 @@ class ProductCrudController extends AbstractCrudController
         if ($entityInstance instanceof Product) {
             $entityInstance->rebuildNameFromModelBrand();
             $entityInstance->syncGalleryFromFormFields();
+            $entityInstance->relocateGalleryFiles($this->projectDir);
             $this->ensureUniqueSlug($entityInstance);
         }
 

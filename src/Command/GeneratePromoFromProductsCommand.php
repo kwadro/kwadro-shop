@@ -199,12 +199,7 @@ final class GeneratePromoFromProductsCommand extends Command
     {
         $gallery = $product->getGallery();
         if (isset($gallery[0]['full']) && \is_string($gallery[0]['full']) && $gallery[0]['full'] !== '') {
-            $full = $gallery[0]['full'];
-            if (str_starts_with($full, '/uploads/')) {
-                return $full;
-            }
-
-            return '/uploads/products/'.basename($full);
+            return \App\Service\Product\ProductImagePath::webPath($gallery[0]['full']);
         }
 
         $slug = $product->getSlug();

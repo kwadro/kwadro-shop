@@ -22,7 +22,7 @@
                 </span>
                 <img
                     id="product-main-image"
-                    src="{{ mainImage.full }}"
+                    src="{{ mainImage.full|product_image }}"
                     alt="{{ mainImage.alt|default(product.name) }}"
                 >
             </div>
@@ -33,11 +33,11 @@
                     <button
                         type="button"
                         class="shop-product__thumb{% if loop.first %} is-active{% endif %}"
-                        data-full="{{ image.full }}"
+                        data-full="{{ image.full|product_image }}"
                         data-alt="{{ image.alt }}"
                         aria-label="{{ image.alt }}"
                     >
-                        <img src="{{ image.thumb }}" alt="{{ image.alt }}">
+                        <img src="{{ image.thumb|product_image }}" alt="{{ image.alt }}">
                     </button>
                 {% endfor %}
             </div>

@@ -548,22 +548,38 @@ class Product
         return $this->gallery;
     }
 
-    /** @param list<array{thumb?: string, full?: string, alt?: string}> $gallery */
+    /** @param list<array{thumb?: string, full?: string, alt?: string}|string> $gallery */
     public function setGallery(array $gallery): static
     {
         $normalized = [];
         foreach ($gallery as $item) {
+            if (\is_string($item)) {
+                $filename = \App\Service\Product\ProductImagePath::filename($item);
+                if ($filename === '') {
+                    continue;
+                }
+                $normalized[] = [
+                    'thumb' => $filename,
+                    'full' => $filename,
+                    'alt' => $this->name,
+                ];
+                continue;
+            }
+
             if (!\is_array($item)) {
                 continue;
             }
 
-            $full = trim((string) ($item['full'] ?? ''));
+            $full = \App\Service\Product\ProductImagePath::filename((string) ($item['full'] ?? ''));
+            if ($full === '') {
+                $full = \App\Service\Product\ProductImagePath::filename((string) ($item['thumb'] ?? ''));
+            }
             if ($full === '') {
                 continue;
             }
 
             $normalized[] = [
-                'thumb' => trim((string) ($item['thumb'] ?? $full)),
+                'thumb' => \App\Service\Product\ProductImagePath::filename((string) ($item['thumb'] ?? $full)) ?: $full,
                 'full' => $full,
                 'alt' => trim((string) ($item['alt'] ?? $this->name)),
             ];
@@ -581,7 +597,7 @@ class Product
 
     public function setGalleryImage1(?string $galleryImage1): static
     {
-        $this->galleryImage1 = $galleryImage1 !== null && trim($galleryImage1) !== '' ? trim($galleryImage1) : null;
+        $this->galleryImage1 = $this->normalizeGalleryFormValue($galleryImage1);
 
         return $this;
     }
@@ -593,7 +609,7 @@ class Product
 
     public function setGalleryImage2(?string $galleryImage2): static
     {
-        $this->galleryImage2 = $galleryImage2 !== null && trim($galleryImage2) !== '' ? trim($galleryImage2) : null;
+        $this->galleryImage2 = $this->normalizeGalleryFormValue($galleryImage2);
 
         return $this;
     }
@@ -605,7 +621,7 @@ class Product
 
     public function setGalleryImage3(?string $galleryImage3): static
     {
-        $this->galleryImage3 = $galleryImage3 !== null && trim($galleryImage3) !== '' ? trim($galleryImage3) : null;
+        $this->galleryImage3 = $this->normalizeGalleryFormValue($galleryImage3);
 
         return $this;
     }
@@ -617,7 +633,7 @@ class Product
 
     public function setGalleryImage4(?string $galleryImage4): static
     {
-        $this->galleryImage4 = $galleryImage4 !== null && trim($galleryImage4) !== '' ? trim($galleryImage4) : null;
+        $this->galleryImage4 = $this->normalizeGalleryFormValue($galleryImage4);
 
         return $this;
     }
@@ -629,7 +645,7 @@ class Product
 
     public function setGalleryImage5(?string $galleryImage5): static
     {
-        $this->galleryImage5 = $galleryImage5 !== null && trim($galleryImage5) !== '' ? trim($galleryImage5) : null;
+        $this->galleryImage5 = $this->normalizeGalleryFormValue($galleryImage5);
 
         return $this;
     }
@@ -709,27 +725,27 @@ class Product
         $this->galleryAlt5 = null;
 
         if (isset($this->gallery[0]) && \is_array($this->gallery[0])) {
-            $this->galleryImage1 = $this->extractGalleryFilename((string) ($this->gallery[0]['full'] ?? ''));
+            $this->galleryImage1 = $this->adminGalleryRelativePath((string) ($this->gallery[0]['full'] ?? ''));
             $this->galleryAlt1 = trim((string) ($this->gallery[0]['alt'] ?? ''));
         }
 
         if (isset($this->gallery[1]) && \is_array($this->gallery[1])) {
-            $this->galleryImage2 = $this->extractGalleryFilename((string) ($this->gallery[1]['full'] ?? ''));
+            $this->galleryImage2 = $this->adminGalleryRelativePath((string) ($this->gallery[1]['full'] ?? ''));
             $this->galleryAlt2 = trim((string) ($this->gallery[1]['alt'] ?? ''));
         }
 
         if (isset($this->gallery[2]) && \is_array($this->gallery[2])) {
-            $this->galleryImage3 = $this->extractGalleryFilename((string) ($this->gallery[2]['full'] ?? ''));
+            $this->galleryImage3 = $this->adminGalleryRelativePath((string) ($this->gallery[2]['full'] ?? ''));
             $this->galleryAlt3 = trim((string) ($this->gallery[2]['alt'] ?? ''));
         }
 
         if (isset($this->gallery[3]) && \is_array($this->gallery[3])) {
-            $this->galleryImage4 = $this->extractGalleryFilename((string) ($this->gallery[3]['full'] ?? ''));
+            $this->galleryImage4 = $this->adminGalleryRelativePath((string) ($this->gallery[3]['full'] ?? ''));
             $this->galleryAlt4 = trim((string) ($this->gallery[3]['alt'] ?? ''));
         }
 
         if (isset($this->gallery[4]) && \is_array($this->gallery[4])) {
-            $this->galleryImage5 = $this->extractGalleryFilename((string) ($this->gallery[4]['full'] ?? ''));
+            $this->galleryImage5 = $this->adminGalleryRelativePath((string) ($this->gallery[4]['full'] ?? ''));
             $this->galleryAlt5 = trim((string) ($this->gallery[4]['alt'] ?? ''));
         }
     }
@@ -748,10 +764,14 @@ class Product
                 continue;
             }
 
-            $full = $this->normalizeGalleryImagePath($image);
+            $filename = \App\Service\Product\ProductImagePath::filename($image);
+            if ($filename === '') {
+                continue;
+            }
+
             $items[] = [
-                'thumb' => $full,
-                'full' => $full,
+                'thumb' => $filename,
+                'full' => $filename,
                 'alt' => \is_string($alt) && trim($alt) !== '' ? trim($alt) : $this->name,
             ];
         }
@@ -759,7 +779,67 @@ class Product
         $this->setGallery($items);
     }
 
-    private function extractGalleryFilename(string $path): ?string
+    /**
+     * Relocate freshly uploaded flat files into sharded directories.
+     */
+    public function relocateGalleryFiles(string $projectDir): void
+    {
+        foreach ($this->gallery as $item) {
+            if (!\is_array($item)) {
+                continue;
+            }
+            $filename = \App\Service\Product\ProductImagePath::filename((string) ($item['full'] ?? ''));
+            if ($filename === '') {
+                continue;
+            }
+            \App\Service\Product\ProductImagePath::ensureStored($projectDir, $filename);
+        }
+    }
+
+    /** @return list<array{thumb: string, full: string, alt: string}> */
+    public function getGalleryForCatalog(): array
+    {
+        $resolved = [];
+        foreach ($this->gallery as $item) {
+            if (!\is_array($item)) {
+                continue;
+            }
+            $filename = \App\Service\Product\ProductImagePath::filename((string) ($item['full'] ?? $item['thumb'] ?? ''));
+            if ($filename === '') {
+                continue;
+            }
+            $webPath = \App\Service\Product\ProductImagePath::webPath($filename);
+            $resolved[] = [
+                'thumb' => $webPath,
+                'full' => $webPath,
+                'alt' => trim((string) ($item['alt'] ?? $this->name)),
+            ];
+        }
+
+        return $resolved;
+    }
+
+    private function normalizeGalleryFormValue(?string $value): ?string
+    {
+        if ($value === null || trim($value) === '') {
+            return null;
+        }
+
+        $value = trim($value);
+        if (str_starts_with($value, 'http://') || str_starts_with($value, 'https://')) {
+            return $value;
+        }
+
+        $filename = \App\Service\Product\ProductImagePath::filename($value);
+        if ($filename === '') {
+            return null;
+        }
+
+        // Keep relative shard path for EasyAdmin preview (basePath=/uploads/products).
+        return \App\Service\Product\ProductImagePath::relativePath($filename);
+    }
+
+    private function adminGalleryRelativePath(string $path): ?string
     {
         $path = trim($path);
         if ($path === '') {
@@ -770,21 +850,12 @@ class Product
             return $path;
         }
 
-        return basename($path);
-    }
-
-    private function normalizeGalleryImagePath(string $image): string
-    {
-        $image = trim($image);
-        if (str_starts_with($image, 'http://') || str_starts_with($image, 'https://')) {
-            return $image;
+        $filename = \App\Service\Product\ProductImagePath::filename($path);
+        if ($filename === '') {
+            return null;
         }
 
-        if (str_starts_with($image, '/uploads/')) {
-            return $image;
-        }
-
-        return '/uploads/products/' . basename($image);
+        return \App\Service\Product\ProductImagePath::relativePath($filename);
     }
 
     /** @return Collection<int, ProductOffer> */
@@ -1032,7 +1103,7 @@ class Product
             'ogType' => $this->og_type,
             'ogImage' => $this->og_image,
             'features' => $this->features,
-            'gallery' => $this->gallery,
+            'gallery' => $this->getGalleryForCatalog(),
             'offersCount' => \count($offers),
             'offers' => $offers,
             'selectedOfferId' => $selectedOffer['id'] ?? null,

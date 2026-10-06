@@ -6,7 +6,7 @@
 } %}
 <article class="shop-product-card">
     <a class="shop-product-card__media" href="{{ path('shop_product', {_locale: app.request.locale, slug: product.slug}) }}">
-        <img src="{{ image.full }}" alt="{{ image.alt|default(product.name) }}">
+        <img src="{{ image.full|product_image }}" alt="{{ image.alt|default(product.name) }}">
         {% if product.badge %}
             <span class="shop-product-card__badge">{{ product.badge }}</span>
         {% endif %}
@@ -28,7 +28,7 @@
         </div>
         <p class="shop-product-card__stock{% if product.inStock %} shop-product-card__stock--in{% else %} shop-product-card__stock--out{% endif %}">
             {% if product.inStock %}
-                {{ 'shop.product.in_stock'|trans({'%qty%': product.stockQty}) }}
+                {{ 'shop.product.in_stock_available'|trans }}
             {% else %}
                 {{ 'shop.product.out_of_stock'|trans }}
             {% endif %}

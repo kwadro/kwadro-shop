@@ -5,6 +5,7 @@ namespace App\Command;
 use App\Entity\Product;
 use App\Repository\CategoryRepository;
 use App\Repository\ProductRepository;
+use App\Service\Product\ProductImagePath;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -16,7 +17,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 #[AsCommand(
     name: 'app:product:assign-kronshteyny-images',
-    description: 'Assign gallery images for Kronshteyny products from uploads/products/{model}.png pattern',
+    description: 'Assign gallery images for Kronshteyny products from {model}.png pattern',
 )]
 final class ProductAssignKronshteynyImagesCommand extends Command
 {
@@ -51,13 +52,8 @@ final class ProductAssignKronshteynyImagesCommand extends Command
         $io = new SymfonyStyle($input, $output);
         $dryRun = (bool) $input->getOption('dry-run');
         $sourceDir = rtrim((string) $input->getOption('source-dir'), '/');
-        $uploadsDir = $this->projectDir.'/public/uploads/products';
 
-        if (!is_dir($uploadsDir) && !$dryRun) {
-            mkdir($uploadsDir, 0775, true);
-        }
-
-        $copied = $this->copyFromSource($sourceDir, $uploadsDir, $dryRun, $io);
+        $copied = $this->copyFromSource($sourceDir, $dryRun, $io);
 
         $category = $this->categoryRepository->findOneBy(['slug' => 'kronshteyny']);
         if ($category === null) {
@@ -89,7 +85,7 @@ final class ProductAssignKronshteynyImagesCommand extends Command
                 continue;
             }
 
-            $gallery = $this->buildGalleryForModel($model, $uploadsDir, $product->getName());
+            $gallery = $this->buildGalleryForModel($model, $product->getName(), $dryRun);
             if ($gallery === []) {
                 ++$missing;
                 $io->text(sprintf('  ? no images for %s', $model));
@@ -119,7 +115,7 @@ final class ProductAssignKronshteynyImagesCommand extends Command
         return Command::SUCCESS;
     }
 
-    private function copyFromSource(string $sourceDir, string $uploadsDir, bool $dryRun, SymfonyStyle $io): int
+    private function copyFromSource(string $sourceDir, bool $dryRun, SymfonyStyle $io): int
     {
         if (!is_dir($sourceDir)) {
             return 0;
@@ -134,18 +130,30 @@ final class ProductAssignKronshteynyImagesCommand extends Command
             if (!is_file($src)) {
                 continue;
             }
-            $dst = $uploadsDir.'/'.$file;
-            if (is_file($dst)) {
+
+            $filename = ProductImagePath::filename($file);
+            if ($filename === '') {
                 continue;
             }
+
+            $target = ProductImagePath::absolutePath($this->projectDir, $filename);
+            if (is_file($target)) {
+                continue;
+            }
+
             if (!$dryRun) {
-                if (!copy($src, $dst)) {
+                $targetDir = \dirname($target);
+                if (!is_dir($targetDir) && !mkdir($targetDir, 0775, true) && !is_dir($targetDir)) {
+                    $io->warning(sprintf('Cannot create dir for %s', $filename));
+                    continue;
+                }
+                if (!copy($src, $target)) {
                     $io->warning(sprintf('Failed to copy %s', $file));
                     continue;
                 }
             }
             ++$copied;
-            $io->text(sprintf('  copy %s → uploads/products/', $file));
+            $io->text(sprintf('  copy %s → %s', $file, ProductImagePath::relativePath($filename)));
         }
 
         return $copied;
@@ -154,21 +162,25 @@ final class ProductAssignKronshteynyImagesCommand extends Command
     /**
      * @return list<array{thumb: string, full: string, alt: string}>
      */
-    private function buildGalleryForModel(string $model, string $uploadsDir, string $productName): array
+    private function buildGalleryForModel(string $model, string $productName, bool $dryRun): array
     {
         $gallery = [];
         foreach (self::SUFFIXES as $suffix) {
             $filename = $model.$suffix.'.png';
-            $path = $uploadsDir.'/'.$filename;
-            if (!is_file($path)) {
-                // Also accept files already present with only basename match after copy.
+            $target = ProductImagePath::absolutePath($this->projectDir, $filename);
+            $flat = $this->projectDir.'/public'.ProductImagePath::WEB_BASE.'/'.$filename;
+
+            if (!is_file($target) && is_file($flat) && !$dryRun) {
+                ProductImagePath::ensureStored($this->projectDir, $filename);
+            }
+
+            if (!is_file($target) && !is_file($flat)) {
                 continue;
             }
 
-            $webPath = '/uploads/products/'.$filename;
             $gallery[] = [
-                'thumb' => $webPath,
-                'full' => $webPath,
+                'thumb' => $filename,
+                'full' => $filename,
                 'alt' => $productName !== '' ? $productName : $model,
             ];
         }

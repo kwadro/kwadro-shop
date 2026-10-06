@@ -45,7 +45,6 @@
                     height="72"
                 >
             </a>
-            {% include 'shop/partials/_mini_cart.html.twig' %}
         </div>
         <form
             class="shop-header-search"
@@ -65,6 +64,7 @@
             >
             <button class="shop-header-search__button" type="submit">{{ 'shop.search.button'|trans }}</button>
         </form>
+        {% include 'shop/partials/_mini_cart.html.twig' %}
         <div class="shop-header__actions">
             <div class="shop-header__phone-container">
                 {% set phoneLinks = setting.header.phone_links|default([

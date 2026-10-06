@@ -13,108 +13,136 @@
 <div class="shop-catalog{% if showFilters|default(false) %} shop-catalog--with-filters{% endif %}">
     {% if showFilters|default(false) %}
         <aside class="shop-catalog__filters" aria-label="{{ 'shop.filter.title'|trans }}">
-            <form class="shop-filters" method="get" action="{{ filterAction }}">
+            <form class="shop-filters" method="get" action="{{ filterAction }}" data-shop-filters>
                 {% if preserveQuery|default(false) and query|default('') != '' %}
                     <input type="hidden" name="q" value="{{ query }}">
                 {% endif %}
 
                 <div class="shop-filters__header">
-                    <h2 class="shop-filters__title">{{ 'shop.filter.title'|trans }}</h2>
+                    <button
+                        type="button"
+                        class="shop-filters__panel-toggle"
+                        data-filter-panel-toggle
+                        aria-expanded="true"
+                        aria-controls="shop-filters-panel-body"
+                    >
+                        <span class="shop-filters__title">{{ 'shop.filter.title'|trans }}</span>
+                        <span class="shop-filters__chevron" aria-hidden="true"></span>
+                    </button>
                 </div>
 
-                {% if activeFilters|default([]) is not empty %}
-                    <div class="shop-filters__selected" aria-label="{{ 'shop.filter.selected'|trans }}">
-                        <div class="shop-filters__chips">
-                            {% for item in activeFilters %}
-                                {% set chipHref = filterAction ~ (item.query is not empty ? '?' ~ item.query|url_encode : '') %}
-                                <a
-                                    class="shop-filters__chip"
-                                    href="{{ chipHref }}"
-                                    title="{{ 'shop.filter.remove'|trans }}"
-                                >
-                                    <span class="shop-filters__chip-label">{{ facetLabels[item.attr]|default(item.attr) }}: {{ item.value }}</span>
-                                    <span class="shop-filters__chip-remove" aria-hidden="true">×</span>
-                                    <span class="visually-hidden">{{ 'shop.filter.remove'|trans }}</span>
-                                </a>
-                            {% endfor %}
-                        </div>
-                        {% if activeFilters|length > 1 %}
-                            <a class="shop-filters__clear-all" href="{{ clearAllHref }}">
-                                {{ 'shop.filter.clear_all'|trans }}
-                            </a>
-                        {% endif %}
-                    </div>
-                {% endif %}
-
-                {% for attr, options in facets|default({}) %}
-                    {% if options|length > 1 %}
-                        {% set visibleLimit = 5 %}
-                        {% set hasMore = options|length > visibleLimit %}
-                        {% set extraOptions = hasMore ? options|slice(visibleLimit) : [] %}
-                        {% set selectedValues = filters[attr]|default([]) %}
-                        {% set extraValues = extraOptions|map(o => o.value) %}
-                        {% set hiddenChecked = selectedValues|filter(v => v in extraValues)|length > 0 %}
-                        <fieldset class="shop-filters__group">
-                            <legend class="shop-filters__legend">{{ facetLabels[attr]|default(attr) }}</legend>
-                            <div class="shop-filters__options">
-                                {% for option in options|slice(0, visibleLimit) %}
-                                    {% set checked = option.value in selectedValues %}
-                                    <label class="shop-filters__option">
-                                        <input
-                                            type="checkbox"
-                                            name="{{ attr }}[]"
-                                            value="{{ option.value }}"
-                                            {% if checked %}checked{% endif %}
-                                            onchange="this.form.submit()"
-                                        >
-                                        <span class="shop-filters__option-label">{{ option.value }}</span>
-                                        <span class="shop-filters__option-count">({{ option.count }})</span>
-                                    </label>
-                                {% endfor %}
-
-                                {% if hasMore %}
-                                    <div
-                                        class="shop-filters__options-extra"
-                                        {% if not hiddenChecked %}hidden{% endif %}
-                                        data-filter-extra
+                <div class="shop-filters__body" id="shop-filters-panel-body" data-filter-panel-body>
+                    {% if activeFilters|default([]) is not empty %}
+                        <div class="shop-filters__selected" aria-label="{{ 'shop.filter.selected'|trans }}">
+                            <div class="shop-filters__chips">
+                                {% for item in activeFilters %}
+                                    {% set chipHref = filterAction ~ (item.query is not empty ? '?' ~ item.query|url_encode : '') %}
+                                    <a
+                                        class="shop-filters__chip"
+                                        href="{{ chipHref }}"
+                                        title="{{ 'shop.filter.remove'|trans }}"
                                     >
-                                        {% for option in extraOptions %}
-                                            {% set checked = option.value in selectedValues %}
-                                            <label class="shop-filters__option">
-                                                <input
-                                                    type="checkbox"
-                                                    name="{{ attr }}[]"
-                                                    value="{{ option.value }}"
-                                                    {% if checked %}checked{% endif %}
-                                                    onchange="this.form.submit()"
-                                                >
-                                                <span class="shop-filters__option-label">{{ option.value }}</span>
-                                                <span class="shop-filters__option-count">({{ option.count }})</span>
-                                            </label>
-                                        {% endfor %}
-                                    </div>
+                                        <span class="shop-filters__chip-label">{{ facetLabels[item.attr]|default(item.attr) }}: {{ item.value }}</span>
+                                        <span class="shop-filters__chip-remove" aria-hidden="true">×</span>
+                                        <span class="visually-hidden">{{ 'shop.filter.remove'|trans }}</span>
+                                    </a>
+                                {% endfor %}
+                            </div>
+                            {% if activeFilters|length > 1 %}
+                                <a class="shop-filters__clear-all" href="{{ clearAllHref }}">
+                                    {{ 'shop.filter.clear_all'|trans }}
+                                </a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                    {% for attr, options in facets|default({}) %}
+                        {% if options|length > 1 %}
+                            {% set visibleLimit = 5 %}
+                            {% set hasMore = options|length > visibleLimit %}
+                            {% set extraOptions = hasMore ? options|slice(visibleLimit) : [] %}
+                            {% set selectedValues = filters[attr]|default([]) %}
+                            {% set extraValues = extraOptions|map(o => o.value) %}
+                            {% set hiddenChecked = selectedValues|filter(v => v in extraValues)|length > 0 %}
+                            {% set groupId = 'shop-filter-group-' ~ attr %}
+                            {% set groupHasSelection = selectedValues|length > 0 %}
+                            <fieldset class="shop-filters__group" data-filter-group{% if groupHasSelection %} data-has-selection{% endif %}>
+                                <legend class="shop-filters__legend">
                                     <button
                                         type="button"
-                                        class="shop-filters__show-all"
-                                        data-filter-toggle
-                                        data-label-more="{{ 'shop.filter.show_all'|trans({'%count%': extraOptions|length}) }}"
-                                        data-label-less="{{ 'shop.filter.show_less'|trans }}"
-                                        aria-expanded="{{ hiddenChecked ? 'true' : 'false' }}"
+                                        class="shop-filters__group-toggle"
+                                        data-filter-group-toggle
+                                        aria-expanded="true"
+                                        aria-controls="{{ groupId }}"
                                     >
-                                        {{ hiddenChecked
-                                            ? 'shop.filter.show_less'|trans
-                                            : 'shop.filter.show_all'|trans({'%count%': extraOptions|length})
-                                        }}
+                                        <span>{{ facetLabels[attr]|default(attr) }}</span>
+                                        <span class="shop-filters__chevron" aria-hidden="true"></span>
                                     </button>
-                                {% endif %}
-                            </div>
-                        </fieldset>
-                    {% endif %}
-                {% endfor %}
+                                </legend>
+                                <div
+                                    class="shop-filters__options"
+                                    id="{{ groupId }}"
+                                    data-filter-group-body
+                                >
+                                    {% for option in options|slice(0, visibleLimit) %}
+                                        {% set checked = option.value in selectedValues %}
+                                        <label class="shop-filters__option">
+                                            <input
+                                                type="checkbox"
+                                                name="{{ attr }}[]"
+                                                value="{{ option.value }}"
+                                                {% if checked %}checked{% endif %}
+                                                onchange="this.form.submit()"
+                                            >
+                                            <span class="shop-filters__option-label">{{ option.value }}</span>
+                                            <span class="shop-filters__option-count">({{ option.count }})</span>
+                                        </label>
+                                    {% endfor %}
 
-                <noscript>
-                    <button class="shop-filters__submit" type="submit">{{ 'shop.filter.apply'|trans }}</button>
-                </noscript>
+                                    {% if hasMore %}
+                                        <div
+                                            class="shop-filters__options-extra"
+                                            {% if not hiddenChecked %}hidden{% endif %}
+                                            data-filter-extra
+                                        >
+                                            {% for option in extraOptions %}
+                                                {% set checked = option.value in selectedValues %}
+                                                <label class="shop-filters__option">
+                                                    <input
+                                                        type="checkbox"
+                                                        name="{{ attr }}[]"
+                                                        value="{{ option.value }}"
+                                                        {% if checked %}checked{% endif %}
+                                                        onchange="this.form.submit()"
+                                                    >
+                                                    <span class="shop-filters__option-label">{{ option.value }}</span>
+                                                    <span class="shop-filters__option-count">({{ option.count }})</span>
+                                                </label>
+                                            {% endfor %}
+                                        </div>
+                                        <button
+                                            type="button"
+                                            class="shop-filters__show-all"
+                                            data-filter-toggle
+                                            data-label-more="{{ 'shop.filter.show_all'|trans({'%count%': extraOptions|length}) }}"
+                                            data-label-less="{{ 'shop.filter.show_less'|trans }}"
+                                            aria-expanded="{{ hiddenChecked ? 'true' : 'false' }}"
+                                        >
+                                            {{ hiddenChecked
+                                                ? 'shop.filter.show_less'|trans
+                                                : 'shop.filter.show_all'|trans({'%count%': extraOptions|length})
+                                            }}
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </fieldset>
+                        {% endif %}
+                    {% endfor %}
+
+                    <noscript>
+                        <button class="shop-filters__submit" type="submit">{{ 'shop.filter.apply'|trans }}</button>
+                    </noscript>
+                </div>
             </form>
         </aside>
     {% endif %}
@@ -149,6 +177,71 @@
 
 <script>
 (() => {
+    const mobileMq = window.matchMedia('(max-width: 900px)');
+
+    const setExpanded = (button, body, expanded, group) => {
+        button.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        if (body) {
+            body.hidden = !expanded;
+        }
+        if (group) {
+            group.classList.toggle('is-collapsed', !expanded);
+        }
+    };
+
+    const applyViewportState = () => {
+        const isMobile = mobileMq.matches;
+
+        document.querySelectorAll('[data-filter-panel-toggle]').forEach((button) => {
+            const form = button.closest('[data-shop-filters]');
+            const body = form?.querySelector('[data-filter-panel-body]');
+            if (!isMobile) {
+                setExpanded(button, body, true);
+            }
+        });
+
+        document.querySelectorAll('[data-filter-group-toggle]').forEach((button) => {
+            const group = button.closest('[data-filter-group]');
+            const body = group?.querySelector('[data-filter-group-body]');
+            if (!isMobile) {
+                setExpanded(button, body, true, group);
+                return;
+            }
+            // On mobile: keep sections with active filters open, collapse the rest.
+            if (group?.dataset.userToggled === '1') {
+                return;
+            }
+            setExpanded(button, body, group?.hasAttribute('data-has-selection') ?? false, group);
+        });
+    };
+
+    document.querySelectorAll('[data-filter-panel-toggle]').forEach((button) => {
+        button.addEventListener('click', () => {
+            if (!mobileMq.matches) {
+                return;
+            }
+            const form = button.closest('[data-shop-filters]');
+            const body = form?.querySelector('[data-filter-panel-body]');
+            const expanded = button.getAttribute('aria-expanded') === 'true';
+            setExpanded(button, body, !expanded);
+        });
+    });
+
+    document.querySelectorAll('[data-filter-group-toggle]').forEach((button) => {
+        button.addEventListener('click', () => {
+            if (!mobileMq.matches) {
+                return;
+            }
+            const group = button.closest('[data-filter-group]');
+            const body = group?.querySelector('[data-filter-group-body]');
+            const expanded = button.getAttribute('aria-expanded') === 'true';
+            if (group) {
+                group.dataset.userToggled = '1';
+            }
+            setExpanded(button, body, !expanded, group);
+        });
+    });
+
     document.querySelectorAll('[data-filter-toggle]').forEach((button) => {
         button.addEventListener('click', () => {
             const extra = button.parentElement?.querySelector('[data-filter-extra]');
@@ -163,5 +256,13 @@
                 : button.dataset.labelLess;
         });
     });
+
+    mobileMq.addEventListener('change', () => {
+        document.querySelectorAll('[data-filter-group]').forEach((group) => {
+            delete group.dataset.userToggled;
+        });
+        applyViewportState();
+    });
+    applyViewportState();
 })();
 </script>

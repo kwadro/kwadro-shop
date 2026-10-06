@@ -5,7 +5,7 @@
                 {% if item.image %}
                     <img
                         class="shop-minicart__thumb"
-                        src="{{ item.image }}"
+                        src="{{ item.image|product_image }}"
                         alt="{{ item.name }}"
                         width="56"
                         height="56"
