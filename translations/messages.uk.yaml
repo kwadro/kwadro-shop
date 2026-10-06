@@ -46,6 +46,10 @@ menu.link_supplier: Постачальники
 menu.link_supplier_single: Постачальник
 menu.link_product_offer: Цінові пропозиції
 menu.link_product_offer_single: Цінова пропозиція
+menu.link_product_import: Імпорти продуктів
+menu.link_product_import_single: Імпорт продуктів
+menu.link_product_import_run: Історія імпортів
+menu.link_product_import_run_single: Запуск імпорту
 menu.link_blog_article: Статті блогу
 menu.link_blog_article_single: Стаття блогу
 menu.link_blog_category: Категорії блогу
@@ -195,6 +199,32 @@ admin.product.in_stock: В наявності
 admin.product.enabled: Включено
 admin.product.enabled_yes: Так
 admin.product.enabled_no: Ні
+admin.product_import.name: Назва
+admin.product_import.code: Код
+admin.product_import.mode: Режим імпорту
+admin.product_import.mode_help: 'Add/Update — додати нові та оновити ціну/наявність/опис. Delete Add/Update — те саме + вимкнути товари постачальника, яких немає у файлі.'
+admin.product_import.file_path: Шлях до файлу
+admin.product_import.file_path_help: 'Відносно кореня проєкту або абсолютний шлях.'
+admin.product_import.disabled_skus: SKU для Disabled
+admin.product_import.disabled_skus_help: 'Один SKU на рядок. Ці товари будуть вимкнені після імпорту.'
+admin.product_import.active: Активний
+admin.product_import.last_run_at: Останній запуск
+admin.product_import.last_result: Останній результат
+admin.product_import.run: Запустити
+admin.product_import.run_ok: Імпорт завершено
+admin.product_import.run_missing: Імпорт не знайдено
+admin.product_import.run_inactive: Імпорт неактивний
+admin.product_import.run_unsupported: Невідомий тип імпорту
+admin.product_import_run.import: Імпорт
+admin.product_import_run.started_at: Початок
+admin.product_import_run.finished_at: Завершення
+admin.product_import_run.status: Статус
+admin.product_import_run.created: Створено
+admin.product_import_run.updated: Оновлено
+admin.product_import_run.disabled: Вимкнено
+admin.product_import_run.deleted: Видалено/деактивовано
+admin.product_import_run.result: Результат
+admin.product_import_run.error: Помилка
 admin.product.stock_qty: Кількість на складі
 admin.product.badge: Бейдж
 admin.product.short_description: Короткий опис

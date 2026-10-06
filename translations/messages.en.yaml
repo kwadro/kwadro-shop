@@ -46,6 +46,10 @@ menu.link_supplier: Suppliers
 menu.link_supplier_single: Supplier
 menu.link_product_offer: Product offers
 menu.link_product_offer_single: Product offer
+menu.link_product_import: Product imports
+menu.link_product_import_single: Product import
+menu.link_product_import_run: Import history
+menu.link_product_import_run_single: Import run
 menu.link_blog_article: Blog articles
 menu.link_blog_article_single: Blog article
 menu.link_blog_category: Blog categories
@@ -195,6 +199,32 @@ admin.product.in_stock: In stock
 admin.product.enabled: Enabled
 admin.product.enabled_yes: Yes
 admin.product.enabled_no: No
+admin.product_import.name: Name
+admin.product_import.code: Code
+admin.product_import.mode: Import mode
+admin.product_import.mode_help: 'Add/Update — create new and update price/stock/description. Delete Add/Update — same plus disable supplier products missing from the file.'
+admin.product_import.file_path: File path
+admin.product_import.file_path_help: 'Relative to project root or absolute path.'
+admin.product_import.disabled_skus: SKUs to disable
+admin.product_import.disabled_skus_help: 'One SKU per line. These products will be disabled after import.'
+admin.product_import.active: Active
+admin.product_import.last_run_at: Last run
+admin.product_import.last_result: Last result
+admin.product_import.run: Run
+admin.product_import.run_ok: Import finished
+admin.product_import.run_missing: Import not found
+admin.product_import.run_inactive: Import is inactive
+admin.product_import.run_unsupported: Unsupported import type
+admin.product_import_run.import: Import
+admin.product_import_run.started_at: Started at
+admin.product_import_run.finished_at: Finished at
+admin.product_import_run.status: Status
+admin.product_import_run.created: Created
+admin.product_import_run.updated: Updated
+admin.product_import_run.disabled: Disabled
+admin.product_import_run.deleted: Deleted/deactivated
+admin.product_import_run.result: Result
+admin.product_import_run.error: Error
 admin.product.stock_qty: Stock quantity
 admin.product.badge: Badge
 admin.product.short_description: Short description

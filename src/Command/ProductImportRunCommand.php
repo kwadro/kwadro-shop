@@ -12,19 +12,16 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 #[AsCommand(
-    name: 'app:product:import-sivitek',
-    description: 'Import/sync SiViTek price sheet (delegates to configured product import)',
+    name: 'app:product-import:run',
+    description: 'Run a configured product import (sync price, stock and description)',
 )]
-final class ProductImportSivitekCommand extends Command
+final class ProductImportRunCommand extends Command
 {
     public function __construct(
         private readonly ProductImportRepository $productImportRepository,
         private readonly SivitekProductImportService $sivitekProductImportService,
-        #[Autowire('%kernel.project_dir%')]
-        private readonly string $projectDir,
     ) {
         parent::__construct();
     }
@@ -32,12 +29,8 @@ final class ProductImportSivitekCommand extends Command
     protected function configure(): void
     {
         $this
-            ->addOption(
-                'file',
-                null,
-                InputOption::VALUE_REQUIRED,
-                'Optional path override for SiViTek .xls/.xlsx price file',
-            )
+            ->addOption('code', null, InputOption::VALUE_REQUIRED, 'Import code', ProductImport::CODE_SIVITEK)
+            ->addOption('id', null, InputOption::VALUE_REQUIRED, 'Import entity id')
             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Parse and report without writing');
     }
 
@@ -45,24 +38,33 @@ final class ProductImportSivitekCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
         $dryRun = (bool) $input->getOption('dry-run');
+        $id = $input->getOption('id');
 
-        $import = $this->productImportRepository->findOneByCode(ProductImport::CODE_SIVITEK);
+        if ($id !== null && $id !== '') {
+            $import = $this->productImportRepository->find((int) $id);
+        } else {
+            $import = $this->productImportRepository->findOneByCode((string) $input->getOption('code'));
+        }
+
         if ($import === null) {
-            $io->error('SiViTek product import is not configured in the database.');
+            $io->error('Product import not found.');
 
             return Command::FAILURE;
         }
 
-        $file = $input->getOption('file');
-        if (\is_string($file) && trim($file) !== '') {
-            $path = trim($file);
-            if (!str_starts_with($path, '/')) {
-                $path = $this->projectDir.'/'.ltrim($path, '/');
-            }
-            $import->setFilePath($path);
+        if (!$import->isActive()) {
+            $io->error(sprintf('Import "%s" is inactive.', $import->getName()));
+
+            return Command::FAILURE;
         }
 
-        $run = $this->sivitekProductImportService->run($import, $dryRun);
+        $io->title(sprintf('Running import: %s (%s)', $import->getName(), $import->getCode()));
+
+        $run = match ($import->getCode()) {
+            ProductImport::CODE_SIVITEK => $this->sivitekProductImportService->run($import, $dryRun),
+            default => throw new \RuntimeException(sprintf('Unsupported import code: %s', $import->getCode())),
+        };
+
         if ($run->getStatus() === ProductImportRunStatus::Failed) {
             $io->error($run->getErrorMessage() ?? $run->getResult() ?? 'Import failed.');
 
