@@ -17,12 +17,15 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 #[AsCommand(
     name: 'app:product:assign-kronshteyny-images',
-    description: 'Assign gallery images for Kronshteyny products from {model}.png pattern',
+    description: 'Assign gallery images for Kronshteyny products from {model}.png / {model}.jpg pattern',
 )]
 final class ProductAssignKronshteynyImagesCommand extends Command
 {
     /** @var list<string> */
     private const SUFFIXES = ['', '_1', '_2', '_3', '_4'];
+
+    /** @var list<string> Prefer PNG, then JPG */
+    private const EXTENSIONS = ['png', 'jpg'];
 
     public function __construct(
         private readonly EntityManagerInterface $em,
@@ -136,6 +139,11 @@ final class ProductAssignKronshteynyImagesCommand extends Command
                 continue;
             }
 
+            $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+            if (!\in_array($ext, self::EXTENSIONS, true)) {
+                continue;
+            }
+
             $target = ProductImagePath::absolutePath($this->projectDir, $filename);
             if (is_file($target)) {
                 continue;
@@ -166,15 +174,8 @@ final class ProductAssignKronshteynyImagesCommand extends Command
     {
         $gallery = [];
         foreach (self::SUFFIXES as $suffix) {
-            $filename = $model.$suffix.'.png';
-            $target = ProductImagePath::absolutePath($this->projectDir, $filename);
-            $flat = $this->projectDir.'/public'.ProductImagePath::WEB_BASE.'/'.$filename;
-
-            if (!is_file($target) && is_file($flat) && !$dryRun) {
-                ProductImagePath::ensureStored($this->projectDir, $filename);
-            }
-
-            if (!is_file($target) && !is_file($flat)) {
+            $filename = $this->resolveImageFilename($model.$suffix, $dryRun);
+            if ($filename === null) {
                 continue;
             }
 
@@ -186,5 +187,27 @@ final class ProductAssignKronshteynyImagesCommand extends Command
         }
 
         return $gallery;
+    }
+
+    /**
+     * Prefer .png, then .jpg. Returns basename only when a file exists (or will after relocate).
+     */
+    private function resolveImageFilename(string $basename, bool $dryRun): ?string
+    {
+        foreach (self::EXTENSIONS as $ext) {
+            $filename = $basename.'.'.$ext;
+            $target = ProductImagePath::absolutePath($this->projectDir, $filename);
+            $flat = $this->projectDir.'/public'.ProductImagePath::WEB_BASE.'/'.$filename;
+
+            if (!is_file($target) && is_file($flat) && !$dryRun) {
+                ProductImagePath::ensureStored($this->projectDir, $filename);
+            }
+
+            if (is_file($target) || is_file($flat)) {
+                return $filename;
+            }
+        }
+
+        return null;
     }
 }
