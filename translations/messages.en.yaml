@@ -192,6 +192,9 @@ admin.product.package_height: Package height (cm)
 admin.product.package_width: Package width (cm)
 admin.product.package_length: Package length (cm)
 admin.product.in_stock: In stock
+admin.product.enabled: Enabled
+admin.product.enabled_yes: Yes
+admin.product.enabled_no: No
 admin.product.stock_qty: Stock quantity
 admin.product.badge: Badge
 admin.product.short_description: Short description

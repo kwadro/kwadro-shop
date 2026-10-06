@@ -28,6 +28,7 @@ class ProductRepository extends ServiceEntityRepository
 
         $featured = $this->createQueryBuilder('p')
             ->select('p.id')
+            ->andWhere('p.enabled = true')
             ->orderBy('p.id', 'ASC')
             ->setMaxResults(1)
             ->getQuery()
@@ -50,6 +51,7 @@ class ProductRepository extends ServiceEntityRepository
             ->leftJoin('p.categories', 'c')
             ->addSelect('c')
             ->andWhere('p.id = :id')
+            ->andWhere('p.enabled = true')
             ->setParameter('id', $id)
             ->getQuery()
             ->getOneOrNullResult();
@@ -70,6 +72,7 @@ class ProductRepository extends ServiceEntityRepository
             ->leftJoin('p.categories', 'c')
             ->addSelect('c')
             ->andWhere('p.slug = :slug')
+            ->andWhere('p.enabled = true')
             ->setParameter('slug', $slug)
             ->getQuery()
             ->getOneOrNullResult();
@@ -102,6 +105,7 @@ class ProductRepository extends ServiceEntityRepository
             ->leftJoin('o.supplier', 's')
             ->addSelect('s')
             ->andWhere('c = :category')
+            ->andWhere('p.enabled = true')
             ->setParameter('category', $category)
             ->orderBy('p.name', 'ASC')
             ->getQuery()
@@ -121,6 +125,7 @@ class ProductRepository extends ServiceEntityRepository
             ->leftJoin('p.categories', 'c')
             ->addSelect('c')
             ->andWhere('s = :supplier')
+            ->andWhere('p.enabled = true')
             ->setParameter('supplier', $supplier)
             ->orderBy('p.name', 'ASC')
             ->getQuery()
@@ -243,7 +248,8 @@ class ProductRepository extends ServiceEntityRepository
      */
     private function createCatalogQueryBuilder(array $criteria): QueryBuilder
     {
-        $qb = $this->createQueryBuilder('p');
+        $qb = $this->createQueryBuilder('p')
+            ->andWhere('p.enabled = true');
 
         if (($criteria['category'] ?? null) instanceof Category) {
             $qb->innerJoin('p.categories', 'c_scope')
@@ -287,6 +293,7 @@ class ProductRepository extends ServiceEntityRepository
         $rows = $this->createQueryBuilder('p')
             ->select('p.slug AS slug', 'p.updated_at AS updatedAt')
             ->innerJoin('p.categories', 'c')
+            ->andWhere('p.enabled = true')
             ->andWhere('c.enabled = true')
             ->andWhere('c.slug != :defaultSlug')
             ->andWhere('c.name != :defaultName')

@@ -415,6 +415,7 @@ final class CategoryPushLiveCommand extends Command
             'sku' => $product['sku'],
             'slug' => $product['slug'],
             'weight' => $product['weight'],
+            'enabled' => (int) ($product['enabled'] ?? 1),
             'in_stock' => (int) $product['in_stock'],
             'stock_qty' => (int) $product['stock_qty'],
             'badge' => $product['badge'],

@@ -192,6 +192,9 @@ admin.product.package_height: Висота упаковки (см)
 admin.product.package_width: Ширина упаковки (см)
 admin.product.package_length: Довжина упаковки (см)
 admin.product.in_stock: В наявності
+admin.product.enabled: Включено
+admin.product.enabled_yes: Так
+admin.product.enabled_no: Ні
 admin.product.stock_qty: Кількість на складі
 admin.product.badge: Бейдж
 admin.product.short_description: Короткий опис

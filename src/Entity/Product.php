@@ -68,6 +68,9 @@ class Product
     #[ORM\Column(type: 'decimal', precision: 8, scale: 2, options: ['default' => '10.00'])]
     private string $package_length = '10.00';
 
+    #[ORM\Column(options: ['default' => true])]
+    private bool $enabled = true;
+
     #[ORM\Column(options: ['default' => false])]
     private bool $in_stock = true;
 
@@ -370,6 +373,18 @@ class Product
     public function setPackageLength(float $packageLength): static
     {
         $this->package_length = number_format(max(1.0, $packageLength), 2, '.', '');
+
+        return $this;
+    }
+
+    public function isEnabled(): bool
+    {
+        return $this->enabled;
+    }
+
+    public function setEnabled(bool $enabled): static
+    {
+        $this->enabled = $enabled;
 
         return $this;
     }
@@ -948,7 +963,7 @@ class Product
 
     public function isAvailableForSale(): bool
     {
-        return $this->in_stock && $this->getLowestAvailableOffer() !== null;
+        return $this->enabled && $this->in_stock && $this->getLowestAvailableOffer() !== null;
     }
 
     public function getAvailableForSale(): bool
@@ -1090,7 +1105,8 @@ class Product
             'oldPrice' => $oldPrice,
             'discountPercent' => $hasPrice ? ($selectedOffer['discountPercent'] ?? null) : null,
             'productInStock' => $this->in_stock,
-            'inStock' => $this->in_stock && $offerQty > 0,
+            'inStock' => $this->enabled && $this->in_stock && $offerQty > 0,
+            'enabled' => $this->enabled,
             'stockQty' => $offerQty,
             'badge' => $this->badge,
             'shortDescription' => $this->short_description ?? '',

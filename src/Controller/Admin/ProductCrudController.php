@@ -96,6 +96,11 @@ class ProductCrudController extends AbstractCrudController
         yield NumberField::new('packageLength', $this->translator->trans('admin.product.package_length', [], 'messages'))
             ->setNumDecimals(2)
             ->hideOnIndex();
+        yield BooleanField::new('enabled', $this->translator->trans('admin.product.enabled', [], 'messages'))
+            ->renderAsSwitch(false)
+            ->formatValue(fn (mixed $value): string => $value
+                ? $this->translator->trans('admin.product.enabled_yes', [], 'messages')
+                : $this->translator->trans('admin.product.enabled_no', [], 'messages'));
         yield BooleanField::new('in_stock', $this->translator->trans('admin.product.in_stock', [], 'messages'));
         yield IntegerField::new('stock_qty', $this->translator->trans('admin.product.stock_qty', [], 'messages'));
         yield TextField::new('badge', $this->translator->trans('admin.product.badge', [], 'messages'))
