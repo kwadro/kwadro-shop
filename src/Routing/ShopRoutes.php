@@ -12,7 +12,7 @@ final class ShopRoutes
     public const SLUG_REQUIREMENTS = '[a-z0-9][a-z0-9_-]*';
 
     /** Reserved exact slugs that must not collide with shop routes / locales. */
-    public const RESERVED_PAGE_SLUGS = 'login|logout|register|admin|checkout|admser|category|product|supplier|blog|uk|en';
+    public const RESERVED_PAGE_SLUGS = 'login|logout|register|admin|checkout|admser|category|product|supplier|blog|search|city|uk|en';
 
     /** Menu / static page slugs: same charset as SLUG_REQUIREMENTS, minus reserved names. */
     public const PAGE_SLUG_REQUIREMENTS = '(?!(?:'.self::RESERVED_PAGE_SLUGS.')$)'.self::SLUG_REQUIREMENTS;

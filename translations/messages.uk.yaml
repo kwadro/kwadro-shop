@@ -387,7 +387,12 @@ admin.report_visitor_ids.google_bot: Google bot
 admin.report_visitor_ids.unique_ips: Унікальні IP
 admin.report_visitor_ids.new_ips: Нові IP
 admin.report_visitor_ids.total_7_days: 'Усього за %days% днів'
+admin.report_visitor_ids.total_period: 'Усього за %days% днів'
 admin.report_visitor_ids.empty: Немає даних
+admin.report_visitor_ids.period_7: Останні 7 днів
+admin.report_visitor_ids.period_14: Останні 14 днів
+admin.report_visitor_ids.period_30: Останні 30 днів
+admin.report_visitor_ids.load_error: Не вдалося завантажити дані звіту.
 
 admin.blocked_ip.ip: IP адреса
 admin.blocked_ip.ip_help: 'IPv4 або IPv6. Заблокований IP отримає 403 на вітрині (адмінка лишається доступною).'
