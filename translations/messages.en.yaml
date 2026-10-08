@@ -34,6 +34,7 @@ menu.link_user: Users
 menu.link_user_single: User
 menu.link_request_list: Requests (IP)
 menu.link_request_list_single: Request
+menu.link_report_visitor_ids: Report Visitor Ids
 menu.link_blocked_ip: Blocked IP addresses
 menu.link_blocked_ip_single: Blocked IP address
 menu.link_redirect: Redirects
@@ -50,6 +51,9 @@ menu.link_product_import: Product imports
 menu.link_product_import_single: Product import
 menu.link_product_import_run: Import history
 menu.link_product_import_run_single: Import run
+menu.group_product_search: Product search
+menu.link_product_search_setting: Search fields
+menu.link_product_search_setting_single: Product search setting
 menu.link_blog_article: Blog articles
 menu.link_blog_article_single: Blog article
 menu.link_blog_category: Blog categories
@@ -215,6 +219,13 @@ admin.product_import.run_ok: Import finished
 admin.product_import.run_missing: Import not found
 admin.product_import.run_inactive: Import is inactive
 admin.product_import.run_unsupported: Unsupported import type
+admin.product_search_setting.site: Site
+admin.product_search_setting.search_fields: Search in fields
+admin.product_search_setting.search_fields_help: 'Catalog and header search match products when the query is found in any selected field.'
+admin.product_search_setting.field_name: Name
+admin.product_search_setting.field_model: Model
+admin.product_search_setting.field_sku: SKU
+admin.product_search_setting.field_brand: Brand
 admin.product_import_run.import: Import
 admin.product_import_run.started_at: Started at
 admin.product_import_run.finished_at: Finished at
@@ -268,6 +279,8 @@ admin.category.enabled_yes: Yes
 admin.category.enabled_no: No
 admin.category.show_filters: Show filters
 admin.category.show_filters_help: Left attribute filters column on the category page.
+admin.category.show_out_of_stock: Show out of stock products
+admin.category.show_out_of_stock_help: 'When off, the category list shows only products currently in stock.'
 admin.category.meta_title: Meta title
 admin.category.meta_description: Meta description
 admin.category.og_title: OG Title
@@ -367,6 +380,14 @@ admin.request_list.path_after_redirect: URL after redirect
 admin.request_list.user_agent: User-Agent
 admin.request_list.unique_ips_today: Unique IPs today
 admin.request_list.requests_today: Total requests today
+admin.report_visitor_ids.intro: 'IP request statistics for the last %days% days. Google bot — User-Agent contains google.com. Unique IPs — distinct IPs that day / in the period. New IPs — addresses seen for the first time in the database.'
+admin.report_visitor_ids.day: Day
+admin.report_visitor_ids.requests: Requests
+admin.report_visitor_ids.google_bot: Google bot
+admin.report_visitor_ids.unique_ips: Unique IPs
+admin.report_visitor_ids.new_ips: New IPs
+admin.report_visitor_ids.total_7_days: 'Total for %days% days'
+admin.report_visitor_ids.empty: No data
 
 admin.blocked_ip.ip: IP address
 admin.blocked_ip.ip_help: 'IPv4 or IPv6. Blocked IPs get HTTP 403 on the storefront (admin stays accessible).'

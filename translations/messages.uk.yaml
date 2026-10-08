@@ -34,6 +34,7 @@ menu.link_user: Користувачі
 menu.link_user_single: Користувач
 menu.link_request_list: Запити (IP)
 menu.link_request_list_single: Запит
+menu.link_report_visitor_ids: Report Visitor Ids
 menu.link_blocked_ip: Заблоковані IP адреси
 menu.link_blocked_ip_single: Заблокована IP адреса
 menu.link_redirect: Редіректи
@@ -50,6 +51,9 @@ menu.link_product_import: Імпорти продуктів
 menu.link_product_import_single: Імпорт продуктів
 menu.link_product_import_run: Історія імпортів
 menu.link_product_import_run_single: Запуск імпорту
+menu.group_product_search: Пошук товарів
+menu.link_product_search_setting: Поля пошуку
+menu.link_product_search_setting_single: Налаштування пошуку товарів
 menu.link_blog_article: Статті блогу
 menu.link_blog_article_single: Стаття блогу
 menu.link_blog_category: Категорії блогу
@@ -215,6 +219,13 @@ admin.product_import.run_ok: Імпорт завершено
 admin.product_import.run_missing: Імпорт не знайдено
 admin.product_import.run_inactive: Імпорт неактивний
 admin.product_import.run_unsupported: Невідомий тип імпорту
+admin.product_search_setting.site: Сайт
+admin.product_search_setting.search_fields: Шукати в полях
+admin.product_search_setting.search_fields_help: 'Пошук у каталозі та в шапці знаходить товари, якщо запит є в будь-якому з вибраних полів.'
+admin.product_search_setting.field_name: Назва
+admin.product_search_setting.field_model: Модель
+admin.product_search_setting.field_sku: SKU
+admin.product_search_setting.field_brand: Бренд
 admin.product_import_run.import: Імпорт
 admin.product_import_run.started_at: Початок
 admin.product_import_run.finished_at: Завершення
@@ -268,6 +279,8 @@ admin.category.enabled_yes: Так
 admin.category.enabled_no: Ні
 admin.category.show_filters: Показувати фільтр
 admin.category.show_filters_help: Ліва колонка фільтрів за атрибутами на сторінці категорії.
+admin.category.show_out_of_stock: Показувати товари не в наявності
+admin.category.show_out_of_stock_help: 'Якщо вимкнено — у списку категорії лише товари, які зараз є в наявності.'
 admin.category.meta_title: Meta title
 admin.category.meta_description: Meta description
 admin.category.og_title: OG Title
@@ -367,6 +380,14 @@ admin.request_list.path_after_redirect: URL після редіректу
 admin.request_list.user_agent: User-Agent
 admin.request_list.unique_ips_today: Унікальних IP сьогодні
 admin.request_list.requests_today: Всього запитів сьогодні
+admin.report_visitor_ids.intro: 'Статистика запитів IP за останні %days% днів. Google bot — User-Agent містить google.com. Unique IPs — унікальні IP за день / за період. New IPs — адреси, які вперше з’явилися в базі.'
+admin.report_visitor_ids.day: День
+admin.report_visitor_ids.requests: Запити
+admin.report_visitor_ids.google_bot: Google bot
+admin.report_visitor_ids.unique_ips: Унікальні IP
+admin.report_visitor_ids.new_ips: Нові IP
+admin.report_visitor_ids.total_7_days: 'Усього за %days% днів'
+admin.report_visitor_ids.empty: Немає даних
 
 admin.blocked_ip.ip: IP адреса
 admin.blocked_ip.ip_help: 'IPv4 або IPv6. Заблокований IP отримає 403 на вітрині (адмінка лишається доступною).'

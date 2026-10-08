@@ -162,6 +162,8 @@ class CategoryCrudController extends AbstractCrudController
         yield BooleanField::new('enabled', $this->translator->trans('admin.category.enabled', [], 'messages'));
         yield BooleanField::new('showFilters', $this->translator->trans('admin.category.show_filters', [], 'messages'))
             ->setHelp($this->translator->trans('admin.category.show_filters_help', [], 'messages'));
+        yield BooleanField::new('showOutOfStock', $this->translator->trans('admin.category.show_out_of_stock', [], 'messages'))
+            ->setHelp($this->translator->trans('admin.category.show_out_of_stock_help', [], 'messages'));
         yield AssociationField::new('parent', $this->translator->trans('admin.category.parent', [], 'messages'))
             ->setRequired(false)
             ->setHelp($this->translator->trans('admin.category.parent_help', [], 'messages'));

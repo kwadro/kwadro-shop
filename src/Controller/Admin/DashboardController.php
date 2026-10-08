@@ -38,6 +38,7 @@ use App\Controller\Admin\CategoryCrudController;
 use App\Controller\Admin\ProductOfferCrudController;
 use App\Controller\Admin\ProductImportCrudController;
 use App\Controller\Admin\ProductImportRunCrudController;
+use App\Controller\Admin\ProductSearchSettingCrudController;
 use App\Controller\Admin\ShipmentAddressCrudController;
 use App\Controller\Admin\SupplierCrudController;
 use App\Controller\Admin\UserCrudController;
@@ -124,6 +125,8 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkTo(ProductOfferCrudController::class, $this->translator->trans('menu.link_product_offer', [], 'messages'), 'fas fa-tags');
         yield MenuItem::linkTo(ProductImportCrudController::class, $this->translator->trans('menu.link_product_import', [], 'messages'), 'fas fa-file-import');
         yield MenuItem::linkTo(ProductImportRunCrudController::class, $this->translator->trans('menu.link_product_import_run', [], 'messages'), 'fas fa-history');
+        yield MenuItem::section($this->translator->trans('menu.group_product_search', [], 'messages'));
+        yield MenuItem::linkTo(ProductSearchSettingCrudController::class, $this->translator->trans('menu.link_product_search_setting', [], 'messages'), 'fas fa-search');
         yield MenuItem::section($this->translator->trans('menu.group_blog', [], 'messages'));
         yield MenuItem::linkTo(BlogArticleCrudController::class, $this->translator->trans('menu.link_blog_article', [], 'messages'), 'fas fa-newspaper');
         yield MenuItem::linkTo(BlogCategoryCrudController::class, $this->translator->trans('menu.link_blog_category', [], 'messages'), 'fas fa-folder-open');
@@ -167,6 +170,12 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::section($this->translator->trans('menu.users', [], 'messages'));
         yield MenuItem::linkTo(UserCrudController::class, $this->translator->trans('menu.link_user', [], 'messages'), 'fas fa-users');
         yield MenuItem::linkTo(RequestListCrudController::class, $this->translator->trans('menu.link_request_list', [], 'messages'), 'fas fa-globe');
+        yield MenuItem::linkToRoute(
+            $this->translator->trans('menu.link_report_visitor_ids', [], 'messages'),
+            'fas fa-chart-bar',
+            'admin_report_visitor_ids',
+            ['_locale' => 'uk'],
+        );
         yield MenuItem::linkTo(BlockedIpCrudController::class, $this->translator->trans('menu.link_blocked_ip', [], 'messages'), 'fas fa-ban');
         yield MenuItem::linkTo(RedirectCrudController::class, $this->translator->trans('menu.link_redirect', [], 'messages'), 'fas fa-random');
         // @GENERATE MENU START

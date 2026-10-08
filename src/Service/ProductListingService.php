@@ -5,6 +5,7 @@ namespace App\Service;
 use App\Entity\Category;
 use App\Entity\Supplier;
 use App\Repository\ProductRepository;
+use App\Repository\ProductSearchSettingRepository;
 use App\Repository\SiteRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -15,6 +16,7 @@ class ProductListingService
 
     public function __construct(
         private readonly ProductRepository $productRepository,
+        private readonly ProductSearchSettingRepository $productSearchSettingRepository,
         private readonly SiteRepository $siteRepository,
         private readonly RequestStack $requestStack,
     ) {
@@ -45,11 +47,17 @@ class ProductListingService
         $perPage = $this->resolveProductsPerPage();
         $page = max(1, (int) $request->query->get('page', 1));
 
+        $searchFields = $this->resolveSearchFields();
+        $category = ($scope['category'] ?? null) instanceof Category ? $scope['category'] : null;
+        $inStockOnly = $category !== null && !$category->isShowOutOfStock();
+
         $criteria = [
-            'category' => $scope['category'] ?? null,
+            'category' => $category,
             'supplier' => $scope['supplier'] ?? null,
             'query' => $query !== '' ? $query : null,
             'filters' => $filters,
+            'searchFields' => $searchFields,
+            'inStockOnly' => $inStockOnly,
         ];
 
         $facetCriteria = [
@@ -57,6 +65,8 @@ class ProductListingService
             'supplier' => $criteria['supplier'],
             'query' => $criteria['query'],
             'filters' => $filters,
+            'searchFields' => $searchFields,
+            'inStockOnly' => $inStockOnly,
         ];
 
         $pageResult = $this->productRepository->findCatalogPage($criteria, $page, $perPage);
@@ -178,5 +188,16 @@ class ProductListingService
         $site = $this->siteRepository->findOneBy(['domain' => $host]);
 
         return $site?->getProductsPerPage() ?? self::DEFAULT_PER_PAGE;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function resolveSearchFields(): array
+    {
+        $request = $this->requestStack->getCurrentRequest();
+        $host = $request?->getHost();
+
+        return $this->productSearchSettingRepository->resolveSearchFieldsForDomain($host);
     }
 }

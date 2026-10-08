@@ -42,6 +42,10 @@ class Category
     #[ORM\Column(options: ['default' => true])]
     private bool $show_filters = true;
 
+    /** When false, category listing hides products that are currently out of stock. */
+    #[ORM\Column(options: ['default' => true])]
+    private bool $show_out_of_stock = true;
+
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $meta_title = null;
 
@@ -134,6 +138,18 @@ class Category
     public function setShowFilters(bool $showFilters): static
     {
         $this->show_filters = $showFilters;
+
+        return $this;
+    }
+
+    public function isShowOutOfStock(): bool
+    {
+        return $this->show_out_of_stock;
+    }
+
+    public function setShowOutOfStock(bool $showOutOfStock): static
+    {
+        $this->show_out_of_stock = $showOutOfStock;
 
         return $this;
     }

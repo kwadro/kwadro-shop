@@ -98,7 +98,7 @@ class ProductRepository extends ServiceEntityRepository
      */
     public function findByCategoryWithOffers(Category $category): array
     {
-        return $this->createQueryBuilder('p')
+        $products = $this->createQueryBuilder('p')
             ->innerJoin('p.categories', 'c')
             ->leftJoin('p.offers', 'o')
             ->addSelect('o')
@@ -107,9 +107,17 @@ class ProductRepository extends ServiceEntityRepository
             ->andWhere('c = :category')
             ->andWhere('p.enabled = true')
             ->setParameter('category', $category)
-            ->orderBy('p.name', 'ASC')
             ->getQuery()
             ->getResult();
+
+        if (!$category->isShowOutOfStock()) {
+            $products = array_values(array_filter(
+                $products,
+                static fn (Product $product): bool => $product->isAvailableForSale(),
+            ));
+        }
+
+        return $this->sortProductsForListing($products);
     }
 
     /**
@@ -117,7 +125,7 @@ class ProductRepository extends ServiceEntityRepository
      */
     public function findBySupplierWithOffers(Supplier $supplier): array
     {
-        return $this->createQueryBuilder('p')
+        $products = $this->createQueryBuilder('p')
             ->innerJoin('p.offers', 'o')
             ->addSelect('o')
             ->innerJoin('o.supplier', 's')
@@ -127,9 +135,10 @@ class ProductRepository extends ServiceEntityRepository
             ->andWhere('s = :supplier')
             ->andWhere('p.enabled = true')
             ->setParameter('supplier', $supplier)
-            ->orderBy('p.name', 'ASC')
             ->getQuery()
             ->getResult();
+
+        return $this->sortProductsForListing($products);
     }
 
     public const FILTER_ATTRIBUTES = ['brand', 'color', 'type', 'model'];
@@ -139,7 +148,9 @@ class ProductRepository extends ServiceEntityRepository
      *   category?: Category|null,
      *   supplier?: Supplier|null,
      *   query?: string|null,
-     *   filters?: array<string, list<string>>
+     *   filters?: array<string, list<string>>,
+     *   searchFields?: list<string>,
+     *   inStockOnly?: bool
      * } $criteria
      * @return array{items: list<Product>, total: int}
      */
@@ -160,9 +171,14 @@ class ProductRepository extends ServiceEntityRepository
 
         $ids = $this->createCatalogQueryBuilder($criteria)
             ->select('p.id')
+            ->leftJoin('p.offers', 'o_sort')
+            ->addSelect('CASE WHEN p.in_stock = true AND SUM(CASE WHEN o_sort.qty > 0 THEN 1 ELSE 0 END) > 0 THEN 0 ELSE 1 END AS HIDDEN listing_stock_rank')
+            ->addSelect('CASE WHEN MIN(o_sort.price) IS NULL THEN 999999999 ELSE MIN(o_sort.price) END AS HIDDEN listing_min_price')
             ->groupBy('p.id')
-            ->addGroupBy('p.name')
-            ->orderBy('p.name', 'ASC')
+            ->addGroupBy('p.in_stock')
+            ->orderBy('listing_stock_rank', 'ASC')
+            ->addOrderBy('listing_min_price', 'ASC')
+            ->addOrderBy('p.id', 'ASC')
             ->setFirstResult(($page - 1) * $perPage)
             ->setMaxResults($perPage)
             ->getQuery()
@@ -181,11 +197,10 @@ class ProductRepository extends ServiceEntityRepository
             ->addSelect('c')
             ->andWhere('p.id IN (:ids)')
             ->setParameter('ids', $ids)
-            ->orderBy('p.name', 'ASC')
             ->getQuery()
             ->getResult();
 
-        return ['items' => $items, 'total' => $total];
+        return ['items' => $this->orderProductsByIds($items, $ids), 'total' => $total];
     }
 
     /**
@@ -196,7 +211,9 @@ class ProductRepository extends ServiceEntityRepository
      *   category?: Category|null,
      *   supplier?: Supplier|null,
      *   query?: string|null,
-     *   filters?: array<string, list<string>>
+     *   filters?: array<string, list<string>>,
+     *   searchFields?: list<string>,
+     *   inStockOnly?: bool
      * } $criteria
      * @return array<string, list<array{value: string, count: int}>>
      */
@@ -243,7 +260,9 @@ class ProductRepository extends ServiceEntityRepository
      *   category?: Category|null,
      *   supplier?: Supplier|null,
      *   query?: string|null,
-     *   filters?: array<string, list<string>>
+     *   filters?: array<string, list<string>>,
+     *   searchFields?: list<string>,
+     *   inStockOnly?: bool
      * } $criteria
      */
     private function createCatalogQueryBuilder(array $criteria): QueryBuilder
@@ -264,9 +283,19 @@ class ProductRepository extends ServiceEntityRepository
                 ->setParameter('supplier', $criteria['supplier']);
         }
 
+        if (!empty($criteria['inStockOnly'])) {
+            $qb->andWhere('p.in_stock = true')
+                ->andWhere('EXISTS (SELECT 1 FROM App\Entity\ProductOffer o_avail WHERE o_avail.product = p AND o_avail.qty > 0)');
+        }
+
         $query = trim((string) ($criteria['query'] ?? ''));
         if ($query !== '') {
-            $qb->andWhere('LOWER(p.name) LIKE :searchQuery')
+            $fields = $this->normalizeSearchFields($criteria['searchFields'] ?? null);
+            $parts = [];
+            foreach ($fields as $field) {
+                $parts[] = sprintf("LOWER(CASE WHEN p.%s IS NULL THEN '' ELSE p.%s END) LIKE :searchQuery", $field, $field);
+            }
+            $qb->andWhere('('.implode(' OR ', $parts).')')
                 ->setParameter('searchQuery', '%'.mb_strtolower($query).'%');
         }
 
@@ -281,6 +310,83 @@ class ProductRepository extends ServiceEntityRepository
         }
 
         return $qb;
+    }
+
+    /**
+     * @param list<string>|null $fields
+     * @return list<string>
+     */
+    private function normalizeSearchFields(?array $fields): array
+    {
+        $allowed = ['name', 'model', 'sku', 'brand'];
+        if (!\is_array($fields) || $fields === []) {
+            return ['name', 'model', 'sku'];
+        }
+
+        $normalized = array_values(array_intersect($fields, $allowed));
+
+        return $normalized !== [] ? $normalized : ['name', 'model', 'sku'];
+    }
+
+    /**
+     * In stock first, then by lowest price ascending.
+     *
+     * @param list<Product> $products
+     * @return list<Product>
+     */
+    private function sortProductsForListing(array $products): array
+    {
+        usort($products, static function (Product $a, Product $b): int {
+            $aRank = $a->isAvailableForSale() ? 0 : 1;
+            $bRank = $b->isAvailableForSale() ? 0 : 1;
+            if ($aRank !== $bRank) {
+                return $aRank <=> $bRank;
+            }
+
+            $aPrice = $a->getLowestPrice();
+            $bPrice = $b->getLowestPrice();
+            if ($aPrice === null && $bPrice === null) {
+                return ($a->getId() ?? 0) <=> ($b->getId() ?? 0);
+            }
+            if ($aPrice === null) {
+                return 1;
+            }
+            if ($bPrice === null) {
+                return -1;
+            }
+
+            $cmp = $aPrice <=> $bPrice;
+
+            return $cmp !== 0 ? $cmp : (($a->getId() ?? 0) <=> ($b->getId() ?? 0));
+        });
+
+        return array_values($products);
+    }
+
+    /**
+     * @param list<Product> $products
+     * @param list<int|string> $ids
+     * @return list<Product>
+     */
+    private function orderProductsByIds(array $products, array $ids): array
+    {
+        $byId = [];
+        foreach ($products as $product) {
+            $id = $product->getId();
+            if ($id !== null) {
+                $byId[$id] = $product;
+            }
+        }
+
+        $ordered = [];
+        foreach ($ids as $id) {
+            $id = (int) $id;
+            if (isset($byId[$id])) {
+                $ordered[] = $byId[$id];
+            }
+        }
+
+        return $ordered;
     }
 
     /**
