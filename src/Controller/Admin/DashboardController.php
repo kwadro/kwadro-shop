@@ -39,6 +39,7 @@ use App\Controller\Admin\ProductOfferCrudController;
 use App\Controller\Admin\ProductImportCrudController;
 use App\Controller\Admin\ProductImportRunCrudController;
 use App\Controller\Admin\ProductSearchSettingCrudController;
+use App\Controller\Admin\ImageEditorController;
 use App\Controller\Admin\ShipmentAddressCrudController;
 use App\Controller\Admin\SupplierCrudController;
 use App\Controller\Admin\UserCrudController;
@@ -142,6 +143,18 @@ class DashboardController extends AbstractDashboardController
             $this->translator->trans('menu.link_promo_image_editor', [], 'messages'),
             'fas fa-image',
             'admin_promo_image_editor',
+            ['_locale' => 'uk'],
+        );
+        yield MenuItem::linkToRoute(
+            $this->translator->trans('menu.link_image_editor', [], 'messages'),
+            'fas fa-crop-alt',
+            'admin_image_editor',
+            ['_locale' => 'uk'],
+        );
+        yield MenuItem::linkToRoute(
+            $this->translator->trans('menu.link_background_remover', [], 'messages'),
+            'fas fa-eraser',
+            'admin_background_remover',
             ['_locale' => 'uk'],
         );
         yield MenuItem::section($this->translator->trans('menu.group_email', [], 'messages'));

@@ -9,6 +9,8 @@ menu.group_email: Пошта
 menu.group_bank: Банк
 menu.group_marketing: Маркетинг
 menu.link_promo_image_editor: Редактор промо-картинок
+menu.link_image_editor: Редактор картинок
+menu.link_background_remover: Прибрати фон
 menu.link_email_template: Шаблони листів
 menu.link_email_template_single: Шаблон листа
 menu.link_email_template_section: Секції листів
@@ -255,6 +257,14 @@ admin.product.gallery: Галерея
 admin.product.gallery_image: 'Зображення %number%'
 admin.product.gallery_alt: 'Alt-текст (зображення %number%)'
 admin.product.gallery_help: До 5 фото товару. JSON у базі формується автоматично при збереженні.
+admin.product.clean_image: Чиста картинка (без фону)
+admin.product.clean_image_help: PNG з прозорістю без фону. Натисніть «Згенерувати картинку без країв» біля фото галереї або завантажте вручну.
+admin.product.generate_clean_image: Згенерувати картинку без країв
+admin.product.clean_image_processing: Прибираємо фон…
+admin.product.clean_image_done: Чисту картинку збережено.
+admin.product.clean_image_error: Не вдалося згенерувати чисту картинку.
+admin.product.clean_image_no_source: У цьому слоті немає картинки. Спочатку збережіть товар із фото.
+admin.product.clean_image_source_missing: Файл вихідної картинки не знайдено на диску.
 admin.product.pricing_panel: Ціни та пропозиції
 admin.product.content_panel: Контент
 admin.product.no_price: Ціни немає
@@ -494,6 +504,150 @@ admin.promo_image_editor.deleted: Картинку видалено.
 admin.promo_image_editor.delete_error: Не вдалося видалити картинку.
 admin.promo_image_editor.open: Відкрити
 admin.promo_image_editor.editing: Редагування
+
+admin.image_editor.title: Редактор картинок
+admin.image_editor.preview: Попередній перегляд
+admin.image_editor.zoom: Масштаб
+admin.image_editor.zoom_in: Збільшити
+admin.image_editor.zoom_out: Зменшити
+admin.image_editor.zoom_reset: Скинути
+admin.image_editor.width: Ширина
+admin.image_editor.height: Висота
+admin.image_editor.size_custom_help: Змініть висоту, щоб масштабувати полотно. Ширина підлаштується під вибрані пропорції.
+admin.image_editor.overlay_size_help: Висота картинки на полотні. Ширина зберігає пропорції зображення.
+admin.image_editor.overlay_natural_size: Файл %width%×%height% px.
+admin.image_editor.region_select: Вибрати область
+admin.image_editor.region_save_png: Зберегти PNG (без фону)
+admin.image_editor.region_cancel: Скасувати вибір
+admin.image_editor.region_hint: Потягніть на прев’ю, щоб виділити область, потім збережіть її як PNG без фону.
+admin.image_editor.region_saved: PNG області завантажено.
+admin.image_editor.region_empty: Спочатку виділіть область.
+admin.image_editor.region_download_name: Ім’я файлу для завантаження
+admin.image_editor.region_export_help: Запропоновано original_name_cut.png. Змініть висоту, щоб масштабувати PNG (пропорції збережуться).
+admin.image_editor.region_size_hint: Область %width%×%height% px.
+admin.image_editor.step_size: Розмір
+admin.image_editor.step_background: Фон
+admin.image_editor.step_text: Написи
+admin.image_editor.step_overlays: Картинки
+admin.image_editor.step_shapes: Фігури
+admin.image_editor.choose_size: Оберіть розмір картинки
+admin.image_editor.choose_size_help: Співвідношення сторін для фінального зображення.
+admin.image_editor.choose_background: Фон картинки
+admin.image_editor.bg_color: Колір
+admin.image_editor.bg_image: Картинка
+admin.image_editor.bg_none: Без фону (прозорий)
+admin.image_editor.upload_bg: Завантажити фонове зображення
+admin.image_editor.crop_hint: Перетягніть рамку, щоб обрати потрібну частину. Кутові маркери змінюють розмір кропу (пропорції фіксовані).
+admin.image_editor.edit_text: Написи на картинці
+admin.image_editor.edit_overlays: Накладні картинки
+admin.image_editor.edit_shapes: Лінії та рамки
+admin.image_editor.text_hint: Додавайте скільки завгодно написів. Оберіть у списку для редагування. Рамка — позиція, помаранчевий маркер — розмір. Текст заповнює вибрану область.
+admin.image_editor.overlay_hint: Додайте одну або кілька картинок зверху. Оберіть у списку, щоб змінити позицію, розмір і прозорість.
+admin.image_editor.shapes_hint: Додавайте лінії (початок/кінець, колір, товщина) і рамки (бордер, заокруглення, опційна заливка). Перетягуйте на прев’ю. Видалення — × у списку, кнопка «Видалити» або Delete/Backspace.
+admin.image_editor.add_text: Створити напис
+admin.image_editor.add_overlay: Додати картинку
+admin.image_editor.add_line: Додати лінію
+admin.image_editor.add_frame: Додати рамку
+admin.image_editor.duplicate_layer: Копіювати
+admin.image_editor.remove_layer: Видалити вибране
+admin.image_editor.text_item: Напис
+admin.image_editor.overlay_item: Картинка
+admin.image_editor.line_item: Лінія
+admin.image_editor.frame_item: Рамка
+admin.image_editor.lines: Лінії
+admin.image_editor.frames: Рамки
+admin.image_editor.empty_texts: Написів ще немає. Натисніть «Створити напис».
+admin.image_editor.empty_overlays: Накладних картинок ще немає.
+admin.image_editor.empty_lines: Ліній ще немає.
+admin.image_editor.empty_frames: Рамок ще немає.
+admin.image_editor.untitled: Напис
+admin.image_editor.opacity: Прозорість
+admin.image_editor.text: Текст
+admin.image_editor.font: Шрифт
+admin.image_editor.font_weight: Товщина шрифту
+admin.image_editor.weight_300: Тонкий (300)
+admin.image_editor.weight_400: Звичайний (400)
+admin.image_editor.weight_500: Середній (500)
+admin.image_editor.weight_600: Напівжирний (600)
+admin.image_editor.weight_700: Жирний (700)
+admin.image_editor.weight_800: Дуже жирний (800)
+admin.image_editor.weight_900: Чорний (900)
+admin.image_editor.text_size: Розмір
+admin.image_editor.size_xxxs: Мікро
+admin.image_editor.size_xxs: Мініатюрний
+admin.image_editor.size_xs: Дуже малий
+admin.image_editor.size_s: Малий
+admin.image_editor.size_m: Середній
+admin.image_editor.size_l: Великий
+admin.image_editor.size_xl: Дуже великий
+admin.image_editor.text_color: Колір тексту
+admin.image_editor.text_align: Вирівнювання
+admin.image_editor.align_left: Ліворуч
+admin.image_editor.align_center: По центру
+admin.image_editor.align_right: Праворуч
+admin.image_editor.line_color: Колір лінії
+admin.image_editor.stroke_width: Товщина (px)
+admin.image_editor.line_x1: Початок X (%)
+admin.image_editor.line_y1: Початок Y (%)
+admin.image_editor.line_x2: Кінець X (%)
+admin.image_editor.line_y2: Кінець Y (%)
+admin.image_editor.color_hex_help: Введіть hex-колір, наприклад #3172E0
+admin.image_editor.border_color: Колір бордера
+admin.image_editor.border_width: Товщина бордера (px)
+admin.image_editor.border_radius: Заокруглення (px)
+admin.image_editor.frame_square: Квадратна рамка
+admin.image_editor.fill_enabled: Заливка
+admin.image_editor.fill_color: Колір заливки
+admin.image_editor.next: Далі
+admin.image_editor.back: Назад
+admin.image_editor.save_background: Зберегти фон
+admin.image_editor.save_result: Зберегти результат
+admin.image_editor.saved_list: Збережені картинки
+admin.image_editor.saving: Збереження…
+admin.image_editor.saved: Картинку збережено.
+admin.image_editor.deleted: Картинку видалено.
+admin.image_editor.save_error: Не вдалося зберегти картинку.
+admin.image_editor.upload_error: Не вдалося завантажити файл.
+admin.image_editor.load_error: Не вдалося завантажити картинку.
+admin.image_editor.delete_error: Не вдалося видалити картинку.
+admin.image_editor.delete_confirm: Видалити цю картинку?
+admin.image_editor.edit: Редагувати
+admin.image_editor.open: Відкрити
+admin.image_editor.delete: Видалити
+
+admin.background_remover.title: Прибрати фон
+admin.background_remover.upload: Завантажити картинку
+admin.background_remover.help: Прибирає світлий/білий фон і очищає білий ореол по краях. Результат — PNG з прозорістю.
+admin.background_remover.file: Файл картинки
+admin.background_remover.mode: Режим
+admin.background_remover.mode_full: Повний (увесь світлий фон)
+admin.background_remover.mode_contour: Лише контур (зовні силуету)
+admin.background_remover.mode_help: Режим «контур» прибирає лише фон, з’єднаний із краєм кадру, і не чіпає нічого всередині об’єкта.
+admin.background_remover.strength: Чутливість
+admin.background_remover.strength_soft: М’яка (більше деталей краю)
+admin.background_remover.strength_normal: Звичайна
+admin.background_remover.strength_strong: Сильна (більше прибирає ореол)
+admin.background_remover.erode: Зсув краю
+admin.background_remover.erode_help: Зменшує вирізку на N пікселів, щоб зняти залишки білого обідка.
+admin.background_remover.run: Прибрати фон
+admin.background_remover.width: Ширина
+admin.background_remover.height: Висота
+admin.background_remover.size_hint: Оригінал %width%×%height% px. Змініть висоту, щоб масштабувати файл (пропорції збережуться).
+admin.background_remover.download_name: Ім’я файлу для завантаження
+admin.background_remover.download_name_help: Запропоновано original_name_cut.png. Можна змінити перед завантаженням.
+admin.background_remover.download: Завантажити PNG
+admin.background_remover.preview: Попередній перегляд
+admin.background_remover.before: Оригінал
+admin.background_remover.after: Результат
+admin.background_remover.recent: Останні результати
+admin.background_remover.processing: Обробка…
+admin.background_remover.done: Фон прибрано.
+admin.background_remover.error: Не вдалося обробити картинку.
+admin.background_remover.deleted: Результат видалено.
+admin.background_remover.delete_confirm: Видалити цей результат?
+admin.background_remover.open: Відкрити
+admin.background_remover.delete: Видалити
+
 admin.promo_image_editor.no_edit_data: Немає даних для редагування
 
 admin.blog.site: Сайт

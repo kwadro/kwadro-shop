@@ -1,0 +1,456 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block head_stylesheets %}
+    {{ parent() }}
+    <style>
+        .bg-remover__layout {
+            display: grid;
+            grid-template-columns: minmax(280px, 360px) 1fr;
+            gap: 1rem;
+            align-items: start;
+        }
+        @media (max-width: 992px) {
+            .bg-remover__layout { grid-template-columns: 1fr; }
+        }
+        .bg-remover__preview-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: .75rem;
+        }
+        @media (max-width: 768px) {
+            .bg-remover__preview-grid { grid-template-columns: 1fr; }
+        }
+        .bg-remover__frame {
+            border: 1px solid #e2e8f0;
+            border-radius: .5rem;
+            overflow: hidden;
+            background:
+                linear-gradient(45deg, #e2e8f0 25%, transparent 25%),
+                linear-gradient(-45deg, #e2e8f0 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #e2e8f0 75%),
+                linear-gradient(-45deg, transparent 75%, #e2e8f0 75%);
+            background-size: 16px 16px;
+            background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+            min-height: 220px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .bg-remover__frame img {
+            max-width: 100%;
+            max-height: 420px;
+            display: block;
+        }
+        .bg-remover__empty {
+            color: #64748b;
+            padding: 2rem 1rem;
+            text-align: center;
+        }
+        .bg-remover__recent {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: .75rem;
+        }
+        .bg-remover__recent-item {
+            border: 1px solid #e2e8f0;
+            border-radius: .5rem;
+            overflow: hidden;
+            background: #fff;
+        }
+        .bg-remover__recent-item img {
+            display: block;
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: contain;
+            background:
+                linear-gradient(45deg, #e2e8f0 25%, transparent 25%),
+                linear-gradient(-45deg, #e2e8f0 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #e2e8f0 75%),
+                linear-gradient(-45deg, transparent 75%, #e2e8f0 75%);
+            background-size: 12px 12px;
+            background-position: 0 0, 0 6px, 6px -6px, -6px 0;
+        }
+        .bg-remover__recent-actions {
+            display: flex;
+            gap: .25rem;
+            padding: .4rem;
+        }
+        .bg-remover__recent-actions .btn {
+            flex: 1;
+            font-size: .75rem;
+            padding: .2rem .35rem;
+        }
+    </style>
+{% endblock %}
+
+{% block content_title %}{{ page_title }}{% endblock %}
+
+{% block main %}
+    <div class="bg-remover" id="background-remover"
+         data-process-url="{{ process_url }}"
+         data-download-template="{{ download_url_template }}"
+         data-delete-template="{{ delete_url_template }}"
+         data-i18n-processing="{{ 'admin.background_remover.processing'|trans|e('html_attr') }}"
+         data-i18n-error="{{ 'admin.background_remover.error'|trans|e('html_attr') }}"
+         data-i18n-delete-confirm="{{ 'admin.background_remover.delete_confirm'|trans|e('html_attr') }}"
+         data-i18n-download="{{ 'admin.background_remover.download'|trans|e('html_attr') }}"
+         data-i18n-open="{{ 'admin.background_remover.open'|trans|e('html_attr') }}"
+         data-i18n-delete="{{ 'admin.background_remover.delete'|trans|e('html_attr') }}"
+         data-i18n-size-hint="{{ 'admin.background_remover.size_hint'|trans|e('html_attr') }}"
+         data-recent='{{ recent|json_encode(constant('JSON_UNESCAPED_UNICODE'))|e('html_attr') }}'>
+
+        <div class="bg-remover__layout">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h3 class="h5">{{ 'admin.background_remover.upload'|trans }}</h3>
+                    <p class="text-muted small">{{ 'admin.background_remover.help'|trans }}</p>
+
+                    <label class="form-label">{{ 'admin.background_remover.file'|trans }}</label>
+                    <input type="file" class="form-control" accept="image/png,image/jpeg,image/webp,image/gif" data-br-file>
+
+                    <label class="form-label mt-3">{{ 'admin.background_remover.mode'|trans }}</label>
+                    <select class="form-select" data-br-mode>
+                        <option value="full" selected>{{ 'admin.background_remover.mode_full'|trans }}</option>
+                        <option value="contour">{{ 'admin.background_remover.mode_contour'|trans }}</option>
+                    </select>
+                    <p class="text-muted small mt-1 mb-0">{{ 'admin.background_remover.mode_help'|trans }}</p>
+
+                    <label class="form-label mt-3">{{ 'admin.background_remover.strength'|trans }}</label>
+                    <select class="form-select" data-br-strength>
+                        <option value="soft">{{ 'admin.background_remover.strength_soft'|trans }}</option>
+                        <option value="normal" selected>{{ 'admin.background_remover.strength_normal'|trans }}</option>
+                        <option value="strong">{{ 'admin.background_remover.strength_strong'|trans }}</option>
+                    </select>
+
+                    <label class="form-label mt-3">{{ 'admin.background_remover.erode'|trans }}</label>
+                    <select class="form-select" data-br-erode>
+                        <option value="0">0 px</option>
+                        <option value="1" selected>1 px</option>
+                        <option value="2">2 px</option>
+                        <option value="3">3 px</option>
+                    </select>
+                    <p class="text-muted small mt-1 mb-0">{{ 'admin.background_remover.erode_help'|trans }}</p>
+
+                    <button type="button" class="btn btn-primary w-100 mt-3" data-br-run>
+                        {{ 'admin.background_remover.run'|trans }}
+                    </button>
+                    <div class="mt-3" data-br-download-wrap hidden>
+                        <div class="row g-2 align-items-end">
+                            <div class="col-5">
+                                <label class="form-label">{{ 'admin.background_remover.width'|trans }}</label>
+                                <input type="text" class="form-control" data-br-width readonly tabindex="-1">
+                            </div>
+                            <div class="col-7">
+                                <label class="form-label">{{ 'admin.background_remover.height'|trans }}</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" data-br-height min="16" max="4000" step="1">
+                                    <span class="input-group-text">px</span>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-muted small mt-1 mb-0" data-br-size-hint></p>
+
+                        <label class="form-label mt-3">{{ 'admin.background_remover.download_name'|trans }}</label>
+                        <input type="text" class="form-control" data-br-download-name maxlength="140" autocomplete="off">
+                        <p class="text-muted small mt-1 mb-0">{{ 'admin.background_remover.download_name_help'|trans }}</p>
+                        <a class="btn btn-outline-success w-100 mt-2" data-br-download href="#">
+                            {{ 'admin.background_remover.download'|trans }}
+                        </a>
+                    </div>
+                    <div class="text-muted small mt-3" data-br-status></div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header"><strong>{{ 'admin.background_remover.preview'|trans }}</strong></div>
+                <div class="card-body">
+                    <div class="bg-remover__preview-grid">
+                        <div>
+                            <div class="small text-muted mb-1">{{ 'admin.background_remover.before'|trans }}</div>
+                            <div class="bg-remover__frame" data-br-before>
+                                <div class="bg-remover__empty">—</div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="small text-muted mb-1">{{ 'admin.background_remover.after'|trans }}</div>
+                            <div class="bg-remover__frame" data-br-after>
+                                <div class="bg-remover__empty">—</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mt-3">
+            <div class="card-header"><strong>{{ 'admin.background_remover.recent'|trans }}</strong></div>
+            <div class="card-body">
+                <div class="bg-remover__recent" data-br-recent></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    (function () {
+        const root = document.getElementById('background-remover');
+        if (!root) return;
+        const processUrl = root.getAttribute('data-process-url');
+        const downloadTpl = root.getAttribute('data-download-template');
+        const deleteTpl = root.getAttribute('data-delete-template');
+        const i18n = {
+            processing: root.getAttribute('data-i18n-processing') || 'Processing…',
+            error: root.getAttribute('data-i18n-error') || 'Failed',
+            deleteConfirm: root.getAttribute('data-i18n-delete-confirm') || 'Delete?',
+            download: root.getAttribute('data-i18n-download') || 'Download',
+            open: root.getAttribute('data-i18n-open') || 'Open',
+            delete: root.getAttribute('data-i18n-delete') || 'Delete',
+            sizeHint: root.getAttribute('data-i18n-size-hint') || 'Original %width%×%height% px.',
+        };
+        const fileInput = root.querySelector('[data-br-file]');
+        const modeEl = root.querySelector('[data-br-mode]');
+        const strengthEl = root.querySelector('[data-br-strength]');
+        const erodeEl = root.querySelector('[data-br-erode]');
+        const runBtn = root.querySelector('[data-br-run]');
+        const downloadWrap = root.querySelector('[data-br-download-wrap]');
+        const downloadNameEl = root.querySelector('[data-br-download-name]');
+        const widthEl = root.querySelector('[data-br-width]');
+        const heightEl = root.querySelector('[data-br-height]');
+        const sizeHintEl = root.querySelector('[data-br-size-hint]');
+        const downloadBtn = root.querySelector('[data-br-download]');
+        const statusEl = root.querySelector('[data-br-status]');
+        const beforeEl = root.querySelector('[data-br-before]');
+        const afterEl = root.querySelector('[data-br-after]');
+        const recentEl = root.querySelector('[data-br-recent]');
+        let localPreviewUrl = null;
+        let lastFilename = null;
+        let lastResultUrl = null;
+        let sourceWidth = 0;
+        let sourceHeight = 0;
+
+        function setStatus(msg) {
+            statusEl.textContent = msg || '';
+        }
+
+        function normalizeDownloadName(name) {
+            let value = String(name || '').trim().replace(/[\/\\]+/g, '_');
+            if (!value) {
+                value = 'image_cut.png';
+            }
+            if (!/\.png$/i.test(value)) {
+                value += '.png';
+            }
+            return value;
+        }
+
+        function suggestNameFromUpload(file) {
+            if (!file || !file.name) {
+                return 'image_cut.png';
+            }
+            const base = String(file.name).replace(/\.[^.]+$/, '').trim() || 'image';
+            return normalizeDownloadName(base.replace(/[^\p{L}\p{N}._-]+/gu, '_') + '_cut.png');
+        }
+
+        function clampHeight(value) {
+            const n = Math.round(Number(value) || 0);
+            if (!n) return sourceHeight || 16;
+            return Math.max(16, Math.min(4000, n));
+        }
+
+        function scaledWidthForHeight(height) {
+            if (!sourceHeight || !sourceWidth) return 0;
+            return Math.max(1, Math.round(sourceWidth * (height / sourceHeight)));
+        }
+
+        function syncSizeFields() {
+            const h = clampHeight(heightEl.value);
+            heightEl.value = String(h);
+            widthEl.value = String(scaledWidthForHeight(h));
+            if (sizeHintEl) {
+                sizeHintEl.textContent = i18n.sizeHint
+                    .replace('%width%', String(sourceWidth || '—'))
+                    .replace('%height%', String(sourceHeight || '—'));
+            }
+            if (lastFilename) {
+                downloadBtn.href = buildDownloadHref(lastFilename, downloadNameEl.value, h);
+            }
+        }
+
+        function buildDownloadHref(storedFilename, downloadName, height) {
+            const base = downloadTpl.replace('__FILENAME__', encodeURIComponent(storedFilename));
+            const sep = base.indexOf('?') >= 0 ? '&' : '?';
+            const h = clampHeight(height != null ? height : heightEl.value);
+            return base
+                + sep + 'as=' + encodeURIComponent(normalizeDownloadName(downloadName))
+                + '&height=' + encodeURIComponent(String(h));
+        }
+
+        function hideDownload() {
+            downloadWrap.hidden = true;
+            downloadBtn.href = '#';
+            downloadNameEl.value = '';
+            widthEl.value = '';
+            heightEl.value = '';
+            if (sizeHintEl) sizeHintEl.textContent = '';
+            lastFilename = null;
+            lastResultUrl = null;
+            sourceWidth = 0;
+            sourceHeight = 0;
+        }
+
+        function showDownload(storedFilename, suggestedName, resultUrl, width, height) {
+            lastFilename = storedFilename;
+            lastResultUrl = resultUrl || null;
+            sourceWidth = Math.max(0, Math.round(Number(width) || 0));
+            sourceHeight = Math.max(0, Math.round(Number(height) || 0));
+            downloadNameEl.value = normalizeDownloadName(suggestedName || 'image_cut.png');
+            heightEl.value = String(sourceHeight || 16);
+            syncSizeFields();
+            downloadWrap.hidden = false;
+        }
+
+        function showImage(container, url) {
+            if (!url) {
+                container.innerHTML = '<div class="bg-remover__empty">—</div>';
+                return;
+            }
+            container.innerHTML = '<img src="' + url + '" alt="">';
+        }
+
+        function renderRecent(items) {
+            const list = Array.isArray(items) ? items : [];
+            if (!list.length) {
+                recentEl.innerHTML = '<div class="bg-remover__empty">—</div>';
+                return;
+            }
+            recentEl.innerHTML = list.map(function (item) {
+                return (
+                    '<div class="bg-remover__recent-item">' +
+                    '<img src="' + item.url + '" alt="">' +
+                    '<div class="bg-remover__recent-actions">' +
+                    '<a class="btn btn-sm btn-outline-secondary" href="' + item.url + '" target="_blank" rel="noopener">' + i18n.open + '</a>' +
+                    '<a class="btn btn-sm btn-outline-success" href="' + downloadTpl.replace('__FILENAME__', encodeURIComponent(item.filename)) + '">' + i18n.download + '</a>' +
+                    '<button type="button" class="btn btn-sm btn-outline-danger" data-br-del="' + item.filename + '">' + i18n.delete + '</button>' +
+                    '</div></div>'
+                );
+            }).join('');
+        }
+
+        try {
+            renderRecent(JSON.parse(root.getAttribute('data-recent') || '[]'));
+        } catch (e) {
+            renderRecent([]);
+        }
+
+        fileInput.addEventListener('change', function () {
+            const file = fileInput.files && fileInput.files[0];
+            if (localPreviewUrl) {
+                URL.revokeObjectURL(localPreviewUrl);
+                localPreviewUrl = null;
+            }
+            hideDownload();
+            showImage(afterEl, null);
+            if (!file) {
+                showImage(beforeEl, null);
+                return;
+            }
+            localPreviewUrl = URL.createObjectURL(file);
+            showImage(beforeEl, localPreviewUrl);
+        });
+
+        downloadNameEl.addEventListener('input', function () {
+            if (!lastFilename) return;
+            downloadBtn.href = buildDownloadHref(lastFilename, downloadNameEl.value);
+        });
+
+        heightEl.addEventListener('input', function () {
+            if (!lastFilename) return;
+            syncSizeFields();
+        });
+
+        heightEl.addEventListener('change', function () {
+            if (!lastFilename) return;
+            syncSizeFields();
+        });
+
+        downloadBtn.addEventListener('click', function (e) {
+            if (!lastFilename) {
+                e.preventDefault();
+                return;
+            }
+            syncSizeFields();
+            downloadBtn.href = buildDownloadHref(lastFilename, downloadNameEl.value);
+        });
+
+        runBtn.addEventListener('click', async function () {
+            const file = fileInput.files && fileInput.files[0];
+            if (!file) {
+                setStatus(i18n.error);
+                return;
+            }
+            const body = new FormData();
+            body.append('file', file);
+            body.append('mode', modeEl.value);
+            body.append('strength', strengthEl.value);
+            body.append('erode', erodeEl.value);
+            setStatus(i18n.processing);
+            runBtn.disabled = true;
+            try {
+                const res = await fetch(processUrl, {
+                    method: 'POST',
+                    body: body,
+                    credentials: 'same-origin',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                });
+                const data = await res.json();
+                if (!res.ok || !data.ok) {
+                    throw new Error(data.error || 'failed');
+                }
+                const resultUrl = data.url + '?t=' + Date.now();
+                showImage(afterEl, resultUrl);
+                if (data.sourceUrl) {
+                    showImage(beforeEl, data.sourceUrl + '?t=' + Date.now());
+                }
+                showDownload(
+                    data.filename,
+                    data.downloadName || suggestNameFromUpload(file),
+                    resultUrl,
+                    data.width,
+                    data.height
+                );
+                setStatus(data.message || '');
+                if (Array.isArray(data.recent)) {
+                    renderRecent(data.recent);
+                }
+            } catch (e) {
+                setStatus(i18n.error);
+            } finally {
+                runBtn.disabled = false;
+            }
+        });
+
+        recentEl.addEventListener('click', async function (e) {
+            const btn = e.target.closest('[data-br-del]');
+            if (!btn) return;
+            const filename = btn.getAttribute('data-br-del');
+            if (!window.confirm(i18n.deleteConfirm)) return;
+            try {
+                const res = await fetch(deleteTpl.replace('__FILENAME__', encodeURIComponent(filename)), {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                });
+                const data = await res.json();
+                if (!res.ok || !data.ok) throw new Error('delete failed');
+                if (lastFilename === filename) {
+                    hideDownload();
+                    showImage(afterEl, null);
+                }
+                renderRecent(data.recent || []);
+                setStatus(data.message || '');
+            } catch (err) {
+                setStatus(i18n.error);
+            }
+        });
+    })();
+    </script>
+{% endblock %}

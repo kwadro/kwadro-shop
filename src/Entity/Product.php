@@ -107,6 +107,10 @@ class Product
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $og_image = null;
 
+    /** Filename of background-removed product image (stored under /uploads/products/…). */
+    #[ORM\Column(name: 'clean_image', length: 255, nullable: true)]
+    private ?string $cleanImage = null;
+
     /** @var list<string> */
     #[ORM\Column(type: 'json')]
     private array $features = [];
@@ -537,6 +541,56 @@ class Product
         $ogImage = $ogImage !== null ? trim($ogImage) : null;
         $this->og_image = $ogImage !== '' ? $ogImage : null;
 
+        return $this;
+    }
+
+    /**
+     * Admin ImageField expects a path relative to /uploads/products.
+     */
+    public function getCleanImage(): ?string
+    {
+        if ($this->cleanImage === null || $this->cleanImage === '') {
+            return null;
+        }
+
+        return \App\Service\Product\ProductImagePath::relativePath($this->cleanImage);
+    }
+
+    public function getCleanImageFilename(): ?string
+    {
+        return $this->cleanImage !== null && $this->cleanImage !== '' ? $this->cleanImage : null;
+    }
+
+    public function setCleanImage(?string $cleanImage): static
+    {
+        $filename = \App\Service\Product\ProductImagePath::filename($cleanImage);
+        $this->cleanImage = $filename !== '' ? $filename : null;
+
+        return $this;
+    }
+
+    public function getCleanImageWebPath(): string
+    {
+        return \App\Service\Product\ProductImagePath::webPath($this->cleanImage);
+    }
+
+    public function relocateCleanImageFile(string $projectDir): void
+    {
+        $filename = $this->getCleanImageFilename();
+        if ($filename === null) {
+            return;
+        }
+        \App\Service\Product\ProductImagePath::ensureStored($projectDir, $filename);
+    }
+
+    /** Unmapped admin helper for clean-image JS config (EasyAdmin form only). */
+    public function getCleanImageTools(): ?string
+    {
+        return null;
+    }
+
+    public function setCleanImageTools(?string $cleanImageTools): static
+    {
         return $this;
     }
 
@@ -1118,6 +1172,7 @@ class Product
             'ogDescription' => $this->og_description,
             'ogType' => $this->og_type,
             'ogImage' => $this->og_image,
+            'cleanImage' => $this->getCleanImageWebPath() ?: null,
             'features' => $this->features,
             'gallery' => $this->getGalleryForCatalog(),
             'offersCount' => \count($offers),

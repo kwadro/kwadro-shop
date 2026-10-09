@@ -1,0 +1,455 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block head_stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('lib/admin-image-editor.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700;800;900&family=Oswald:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700;800;900&family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block body_javascript %}
+    {{ parent() }}
+    <script>
+        window.ImageEditorConfig = {
+            defaults: {{ defaults|json_encode(constant('JSON_UNESCAPED_UNICODE'))|raw }},
+            aspects: {{ aspects|json_encode(constant('JSON_UNESCAPED_UNICODE'))|raw }},
+            saveUrl: {{ save_url|json_encode|raw }},
+            uploadUrl: {{ upload_url|json_encode|raw }},
+            loadUrlTemplate: {{ load_url_template|json_encode|raw }},
+            deleteUrlTemplate: {{ delete_url_template|json_encode|raw }},
+            savedImages: {{ saved_images|json_encode(constant('JSON_UNESCAPED_UNICODE'))|raw }},
+            i18n: {
+                saving: {{ 'admin.image_editor.saving'|trans|json_encode|raw }},
+                saved: {{ 'admin.image_editor.saved'|trans|json_encode|raw }},
+                deleted: {{ 'admin.image_editor.deleted'|trans|json_encode|raw }},
+                saveError: {{ 'admin.image_editor.save_error'|trans|json_encode|raw }},
+                uploadError: {{ 'admin.image_editor.upload_error'|trans|json_encode|raw }},
+                loadError: {{ 'admin.image_editor.load_error'|trans|json_encode|raw }},
+                deleteError: {{ 'admin.image_editor.delete_error'|trans|json_encode|raw }},
+                deleteConfirm: {{ 'admin.image_editor.delete_confirm'|trans|json_encode|raw }},
+                edit: {{ 'admin.image_editor.edit'|trans|json_encode|raw }},
+                open: {{ 'admin.image_editor.open'|trans|json_encode|raw }},
+                delete: {{ 'admin.image_editor.delete'|trans|json_encode|raw }},
+                cropHint: {{ 'admin.image_editor.crop_hint'|trans|json_encode|raw }},
+                textHint: {{ 'admin.image_editor.text_hint'|trans|json_encode|raw }},
+                overlayHint: {{ 'admin.image_editor.overlay_hint'|trans|json_encode|raw }},
+                textItem: {{ 'admin.image_editor.text_item'|trans|json_encode|raw }},
+                overlayItem: {{ 'admin.image_editor.overlay_item'|trans|json_encode|raw }},
+                emptyTexts: {{ 'admin.image_editor.empty_texts'|trans|json_encode|raw }},
+                emptyOverlays: {{ 'admin.image_editor.empty_overlays'|trans|json_encode|raw }},
+                emptyLines: {{ 'admin.image_editor.empty_lines'|trans|json_encode|raw }},
+                emptyFrames: {{ 'admin.image_editor.empty_frames'|trans|json_encode|raw }},
+                untitled: {{ 'admin.image_editor.untitled'|trans|json_encode|raw }},
+                lineItem: {{ 'admin.image_editor.line_item'|trans|json_encode|raw }},
+                frameItem: {{ 'admin.image_editor.frame_item'|trans|json_encode|raw }},
+                shapesHint: {{ 'admin.image_editor.shapes_hint'|trans|json_encode|raw }},
+                removeLayer: {{ 'admin.image_editor.remove_layer'|trans|json_encode|raw }},
+                regionSaved: {{ 'admin.image_editor.region_saved'|trans|json_encode|raw }},
+                regionEmpty: {{ 'admin.image_editor.region_empty'|trans|json_encode|raw }},
+                regionSizeHint: {{ 'admin.image_editor.region_size_hint'|trans|json_encode|raw }},
+                overlaySizeHelp: {{ 'admin.image_editor.overlay_size_help'|trans|json_encode|raw }},
+                overlayNaturalSize: {{ 'admin.image_editor.overlay_natural_size'|trans|json_encode|raw }},
+            },
+            fonts: [
+                { id: 'Montserrat', stack: 'Montserrat, Arial, sans-serif' },
+                { id: 'Roboto', stack: 'Roboto, Arial, sans-serif' },
+                { id: 'Playfair Display', stack: '"Playfair Display", Georgia, serif' },
+                { id: 'Oswald', stack: 'Oswald, Arial Narrow, sans-serif' },
+                { id: 'Caveat', stack: 'Caveat, "Comic Sans MS", cursive' }
+            ],
+            fontWeights: [
+                { id: '300', label: {{ 'admin.image_editor.weight_300'|trans|json_encode|raw }} },
+                { id: '400', label: {{ 'admin.image_editor.weight_400'|trans|json_encode|raw }} },
+                { id: '500', label: {{ 'admin.image_editor.weight_500'|trans|json_encode|raw }} },
+                { id: '600', label: {{ 'admin.image_editor.weight_600'|trans|json_encode|raw }} },
+                { id: '700', label: {{ 'admin.image_editor.weight_700'|trans|json_encode|raw }} },
+                { id: '800', label: {{ 'admin.image_editor.weight_800'|trans|json_encode|raw }} },
+                { id: '900', label: {{ 'admin.image_editor.weight_900'|trans|json_encode|raw }} }
+            ],
+            textSizes: [
+                { id: 'xxxs', label: {{ 'admin.image_editor.size_xxxs'|trans|json_encode|raw }}, ratio: 0.01125 },
+                { id: 'xxs', label: {{ 'admin.image_editor.size_xxs'|trans|json_encode|raw }}, ratio: 0.018 },
+                { id: 'xs', label: {{ 'admin.image_editor.size_xs'|trans|json_encode|raw }}, ratio: 0.028 },
+                { id: 's', label: {{ 'admin.image_editor.size_s'|trans|json_encode|raw }}, ratio: 0.04 },
+                { id: 'm', label: {{ 'admin.image_editor.size_m'|trans|json_encode|raw }}, ratio: 0.055 },
+                { id: 'l', label: {{ 'admin.image_editor.size_l'|trans|json_encode|raw }}, ratio: 0.075 },
+                { id: 'xl', label: {{ 'admin.image_editor.size_xl'|trans|json_encode|raw }}, ratio: 0.1 }
+            ]
+        };
+    </script>
+    <script src="{{ asset('lib/admin-image-editor.js') }}" defer></script>
+{% endblock %}
+
+{% block content_title %}{{ page_title }}{% endblock %}
+
+{% block main %}
+    <div class="img-editor" id="image-editor">
+        <div class="img-editor__layout">
+            <div class="img-editor__sidebar card shadow-sm">
+                <div class="card-body">
+                    <div class="img-editor__steps" data-ie-steps>
+                        <button type="button" class="img-editor__step is-active" data-ie-step="1">1. {{ 'admin.image_editor.step_size'|trans }}</button>
+                        <button type="button" class="img-editor__step" data-ie-step="2">2. {{ 'admin.image_editor.step_background'|trans }}</button>
+                        <button type="button" class="img-editor__step" data-ie-step="3">3. {{ 'admin.image_editor.step_text'|trans }}</button>
+                        <button type="button" class="img-editor__step" data-ie-step="4">4. {{ 'admin.image_editor.step_overlays'|trans }}</button>
+                        <button type="button" class="img-editor__step" data-ie-step="5">5. {{ 'admin.image_editor.step_shapes'|trans }}</button>
+                    </div>
+
+                    <section class="img-editor__panel is-active" data-ie-panel="1">
+                        <h3>{{ 'admin.image_editor.choose_size'|trans }}</h3>
+                        <p class="text-muted small">{{ 'admin.image_editor.choose_size_help'|trans }}</p>
+                        <div class="img-editor__aspects" data-ie-aspects>
+                            {% for key, aspect in aspects %}
+                                <button type="button" class="img-editor__aspect{% if key == defaults.aspect %} is-active{% endif %}" data-aspect="{{ key }}">
+                                    <span class="img-editor__aspect-ratio" data-preview-ratio="{{ key }}"></span>
+                                    <strong>{{ aspect.label }}</strong>
+                                    <small>{{ aspect.w }}×{{ aspect.h }}</small>
+                                </button>
+                            {% endfor %}
+                        </div>
+                        <div class="row g-2 align-items-end mt-3">
+                            <div class="col-5">
+                                <label class="form-label">{{ 'admin.image_editor.width'|trans }}</label>
+                                <input type="text" class="form-control" data-ie-canvas-width readonly tabindex="-1">
+                            </div>
+                            <div class="col-7">
+                                <label class="form-label">{{ 'admin.image_editor.height'|trans }}</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" data-ie-canvas-height min="16" max="4000" step="1">
+                                    <span class="input-group-text">px</span>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-muted small mt-1 mb-0">{{ 'admin.image_editor.size_custom_help'|trans }}</p>
+                        <button type="button" class="btn btn-primary mt-3" data-ie-next="2">{{ 'admin.image_editor.next'|trans }}</button>
+                    </section>
+
+                    <section class="img-editor__panel" data-ie-panel="2">
+                        <h3>{{ 'admin.image_editor.choose_background'|trans }}</h3>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="ie-bg-none" data-ie-bg-none>
+                            <label class="form-check-label" for="ie-bg-none">{{ 'admin.image_editor.bg_none'|trans }}</label>
+                        </div>
+                        <div data-ie-bg-options>
+                            <div class="btn-group w-100 mb-3" role="group">
+                                <button type="button" class="btn btn-outline-secondary is-active" data-ie-bg-type="color">{{ 'admin.image_editor.bg_color'|trans }}</button>
+                                <button type="button" class="btn btn-outline-secondary" data-ie-bg-type="image">{{ 'admin.image_editor.bg_image'|trans }}</button>
+                            </div>
+
+                            <div data-ie-bg-color-block>
+                                <label class="form-label">{{ 'admin.image_editor.bg_color'|trans }}</label>
+                                <div class="img-editor__color-field">
+                                    <input type="color" class="form-control form-control-color" data-ie-bg-color value="{{ defaults.bgColor }}">
+                                    <input type="text" class="form-control font-monospace" data-ie-bg-color-hex maxlength="7" spellcheck="false" autocomplete="off" placeholder="#3172E0" value="{{ defaults.bgColor }}">
+                                </div>
+                            </div>
+
+                            <div data-ie-bg-image-block hidden>
+                                <label class="form-label">{{ 'admin.image_editor.upload_bg'|trans }}</label>
+                                <input type="file" class="form-control" accept="image/*" data-ie-bg-upload>
+                                <p class="text-muted small mt-2 mb-0" data-ie-crop-hint hidden>{{ 'admin.image_editor.crop_hint'|trans }}</p>
+                            </div>
+                        </div>
+
+                        <div class="d-flex flex-wrap gap-2 mt-3">
+                            <button type="button" class="btn btn-outline-secondary" data-ie-prev="1">{{ 'admin.image_editor.back'|trans }}</button>
+                            <button type="button" class="btn btn-success" data-ie-save="background">{{ 'admin.image_editor.save_background'|trans }}</button>
+                            <button type="button" class="btn btn-primary" data-ie-next="3">{{ 'admin.image_editor.next'|trans }}</button>
+                        </div>
+                    </section>
+
+                    <section class="img-editor__panel" data-ie-panel="3">
+                        <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
+                            <h3 class="mb-0">{{ 'admin.image_editor.edit_text'|trans }}</h3>
+                            <button type="button" class="btn btn-sm btn-primary" data-ie-add-text>{{ 'admin.image_editor.add_text'|trans }}</button>
+                        </div>
+                        <p class="text-muted small">{{ 'admin.image_editor.text_hint'|trans }}</p>
+                        <div class="img-editor__layer-list" data-ie-text-list></div>
+
+                        <div class="img-editor__layer-form mt-3" data-ie-text-form hidden>
+                            <label class="form-label">{{ 'admin.image_editor.text'|trans }}</label>
+                            <textarea class="form-control" rows="3" data-ie-text></textarea>
+                            <div class="row g-2 mt-2">
+                                <div class="col-12">
+                                    <label class="form-label">{{ 'admin.image_editor.font'|trans }}</label>
+                                    <select class="form-select" data-ie-text-font>
+                                        <option value="Montserrat" style="font-family: Montserrat, sans-serif">Montserrat</option>
+                                        <option value="Roboto" style="font-family: Roboto, sans-serif">Roboto</option>
+                                        <option value="Playfair Display" style="font-family: 'Playfair Display', serif">Playfair Display</option>
+                                        <option value="Oswald" style="font-family: Oswald, sans-serif">Oswald</option>
+                                        <option value="Caveat" style="font-family: Caveat, cursive">Caveat</option>
+                                    </select>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">{{ 'admin.image_editor.text_size'|trans }}</label>
+                                    <select class="form-select" data-ie-text-size>
+                                        <option value="xxxs">{{ 'admin.image_editor.size_xxxs'|trans }}</option>
+                                        <option value="xxs">{{ 'admin.image_editor.size_xxs'|trans }}</option>
+                                        <option value="xs">{{ 'admin.image_editor.size_xs'|trans }}</option>
+                                        <option value="s">{{ 'admin.image_editor.size_s'|trans }}</option>
+                                        <option value="m" selected>{{ 'admin.image_editor.size_m'|trans }}</option>
+                                        <option value="l">{{ 'admin.image_editor.size_l'|trans }}</option>
+                                        <option value="xl">{{ 'admin.image_editor.size_xl'|trans }}</option>
+                                    </select>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">{{ 'admin.image_editor.font_weight'|trans }}</label>
+                                    <select class="form-select" data-ie-text-weight>
+                                        <option value="300">{{ 'admin.image_editor.weight_300'|trans }}</option>
+                                        <option value="400">{{ 'admin.image_editor.weight_400'|trans }}</option>
+                                        <option value="500">{{ 'admin.image_editor.weight_500'|trans }}</option>
+                                        <option value="600">{{ 'admin.image_editor.weight_600'|trans }}</option>
+                                        <option value="700" selected>{{ 'admin.image_editor.weight_700'|trans }}</option>
+                                        <option value="800">{{ 'admin.image_editor.weight_800'|trans }}</option>
+                                        <option value="900">{{ 'admin.image_editor.weight_900'|trans }}</option>
+                                    </select>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">{{ 'admin.image_editor.text_color'|trans }}</label>
+                                    <div class="img-editor__color-field">
+                                        <input type="color" class="form-control form-control-color" data-ie-text-color value="#ffffff">
+                                        <input type="text" class="form-control font-monospace" data-ie-text-color-hex maxlength="7" spellcheck="false" autocomplete="off" placeholder="#3172E0" value="#FFFFFF">
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">{{ 'admin.image_editor.text_align'|trans }}</label>
+                                    <select class="form-select" data-ie-text-align>
+                                        <option value="left">{{ 'admin.image_editor.align_left'|trans }}</option>
+                                        <option value="center" selected>{{ 'admin.image_editor.align_center'|trans }}</option>
+                                        <option value="right">{{ 'admin.image_editor.align_right'|trans }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2 mt-2">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" data-ie-duplicate-text>{{ 'admin.image_editor.duplicate_layer'|trans }}</button>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-ie-remove-text>{{ 'admin.image_editor.remove_layer'|trans }}</button>
+                            </div>
+                        </div>
+
+                        <div class="d-flex flex-wrap gap-2 mt-3">
+                            <button type="button" class="btn btn-outline-secondary" data-ie-prev="2">{{ 'admin.image_editor.back'|trans }}</button>
+                            <button type="button" class="btn btn-success" data-ie-save="texts">{{ 'admin.image_editor.save_result'|trans }}</button>
+                            <button type="button" class="btn btn-primary" data-ie-next="4">{{ 'admin.image_editor.next'|trans }}</button>
+                        </div>
+                    </section>
+
+                    <section class="img-editor__panel" data-ie-panel="4">
+                        <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
+                            <h3 class="mb-0">{{ 'admin.image_editor.edit_overlays'|trans }}</h3>
+                            <label class="btn btn-sm btn-primary mb-0">
+                                {{ 'admin.image_editor.add_overlay'|trans }}
+                                <input type="file" accept="image/*" hidden data-ie-overlay-upload>
+                            </label>
+                        </div>
+                        <p class="text-muted small">{{ 'admin.image_editor.overlay_hint'|trans }}</p>
+                        <div class="img-editor__layer-list" data-ie-overlay-list></div>
+
+                        <div class="img-editor__layer-form mt-3" data-ie-overlay-form hidden>
+                            <div class="row g-2 align-items-end mb-2">
+                                <div class="col-5">
+                                    <label class="form-label">{{ 'admin.image_editor.width'|trans }}</label>
+                                    <input type="text" class="form-control" data-ie-overlay-width readonly tabindex="-1">
+                                </div>
+                                <div class="col-7">
+                                    <label class="form-label">{{ 'admin.image_editor.height'|trans }}</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" data-ie-overlay-height min="16" max="4000" step="1">
+                                        <span class="input-group-text">px</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-muted small mt-0 mb-2" data-ie-overlay-size-hint></p>
+                            <label class="form-label">{{ 'admin.image_editor.opacity'|trans }} <span data-ie-opacity-label>100%</span></label>
+                            <input type="range" class="form-range" min="0" max="100" value="100" data-ie-opacity>
+                            <div class="d-flex flex-wrap gap-2 mt-2">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" data-ie-duplicate-overlay>{{ 'admin.image_editor.duplicate_layer'|trans }}</button>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-ie-remove-overlay>{{ 'admin.image_editor.remove_layer'|trans }}</button>
+                            </div>
+                        </div>
+
+                        <div class="d-flex flex-wrap gap-2 mt-3">
+                            <button type="button" class="btn btn-outline-secondary" data-ie-prev="3">{{ 'admin.image_editor.back'|trans }}</button>
+                            <button type="button" class="btn btn-success" data-ie-save="overlays">{{ 'admin.image_editor.save_result'|trans }}</button>
+                            <button type="button" class="btn btn-primary" data-ie-next="5">{{ 'admin.image_editor.next'|trans }}</button>
+                        </div>
+                    </section>
+
+                    <section class="img-editor__panel" data-ie-panel="5">
+                        <h3>{{ 'admin.image_editor.edit_shapes'|trans }}</h3>
+                        <p class="text-muted small">{{ 'admin.image_editor.shapes_hint'|trans }}</p>
+
+                        <div class="d-flex flex-wrap gap-2 mb-2">
+                            <button type="button" class="btn btn-sm btn-primary" data-ie-add-line>{{ 'admin.image_editor.add_line'|trans }}</button>
+                            <button type="button" class="btn btn-sm btn-primary" data-ie-add-frame>{{ 'admin.image_editor.add_frame'|trans }}</button>
+                        </div>
+
+                        <h4 class="h6 mt-3 mb-2">{{ 'admin.image_editor.lines'|trans }}</h4>
+                        <div class="img-editor__layer-list" data-ie-line-list></div>
+                        <div class="img-editor__layer-form mt-2" data-ie-line-form hidden>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <label class="form-label">{{ 'admin.image_editor.line_color'|trans }}</label>
+                                    <div class="img-editor__color-field">
+                                        <input type="color" class="form-control form-control-color" data-ie-line-color value="#d2d6dc">
+                                        <input type="text" class="form-control font-monospace" data-ie-line-color-hex maxlength="7" spellcheck="false" autocomplete="off" placeholder="#3172E0" value="#D2D6DC">
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">{{ 'admin.image_editor.stroke_width'|trans }}</label>
+                                    <input type="number" class="form-control" min="1" max="80" step="1" data-ie-line-width value="2">
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">{{ 'admin.image_editor.line_x1'|trans }}</label>
+                                    <input type="number" class="form-control" min="0" max="100" step="0.1" data-ie-line-x1>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">{{ 'admin.image_editor.line_y1'|trans }}</label>
+                                    <input type="number" class="form-control" min="0" max="100" step="0.1" data-ie-line-y1>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">{{ 'admin.image_editor.line_x2'|trans }}</label>
+                                    <input type="number" class="form-control" min="0" max="100" step="0.1" data-ie-line-x2>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">{{ 'admin.image_editor.line_y2'|trans }}</label>
+                                    <input type="number" class="form-control" min="0" max="100" step="0.1" data-ie-line-y2>
+                                </div>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2 mt-2">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" data-ie-duplicate-line>{{ 'admin.image_editor.duplicate_layer'|trans }}</button>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-ie-remove-line>{{ 'admin.image_editor.remove_layer'|trans }}</button>
+                            </div>
+                        </div>
+
+                        <h4 class="h6 mt-3 mb-2">{{ 'admin.image_editor.frames'|trans }}</h4>
+                        <div class="img-editor__layer-list" data-ie-frame-list></div>
+                        <div class="img-editor__layer-form mt-2" data-ie-frame-form hidden>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <label class="form-label">{{ 'admin.image_editor.border_color'|trans }}</label>
+                                    <div class="img-editor__color-field">
+                                        <input type="color" class="form-control form-control-color" data-ie-frame-border-color value="#dce0e6">
+                                        <input type="text" class="form-control font-monospace" data-ie-frame-border-color-hex maxlength="7" spellcheck="false" autocomplete="off" placeholder="#3172E0" value="#DCE0E6">
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">{{ 'admin.image_editor.border_width'|trans }}</label>
+                                    <input type="number" class="form-control" min="0" max="80" step="1" data-ie-frame-border-width value="2">
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">{{ 'admin.image_editor.border_radius'|trans }}</label>
+                                    <input type="number" class="form-control" min="0" max="400" step="1" data-ie-frame-radius value="16">
+                                </div>
+                                <div class="col-6 d-flex align-items-end">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" data-ie-frame-square id="ie-frame-square">
+                                        <label class="form-check-label" for="ie-frame-square">{{ 'admin.image_editor.frame_square'|trans }}</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 d-flex align-items-end">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" data-ie-frame-fill-enabled id="ie-frame-fill">
+                                        <label class="form-check-label" for="ie-frame-fill">{{ 'admin.image_editor.fill_enabled'|trans }}</label>
+                                    </div>
+                                </div>
+                                <div class="col-6" data-ie-frame-fill-color-wrap>
+                                    <label class="form-label">{{ 'admin.image_editor.fill_color'|trans }}</label>
+                                    <div class="img-editor__color-field">
+                                        <input type="color" class="form-control form-control-color" data-ie-frame-fill-color value="#f8f9fb">
+                                        <input type="text" class="form-control font-monospace" data-ie-frame-fill-color-hex maxlength="7" spellcheck="false" autocomplete="off" placeholder="#3172E0" value="#F8F9FB">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2 mt-2">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" data-ie-duplicate-frame>{{ 'admin.image_editor.duplicate_layer'|trans }}</button>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-ie-remove-frame>{{ 'admin.image_editor.remove_layer'|trans }}</button>
+                            </div>
+                        </div>
+
+                        <div class="d-flex flex-wrap gap-2 mt-3">
+                            <button type="button" class="btn btn-outline-secondary" data-ie-prev="4">{{ 'admin.image_editor.back'|trans }}</button>
+                            <button type="button" class="btn btn-success" data-ie-save="final">{{ 'admin.image_editor.save_result'|trans }}</button>
+                        </div>
+                    </section>
+
+                    <div class="img-editor__status text-muted small mt-3" data-ie-status></div>
+                </div>
+            </div>
+
+            <div class="img-editor__preview card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <strong>{{ 'admin.image_editor.preview'|trans }}</strong>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <div class="img-editor__region-tools btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-outline-primary" data-ie-region-toggle>{{ 'admin.image_editor.region_select'|trans }}</button>
+                            <button type="button" class="btn btn-success" data-ie-region-save hidden>{{ 'admin.image_editor.region_save_png'|trans }}</button>
+                            <button type="button" class="btn btn-outline-secondary" data-ie-region-cancel hidden>{{ 'admin.image_editor.region_cancel'|trans }}</button>
+                        </div>
+                        <div class="img-editor__zoom btn-group btn-group-sm" role="group" aria-label="{{ 'admin.image_editor.zoom'|trans }}">
+                            <button type="button" class="btn btn-outline-secondary" data-ie-zoom-out title="{{ 'admin.image_editor.zoom_out'|trans }}">−</button>
+                            <button type="button" class="btn btn-outline-secondary" data-ie-zoom-label disabled style="min-width:4.2rem">100%</button>
+                            <button type="button" class="btn btn-outline-secondary" data-ie-zoom-in title="{{ 'admin.image_editor.zoom_in'|trans }}">+</button>
+                            <button type="button" class="btn btn-outline-secondary" data-ie-zoom-reset title="{{ 'admin.image_editor.zoom_reset'|trans }}">{{ 'admin.image_editor.zoom_reset'|trans }}</button>
+                        </div>
+                        <span class="badge text-bg-secondary" data-ie-size-badge>9:16 · 1080×1920</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small mb-2" data-ie-region-hint hidden>{{ 'admin.image_editor.region_hint'|trans }}</p>
+                    <div class="img-editor__region-export mb-2" data-ie-region-export hidden>
+                        <div class="row g-2 align-items-end">
+                            <div class="col-sm-3 col-5">
+                                <label class="form-label">{{ 'admin.image_editor.width'|trans }}</label>
+                                <input type="text" class="form-control form-control-sm" data-ie-region-width readonly tabindex="-1">
+                            </div>
+                            <div class="col-sm-4 col-7">
+                                <label class="form-label">{{ 'admin.image_editor.height'|trans }}</label>
+                                <div class="input-group input-group-sm">
+                                    <input type="number" class="form-control" data-ie-region-height min="16" max="4000" step="1">
+                                    <span class="input-group-text">px</span>
+                                </div>
+                            </div>
+                            <div class="col-sm-5">
+                                <label class="form-label">{{ 'admin.image_editor.region_download_name'|trans }}</label>
+                                <input type="text" class="form-control form-control-sm" data-ie-region-name maxlength="140" autocomplete="off">
+                            </div>
+                        </div>
+                        <p class="text-muted small mt-1 mb-0">{{ 'admin.image_editor.region_export_help'|trans }}</p>
+                    </div>
+                    <div class="img-editor__viewport" data-ie-viewport>
+                        <div class="img-editor__zoom-sizer" data-ie-zoom-sizer>
+                            <div class="img-editor__stage-wrap" data-ie-stage-wrap>
+                                <div class="img-editor__stage" data-ie-stage data-aspect="9:16">
+                                    <canvas id="image-editor-canvas" width="1080" height="1920"></canvas>
+                                    <div class="img-editor__overlay" data-ie-overlay hidden>
+                                        <div class="img-editor__crop" data-ie-crop>
+                                            <span class="img-editor__crop-handle" data-handle="nw"></span>
+                                            <span class="img-editor__crop-handle" data-handle="ne"></span>
+                                            <span class="img-editor__crop-handle" data-handle="sw"></span>
+                                            <span class="img-editor__crop-handle" data-handle="se"></span>
+                                        </div>
+                                    </div>
+                                    <div class="img-editor__region" data-ie-region hidden>
+                                        <span class="img-editor__region-handle" data-region-handle="nw"></span>
+                                        <span class="img-editor__region-handle" data-region-handle="ne"></span>
+                                        <span class="img-editor__region-handle" data-region-handle="sw"></span>
+                                        <span class="img-editor__region-handle" data-region-handle="se"></span>
+                                    </div>
+                                    <div class="img-editor__layers" data-ie-layer-boxes></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mt-3">
+            <div class="card-header"><strong>{{ 'admin.image_editor.saved_list'|trans }}</strong></div>
+            <div class="card-body">
+                <div class="img-editor__saved" data-ie-saved></div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

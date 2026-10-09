@@ -9,6 +9,8 @@ menu.group_email: Email
 menu.group_bank: Bank
 menu.group_marketing: Marketing
 menu.link_promo_image_editor: Promo image editor
+menu.link_image_editor: Image editor
+menu.link_background_remover: Remove background
 menu.link_email_template: Email templates
 menu.link_email_template_single: Email template
 menu.link_email_template_section: Email sections
@@ -255,6 +257,14 @@ admin.product.gallery: Gallery
 admin.product.gallery_image: 'Image %number%'
 admin.product.gallery_alt: 'Alt text (image %number%)'
 admin.product.gallery_help: Up to 5 product photos. Gallery JSON is saved automatically.
+admin.product.clean_image: Clean image (no background)
+admin.product.clean_image_help: Transparent PNG without background. Use “Generate clean image” next to a gallery photo, or upload manually.
+admin.product.generate_clean_image: Generate clean image
+admin.product.clean_image_processing: Removing background…
+admin.product.clean_image_done: Clean image saved.
+admin.product.clean_image_error: Failed to generate clean image.
+admin.product.clean_image_no_source: No image in this gallery slot. Save the product with a photo first.
+admin.product.clean_image_source_missing: Source image file was not found on disk.
 admin.product.pricing_panel: Pricing and offers
 admin.product.content_panel: Content
 admin.product.no_price: Price not available
@@ -494,6 +504,149 @@ admin.promo_image_editor.deleted: Image deleted.
 admin.promo_image_editor.delete_error: Failed to delete image.
 admin.promo_image_editor.open: Open
 admin.promo_image_editor.editing: Editing
+
+admin.image_editor.title: Image editor
+admin.image_editor.preview: Preview
+admin.image_editor.zoom: Zoom
+admin.image_editor.zoom_in: Zoom in
+admin.image_editor.zoom_out: Zoom out
+admin.image_editor.zoom_reset: Reset zoom
+admin.image_editor.width: Width
+admin.image_editor.height: Height
+admin.image_editor.size_custom_help: Change height to scale the canvas. Width follows the selected aspect ratio.
+admin.image_editor.overlay_size_help: Height of the image on the canvas. Width follows the image aspect ratio.
+admin.image_editor.overlay_natural_size: Source file %width%×%height% px.
+admin.image_editor.region_select: Select region
+admin.image_editor.region_save_png: Save PNG (no bg)
+admin.image_editor.region_cancel: Cancel selection
+admin.image_editor.region_hint: Drag on the preview to select an area, then save it as a transparent PNG.
+admin.image_editor.region_saved: Region PNG downloaded.
+admin.image_editor.region_empty: Select a region first.
+admin.image_editor.region_download_name: Download filename
+admin.image_editor.region_export_help: Default name is original_name_cut.png. Change height to scale the PNG (aspect kept).
+admin.image_editor.region_size_hint: Region %width%×%height% px.
+admin.image_editor.step_size: Size
+admin.image_editor.step_background: Background
+admin.image_editor.step_text: Texts
+admin.image_editor.step_overlays: Images
+admin.image_editor.step_shapes: Shapes
+admin.image_editor.choose_size: Choose image size
+admin.image_editor.choose_size_help: Pick an aspect ratio for the final image.
+admin.image_editor.choose_background: Background
+admin.image_editor.bg_color: Color
+admin.image_editor.bg_image: Image
+admin.image_editor.bg_none: No background (transparent)
+admin.image_editor.upload_bg: Upload background image
+admin.image_editor.crop_hint: Drag the frame to choose which part of the image to use. Corner handles resize the crop (aspect locked).
+admin.image_editor.edit_text: Texts on image
+admin.image_editor.edit_overlays: Overlay images
+admin.image_editor.edit_shapes: Lines and frames
+admin.image_editor.text_hint: Create as many texts as you need. Select one to edit. Drag the dashed box to move; orange handle resizes. Text fills the selected area.
+admin.image_editor.overlay_hint: Add one or more images on top. Select to edit position, size and opacity. Drag the box or use the orange handle.
+admin.image_editor.shapes_hint: Add lines (set start/end points, color, thickness) and frames (border, radius, optional fill). Drag on the preview to place them. Remove with × in the list, the delete button, or Delete/Backspace.
+admin.image_editor.add_text: Create text
+admin.image_editor.add_overlay: Add image
+admin.image_editor.add_line: Add line
+admin.image_editor.add_frame: Add frame
+admin.image_editor.duplicate_layer: Duplicate
+admin.image_editor.remove_layer: Remove selected
+admin.image_editor.text_item: Text
+admin.image_editor.overlay_item: Image
+admin.image_editor.line_item: Line
+admin.image_editor.frame_item: Frame
+admin.image_editor.lines: Lines
+admin.image_editor.frames: Frames
+admin.image_editor.empty_texts: No texts yet. Click “Create text”.
+admin.image_editor.empty_overlays: No overlay images yet.
+admin.image_editor.empty_lines: No lines yet.
+admin.image_editor.empty_frames: No frames yet.
+admin.image_editor.untitled: Text
+admin.image_editor.opacity: Opacity
+admin.image_editor.text: Text
+admin.image_editor.font: Font
+admin.image_editor.font_weight: Font weight
+admin.image_editor.weight_300: Thin (300)
+admin.image_editor.weight_400: Regular (400)
+admin.image_editor.weight_500: Medium (500)
+admin.image_editor.weight_600: Semi-bold (600)
+admin.image_editor.weight_700: Bold (700)
+admin.image_editor.weight_800: Extra bold (800)
+admin.image_editor.weight_900: Black (900)
+admin.image_editor.text_size: Size
+admin.image_editor.size_xxxs: Micro
+admin.image_editor.size_xxs: Tiny
+admin.image_editor.size_xs: Extra small
+admin.image_editor.size_s: Small
+admin.image_editor.size_m: Medium
+admin.image_editor.size_l: Large
+admin.image_editor.size_xl: Extra large
+admin.image_editor.text_color: Text color
+admin.image_editor.text_align: Align
+admin.image_editor.align_left: Left
+admin.image_editor.align_center: Center
+admin.image_editor.align_right: Right
+admin.image_editor.line_color: Line color
+admin.image_editor.stroke_width: Thickness (px)
+admin.image_editor.line_x1: Start X (%)
+admin.image_editor.line_y1: Start Y (%)
+admin.image_editor.line_x2: End X (%)
+admin.image_editor.line_y2: End Y (%)
+admin.image_editor.color_hex_help: Type a hex color like #3172E0
+admin.image_editor.border_color: Border color
+admin.image_editor.border_width: Border thickness (px)
+admin.image_editor.border_radius: Corner radius (px)
+admin.image_editor.frame_square: Square frame
+admin.image_editor.fill_enabled: Fill
+admin.image_editor.fill_color: Fill color
+admin.image_editor.next: Next
+admin.image_editor.back: Back
+admin.image_editor.save_background: Save background
+admin.image_editor.save_result: Save result
+admin.image_editor.saved_list: Saved images
+admin.image_editor.saving: Saving…
+admin.image_editor.saved: Image saved.
+admin.image_editor.deleted: Image deleted.
+admin.image_editor.save_error: Failed to save image.
+admin.image_editor.upload_error: Failed to upload file.
+admin.image_editor.load_error: Failed to load image.
+admin.image_editor.delete_error: Failed to delete image.
+admin.image_editor.delete_confirm: Delete this image?
+admin.image_editor.edit: Edit
+admin.image_editor.open: Open
+admin.image_editor.delete: Delete
+
+admin.background_remover.title: Remove background
+admin.background_remover.upload: Upload image
+admin.background_remover.help: Removes a light/white background and cleans the light fringe around the subject. Result is a transparent PNG.
+admin.background_remover.file: Image file
+admin.background_remover.mode: Mode
+admin.background_remover.mode_full: Full (all light background)
+admin.background_remover.mode_contour: Contour only (outside silhouette)
+admin.background_remover.mode_help: Contour mode clears only background connected to the image edge and leaves everything inside the subject untouched.
+admin.background_remover.strength: Sensitivity
+admin.background_remover.strength_soft: Soft (keep more edge detail)
+admin.background_remover.strength_normal: Normal
+admin.background_remover.strength_strong: Strong (remove more fringe)
+admin.background_remover.erode: Edge shrink
+admin.background_remover.erode_help: Shrinks the cutout by N pixels to remove leftover white rim.
+admin.background_remover.run: Remove background
+admin.background_remover.width: Width
+admin.background_remover.height: Height
+admin.background_remover.size_hint: Original %width%×%height% px. Change height to scale the download (aspect kept).
+admin.background_remover.download_name: Download filename
+admin.background_remover.download_name_help: Default is original_name_cut.png. You can change it before downloading.
+admin.background_remover.download: Download PNG
+admin.background_remover.preview: Preview
+admin.background_remover.before: Original
+admin.background_remover.after: Result
+admin.background_remover.recent: Recent results
+admin.background_remover.processing: Processing…
+admin.background_remover.done: Background removed.
+admin.background_remover.error: Failed to process image.
+admin.background_remover.deleted: Result deleted.
+admin.background_remover.delete_confirm: Delete this result?
+admin.background_remover.open: Open
+admin.background_remover.delete: Delete
 admin.promo_image_editor.no_edit_data: No edit data
 
 admin.blog.site: Site
