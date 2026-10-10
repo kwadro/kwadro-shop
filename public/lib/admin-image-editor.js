@@ -326,11 +326,14 @@
     /**
      * Shrink/grow the text hit-box to the rendered text with a small pad,
      * so the drag selection hugs the letters instead of a large empty frame.
+     * Uses the selected font size/weight — does not change those settings.
+     * @param {{growOnly?: boolean}} [opts]
      */
-    function fitTextBoxToContent(item) {
+    function fitTextBoxToContent(item, opts) {
         if (!item || !item.box) {
             return;
         }
+        const options = opts || {};
         const text = String(item.text || '');
         if (!text.trim()) {
             return;
@@ -339,15 +342,17 @@
         const canvasH = Math.max(1, state.height);
         const fontFamily = fontStack(item.font || defaultFontId);
         const fontWeight = normalizeFontWeight(item.weight || state.fontWeight || defaultFontWeight);
-        const preferred = Math.max(8, Math.round(canvasH * textSizeRatio(item.size || defaultTextSizeId)));
-        const measure = document.createElement('canvas').getContext('2d');
+        const preferred = Math.max(6, Math.round(canvasH * textSizeRatio(item.size || defaultTextSizeId)));
+        // Prefer the live editor context so loaded webfonts measure correctly.
+        const measure = ctx || document.createElement('canvas').getContext('2d');
         if (!measure) {
             return;
         }
         measure.font = fontWeight + ' ' + preferred + 'px ' + fontFamily;
 
-        // Wrap against current width first, then shrink to the widest line.
-        const wrapAt = Math.max(8, item.box.w * canvasW);
+        // Prefer a single-line natural width; fall back to wrapping at current box.
+        const naturalWidth = Math.ceil(measure.measureText(text.replace(/\s+/g, ' ').trim()).width);
+        const wrapAt = Math.max(8, Math.max(item.box.w * canvasW, naturalWidth));
         const lines = wrapText(measure, text, wrapAt);
         const lineHeight = preferred * 1.15;
         const totalH = Math.max(lineHeight, lines.length * lineHeight);
@@ -356,9 +361,15 @@
         }, 0);
 
         const padX = Math.max(2, Math.round(preferred * 0.12));
-        const padY = Math.max(1, Math.round(preferred * 0.08));
-        const contentW = Math.min(canvasW, Math.max(8, widest + padX * 2));
-        const contentH = Math.min(canvasH, Math.max(8, totalH + padY * 2));
+        const padY = Math.max(2, Math.round(preferred * 0.1));
+        let contentW = Math.min(canvasW, Math.max(8, Math.ceil(widest) + padX * 2));
+        let contentH = Math.min(canvasH, Math.max(8, Math.ceil(totalH) + padY * 2));
+
+        if (options.growOnly) {
+            contentW = Math.max(contentW, item.box.w * canvasW);
+            contentH = Math.max(contentH, item.box.h * canvasH);
+        }
+
         const newW = contentW / canvasW;
         const newH = contentH / canvasH;
 
@@ -575,9 +586,6 @@
             if (!state.selectedTextId && state.texts[0]) {
                 state.selectedTextId = state.texts[0].id;
             }
-            state.texts.forEach(function (item) {
-                fitTextBoxToContent(item);
-            });
             syncTextForm();
             renderTextList();
             render();
@@ -1207,39 +1215,19 @@
         const fontFamily = fontStack(item.font || defaultFontId);
         const fontWeight = normalizeFontWeight(item.weight || state.fontWeight || defaultFontWeight);
         const align = item.align || 'center';
-        const preferred = Math.max(10, Math.round(h * textSizeRatio(item.size || defaultTextSizeId)));
+        // Always honour the selected size/weight — never shrink them away while editing.
+        const fontSize = Math.max(6, Math.round(h * textSizeRatio(item.size || defaultTextSizeId)));
 
-        // Prefer selected size, but shrink to fit the text box if needed.
-        let lo = 8;
-        let hi = Math.min(preferred, Math.max(8, Math.floor(boxH)));
-        let best = lo;
-        while (lo <= hi) {
-            const mid = Math.floor((lo + hi) / 2);
-            targetCtx.font = fontWeight + ' ' + mid + 'px ' + fontFamily;
-            const lines = wrapText(targetCtx, text, Math.max(4, boxW - 2));
-            const lineHeight = mid * 1.15;
-            const totalH = lines.length * lineHeight;
-            const widest = lines.reduce(function (max, line) {
-                return Math.max(max, targetCtx.measureText(line).width);
-            }, 0);
-            if (totalH <= boxH && widest <= boxW - 2) {
-                best = mid;
-                lo = mid + 1;
-            } else {
-                hi = mid - 1;
-            }
-        }
-
-        targetCtx.font = fontWeight + ' ' + best + 'px ' + fontFamily;
+        targetCtx.font = fontWeight + ' ' + fontSize + 'px ' + fontFamily;
         targetCtx.fillStyle = item.color || '#ffffff';
         targetCtx.textAlign = align;
         targetCtx.textBaseline = 'top';
         targetCtx.shadowColor = 'rgba(0,0,0,.35)';
-        targetCtx.shadowBlur = Math.max(2, best * 0.08);
-        targetCtx.shadowOffsetY = Math.max(1, best * 0.04);
+        targetCtx.shadowBlur = Math.max(2, fontSize * 0.08);
+        targetCtx.shadowOffsetY = Math.max(1, fontSize * 0.04);
 
         const lines = wrapText(targetCtx, text, Math.max(4, boxW - 2));
-        const lineHeight = best * 1.15;
+        const lineHeight = fontSize * 1.15;
         const totalH = lines.length * lineHeight;
         let startY = boxY + Math.max(0, (boxH - totalH) / 2);
         let startX = boxX + 1;
@@ -2654,16 +2642,39 @@
         }
         e.target.value = '';
     });
-    function refreshSelectedTextBox(fit) {
+    function refreshSelectedTextBox(fit, fitOpts) {
         const item = selectedText();
         if (!item) {
             return;
         }
+        // Keep size/weight from the form in case a re-render raced with typing.
+        const sizeSelect = root.querySelector('[data-ie-text-size]');
+        const weightSelect = root.querySelector('[data-ie-text-weight]');
+        const fontSelect = root.querySelector('[data-ie-text-font]');
+        if (sizeSelect && sizeSelect.value) {
+            item.size = normalizeTextSizeId(sizeSelect.value);
+        }
+        if (weightSelect && weightSelect.value) {
+            item.weight = normalizeFontWeight(weightSelect.value);
+        }
+        if (fontSelect && fontSelect.value) {
+            item.font = normalizeFontId(fontSelect.value);
+        }
         if (fit) {
-            fitTextBoxToContent(item);
+            fitTextBoxToContent(item, fitOpts);
         }
         renderTextList();
         render();
+        // Re-assert size/weight in the form without touching the textarea (preserves caret).
+        if (sizeSelect) {
+            sizeSelect.value = normalizeTextSizeId(item.size || defaultTextSizeId);
+        }
+        if (weightSelect) {
+            weightSelect.value = normalizeFontWeight(item.weight || defaultFontWeight);
+        }
+        if (fontSelect) {
+            fontSelect.value = normalizeFontId(item.font || defaultFontId);
+        }
     }
 
     root.querySelector('[data-ie-text]').addEventListener('input', function (e) {
@@ -2672,6 +2683,10 @@
             return;
         }
         item.text = e.target.value;
+        // While typing only grow the box — never shrink font size/weight settings.
+        refreshSelectedTextBox(true, { growOnly: true });
+    });
+    root.querySelector('[data-ie-text]').addEventListener('blur', function () {
         refreshSelectedTextBox(true);
     });
     bindColorPair('[data-ie-text-color]', '[data-ie-text-color-hex]', function (hex) {
