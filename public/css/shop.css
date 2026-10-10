@@ -1265,7 +1265,7 @@ body.shop-minicart-open {
     overflow: hidden;
 }
 .shop-product-card__media img {
-    max-width: none;
+    max-height: none;
 }
 .shop-layout {
     flex: 1;
