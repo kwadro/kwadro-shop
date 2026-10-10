@@ -1264,7 +1264,9 @@ body.shop-city-modal-open {
 body.shop-minicart-open {
     overflow: hidden;
 }
-
+.shop-product-card__media img {
+    max-width: none;
+}
 .shop-layout {
     flex: 1;
     padding: 1.75rem 0 3rem;
