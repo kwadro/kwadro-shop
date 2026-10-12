@@ -4,8 +4,8 @@ namespace App\Service\Product;
 
 /**
  * Product gallery files are stored as filenames in DB.
- * Physical/web path: /uploads/products/{first}/{second}/{filename}
- * Example: example.png → /uploads/products/e/x/example.png
+ * Physical/web path: /uploads/products/{supplier}/{first}/{second}/{filename}
+ * Example: BZ02-21.png + mahazyn-kvadro → /uploads/products/mahazyn-kvadro/B/Z/BZ02-21.png
  */
 final class ProductImagePath
 {
@@ -29,6 +29,15 @@ final class ProductImagePath
         return $value !== '.' && $value !== '..' ? $value : '';
     }
 
+    public static function sanitizeSupplierCode(?string $supplierCode): string
+    {
+        $value = mb_strtolower(trim((string) $supplierCode));
+        $value = preg_replace('/[^a-z0-9_-]+/', '-', $value) ?? '';
+        $value = trim($value, '-_');
+
+        return $value;
+    }
+
     public static function shardDir(string $filename): string
     {
         $filename = self::filename($filename);
@@ -40,23 +49,29 @@ final class ProductImagePath
 
     /**
      * Relative path under /uploads/products used on disk and in admin previews.
-     * Example: e/x/example.png
+     * Example: mahazyn-kvadro/B/Z/BZ02-21.png
      */
-    public static function relativePath(string $filename): string
+    public static function relativePath(string $filename, ?string $supplierCode = null): string
     {
         $filename = self::filename($filename);
         if ($filename === '') {
             return '';
         }
 
-        return self::shardDir($filename).'/'.$filename;
+        $shardPath = self::shardDir($filename).'/'.$filename;
+        $supplier = self::sanitizeSupplierCode($supplierCode);
+        if ($supplier === '') {
+            return $shardPath;
+        }
+
+        return $supplier.'/'.$shardPath;
     }
 
     /**
      * Public URL path for templates/frontend.
-     * Example: /uploads/products/e/x/example.png
+     * Example: /uploads/products/mahazyn-kvadro/B/Z/BZ02-21.png
      */
-    public static function webPath(?string $value): string
+    public static function webPath(?string $value, ?string $supplierCode = null): string
     {
         $value = trim((string) $value);
         if ($value === '') {
@@ -74,20 +89,46 @@ final class ProductImagePath
             return $value;
         }
 
+        if (str_starts_with($value, self::WEB_BASE.'/')) {
+            $rest = substr($value, \strlen(self::WEB_BASE) + 1);
+            $parts = array_values(array_filter(explode('/', $rest), static fn (string $p): bool => $p !== ''));
+
+            // Already supplier-scoped: {supplier}/{a}/{b}/{file}
+            if (\count($parts) >= 4) {
+                return self::WEB_BASE.'/'.implode('/', $parts);
+            }
+
+            // Legacy sharded path: {a}/{b}/{file} — upgrade when supplier is known.
+            if (\count($parts) === 3) {
+                $filename = self::filename($parts[2]);
+                $supplier = self::sanitizeSupplierCode($supplierCode);
+                if ($filename !== '' && $supplier !== '') {
+                    return self::WEB_BASE.'/'.self::relativePath($filename, $supplier);
+                }
+
+                return self::WEB_BASE.'/'.implode('/', $parts);
+            }
+        }
+
         $filename = self::filename($value);
         if ($filename === '') {
             return '';
         }
 
-        return self::WEB_BASE.'/'.self::relativePath($filename);
+        $relative = self::relativePath($filename, $supplierCode);
+        if ($relative === '') {
+            return '';
+        }
+
+        return self::WEB_BASE.'/'.$relative;
     }
 
     /**
      * Absolute filesystem path under project public dir.
      */
-    public static function absolutePath(string $projectDir, string $filename): string
+    public static function absolutePath(string $projectDir, string $filename, ?string $supplierCode = null): string
     {
-        $relative = self::relativePath($filename);
+        $relative = self::relativePath($filename, $supplierCode);
         if ($relative === '') {
             return '';
         }
@@ -95,14 +136,14 @@ final class ProductImagePath
         return rtrim($projectDir, '/').'/public'.self::WEB_BASE.'/'.$relative;
     }
 
-    public static function ensureStored(string $projectDir, string $filename): void
+    public static function ensureStored(string $projectDir, string $filename, ?string $supplierCode = null): void
     {
         $filename = self::filename($filename);
         if ($filename === '') {
             return;
         }
 
-        $target = self::absolutePath($projectDir, $filename);
+        $target = self::absolutePath($projectDir, $filename, $supplierCode);
         if ($target === '' || is_file($target)) {
             return;
         }
@@ -112,13 +153,22 @@ final class ProductImagePath
             throw new \RuntimeException('Cannot create product image directory: '.$targetDir);
         }
 
+        $publicRoot = rtrim($projectDir, '/').'/public'.self::WEB_BASE;
         $candidates = [
-            rtrim($projectDir, '/').'/public'.self::WEB_BASE.'/'.$filename,
+            // Legacy sharded path without supplier.
+            $publicRoot.'/'.self::relativePath($filename, null),
+            $publicRoot.'/'.$filename,
             rtrim($projectDir, '/').'/data-product/image/'.$filename,
         ];
 
+        $supplier = self::sanitizeSupplierCode($supplierCode);
+        if ($supplier !== '') {
+            // Prefer already-correct supplier path if present under another layout.
+            array_unshift($candidates, $publicRoot.'/'.$supplier.'/'.$filename);
+        }
+
         foreach ($candidates as $source) {
-            if (!is_file($source)) {
+            if (!is_file($source) || $source === $target) {
                 continue;
             }
             if (!rename($source, $target) && !copy($source, $target)) {

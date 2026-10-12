@@ -1,4 +1,55 @@
 <script>
+    const thumbsTrack = document.querySelector('[data-thumbs-track]');
+    const thumbsPrev = document.querySelector('[data-thumbs-prev]');
+    const thumbsNext = document.querySelector('[data-thumbs-next]');
+
+    const getThumbStep = () => {
+        if (!thumbsTrack) {
+            return 0;
+        }
+        const thumb = thumbsTrack.querySelector('.shop-product__thumb');
+        if (!thumb) {
+            return 0;
+        }
+        const styles = window.getComputedStyle(thumbsTrack);
+        const gap = Number.parseFloat(styles.columnGap || styles.gap || '0') || 0;
+
+        return thumb.getBoundingClientRect().width + gap;
+    };
+
+    const updateThumbsNav = () => {
+        if (!thumbsTrack || !thumbsPrev || !thumbsNext) {
+            return;
+        }
+        const maxScroll = Math.max(0, thumbsTrack.scrollWidth - thumbsTrack.clientWidth);
+        const left = thumbsTrack.scrollLeft;
+        thumbsPrev.disabled = left <= 2;
+        thumbsNext.disabled = left >= maxScroll - 2;
+    };
+
+    const scrollThumbsBy = (direction) => {
+        if (!thumbsTrack) {
+            return;
+        }
+        const step = getThumbStep();
+        if (step <= 0) {
+            return;
+        }
+        thumbsTrack.scrollBy({ left: direction * step, behavior: 'smooth' });
+    };
+
+    if (thumbsPrev) {
+        thumbsPrev.addEventListener('click', () => scrollThumbsBy(-1));
+    }
+    if (thumbsNext) {
+        thumbsNext.addEventListener('click', () => scrollThumbsBy(1));
+    }
+    if (thumbsTrack) {
+        thumbsTrack.addEventListener('scroll', updateThumbsNav, { passive: true });
+        window.addEventListener('resize', updateThumbsNav);
+        updateThumbsNav();
+    }
+
     document.querySelectorAll('.shop-product__thumb').forEach((thumb) => {
         thumb.addEventListener('click', () => {
             const mainImage = document.getElementById('product-main-image');
@@ -9,6 +60,10 @@
                 item.classList.remove('is-active');
             });
             thumb.classList.add('is-active');
+
+            if (thumbsTrack && typeof thumb.scrollIntoView === 'function') {
+                thumb.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
+            }
         });
     });
 

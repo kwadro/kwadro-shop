@@ -51,6 +51,12 @@ class CategoryExtension extends AbstractExtension
                 if ($child['slug'] === $slug) {
                     return ['label' => $child['name'], 'parent' => $item['name'], 'is_blog' => false];
                 }
+
+                foreach ($child['children'] ?? [] as $grandchild) {
+                    if ($grandchild['slug'] === $slug) {
+                        return ['label' => $grandchild['name'], 'parent' => $child['name'], 'is_blog' => false];
+                    }
+                }
             }
         }
 

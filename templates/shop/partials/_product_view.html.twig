@@ -5,6 +5,7 @@
     </section>
 {% else %}
     {% set gallery = product.gallery|default([]) %}
+    {% set supplierSlug = product.supplier.slug|default(null) %}
     {% set defaultProductImage = {
         full: asset('uploads/logo/' ~ (setting.header.logo|default('favicon.png'))),
         thumb: asset('uploads/logo/' ~ (setting.header.logo|default('favicon.png'))),
@@ -22,24 +23,52 @@
                 </span>
                 <img
                     id="product-main-image"
-                    src="{{ mainImage.full|product_image }}"
+                    src="{{ mainImage.full|product_image(supplierSlug) }}"
                     alt="{{ mainImage.alt|default(product.name) }}"
                 >
             </div>
 
             {% if gallery|length > 1 %}
-            <div class="shop-product__thumbs" role="list">
-                {% for image in gallery %}
+            {% set thumbsSlider = gallery|length > 5 %}
+            <div class="shop-product__thumbs-wrap{% if thumbsSlider %} shop-product__thumbs-wrap--slider{% endif %}">
+                {% if thumbsSlider %}
                     <button
                         type="button"
-                        class="shop-product__thumb{% if loop.first %} is-active{% endif %}"
-                        data-full="{{ image.full|product_image }}"
-                        data-alt="{{ image.alt }}"
-                        aria-label="{{ image.alt }}"
+                        class="shop-product__thumbs-nav shop-product__thumbs-nav--prev"
+                        data-thumbs-prev
+                        aria-label="{{ 'shop.product.thumbs_prev'|trans }}"
+                        disabled
                     >
-                        <img src="{{ image.thumb|product_image }}" alt="{{ image.alt }}">
+                        <span aria-hidden="true">‹</span>
                     </button>
-                {% endfor %}
+                {% endif %}
+                <div
+                    class="shop-product__thumbs"
+                    role="list"
+                    {% if thumbsSlider %}data-thumbs-track{% endif %}
+                >
+                    {% for image in gallery %}
+                        <button
+                            type="button"
+                            class="shop-product__thumb{% if loop.first %} is-active{% endif %}"
+                            data-full="{{ image.full|product_image(supplierSlug) }}"
+                            data-alt="{{ image.alt }}"
+                            aria-label="{{ image.alt }}"
+                        >
+                            <img src="{{ image.thumb|product_image(supplierSlug) }}" alt="{{ image.alt }}">
+                        </button>
+                    {% endfor %}
+                </div>
+                {% if thumbsSlider %}
+                    <button
+                        type="button"
+                        class="shop-product__thumbs-nav shop-product__thumbs-nav--next"
+                        data-thumbs-next
+                        aria-label="{{ 'shop.product.thumbs_next'|trans }}"
+                    >
+                        <span aria-hidden="true">›</span>
+                    </button>
+                {% endif %}
             </div>
             {% endif %}
         </div>
@@ -111,7 +140,26 @@
                     {% endif %}
                 </span>
             </div>
-            <div class="shop-product__lead">{{ product.shortDescription|raw }}</div>
+            {% set productModel = product.sku|default('') matches '/^lugi-/i' ? product.sku|slice(5) : product.sku|default('') %}
+            {% if productModel or product.brand|default('') %}
+                <dl class="shop-product__meta">
+                    {% if productModel %}
+                        <div class="shop-product__meta-row">
+                            <dt>{{ 'shop.product.model'|trans }}:</dt>
+                            <dd>{{ productModel }}</dd>
+                        </div>
+                    {% endif %}
+                    {% if product.brand|default('') %}
+                        <div class="shop-product__meta-row">
+                            <dt>{{ 'shop.product.manufacturer'|trans }}:</dt>
+                            <dd>{{ 'shop.product.trademark_prefix'|trans }} {{ product.brand|upper }}</dd>
+                        </div>
+                    {% endif %}
+                </dl>
+            {% endif %}
+            {% if product.shortDescription|default('')|striptags|replace({'&nbsp;': '', ' ': ''})|trim is not empty %}
+                <div class="shop-product__lead">{{ product.shortDescription|raw }}</div>
+            {% endif %}
             <div
                 id="product-stock"
                 class="shop-product__stock{% if product.inStock %} shop-product__stock--in{% else %} shop-product__stock--out{% endif %}"
@@ -166,11 +214,25 @@
                 {% endfor %}
             </ul>
         </div>
+
+        {% if product.attributes|default([]) is not empty %}
+            <section class="shop-product__attributes" aria-labelledby="product-attributes-title">
+                <h2 id="product-attributes-title" class="shop-product__attributes-title">{{ 'shop.product.attributes_title'|trans }}</h2>
+                <dl class="shop-product__attributes-list">
+                    {% for attribute in product.attributes %}
+                        <div class="shop-product__attribute">
+                            <dt>{{ attribute.name }}</dt>
+                            <dd>{{ attribute.value }}</dd>
+                        </div>
+                    {% endfor %}
+                </dl>
+            </section>
+        {% endif %}
     </article>
 
     <section class="shop-product__description">
         <h2>{{ 'shop.product.description_title'|trans }}</h2>
-        <p>{{ product.description|raw }}</p>
+        <div class="shop-product__description-body">{{ product.description|format_description }}</div>
     </section>
 
     {% if (product.offers|default([])|length) > 1 %}

@@ -96,6 +96,11 @@ class ProductImportRun
         return $this->status;
     }
 
+    public function getStatusLabel(): string
+    {
+        return $this->status->label();
+    }
+
     public function setStatus(ProductImportRunStatus|string $status): static
     {
         if (\is_string($status)) {

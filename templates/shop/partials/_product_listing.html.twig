@@ -3,7 +3,12 @@
     color: 'shop.filter.color'|trans,
     type: 'shop.filter.type'|trans,
     model: 'shop.filter.model'|trans
-} %}
+}|merge(facetLabels|default({})) %}
+
+{# A facet group is rendered only when it offers a real choice (2+ options). #}
+{% set visibleFacetGroups = facets|default({})|filter(options => options|length > 1) %}
+{% set showFilters = showFilters|default(false)
+    and (visibleFacetGroups is not empty or activeFilters|default([]) is not empty) %}
 
 {% set clearAllHref = filterAction %}
 {% if preserveQuery|default(false) and query|default('') != '' %}

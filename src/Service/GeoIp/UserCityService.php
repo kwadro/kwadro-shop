@@ -177,7 +177,8 @@ class UserCityService
     /** @return array{name: string, ref: string, subtitle: string, label: string, settlementRef: string, warehouseCityRef: string, hasLocalWarehouses: bool}|null */
     private function readStoredData(Request $request): ?array
     {
-        if ($request->hasSession() && $request->getSession()->has(self::SESSION_KEY)) {
+        // Only read an existing session: starting one here would make every page uncacheable.
+        if ($request->hasPreviousSession() && $request->getSession()->has(self::SESSION_KEY)) {
             $sessionData = $request->getSession()->get(self::SESSION_KEY);
             if (\is_array($sessionData)) {
                 $normalized = $this->normalizeCityData($sessionData);

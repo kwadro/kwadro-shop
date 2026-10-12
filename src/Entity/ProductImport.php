@@ -17,6 +17,7 @@ class ProductImport
     use TimeStampAbleTrait;
 
     public const CODE_SIVITEK = 'sivitek';
+    public const CODE_LUGI = 'lugi';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -38,6 +39,22 @@ class ProductImport
     /** @var list<string> SKUs that must stay disabled after import */
     #[ORM\Column(type: 'json')]
     private array $disabled_skus = [];
+
+    /** Default category external_id from shop_category (supplier/feed id), not internal PK. */
+    #[ORM\Column(nullable: true)]
+    private ?int $default_category_external_id = null;
+
+    /** When true, disable categories listed in disabled_category_slugs after import. */
+    #[ORM\Column(options: ['default' => false])]
+    private bool $disable_categories_after_import = false;
+
+    /** @var list<string> Category slugs to disable after import */
+    #[ORM\Column(type: 'json')]
+    private array $disabled_category_slugs = [];
+
+    /** Markup percent applied to imported prices (e.g. 30 = +30%). */
+    #[ORM\Column(type: 'decimal', precision: 8, scale: 2, options: ['default' => '0'])]
+    private string $markup_percent = '0';
 
     #[ORM\Column(options: ['default' => true])]
     private bool $active = true;
@@ -90,6 +107,11 @@ class ProductImport
     public function getMode(): ProductImportMode
     {
         return $this->mode;
+    }
+
+    public function getModeLabel(): string
+    {
+        return $this->mode->label();
     }
 
     public function setMode(ProductImportMode|string $mode): static
@@ -145,6 +167,81 @@ class ProductImport
     {
         $lines = preg_split('/\R+/', (string) $text) ?: [];
         $this->setDisabledSkus($lines);
+
+        return $this;
+    }
+
+    public function getDefaultCategoryExternalId(): ?int
+    {
+        return $this->default_category_external_id;
+    }
+
+    public function setDefaultCategoryExternalId(?int $defaultCategoryExternalId): static
+    {
+        $this->default_category_external_id = $defaultCategoryExternalId;
+
+        return $this;
+    }
+
+    public function isDisableCategoriesAfterImport(): bool
+    {
+        return $this->disable_categories_after_import;
+    }
+
+    public function setDisableCategoriesAfterImport(bool $disableCategoriesAfterImport): static
+    {
+        $this->disable_categories_after_import = $disableCategoriesAfterImport;
+
+        return $this;
+    }
+
+    /** @return list<string> */
+    public function getDisabledCategorySlugs(): array
+    {
+        return $this->disabled_category_slugs;
+    }
+
+    /** @param list<string>|array<int|string, mixed> $disabledCategorySlugs */
+    public function setDisabledCategorySlugs(array $disabledCategorySlugs): static
+    {
+        $normalized = [];
+        foreach ($disabledCategorySlugs as $slug) {
+            $slug = trim((string) $slug);
+            if ($slug === '') {
+                continue;
+            }
+            $normalized[] = $slug;
+        }
+        $this->disabled_category_slugs = array_values(array_unique($normalized));
+
+        return $this;
+    }
+
+    public function getDisabledCategorySlugsText(): string
+    {
+        return implode("\n", $this->disabled_category_slugs);
+    }
+
+    public function setDisabledCategorySlugsText(?string $text): static
+    {
+        $lines = preg_split('/\R+/', (string) $text) ?: [];
+        $this->setDisabledCategorySlugs($lines);
+
+        return $this;
+    }
+
+    public function getMarkupPercent(): float
+    {
+        return (float) $this->markup_percent;
+    }
+
+    public function setMarkupPercent(float|int|string|null $markupPercent): static
+    {
+        $value = (float) ($markupPercent ?? 0);
+        if ($value < 0) {
+            $value = 0;
+        }
+        $this->markup_percent = number_format($value, 2, '.', '');
 
         return $this;
     }

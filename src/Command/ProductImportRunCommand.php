@@ -5,6 +5,7 @@ namespace App\Command;
 use App\Entity\ProductImport;
 use App\Entity\ProductImportRunStatus;
 use App\Repository\ProductImportRepository;
+use App\Service\ProductImport\LugiProductImportService;
 use App\Service\ProductImport\SivitekProductImportService;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -22,6 +23,7 @@ final class ProductImportRunCommand extends Command
     public function __construct(
         private readonly ProductImportRepository $productImportRepository,
         private readonly SivitekProductImportService $sivitekProductImportService,
+        private readonly LugiProductImportService $lugiProductImportService,
     ) {
         parent::__construct();
     }
@@ -36,6 +38,8 @@ final class ProductImportRunCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        @ini_set('memory_limit', '512M');
+
         $io = new SymfonyStyle($input, $output);
         $dryRun = (bool) $input->getOption('dry-run');
         $id = $input->getOption('id');
@@ -62,6 +66,7 @@ final class ProductImportRunCommand extends Command
 
         $run = match ($import->getCode()) {
             ProductImport::CODE_SIVITEK => $this->sivitekProductImportService->run($import, $dryRun),
+            ProductImport::CODE_LUGI => $this->lugiProductImportService->run($import, $dryRun, true),
             default => throw new \RuntimeException(sprintf('Unsupported import code: %s', $import->getCode())),
         };
 

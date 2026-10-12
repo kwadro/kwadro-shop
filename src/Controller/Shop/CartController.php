@@ -4,6 +4,7 @@ namespace App\Controller\Shop;
 
 use App\Routing\ShopRoutes;
 use App\Service\Cart\CartStorageService;
+use App\Service\Cart\CartSummaryFormatter;
 use App\Service\ProductCatalog;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -17,6 +18,7 @@ class CartController extends AbstractController
     public function __construct(
         private readonly ProductCatalog $productCatalog,
         private readonly CartStorageService $cartStorage,
+        private readonly CartSummaryFormatter $summaryFormatter,
     ) {
     }
 
@@ -56,7 +58,7 @@ class CartController extends AbstractController
         return new JsonResponse([
             'success' => true,
             'message' => 'shop.cart.added',
-            'cart' => $this->formatCartSummary($this->cartStorage->getSummary()),
+            'cart' => $this->summaryFormatter->format($this->cartStorage->getSummary()),
             'added_item' => $this->buildAddedItemTrackingPayload($product, $quantity),
         ]);
     }
@@ -85,44 +87,8 @@ class CartController extends AbstractController
         return new JsonResponse([
             'success' => true,
             'message' => 'shop.cart.removed',
-            'cart' => $this->formatCartSummary($this->cartStorage->getSummary()),
+            'cart' => $this->summaryFormatter->format($this->cartStorage->getSummary()),
         ]);
-    }
-
-    /** @param array{hasItems: bool, itemCount: int, items: list<array<string, mixed>>, total: float} $summary */
-    /** @return array<string, mixed> */
-    private function formatCartSummary(array $summary): array
-    {
-        $items = [];
-        foreach ($summary['items'] as $item) {
-            $items[] = [
-                'cart_item_id' => $item['cart_item_id'],
-                'product_id' => $item['product_id'],
-                'offer_id' => $item['offer_id'] ?? null,
-                'supplier_name' => $item['supplier_name'] ?? null,
-                'name' => $item['name'],
-                'sku' => $item['sku'],
-                'quantity' => $item['quantity'],
-                'price' => $item['price'],
-                'price_formatted' => $this->formatPrice((float) $item['price']),
-                'line_total' => $item['line_total'],
-                'line_total_formatted' => $this->formatPrice((float) $item['line_total']),
-                'image' => $item['image'],
-            ];
-        }
-
-        return [
-            'hasItems' => $summary['hasItems'],
-            'itemCount' => $summary['itemCount'],
-            'items' => $items,
-            'total' => $summary['total'],
-            'total_formatted' => $this->formatPrice($summary['total']),
-        ];
-    }
-
-    private function formatPrice(float $amount): string
-    {
-        return number_format($amount, 2, ',', ' ') . ' ₴';
     }
 
     /** @param array<string, mixed> $product */

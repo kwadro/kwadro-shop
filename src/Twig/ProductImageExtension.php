@@ -24,8 +24,8 @@ final class ProductImageExtension extends AbstractExtension
         ];
     }
 
-    public function resolve(?string $value): string
+    public function resolve(?string $value, ?string $supplierCode = null): string
     {
-        return ProductImagePath::webPath($value);
+        return ProductImagePath::webPath($value, $supplierCode);
     }
 }

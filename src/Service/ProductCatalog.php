@@ -25,6 +25,21 @@ class ProductCatalog
         return $product?->toCatalogArray();
     }
 
+    /**
+     * @param list<int>|null $onlyIds
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function getHomepageProducts(int $limit = 5, ?array $onlyIds = null): array
+    {
+        $products = $this->productRepository->findHomepageProducts($limit, $onlyIds);
+
+        return array_map(
+            static fn ($product): array => $product->toCatalogArray(),
+            $products,
+        );
+    }
+
     /** @return array<string, mixed>|null */
     public function findById(int $id): ?array
     {

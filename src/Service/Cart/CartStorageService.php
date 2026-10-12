@@ -98,6 +98,63 @@ class CartStorageService
         return true;
     }
 
+    /**
+     * Changes a line quantity during checkout; contact and delivery data stay intact.
+     *
+     * @return int|null the applied quantity, or null when the item is not in the cart
+     */
+    public function updateItemQuantity(int $cartItemId, int $quantity): ?int
+    {
+        $cart = $this->getOrCreateCartEntity(false);
+        $item = $cart !== null ? $this->findActiveItemById($cart, $cartItemId) : null;
+        if ($item === null) {
+            return null;
+        }
+
+        $stockQty = (int) ($item->getProductSnapshot()['stockQty'] ?? 0);
+        $quantity = max(1, $quantity);
+        if ($stockQty > 0) {
+            $quantity = min($quantity, $stockQty);
+        }
+
+        $item->setQuantity($quantity);
+        $cart->setCartData(null);
+        $cart->setOrderData(null);
+        $this->entityManager->flush();
+
+        return $quantity;
+    }
+
+    /**
+     * Removes lines during checkout; contact and delivery data stay intact.
+     *
+     * @param list<int> $cartItemIds
+     */
+    public function removeItemsKeepingCheckout(array $cartItemIds): int
+    {
+        $cart = $this->getOrCreateCartEntity(false);
+        if ($cart === null) {
+            return 0;
+        }
+
+        $removed = 0;
+        foreach ($cartItemIds as $cartItemId) {
+            $item = $this->findActiveItemById($cart, (int) $cartItemId);
+            if ($item !== null) {
+                $item->setStatus(CartItemStatus::Inactive);
+                ++$removed;
+            }
+        }
+
+        if ($removed > 0) {
+            $cart->setCartData(null);
+            $cart->setOrderData(null);
+            $this->entityManager->flush();
+        }
+
+        return $removed;
+    }
+
     public function deactivateActiveCart(): void
     {
         $cart = $this->getOrCreateCartEntity(false);
@@ -590,7 +647,10 @@ class CartStorageService
                     'cart_item_id' => $summaryItem['cart_item_id'],
                     'product_id' => $summaryItem['product_id'],
                     'offer_id' => $summaryItem['offer_id'],
+                    'supplier_id' => $summaryItem['supplier_id'],
+                    'supplier_name' => $summaryItem['supplier_name'],
                     'quantity' => $summaryItem['quantity'],
+                    'line_total' => $summaryItem['line_total'],
                     'product' => $summaryItem['snapshot'],
                 ];
             }

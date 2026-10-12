@@ -205,6 +205,7 @@ yield MenuItem::linkTo(PopularsearchCrudController::class,$this->translator->tra
 yield MenuItem::linkTo(SeosettingCrudController::class,$this->translator->trans('menu.link_seosetting', [], 'messages'), 'fas fa-list' );
 yield MenuItem::linkTo(SeosettingstranslationCrudController::class,$this->translator->trans('menu.link_seosettingstranslation', [], 'messages'), 'fas fa-list' );
 yield MenuItem::linkTo(SiteCrudController::class,$this->translator->trans('menu.link_site', [], 'messages'), 'fas fa-list' );
+yield MenuItem::linkTo(HomepageSettingCrudController::class,$this->translator->trans('menu.link_homepage_setting', [], 'messages'), 'fas fa-home' );
 // @GENERATE MENU FINISH
     }
 

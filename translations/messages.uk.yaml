@@ -56,6 +56,8 @@ menu.link_product_import_run_single: Запуск імпорту
 menu.group_product_search: Пошук товарів
 menu.link_product_search_setting: Поля пошуку
 menu.link_product_search_setting_single: Налаштування пошуку товарів
+menu.link_homepage_setting: Головна сторінка
+menu.link_homepage_setting_single: налаштування головної сторінки
 menu.link_blog_article: Статті блогу
 menu.link_blog_article_single: Стаття блогу
 menu.link_blog_category: Категорії блогу
@@ -205,14 +207,27 @@ admin.product.in_stock: В наявності
 admin.product.enabled: Включено
 admin.product.enabled_yes: Так
 admin.product.enabled_no: Ні
+admin.product_import.add_new: Додати новий
 admin.product_import.name: Назва
 admin.product_import.code: Код
+admin.product_import.code_help: 'Унікальний код типу імпорту, наприклад sivitek або lugi. Після створення змінити не можна.'
 admin.product_import.mode: Режим імпорту
 admin.product_import.mode_help: 'Add/Update — додати нові та оновити ціну/наявність/опис. Delete Add/Update — те саме + вимкнути товари постачальника, яких немає у файлі.'
 admin.product_import.file_path: Шлях до файлу
 admin.product_import.file_path_help: 'Відносно кореня проєкту або абсолютний шлях.'
 admin.product_import.disabled_skus: SKU для Disabled
 admin.product_import.disabled_skus_help: 'Один SKU на рядок. Ці товари будуть вимкнені після імпорту.'
+admin.product_import.settings_panel: Налаштування імпорту
+admin.product_import.default_category: Дефолтна категорія
+admin.product_import.default_category_help: 'Категорія за замовчуванням для імпортованих товарів. У базу зберігається external_id (не внутрішній id). У списку лише категорії з external_id.'
+admin.product_import.disable_categories_after_import: Статус категорій після імпорту
+admin.product_import.disable_categories_after_import_help: 'Yes — після імпорту вимкнути вказані категорії. No — не змінювати статус категорій.'
+admin.product_import.disabled_category_slugs: Які категорії вимкнути
+admin.product_import.disabled_category_slugs_help: 'Один slug категорії на рядок.'
+admin.product_import.markup_percent: Націнка
+admin.product_import.markup_percent_help: 'Націнка у відсотках для розрахунку ціни, наприклад 30 = +30%.'
+admin.product_import.yes: 'Yes'
+admin.product_import.no: 'No'
 admin.product_import.active: Активний
 admin.product_import.last_run_at: Останній запуск
 admin.product_import.last_result: Останній результат
@@ -228,6 +243,27 @@ admin.product_search_setting.field_name: Назва
 admin.product_search_setting.field_model: Модель
 admin.product_search_setting.field_sku: SKU
 admin.product_search_setting.field_brand: Бренд
+admin.homepage_setting.fieldset_general: Сайт і мова
+admin.homepage_setting.site: Сайт
+admin.homepage_setting.locale: Мова
+admin.homepage_setting.fieldset_products: Блок «Нові пропозиції»
+admin.homepage_setting.fieldset_products_help: Товари на головній сторінці. Показуються лише увімкнені товари в наявності.
+admin.homepage_setting.fieldset_articles: Блок «Цікаві статті»
+admin.homepage_setting.fieldset_articles_help: Статті блогу на головній сторінці. Показуються лише опубліковані статті цього сайту та мови.
+admin.homepage_setting.enabled: Показувати блок
+admin.homepage_setting.title: Заголовок
+admin.homepage_setting.title_help: Залиште порожнім, щоб використати стандартний заголовок.
+admin.homepage_setting.lead: Підзаголовок
+admin.homepage_setting.lead_help: Залиште порожнім, щоб використати стандартний текст.
+admin.homepage_setting.source: Що показувати
+admin.homepage_setting.source_latest: Найновіші автоматично
+admin.homepage_setting.source_manual: Вибрані вручну
+admin.homepage_setting.source_help: Якщо вибрано «Вибрані вручну», але список порожній — показуються найновіші.
+admin.homepage_setting.limit: Кількість
+admin.homepage_setting.products: Вибрані товари
+admin.homepage_setting.products_help: Використовується, коли вибрано «Вибрані вручну».
+admin.homepage_setting.articles: Вибрані статті
+admin.homepage_setting.articles_help: Використовується, коли вибрано «Вибрані вручну». Статті іншого сайту чи мови не показуються.
 admin.product_import_run.import: Імпорт
 admin.product_import_run.started_at: Початок
 admin.product_import_run.finished_at: Завершення
@@ -282,6 +318,8 @@ admin.product_offer.old_price: Стара ціна
 admin.product_offer.qty: Залишок
 admin.product_offer.qty_help: Кількість товару в наявності у цього постачальника.
 admin.category.name: Назва
+admin.category.external_id: External ID
+admin.category.external_id_help: 'ID категорії з фіду постачальника (наприклад YML). Залиште порожнім, якщо не використовується.'
 admin.category.slug: URL-slug
 admin.category.slug_help: 'Залиште порожнім — згенерується з назви. Дозволені латиниця, цифри, "-" і "_". Приклад: powerbanks-and-chargers.'
 admin.category.enabled: Включено
@@ -325,6 +363,15 @@ admin.supplier.slug_help: 'Залиште порожнім — згенерує�
 admin.supplier.description: Опис
 admin.supplier.phone: Телефон
 admin.supplier.email: Електронна пошта
+admin.supplier.show_products_in_sitemap: Показувати товари в sitemap
+admin.supplier.np_sender_city: Місто відправки (Нова пошта)
+admin.supplier.np_sender_city_help: Місто, з якого постачальник відправляє посилки Новою поштою. Використовується для розрахунку вартості доставки. Якщо порожнє — використовується місто магазину за замовчуванням.
+admin.supplier.np_sender_city_ref: Ref міста відправки (Нова пошта)
+admin.supplier.min_order_amount: Мінімальна сума замовлення, грн
+admin.supplier.min_order_amount_help: Залиште порожнім, якщо обмеження немає. На чекауті покупець не зможе оформити замовлення, поки сума товарів цього постачальника менша.
+admin.supplier.np_sender_city_resolved: 'Місто відправки Нової пошти: %city%'
+admin.supplier.np_sender_city_not_found: 'Місто «%city%» не знайдено в Новій пошті — для розрахунку доставки використовується місто магазину за замовчуванням.'
+admin.supplier.show_products_in_sitemap_help: Якщо вимкнено, товари, які пропонує лише цей постачальник, не потрапляють у sitemap.xml.
 admin.supplier.meta_title: Meta title
 admin.supplier.meta_description: Meta description
 admin.supplier.og_title: OG Title
@@ -872,7 +919,24 @@ shop.header.city_search_hint: 'Наприклад, Котюжини'
 shop.header.city_apply: Застосувати
 shop.header.city_modal_note: 'Вибір міста допоможе надати актуальну інформацію про наявність товару, його ціни та методів доставки у вашому місті! Це допоможе зберегти більше вільного часу для вас!'
 shop.header.city_close: Закрити
-shop.add_to_cart: До кошика
+shop.add_to_cart: Купити
+
+shop.home.hero_title: Товари для дому та комфортного життя
+shop.home.hero_lead: Обирайте перевірені категорії, актуальні пропозиції та корисні поради в блозі.
+shop.home.cta_buy: Купити
+shop.home.cta_blog: Читати блог
+shop.home.cta_all_products: Усі товари
+shop.home.cta_all_articles: Усі статті
+shop.home.categories_title: Категорії товарів
+shop.home.categories_lead: Перейдіть у потрібний розділ і оберіть товар для покупки.
+shop.home.category_products: '%count% товарів'
+shop.home.category_subcategories: '%count% підкатегорій'
+shop.home.products_title: Нові пропозиції
+shop.home.products_lead: Свіжі товари в наявності — купуйте онлайн з доставкою по Україні.
+shop.home.blog_title: Цікаві статті
+shop.home.blog_lead: Короткі огляди та поради, які допоможуть зробити правильний вибір.
+shop.home.final_title: Готові обрати?
+shop.home.final_lead: Перейдіть у каталог і купіть потрібний товар за кілька хвилин.
 shop.cart.added: Товар додано до кошика
 shop.cart.added_short: Додано ✓
 shop.cart.removed: Товар видалено з кошика
@@ -916,6 +980,12 @@ shop.product.offers_close: Закрити
 shop.product.offer_sku: SKU
 shop.product.lowest_price: Найнижча ціна
 shop.product.description_title: Детальний опис
+shop.product.attributes_title: Характеристики
+shop.product.model: Модель
+shop.product.manufacturer: Виробник
+shop.product.trademark_prefix: ТМ
+shop.product.thumbs_prev: Попередні зображення
+shop.product.thumbs_next: Наступні зображення
 
 shop.checkout.title: Оформлення замовлення
 shop.checkout.outside_ukraine_title: Покупка недоступна
@@ -930,6 +1000,23 @@ shop.checkout.subtotal: Сума замовлення
 shop.checkout.delivery_cost: Доставка
 shop.checkout.delivery_cost_paid_on_receipt: (оплачується при отриманні замовлення)
 shop.checkout.delivery_cost_np_tariff: (згідно з тарифами Нової пошти)
+shop.checkout.parcels_note: 'На вказану адресу буде відправлено %count% посилку.|На вказану адресу буде відправлено %count% посилки.|На вказану адресу буде відправлено %count% посилок.'
+shop.checkout.parcels_hint: Товари різних постачальників надсилаються окремо, тому доставка розраховується для кожної посилки.
+shop.checkout.parcel_title: 'Посилка %number%'
+shop.checkout.parcel_items: '%count% товар|%count% товари|%count% товарів'
+shop.checkout.parcel_weight: '~%weight% кг'
+shop.checkout.parcel_subtotal: Сума за посилку
+shop.checkout.parcel_sender_city: 'відправка з: %city%'
+shop.checkout.min_order_notice: 'Мінімальна сума замовлення у постачальника «%supplier%» — %amount%.'
+shop.checkout.min_order_remaining: 'Зараз у кошику товарів на %subtotal%. Залишилось докупити на'
+shop.checkout.min_order_add_more: Докупити ще товарів
+shop.checkout.min_order_remove_item: Видалити товар з кошика
+shop.checkout.min_order_remove_items: Видалити товари з кошика
+shop.checkout.min_order_blocked: Мінімальну суму замовлення не досягнуто. Докупіть товари або видаліть їх з кошика, щоб оформити замовлення.
+shop.checkout.qty_decrease: Зменшити кількість
+shop.checkout.qty_increase: Збільшити кількість
+shop.checkout.cart_update_failed: Не вдалося оновити кошик. Спробуйте ще раз.
+shop.checkout.supplier_unknown: Інший постачальник
 shop.checkout.delivery_cost_time_pay: оплачується при отриманні товару
 shop.checkout.delivery_pay_time:
 shop.checkout.total: До сплати
@@ -986,6 +1073,7 @@ shop.checkout.cod_prepayment: 'Передоплата :'
 shop.checkout.cod_additional_costs: 'Додаткові витрати :'
 shop.checkout.confirm_order: Підтвердити замовлення
 shop.checkout.payment_privatbank: ПриватБанк
+shop.checkout.accepted_payment_methods: Способи оплати, що приймаються
 shop.checkout.payment_privatbank_desc: Оплата карткою Visa/Mastercard через LiqPay (ПриватБанк).
 shop.checkout.payment_monobank: monobank
 shop.checkout.payment_monobank_desc: Оплата карткою monobank або Apple Pay / Google Pay.

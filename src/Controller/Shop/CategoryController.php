@@ -35,13 +35,19 @@ class CategoryController extends AbstractController
             throw new NotFoundHttpException();
         }
 
+        // Show a child only when that category itself has storefront-visible products.
+        $directCounts = $this->categoryRepository->countStorefrontVisibleProductsGroupedByCategoryId();
         $children = [];
         foreach ($category->getChildren() as $child) {
             if (!$child->isEnabled()) {
                 continue;
             }
+            $childId = $child->getId();
+            if ($childId === null || ($directCounts[$childId] ?? 0) < 1) {
+                continue;
+            }
             $children[] = [
-                'id' => $child->getId(),
+                'id' => $childId,
                 'name' => $child->getName(),
                 'slug' => $child->getSlug(),
             ];

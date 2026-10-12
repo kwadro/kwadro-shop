@@ -1,0 +1,44 @@
+<div class="shop-checkout__saved">
+    <div class="shop-checkout__saved-header">
+        <h2 class="shop-checkout__heading">{{ 'shop.checkout.saved_delivery'|trans }}</h2>
+        <a href="{{ path('shop_checkout', {_locale: app.request.locale, edit_delivery: 1}) }}" class="shop-checkout__edit-link">
+            {{ 'shop.checkout.edit_delivery'|trans }}
+        </a>
+    </div>
+    <div class="shop-checkout__saved-delivery-row">
+        <p class="shop-checkout__saved-delivery-method">
+            <img
+                class="shop-checkout__saved-delivery-logo{% if savedDelivery.deliveryMethod == 'courier' %} shop-checkout__saved-delivery-logo--icon{% endif %}"
+                src="{{ asset(savedDelivery.deliveryMethod == 'courier' ? 'images/checkout/courier.svg' : 'images/checkout/nova-poshta.svg') }}"
+                alt=""
+                loading="lazy"
+            >
+            {% if savedDelivery.deliveryMethod == 'courier' %}
+                {{ 'shop.checkout.delivery_courier'|trans }}: {{ savedDelivery.courierAddress }}
+            {% elseif savedDelivery.deliveryMethod == 'np_branch' %}
+                {{ 'shop.checkout.delivery_np_branch'|trans }}: {{ savedDelivery.npCityName }}, {{ savedDelivery.npWarehouseName }}
+            {% else %}
+                {{ 'shop.checkout.delivery_np_postomat'|trans }}: {{ savedDelivery.npCityName }}, {{ savedDelivery.npWarehouseName }}
+            {% endif %}
+        </p>
+        {% if savedDelivery.deliveryCost is defined and savedDelivery.deliveryCost > 0 %}
+            <p class="shop-checkout__delivery-price">
+                {% if savedDelivery.deliveryMethod in ['np_branch', 'np_postomat'] %}
+                    {{ 'shop.checkout.delivery_cost'|trans }} ~ {{ savedDelivery.deliveryCost|number_format(2, ',', ' ') }} ₴
+                    <span class="shop-checkout__delivery-price-note">{{ 'shop.checkout.delivery_cost_np_tariff'|trans }}</span>
+                    <span class="shop-checkout__delivery-price-note">{{ 'shop.checkout.delivery_cost_time_pay'|trans }}</span>
+                {% else %}
+                    {{ 'shop.checkout.delivery_cost'|trans }}: {{ savedDelivery.deliveryCost|number_format(2, ',', ' ') }} ₴
+                    <span class="shop-checkout__delivery-price-note">{{ 'shop.checkout.delivery_cost_paid_on_receipt'|trans }}</span>
+                {% endif %}
+            </p>
+        {% endif %}
+    </div>
+    {% if parcelCount|default(1) > 1 %}
+        {{ include('shop/checkout/_parcels.html.twig', {
+            parcels: savedDeliveryParcels,
+            parcelCount: parcelCount,
+            isNovaPoshta: savedDelivery.deliveryMethod in ['np_branch', 'np_postomat'],
+        }) }}
+    {% endif %}
+</div>

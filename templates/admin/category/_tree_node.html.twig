@@ -1,7 +1,8 @@
-<li class="mage-category__node{% if node.children is not empty %} has-children{% endif %}{% if selectedId == node.id %} is-selected{% endif %}"
+{% set isCollapsed = node.children is not empty and not node.isDefault %}
+<li class="mage-category__node{% if node.children is not empty %} has-children{% endif %}{% if isCollapsed %} is-collapsed{% endif %}{% if selectedId == node.id %} is-selected{% endif %}"
     role="treeitem"
     data-id="{{ node.id }}"
-    aria-expanded="true">
+    aria-expanded="{{ isCollapsed ? 'false' : 'true' }}">
     <div class="mage-category__row">
         {% if node.children is not empty %}
             <button type="button" class="mage-category__toggle" aria-label="{{ 'admin.category.toggle'|trans }}" data-mage-toggle>

@@ -191,9 +191,10 @@ class ProductCrudController extends AbstractCrudController
             $urlTemplate = $this->generateUrl('admin_product_clean_image_generate', [
                 '_locale' => $locale,
                 'id' => $productId,
-                'slot' => 999,
+                'slot' => 1,
             ]);
-            $urlTemplate = str_replace('/999', '/__SLOT__', $urlTemplate);
+            // Keep a JS placeholder for slots 1–5 without violating route requirements.
+            $urlTemplate = substr($urlTemplate, 0, (int) strrpos($urlTemplate, '/') + 1).'__SLOT__';
             $config = [
                 'urlTemplate' => $urlTemplate,
                 'labels' => [

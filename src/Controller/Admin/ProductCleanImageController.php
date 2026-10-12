@@ -47,8 +47,9 @@ final class ProductCleanImageController extends AbstractController
             ], Response::HTTP_BAD_REQUEST);
         }
 
-        ProductImagePath::ensureStored($this->projectDir, $sourceFilename);
-        $sourcePath = ProductImagePath::absolutePath($this->projectDir, $sourceFilename);
+        $supplierSlug = $product->getImageSupplierSlug();
+        ProductImagePath::ensureStored($this->projectDir, $sourceFilename, $supplierSlug);
+        $sourcePath = ProductImagePath::absolutePath($this->projectDir, $sourceFilename, $supplierSlug);
         if ($sourcePath === '' || !is_file($sourcePath)) {
             return new JsonResponse([
                 'ok' => false,
@@ -57,7 +58,7 @@ final class ProductCleanImageController extends AbstractController
         }
 
         $outFilename = sprintf('product-%d-clean-%s.png', (int) $product->getId(), bin2hex(random_bytes(4)));
-        $outPath = ProductImagePath::absolutePath($this->projectDir, $outFilename);
+        $outPath = ProductImagePath::absolutePath($this->projectDir, $outFilename, $supplierSlug);
         $outDir = \dirname($outPath);
         if (!is_dir($outDir) && !mkdir($outDir, 0775, true) && !is_dir($outDir)) {
             return new JsonResponse([
@@ -90,7 +91,7 @@ final class ProductCleanImageController extends AbstractController
         $this->entityManager->flush();
 
         if ($oldFilename !== null && $oldFilename !== $outFilename) {
-            $oldPath = ProductImagePath::absolutePath($this->projectDir, $oldFilename);
+            $oldPath = ProductImagePath::absolutePath($this->projectDir, $oldFilename, $supplierSlug);
             if ($oldPath !== '' && is_file($oldPath)) {
                 @unlink($oldPath);
             }
@@ -100,8 +101,8 @@ final class ProductCleanImageController extends AbstractController
             'ok' => true,
             'message' => $this->translator->trans('admin.product.clean_image_done', [], 'messages'),
             'filename' => $outFilename,
-            'url' => ProductImagePath::webPath($outFilename).'?t='.time(),
-            'relative' => ProductImagePath::relativePath($outFilename),
+            'url' => ProductImagePath::webPath($outFilename, $supplierSlug).'?t='.time(),
+            'relative' => ProductImagePath::relativePath($outFilename, $supplierSlug),
             'slot' => $slot,
         ]);
     }

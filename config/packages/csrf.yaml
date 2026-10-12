@@ -1,4 +1,3 @@
-# Stateless CSRF is enabled for login/logout only.
 # EasyAdmin and other Symfony forms use session-based CSRF tokens.
 framework:
     form:
@@ -6,6 +5,10 @@ framework:
             token_id: submit
 
     csrf_protection:
+        # Storefront tokens are stateless so cached pages (nginx FPC) do not start a session.
         stateless_token_ids:
             - authenticate
             - logout
+            - cart_add
+            - cart_remove
+            - city_update

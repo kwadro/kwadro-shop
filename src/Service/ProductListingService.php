@@ -3,7 +3,9 @@
 namespace App\Service;
 
 use App\Entity\Category;
+use App\Entity\ProductAttribute;
 use App\Entity\Supplier;
+use App\Repository\ProductAttributeRepository;
 use App\Repository\ProductRepository;
 use App\Repository\ProductSearchSettingRepository;
 use App\Repository\SiteRepository;
@@ -16,6 +18,7 @@ class ProductListingService
 
     public function __construct(
         private readonly ProductRepository $productRepository,
+        private readonly ProductAttributeRepository $productAttributeRepository,
         private readonly ProductSearchSettingRepository $productSearchSettingRepository,
         private readonly SiteRepository $siteRepository,
         private readonly RequestStack $requestStack,
@@ -34,7 +37,8 @@ class ProductListingService
      *   page: int,
      *   perPage: int,
      *   pages: int,
-     *   facets: array<string, list<string>>,
+     *   facets: array<string, list<array{value: string, count: int}>>,
+     *   facetLabels: array<string, string>,
      *   filters: array<string, list<string>>,
      *   query: string,
      *   showFilters: bool
@@ -43,12 +47,20 @@ class ProductListingService
     public function list(array $scope, Request $request, bool $showFilters = true): array
     {
         $query = trim((string) $request->query->get('q', $scope['query'] ?? ''));
-        $filters = $this->parseFilters($request);
+        $category = ($scope['category'] ?? null) instanceof Category ? $scope['category'] : null;
+        // Optional allow-list of built-in filter keys (e.g. ['brand']); dynamic attributes are skipped then.
+        $allowedFacets = isset($scope['facets']) && \is_array($scope['facets']) ? array_values($scope['facets']) : null;
+        $filterAttributes = $showFilters && $allowedFacets === null
+            ? $this->productAttributeRepository->findFilterableForCategory($category)
+            : [];
+        $filters = $this->parseFilters($request, $filterAttributes);
+        if ($allowedFacets !== null) {
+            $filters = array_intersect_key($filters, array_flip($allowedFacets));
+        }
         $perPage = $this->resolveProductsPerPage();
         $page = max(1, (int) $request->query->get('page', 1));
 
         $searchFields = $this->resolveSearchFields();
-        $category = ($scope['category'] ?? null) instanceof Category ? $scope['category'] : null;
         $inStockOnly = $category !== null && !$category->isShowOutOfStock();
 
         $criteria = [
@@ -58,6 +70,7 @@ class ProductListingService
             'filters' => $filters,
             'searchFields' => $searchFields,
             'inStockOnly' => $inStockOnly,
+            'filterAttributes' => $filterAttributes,
         ];
 
         $facetCriteria = [
@@ -67,6 +80,8 @@ class ProductListingService
             'filters' => $filters,
             'searchFields' => $searchFields,
             'inStockOnly' => $inStockOnly,
+            'filterAttributes' => $filterAttributes,
+            'facetKeys' => $allowedFacets,
         ];
 
         $pageResult = $this->productRepository->findCatalogPage($criteria, $page, $perPage);
@@ -86,6 +101,10 @@ class ProductListingService
             ? $this->productRepository->findAttributeFacets($facetCriteria)
             : ['brand' => [], 'color' => [], 'type' => [], 'model' => []];
 
+        if ($allowedFacets !== null) {
+            $facets = array_intersect_key($facets, array_flip($allowedFacets));
+        }
+
         // Hide attribute groups that have only one (or zero) options.
         foreach ($facets as $attribute => $options) {
             if (\count($options) < 2) {
@@ -100,12 +119,27 @@ class ProductListingService
             'perPage' => $perPage,
             'pages' => $pages,
             'facets' => $facets,
+            'facetLabels' => $this->buildFacetLabels($filterAttributes),
             'filters' => $filters,
             'query' => $query,
             'showFilters' => $showFilters,
             'paginationQuery' => $this->buildPaginationQuery($query, $filters),
             'activeFilters' => $this->buildActiveFilters($query, $filters),
         ];
+    }
+
+    /**
+     * @param list<ProductAttribute> $filterAttributes
+     * @return array<string, string>
+     */
+    private function buildFacetLabels(array $filterAttributes): array
+    {
+        $labels = [];
+        foreach ($filterAttributes as $attribute) {
+            $labels[$attribute->getFilterKey()] = $attribute->getName();
+        }
+
+        return $labels;
     }
 
     /**
@@ -153,12 +187,19 @@ class ProductListingService
     }
 
     /**
+     * @param list<ProductAttribute> $filterAttributes
      * @return array<string, list<string>>
      */
-    public function parseFilters(Request $request): array
+    public function parseFilters(Request $request, array $filterAttributes = []): array
     {
+        $keys = ProductRepository::FILTER_ATTRIBUTES;
+        foreach ($filterAttributes as $attribute) {
+            $keys[] = $attribute->getFilterKey();
+        }
+        $keys = array_values(array_unique($keys));
+
         $filters = [];
-        foreach (ProductRepository::FILTER_ATTRIBUTES as $attribute) {
+        foreach ($keys as $attribute) {
             $raw = $request->query->all($attribute);
             if (!\is_array($raw)) {
                 $single = $request->query->get($attribute);

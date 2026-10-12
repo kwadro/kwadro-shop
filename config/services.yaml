@@ -11,6 +11,12 @@ parameters:
     languages: [ en, ua ]
     app.domain: '%env(APP_DOMAIN)%'
     app.enabled_locales: '%kernel.enabled_locales%'
+    # Full page cache. FPC_MODE: "symfony" (PHP HttpCache, any hosting incl. Apache) or "nginx" (docs/nginx/fpc.conf).
+    # FPC_CACHE_DIR is required for nginx (fastcgi_cache_path); for symfony it defaults to var/cache/<env>/http_cache.
+    env(FPC_MODE): 'symfony'
+    env(FPC_ENABLED): '1'
+    env(FPC_TTL): '300'
+    env(FPC_CACHE_DIR): ''
     env(SHOP_DEFAULT_CITY): 'Івано-Франківськ'
     env(SHOP_DEFAULT_PACKAGE_WEIGHT): '1'
     env(NOVA_POSHTA_SENDER_CITY_REF): ''
@@ -74,6 +80,7 @@ services:
             $defaultCity: '%env(default:shop_default_city:SHOP_DEFAULT_CITY)%'
             $senderCityRefOverride: '%env(default::NOVA_POSHTA_SENDER_CITY_REF)%'
             $defaultPackageWeight: '%env(float:default:shop_default_package_weight:SHOP_DEFAULT_PACKAGE_WEIGHT)%'
+            $cache: '@cache.app'
 
     App\Service\Checkout\PaymentCheckoutService:
         arguments:
@@ -115,6 +122,10 @@ services:
             $defaultPackageWidth: '%env(float:default:shop_default_package_width:SHOP_DEFAULT_PACKAGE_WIDTH)%'
             $defaultPackageLength: '%env(float:default:shop_default_package_length:SHOP_DEFAULT_PACKAGE_LENGTH)%'
 
+
+    App\Service\ProductImport\LugiProductImportService:
+        arguments:
+            $debugDataHolder: '@?doctrine.debug_data_holder'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

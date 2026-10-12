@@ -36,7 +36,7 @@ class SupplierController extends AbstractController
         }
 
         $listing = $this->productListing->list(
-            ['supplier' => $supplier],
+            ['supplier' => $supplier, 'facets' => ['brand']],
             $request,
             true,
         );

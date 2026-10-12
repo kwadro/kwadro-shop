@@ -56,6 +56,8 @@ menu.link_product_import_run_single: Import run
 menu.group_product_search: Product search
 menu.link_product_search_setting: Search fields
 menu.link_product_search_setting_single: Product search setting
+menu.link_homepage_setting: Homepage
+menu.link_homepage_setting_single: homepage setting
 menu.link_blog_article: Blog articles
 menu.link_blog_article_single: Blog article
 menu.link_blog_category: Blog categories
@@ -205,14 +207,27 @@ admin.product.in_stock: In stock
 admin.product.enabled: Enabled
 admin.product.enabled_yes: Yes
 admin.product.enabled_no: No
+admin.product_import.add_new: Add new
 admin.product_import.name: Name
 admin.product_import.code: Code
+admin.product_import.code_help: 'Unique import type code, e.g. sivitek or lugi. Cannot be changed after create.'
 admin.product_import.mode: Import mode
 admin.product_import.mode_help: 'Add/Update — create new and update price/stock/description. Delete Add/Update — same plus disable supplier products missing from the file.'
 admin.product_import.file_path: File path
 admin.product_import.file_path_help: 'Relative to project root or absolute path.'
 admin.product_import.disabled_skus: SKUs to disable
 admin.product_import.disabled_skus_help: 'One SKU per line. These products will be disabled after import.'
+admin.product_import.settings_panel: Import settings
+admin.product_import.default_category: Default category
+admin.product_import.default_category_help: 'Fallback category for imported products. Stored as category external_id (not internal id). Only categories with external_id are listed.'
+admin.product_import.disable_categories_after_import: Category status after import
+admin.product_import.disable_categories_after_import_help: 'Yes — disable selected category slugs after import. No — leave categories unchanged.'
+admin.product_import.disabled_category_slugs: Categories to disable
+admin.product_import.disabled_category_slugs_help: 'One category slug per line.'
+admin.product_import.markup_percent: Markup
+admin.product_import.markup_percent_help: 'Markup in percent for price calculation, e.g. 30 = +30%.'
+admin.product_import.yes: 'Yes'
+admin.product_import.no: 'No'
 admin.product_import.active: Active
 admin.product_import.last_run_at: Last run
 admin.product_import.last_result: Last result
@@ -228,6 +243,27 @@ admin.product_search_setting.field_name: Name
 admin.product_search_setting.field_model: Model
 admin.product_search_setting.field_sku: SKU
 admin.product_search_setting.field_brand: Brand
+admin.homepage_setting.fieldset_general: Site and language
+admin.homepage_setting.site: Site
+admin.homepage_setting.locale: Language
+admin.homepage_setting.fieldset_products: '"New offers" block'
+admin.homepage_setting.fieldset_products_help: Products on the homepage. Only enabled in-stock products are shown.
+admin.homepage_setting.fieldset_articles: '"Interesting articles" block'
+admin.homepage_setting.fieldset_articles_help: Blog articles on the homepage. Only published articles of this site and language are shown.
+admin.homepage_setting.enabled: Show block
+admin.homepage_setting.title: Title
+admin.homepage_setting.title_help: Leave empty to use the default title.
+admin.homepage_setting.lead: Subtitle
+admin.homepage_setting.lead_help: Leave empty to use the default text.
+admin.homepage_setting.source: What to show
+admin.homepage_setting.source_latest: Latest automatically
+admin.homepage_setting.source_manual: Selected manually
+admin.homepage_setting.source_help: If "Selected manually" is chosen but the list is empty, the latest items are shown.
+admin.homepage_setting.limit: Count
+admin.homepage_setting.products: Selected products
+admin.homepage_setting.products_help: Used when "Selected manually" is chosen.
+admin.homepage_setting.articles: Selected articles
+admin.homepage_setting.articles_help: Used when "Selected manually" is chosen. Articles from another site or language are not shown.
 admin.product_import_run.import: Import
 admin.product_import_run.started_at: Started at
 admin.product_import_run.finished_at: Finished at
@@ -282,6 +318,8 @@ admin.product_offer.old_price: Old price
 admin.product_offer.qty: Stock qty
 admin.product_offer.qty_help: Available quantity from this supplier offer.
 admin.category.name: Name
+admin.category.external_id: External ID
+admin.category.external_id_help: 'Supplier/feed category id (e.g. from YML). Leave empty if not used.'
 admin.category.slug: URL slug
 admin.category.slug_help: 'Leave empty to generate from the name. Allowed: letters, digits, "-" and "_". Example: powerbanks-and-chargers.'
 admin.category.enabled: Enabled
@@ -325,6 +363,15 @@ admin.supplier.slug_help: 'Leave empty to generate from the name. Allowed: lette
 admin.supplier.description: Description
 admin.supplier.phone: Phone
 admin.supplier.email: Email
+admin.supplier.show_products_in_sitemap: Show products in sitemap
+admin.supplier.np_sender_city: Shipping city (Nova Poshta)
+admin.supplier.np_sender_city_help: City the supplier ships Nova Poshta parcels from. Used to calculate the delivery price. When empty, the store's default city is used.
+admin.supplier.np_sender_city_ref: Shipping city ref (Nova Poshta)
+admin.supplier.min_order_amount: Minimum order amount, UAH
+admin.supplier.min_order_amount_help: Leave empty for no limit. Checkout is blocked while the total of this supplier's products is lower.
+admin.supplier.np_sender_city_resolved: 'Nova Poshta shipping city: %city%'
+admin.supplier.np_sender_city_not_found: 'City "%city%" was not found in Nova Poshta; the store default city is used for delivery quotes.'
+admin.supplier.show_products_in_sitemap_help: When disabled, products offered only by this supplier are excluded from sitemap.xml.
 admin.supplier.meta_title: Meta title
 admin.supplier.meta_description: Meta description
 admin.supplier.og_title: OG Title
@@ -872,7 +919,24 @@ shop.header.city_search_hint: 'For example, Kotiuzhyny'
 shop.header.city_apply: Apply
 shop.header.city_modal_note: 'Choosing a city helps us show product availability, prices, and delivery options for your location and saves you time.'
 shop.header.city_close: Close
-shop.add_to_cart: Add to cart
+shop.add_to_cart: Buy
+
+shop.home.hero_title: Home goods for everyday comfort
+shop.home.hero_lead: Browse trusted categories, current offers, and helpful blog guides.
+shop.home.cta_buy: Buy
+shop.home.cta_blog: Read the blog
+shop.home.cta_all_products: All products
+shop.home.cta_all_articles: All articles
+shop.home.categories_title: Product categories
+shop.home.categories_lead: Open a section and choose what you want to buy.
+shop.home.category_products: '%count% products'
+shop.home.category_subcategories: '%count% subcategories'
+shop.home.products_title: New offers
+shop.home.products_lead: Fresh in-stock products — buy online with delivery across Ukraine.
+shop.home.blog_title: Interesting articles
+shop.home.blog_lead: Short guides and tips to help you choose with confidence.
+shop.home.final_title: Ready to choose?
+shop.home.final_lead: Open the catalog and buy what you need in a few minutes.
 shop.cart.added: Product added to cart
 shop.cart.added_short: Added ✓
 shop.cart.removed: Product removed from cart
@@ -917,6 +981,12 @@ shop.product.offers_close: Close
 shop.product.offer_sku: SKU
 shop.product.lowest_price: Lowest price
 shop.product.description_title: Description
+shop.product.attributes_title: Specifications
+shop.product.model: Model
+shop.product.manufacturer: Manufacturer
+shop.product.trademark_prefix: TM
+shop.product.thumbs_prev: Previous images
+shop.product.thumbs_next: Next images
 
 shop.checkout.title: Checkout
 shop.checkout.outside_ukraine_title: Purchase unavailable
@@ -931,6 +1001,23 @@ shop.checkout.subtotal: Order total
 shop.checkout.delivery_cost: Delivery
 shop.checkout.delivery_cost_paid_on_receipt: (paid upon receipt of the order)
 shop.checkout.delivery_cost_np_tariff: (according to Nova Poshta rates)
+shop.checkout.parcels_note: '%count% parcel will be sent to the specified address.|%count% parcels will be sent to the specified address.'
+shop.checkout.parcels_hint: Items from different suppliers are shipped separately, so delivery is calculated for each parcel.
+shop.checkout.parcel_title: 'Parcel %number%'
+shop.checkout.parcel_items: '%count% item|%count% items'
+shop.checkout.parcel_weight: '~%weight% kg'
+shop.checkout.parcel_subtotal: Parcel subtotal
+shop.checkout.parcel_sender_city: 'ships from: %city%'
+shop.checkout.min_order_notice: 'The minimum order amount for supplier "%supplier%" is %amount%.'
+shop.checkout.min_order_remaining: 'Your cart has %subtotal% of their products. Add more for'
+shop.checkout.min_order_add_more: Add more products
+shop.checkout.min_order_remove_item: Remove the product from the cart
+shop.checkout.min_order_remove_items: Remove these products from the cart
+shop.checkout.min_order_blocked: The minimum order amount is not reached. Add more products or remove them from the cart to place the order.
+shop.checkout.qty_decrease: Decrease quantity
+shop.checkout.qty_increase: Increase quantity
+shop.checkout.cart_update_failed: Could not update the cart. Please try again.
+shop.checkout.supplier_unknown: Other supplier
 shop.checkout.delivery_cost_time_pay: payment is due after receipt of the goods.
 shop.checkout.total: Total
 shop.checkout.placeholder: Next, a form for delivery and payment details will appear here.
@@ -986,6 +1073,7 @@ shop.checkout.cod_prepayment: 'Prepayment:'
 shop.checkout.cod_additional_costs: 'Additional costs:'
 shop.checkout.confirm_order: Confirm order
 shop.checkout.payment_privatbank: PrivatBank
+shop.checkout.accepted_payment_methods: Accepted payment methods
 shop.checkout.payment_privatbank_desc: Pay with Visa/Mastercard via LiqPay (PrivatBank).
 shop.checkout.payment_monobank: monobank
 shop.checkout.payment_monobank_desc: Pay with monobank card or Apple Pay / Google Pay.

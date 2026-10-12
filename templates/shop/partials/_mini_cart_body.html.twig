@@ -5,7 +5,7 @@
                 {% if item.image %}
                     <img
                         class="shop-minicart__thumb"
-                        src="{{ item.image|product_image }}"
+                        src="{{ item.image|product_image(item.snapshot.supplier.slug|default(null)) }}"
                         alt="{{ item.name }}"
                         width="56"
                         height="56"
@@ -15,7 +15,13 @@
                     <div class="shop-minicart__thumb shop-minicart__thumb--placeholder" aria-hidden="true"></div>
                 {% endif %}
                 <div class="shop-minicart__item-body">
-                    <p class="shop-minicart__item-name">{{ item.name }}</p>
+                    <p class="shop-minicart__item-name">
+                        {%- if item.snapshot.slug|default('') -%}
+                            <a class="shop-minicart__item-link" href="{{ path('shop_product', {_locale: app.request.locale, slug: item.snapshot.slug}) }}">{{ item.name }}</a>
+                        {%- else -%}
+                            {{ item.name }}
+                        {%- endif -%}
+                    </p>
                     {% if item.supplier_name %}
                         <p class="shop-minicart__item-supplier">
                             {{ 'shop.product.supplier'|trans }}: {{ item.supplier_name }}

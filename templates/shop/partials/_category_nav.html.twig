@@ -38,8 +38,14 @@
 
         <ul id="shop-category-nav-list" class="shop-category-nav__list" data-category-nav-list>
             {% for item in categoryMenu %}
+                {% set grandchildSlugs = [] %}
+                {% for child in item.children|default([]) %}
+                    {% for grandchild in child.children|default([]) %}
+                        {% set grandchildSlugs = grandchildSlugs|merge([grandchild.slug]) %}
+                    {% endfor %}
+                {% endfor %}
                 {% set childSlugs = item.children|default([])|map(child => child.slug) %}
-                {% set childActive = isCategoryRoute and currentSlug in childSlugs %}
+                {% set childActive = isCategoryRoute and (currentSlug in childSlugs or currentSlug in grandchildSlugs) %}
                 {% set itemActive = isCategoryRoute and (item.slug == currentSlug or childActive) %}
                 <li class="shop-category-nav__item{% if item.children is not empty %} shop-category-nav__item--has-children{% endif %}{% if itemActive %} is-active{% endif %}">
                     <a
@@ -54,20 +60,47 @@
                     </a>
 
                     {% if item.children is not empty %}
-                        <ul class="shop-category-nav__submenu">
+                        <div class="shop-category-nav__submenu">
+                        <ul class="shop-category-nav__submenu-list">
                             {% for child in item.children %}
-                                {% set childIsActive = isCategoryRoute and child.slug == currentSlug %}
-                                <li{% if childIsActive %} class="is-active"{% endif %}>
+                                {% set childGrandSlugs = child.children|default([])|map(g => g.slug) %}
+                                {% set childIsActive = isCategoryRoute and (child.slug == currentSlug or currentSlug in childGrandSlugs) %}
+                                {% set childHasChildren = child.children is defined and child.children is not empty %}
+                                <li class="shop-category-nav__submenu-item{% if childHasChildren %} shop-category-nav__submenu-item--has-children{% endif %}{% if childIsActive %} is-active{% endif %}">
                                     <a
                                         href="{{ path('shop_category', {_locale: app.request.locale, slug: child.slug}) }}"
-                                        class="{% if childIsActive %}is-active{% endif %}"
-                                        {% if childIsActive %}aria-current="page"{% endif %}
+                                        class="shop-category-nav__submenu-link{% if childIsActive %} is-active{% endif %}"
+                                        {% if childIsActive and currentSlug == child.slug %}aria-current="page"{% endif %}
                                     >
-                                        {{ child.name }}
+                                        <span>{{ child.name }}</span>
+                                        {% if childHasChildren %}
+                                            <span class="shop-category-nav__submenu-caret" aria-hidden="true"></span>
+                                        {% endif %}
                                     </a>
+
+                                    {% if childHasChildren %}
+                                        <div class="shop-category-nav__flyout" role="group" aria-label="{{ child.name }}">
+                                            <div class="shop-category-nav__flyout-title">{{ child.name }}</div>
+                                            <ul class="shop-category-nav__flyout-list">
+                                                {% for grandchild in child.children %}
+                                                    {% set grandchildIsActive = isCategoryRoute and grandchild.slug == currentSlug %}
+                                                    <li{% if grandchildIsActive %} class="is-active"{% endif %}>
+                                                        <a
+                                                            href="{{ path('shop_category', {_locale: app.request.locale, slug: grandchild.slug}) }}"
+                                                            class="{% if grandchildIsActive %}is-active{% endif %}"
+                                                            {% if grandchildIsActive %}aria-current="page"{% endif %}
+                                                        >
+                                                            {{ grandchild.name }}
+                                                        </a>
+                                                    </li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                    {% endif %}
                                 </li>
                             {% endfor %}
                         </ul>
+                        </div>
                     {% endif %}
                 </li>
             {% endfor %}

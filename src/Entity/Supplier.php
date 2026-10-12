@@ -54,6 +54,18 @@ class Supplier
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $og_image = null;
 
+    #[ORM\Column(options: ['default' => true])]
+    private bool $show_products_in_sitemap = true;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $np_sender_city_name = null;
+
+    #[ORM\Column(length: 64, nullable: true)]
+    private ?string $np_sender_city_ref = null;
+
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
+    private ?string $min_order_amount = null;
+
     /** @var Collection<int, ProductOffer> */
     #[ORM\OneToMany(mappedBy: 'supplier', targetEntity: ProductOffer::class, cascade: ['persist'], orphanRemoval: false)]
     private Collection $offers;
@@ -231,6 +243,58 @@ class Supplier
     {
         $ogImage = $ogImage !== null ? trim($ogImage) : null;
         $this->og_image = $ogImage !== '' ? $ogImage : null;
+
+        return $this;
+    }
+
+    public function isShowProductsInSitemap(): bool
+    {
+        return $this->show_products_in_sitemap;
+    }
+
+    public function setShowProductsInSitemap(bool $showProductsInSitemap): static
+    {
+        $this->show_products_in_sitemap = $showProductsInSitemap;
+
+        return $this;
+    }
+
+    public function getNpSenderCityName(): ?string
+    {
+        return $this->np_sender_city_name;
+    }
+
+    public function setNpSenderCityName(?string $npSenderCityName): static
+    {
+        $npSenderCityName = $npSenderCityName !== null ? trim($npSenderCityName) : null;
+        $this->np_sender_city_name = $npSenderCityName !== '' ? $npSenderCityName : null;
+
+        return $this;
+    }
+
+    public function getNpSenderCityRef(): ?string
+    {
+        return $this->np_sender_city_ref;
+    }
+
+    public function setNpSenderCityRef(?string $npSenderCityRef): static
+    {
+        $npSenderCityRef = $npSenderCityRef !== null ? trim($npSenderCityRef) : null;
+        $this->np_sender_city_ref = $npSenderCityRef !== '' ? $npSenderCityRef : null;
+
+        return $this;
+    }
+
+    public function getMinOrderAmount(): ?float
+    {
+        return $this->min_order_amount !== null ? (float) $this->min_order_amount : null;
+    }
+
+    public function setMinOrderAmount(int|float|string|null $minOrderAmount): static
+    {
+        $this->min_order_amount = is_numeric($minOrderAmount) && (float) $minOrderAmount > 0
+            ? number_format((float) $minOrderAmount, 2, '.', '')
+            : null;
 
         return $this;
     }

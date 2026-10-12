@@ -157,6 +157,9 @@ class CategoryCrudController extends AbstractCrudController
     {
         yield IdField::new('id')->hideOnForm();
         yield TextField::new('name', $this->translator->trans('admin.category.name', [], 'messages'));
+        yield IntegerField::new('externalId', $this->translator->trans('admin.category.external_id', [], 'messages'))
+            ->setHelp($this->translator->trans('admin.category.external_id_help', [], 'messages'))
+            ->setRequired(false);
         yield TextField::new('slug', $this->translator->trans('admin.category.slug', [], 'messages'))
             ->setHelp($this->translator->trans('admin.category.slug_help', [], 'messages'));
         yield BooleanField::new('enabled', $this->translator->trans('admin.category.enabled', [], 'messages'));

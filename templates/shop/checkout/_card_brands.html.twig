@@ -1,0 +1,12 @@
+{% set brandLogos = {
+    visa: { file: 'visa.svg', alt: 'Visa', width: 38, height: 12 },
+    mastercard: { file: 'mastercard.svg', alt: 'Mastercard', width: 26, height: 16 },
+    apple_pay: { file: 'apple-pay.svg', alt: 'Apple Pay', width: 38, height: 16 },
+    google_pay: { file: 'google-pay.svg', alt: 'Google Pay', width: 42, height: 16 },
+} %}
+<ul class="shop-checkout__card-brands" aria-label="{{ 'shop.checkout.accepted_payment_methods'|trans }}">
+    {% for brand in brands|default(['visa', 'mastercard']) %}
+        {% set logo = brandLogos[brand] %}
+        <li><img src="{{ asset('images/checkout/' ~ logo.file) }}" alt="{{ logo.alt }}" width="{{ logo.width }}" height="{{ logo.height }}" loading="lazy"></li>
+    {% endfor %}
+</ul>

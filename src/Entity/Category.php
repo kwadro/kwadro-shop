@@ -29,6 +29,10 @@ class Category
     #[ORM\Column(length: 255)]
     private string $name = '';
 
+    /** External supplier/feed category id (e.g. YML category id). */
+    #[ORM\Column(nullable: true)]
+    private ?int $external_id = null;
+
     #[ORM\Column(length: 255)]
     #[Assert\Regex(
         pattern: '#^(?:'.ShopRoutes::SLUG_REQUIREMENTS.')?$#',
@@ -102,6 +106,18 @@ class Category
     public function setName(string $name): static
     {
         $this->name = trim($name);
+
+        return $this;
+    }
+
+    public function getExternalId(): ?int
+    {
+        return $this->external_id;
+    }
+
+    public function setExternalId(?int $externalId): static
+    {
+        $this->external_id = $externalId;
 
         return $this;
     }

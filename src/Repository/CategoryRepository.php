@@ -57,21 +57,106 @@ class CategoryRepository extends ServiceEntityRepository
     /**
      * @return array<int, int> categoryId => product count
      */
-    public function countProductsGroupedByCategoryId(): array
-    {
+    public function countProductsGroupedByCategoryId(
+        bool $enabledProductsOnly = false,
+        bool $inStockOnly = false,
+    ): array {
         if (!$this->getEntityManager()->getConnection()->createSchemaManager()->tablesExist(['shop_product_category'])) {
             return [];
         }
 
-        $raw = $this->getEntityManager()->getConnection()->fetchAllAssociative(<<<'SQL'
-            SELECT category_id AS category_id, COUNT(product_id) AS product_count
-            FROM shop_product_category
-            GROUP BY category_id
-        SQL);
+        if ($enabledProductsOnly || $inStockOnly) {
+            $where = [];
+            if ($enabledProductsOnly) {
+                $where[] = 'p.enabled = 1';
+            }
+            if ($inStockOnly) {
+                $where[] = 'p.in_stock = 1';
+            }
+            $whereSql = $where !== [] ? 'WHERE '.implode(' AND ', $where) : '';
+
+            $raw = $this->getEntityManager()->getConnection()->fetchAllAssociative(<<<SQL
+                SELECT pc.category_id AS category_id, COUNT(pc.product_id) AS product_count
+                FROM shop_product_category pc
+                INNER JOIN shop_product p ON p.id = pc.product_id
+                {$whereSql}
+                GROUP BY pc.category_id
+            SQL);
+        } else {
+            $raw = $this->getEntityManager()->getConnection()->fetchAllAssociative(<<<'SQL'
+                SELECT category_id AS category_id, COUNT(product_id) AS product_count
+                FROM shop_product_category
+                GROUP BY category_id
+            SQL);
+        }
 
         $counts = [];
         foreach ($raw as $row) {
             $counts[(int) $row['category_id']] = (int) $row['product_count'];
+        }
+
+        return $counts;
+    }
+
+    /**
+     * Products that appear on storefront listings when out-of-stock is hidden:
+     * enabled + in stock.
+     *
+     * @return array<int, int> categoryId => product count
+     */
+    public function countStorefrontVisibleProductsGroupedByCategoryId(): array
+    {
+        return $this->countProductsGroupedByCategoryId(true, true);
+    }
+
+    /**
+     * Distinct enabled + in-stock products in a category plus all enabled descendants.
+     * A product linked to several categories of the same subtree is counted once.
+     *
+     * @return array<int, int> categoryId => subtree product count
+     */
+    public function countEnabledProductsInSubtreeGroupedByCategoryId(): array
+    {
+        /** @var list<array{id: int|string, parentId: int|string|null}> $rows */
+        $rows = $this->createQueryBuilder('c')
+            ->select('c.id AS id', 'IDENTITY(c.parent) AS parentId')
+            ->andWhere('c.enabled = true')
+            ->getQuery()
+            ->getArrayResult();
+
+        /** @var array<int, int|null> $parentById enabled categories only */
+        $parentById = [];
+        foreach ($rows as $row) {
+            $parentById[(int) $row['id']] = $row['parentId'] !== null && $row['parentId'] !== ''
+                ? (int) $row['parentId']
+                : null;
+        }
+
+        $assignments = $this->getEntityManager()->getConnection()->fetchAllNumeric(<<<'SQL'
+            SELECT DISTINCT pc.category_id, pc.product_id
+            FROM shop_product_category pc
+            INNER JOIN shop_product p ON p.id = pc.product_id
+            WHERE p.enabled = 1 AND p.in_stock = 1
+        SQL);
+
+        /** @var array<int, array<int, true>> $productsByCategory */
+        $productsByCategory = [];
+        foreach ($assignments as [$categoryId, $productId]) {
+            $categoryId = (int) $categoryId;
+            $productId = (int) $productId;
+            // Walk up through enabled ancestors; a disabled category cuts its branch off.
+            while ($categoryId !== null && \array_key_exists($categoryId, $parentById)) {
+                if (isset($productsByCategory[$categoryId][$productId])) {
+                    break;
+                }
+                $productsByCategory[$categoryId][$productId] = true;
+                $categoryId = $parentById[$categoryId];
+            }
+        }
+
+        $counts = [];
+        foreach ($parentById as $id => $_) {
+            $counts[$id] = \count($productsByCategory[$id] ?? []);
         }
 
         return $counts;
@@ -134,9 +219,19 @@ class CategoryRepository extends ServiceEntityRepository
     }
 
     /**
-     * Two-level menu under Default for the shop header.
+     * Up to three-level menu under Default for the shop header.
      *
-     * @return list<array{id: int, name: string, slug: string, children: list<array{id: int, name: string, slug: string}>}>
+     * @return list<array{
+     *   id: int,
+     *   name: string,
+     *   slug: string,
+     *   children: list<array{
+     *     id: int,
+     *     name: string,
+     *     slug: string,
+     *     children: list<array{id: int, name: string, slug: string}>
+     *   }>
+     * }>
      */
     public function buildStorefrontMenuTree(): array
     {
@@ -144,6 +239,10 @@ class CategoryRepository extends ServiceEntityRepository
         if ($default === null) {
             return [];
         }
+
+        // Match category pages that hide out-of-stock: only enabled + in-stock products count.
+        // A category without its own visible products is hidden, unless it still has a visible child.
+        $directCounts = $this->countStorefrontVisibleProductsGroupedByCategoryId();
 
         /** @var list<Category> $levelOne */
         $levelOne = $this->createQueryBuilder('c')
@@ -160,7 +259,7 @@ class CategoryRepository extends ServiceEntityRepository
             return [];
         }
 
-        $parentIds = array_values(array_filter(array_map(
+        $levelOneIds = array_values(array_filter(array_map(
             static fn (Category $category): ?int => $category->getId(),
             $levelOne,
         )));
@@ -169,14 +268,50 @@ class CategoryRepository extends ServiceEntityRepository
         $levelTwo = $this->createQueryBuilder('c')
             ->andWhere('c.parent IN (:parents)')
             ->andWhere('c.enabled = :enabled')
-            ->setParameter('parents', $parentIds)
+            ->setParameter('parents', $levelOneIds)
             ->setParameter('enabled', true)
             ->orderBy('c.position', 'ASC')
             ->addOrderBy('c.name', 'ASC')
             ->getQuery()
             ->getResult();
 
-        /** @var array<int, list<array{id: int, name: string, slug: string}>> $childrenByParent */
+        $levelTwoIds = array_values(array_filter(array_map(
+            static fn (Category $category): ?int => $category->getId(),
+            $levelTwo,
+        )));
+
+        /** @var list<Category> $levelThree */
+        $levelThree = $levelTwoIds === [] ? [] : $this->createQueryBuilder('c')
+            ->andWhere('c.parent IN (:parents)')
+            ->andWhere('c.enabled = :enabled')
+            ->setParameter('parents', $levelTwoIds)
+            ->setParameter('enabled', true)
+            ->orderBy('c.position', 'ASC')
+            ->addOrderBy('c.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        /** @var array<int, list<array{id: int, name: string, slug: string}>> $grandchildrenByParent */
+        $grandchildrenByParent = [];
+        foreach ($levelThree as $grandchild) {
+            $parentId = $grandchild->getParent()?->getId();
+            $grandchildId = $grandchild->getId();
+            if ($parentId === null || $grandchildId === null) {
+                continue;
+            }
+            // Leaf/child: must have enabled products in this category itself.
+            if (($directCounts[$grandchildId] ?? 0) < 1) {
+                continue;
+            }
+
+            $grandchildrenByParent[$parentId][] = [
+                'id' => $grandchildId,
+                'name' => $grandchild->getName(),
+                'slug' => $grandchild->getSlug(),
+            ];
+        }
+
+        /** @var array<int, list<array{id: int, name: string, slug: string, children: list}>> $childrenByParent */
         $childrenByParent = [];
         foreach ($levelTwo as $child) {
             $parentId = $child->getParent()?->getId();
@@ -185,10 +320,18 @@ class CategoryRepository extends ServiceEntityRepository
                 continue;
             }
 
+            $grandchildren = $grandchildrenByParent[$childId] ?? [];
+            $ownProducts = $directCounts[$childId] ?? 0;
+            // Hide when this category has no products and no non-empty children.
+            if ($ownProducts < 1 && $grandchildren === []) {
+                continue;
+            }
+
             $childrenByParent[$parentId][] = [
                 'id' => $childId,
                 'name' => $child->getName(),
                 'slug' => $child->getSlug(),
+                'children' => $grandchildren,
             ];
         }
 
@@ -199,11 +342,18 @@ class CategoryRepository extends ServiceEntityRepository
                 continue;
             }
 
+            $children = $childrenByParent[$id] ?? [];
+            $ownProducts = $directCounts[$id] ?? 0;
+            if ($ownProducts < 1 && $children === []) {
+                continue;
+            }
+
             $menu[] = [
                 'id' => $id,
                 'name' => $category->getName(),
                 'slug' => $category->getSlug(),
-                'children' => $childrenByParent[$id] ?? [],
+                'og_image' => $category->getOgImage(),
+                'children' => $children,
             ];
         }
 

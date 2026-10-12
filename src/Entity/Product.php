@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Entity\Traits\TimeStampAbleTrait;
 use App\Repository\ProductRepository;
 use App\Routing\ShopRoutes;
+use App\Service\Product\ProductImagePath;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -144,10 +145,15 @@ class Product
     #[ORM\OrderBy(['price' => 'ASC'])]
     private Collection $offers;
 
+    /** @var Collection<int, ProductAttributeValue> */
+    #[ORM\OneToMany(mappedBy: 'product', targetEntity: ProductAttributeValue::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $attributeValues;
+
     public function __construct()
     {
         $this->categories = new ArrayCollection();
         $this->offers = new ArrayCollection();
+        $this->attributeValues = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -553,7 +559,7 @@ class Product
             return null;
         }
 
-        return \App\Service\Product\ProductImagePath::relativePath($this->cleanImage);
+        return ProductImagePath::relativePath($this->cleanImage, $this->getImageSupplierSlug());
     }
 
     public function getCleanImageFilename(): ?string
@@ -563,7 +569,7 @@ class Product
 
     public function setCleanImage(?string $cleanImage): static
     {
-        $filename = \App\Service\Product\ProductImagePath::filename($cleanImage);
+        $filename = ProductImagePath::filename($cleanImage);
         $this->cleanImage = $filename !== '' ? $filename : null;
 
         return $this;
@@ -571,7 +577,7 @@ class Product
 
     public function getCleanImageWebPath(): string
     {
-        return \App\Service\Product\ProductImagePath::webPath($this->cleanImage);
+        return ProductImagePath::webPath($this->cleanImage, $this->getImageSupplierSlug());
     }
 
     public function relocateCleanImageFile(string $projectDir): void
@@ -580,7 +586,32 @@ class Product
         if ($filename === null) {
             return;
         }
-        \App\Service\Product\ProductImagePath::ensureStored($projectDir, $filename);
+        ProductImagePath::ensureStored($projectDir, $filename, $this->getImageSupplierSlug());
+    }
+
+    /**
+     * Supplier slug used in product image URLs (/uploads/products/{slug}/…).
+     */
+    public function getImageSupplierSlug(): string
+    {
+        foreach ([$this->getLowestAvailableOffer(), $this->getLowestOffer()] as $offer) {
+            if (!$offer instanceof ProductOffer) {
+                continue;
+            }
+            $slug = $offer->getSupplier()?->getSlug();
+            if ($slug !== null && trim($slug) !== '') {
+                return trim($slug);
+            }
+        }
+
+        foreach ($this->offers as $offer) {
+            $slug = $offer->getSupplier()?->getSlug();
+            if ($slug !== null && trim($slug) !== '') {
+                return trim($slug);
+            }
+        }
+
+        return 'mahazyn-kvadro';
     }
 
     /** Unmapped admin helper for clean-image JS config (EasyAdmin form only). */
@@ -623,7 +654,7 @@ class Product
         $normalized = [];
         foreach ($gallery as $item) {
             if (\is_string($item)) {
-                $filename = \App\Service\Product\ProductImagePath::filename($item);
+                $filename = ProductImagePath::filename($item);
                 if ($filename === '') {
                     continue;
                 }
@@ -639,16 +670,16 @@ class Product
                 continue;
             }
 
-            $full = \App\Service\Product\ProductImagePath::filename((string) ($item['full'] ?? ''));
+            $full = ProductImagePath::filename((string) ($item['full'] ?? ''));
             if ($full === '') {
-                $full = \App\Service\Product\ProductImagePath::filename((string) ($item['thumb'] ?? ''));
+                $full = ProductImagePath::filename((string) ($item['thumb'] ?? ''));
             }
             if ($full === '') {
                 continue;
             }
 
             $normalized[] = [
-                'thumb' => \App\Service\Product\ProductImagePath::filename((string) ($item['thumb'] ?? $full)) ?: $full,
+                'thumb' => ProductImagePath::filename((string) ($item['thumb'] ?? $full)) ?: $full,
                 'full' => $full,
                 'alt' => trim((string) ($item['alt'] ?? $this->name)),
             ];
@@ -833,7 +864,7 @@ class Product
                 continue;
             }
 
-            $filename = \App\Service\Product\ProductImagePath::filename($image);
+            $filename = ProductImagePath::filename($image);
             if ($filename === '') {
                 continue;
             }
@@ -853,31 +884,33 @@ class Product
      */
     public function relocateGalleryFiles(string $projectDir): void
     {
+        $supplier = $this->getImageSupplierSlug();
         foreach ($this->gallery as $item) {
             if (!\is_array($item)) {
                 continue;
             }
-            $filename = \App\Service\Product\ProductImagePath::filename((string) ($item['full'] ?? ''));
+            $filename = ProductImagePath::filename((string) ($item['full'] ?? ''));
             if ($filename === '') {
                 continue;
             }
-            \App\Service\Product\ProductImagePath::ensureStored($projectDir, $filename);
+            ProductImagePath::ensureStored($projectDir, $filename, $supplier);
         }
     }
 
     /** @return list<array{thumb: string, full: string, alt: string}> */
     public function getGalleryForCatalog(): array
     {
+        $supplier = $this->getImageSupplierSlug();
         $resolved = [];
         foreach ($this->gallery as $item) {
             if (!\is_array($item)) {
                 continue;
             }
-            $filename = \App\Service\Product\ProductImagePath::filename((string) ($item['full'] ?? $item['thumb'] ?? ''));
+            $filename = ProductImagePath::filename((string) ($item['full'] ?? $item['thumb'] ?? ''));
             if ($filename === '') {
                 continue;
             }
-            $webPath = \App\Service\Product\ProductImagePath::webPath($filename);
+            $webPath = ProductImagePath::webPath($filename, $supplier);
             $resolved[] = [
                 'thumb' => $webPath,
                 'full' => $webPath,
@@ -899,13 +932,13 @@ class Product
             return $value;
         }
 
-        $filename = \App\Service\Product\ProductImagePath::filename($value);
+        $filename = ProductImagePath::filename($value);
         if ($filename === '') {
             return null;
         }
 
         // Keep relative shard path for EasyAdmin preview (basePath=/uploads/products).
-        return \App\Service\Product\ProductImagePath::relativePath($filename);
+        return ProductImagePath::relativePath($filename, $this->getImageSupplierSlug());
     }
 
     private function adminGalleryRelativePath(string $path): ?string
@@ -919,12 +952,12 @@ class Product
             return $path;
         }
 
-        $filename = \App\Service\Product\ProductImagePath::filename($path);
+        $filename = ProductImagePath::filename($path);
         if ($filename === '') {
             return null;
         }
 
-        return \App\Service\Product\ProductImagePath::relativePath($filename);
+        return ProductImagePath::relativePath($filename, $this->getImageSupplierSlug());
     }
 
     /** @return Collection<int, ProductOffer> */
@@ -950,6 +983,58 @@ class Product
         }
 
         return $this;
+    }
+
+    /** @return Collection<int, ProductAttributeValue> */
+    public function getAttributeValues(): Collection
+    {
+        return $this->attributeValues;
+    }
+
+    public function addAttributeValue(ProductAttributeValue $value): static
+    {
+        if (!$this->attributeValues->contains($value)) {
+            $this->attributeValues->add($value);
+            $value->setProduct($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAttributeValue(ProductAttributeValue $value): static
+    {
+        if ($this->attributeValues->removeElement($value) && $value->getProduct() === $this) {
+            $value->setProduct(null);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return list<array{name: string, value: string, slug: string, showInFilter: bool, group: string|null}>
+     */
+    public function getAttributesCatalogArray(): array
+    {
+        $items = [];
+        foreach ($this->attributeValues as $value) {
+            $attribute = $value->getAttribute();
+            $display = $value->getDisplayValue();
+            if ($attribute === null || $display === '') {
+                continue;
+            }
+            $items[] = [
+                'name' => $attribute->getName(),
+                'value' => $display,
+                'slug' => $attribute->getSlug(),
+                'filterKey' => $attribute->getFilterKey(),
+                'showInFilter' => $attribute->isShowInFilter(),
+                'group' => $attribute->getGroup()?->getName(),
+            ];
+        }
+
+        usort($items, static fn (array $a, array $b): int => $a['name'] <=> $b['name']);
+
+        return $items;
     }
 
     public function getLowestOffer(): ?ProductOffer
@@ -1174,6 +1259,7 @@ class Product
             'ogImage' => $this->og_image,
             'cleanImage' => $this->getCleanImageWebPath() ?: null,
             'features' => $this->features,
+            'attributes' => $this->getAttributesCatalogArray(),
             'gallery' => $this->getGalleryForCatalog(),
             'offersCount' => \count($offers),
             'offers' => $offers,

@@ -1,0 +1,30 @@
+<div class="shop-checkout__parcels"{% if id|default('') %} id="{{ id }}"{% endif %}>
+    <p class="shop-checkout__parcels-note">
+        {{ 'shop.checkout.parcels_note'|trans({'%count%': parcelCount}) }}
+        <span class="shop-checkout__parcels-hint">{{ 'shop.checkout.parcels_hint'|trans }}</span>
+    </p>
+    <ul class="shop-checkout__parcels-list">
+        {% for parcel in parcels %}
+            <li class="shop-checkout__parcel" data-parcel-key="{{ parcel.key }}">
+                <span class="shop-checkout__parcel-name">
+                    {{ 'shop.checkout.parcel_title'|trans({'%number%': loop.index}) }}:
+                    {{ parcel.supplierName ?: 'shop.checkout.supplier_unknown'|trans }}
+                </span>
+                <span class="shop-checkout__parcel-meta">
+                    {{ 'shop.checkout.parcel_items'|trans({'%count%': parcel.itemCount}) }},
+                    {{ 'shop.checkout.parcel_weight'|trans({'%weight%': parcel.weight|number_format(2, ',', ' ')}) }}
+                    {%- if parcel.senderCityName|default(null) -%}
+                        , {{ 'shop.checkout.parcel_sender_city'|trans({'%city%': parcel.senderCityName}) }}
+                    {%- endif %}
+                </span>
+                <span class="shop-checkout__parcel-cost" data-parcel-cost>
+                    {%- if parcel.cost is defined and parcel.cost is not null -%}
+                        {{ isNovaPoshta|default(false) ? '~ ' : '' }}{{ parcel.cost|number_format(2, ',', ' ') }} ₴
+                    {%- else -%}
+                        —
+                    {%- endif -%}
+                </span>
+            </li>
+        {% endfor %}
+    </ul>
+</div>

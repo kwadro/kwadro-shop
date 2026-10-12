@@ -79,7 +79,9 @@
             <li class="shop-minicart__item shop-minicart__item--enter">
                 ${thumb}
                 <div class="shop-minicart__item-body">
-                    <p class="shop-minicart__item-name">${escapeHtml(item.name)}</p>
+                    <p class="shop-minicart__item-name">${item.url
+                        ? `<a class="shop-minicart__item-link" href="${escapeHtml(item.url)}">${escapeHtml(item.name)}</a>`
+                        : escapeHtml(item.name)}</p>
                     ${supplier}
                     <p class="shop-minicart__item-meta">${escapeHtml(root.dataset.labelSku || 'SKU')}: ${escapeHtml(item.sku)} · ${escapeHtml(labels.quantity)}: ${item.quantity}</p>
                     <p class="shop-minicart__item-price">${escapeHtml(item.line_total_formatted)}</p>

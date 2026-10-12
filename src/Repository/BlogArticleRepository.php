@@ -27,6 +27,35 @@ class BlogArticleRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * When $onlyIds is given, only those articles are considered (manual selection).
+     *
+     * @param list<int>|null $onlyIds
+     *
+     * @return list<BlogArticle>
+     */
+    public function findLatestPublished(Site $site, Locale $locale, int $limit = 3, ?array $onlyIds = null): array
+    {
+        $limit = max(1, min(12, $limit));
+
+        $qb = $this->publishedQuery($site, $locale)
+            ->orderBy('a.publishedAt', 'DESC')
+            ->addOrderBy('a.id', 'DESC')
+            ->setMaxResults($limit);
+
+        if ($onlyIds !== null) {
+            if ($onlyIds === []) {
+                return [];
+            }
+            $qb->andWhere('a.id IN (:onlyIds)')->setParameter('onlyIds', $onlyIds);
+        }
+
+        /** @var list<BlogArticle> $items */
+        $items = $qb->getQuery()->getResult();
+
+        return $items;
+    }
+
     /** @return list<BlogArticle> */
     public function findPublishedByCategory(BlogCategory $category): array
     {

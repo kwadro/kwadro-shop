@@ -16,7 +16,9 @@ use App\Entity\User;
 use App\Repository\PaymentRepository;
 use App\Routing\ShopRoutes;
 use App\Service\Cart\CartStorageService;
+use App\Service\Cart\CartSummaryFormatter;
 use App\Service\Cart\VisitorIdResolver;
+use App\Service\Checkout\CartShipmentPlanner;
 use App\Service\Checkout\CheckoutPaymentMethodResolver;
 use App\Service\Checkout\Monobank\MonobankWebhookHandler;
 use App\Service\Checkout\OrderCheckoutService;
@@ -49,6 +51,8 @@ class CheckoutController extends AbstractController
         private readonly NovaPoshtaDeliveryQuoteService $deliveryQuoteService,
         private readonly SiteSettingsProvider $siteSettingsProvider,
         private readonly CheckoutPaymentMethodResolver $paymentMethodResolver,
+        private readonly CartShipmentPlanner $shipmentPlanner,
+        private readonly CartSummaryFormatter $cartSummaryFormatter,
     ) {
     }
 
@@ -231,6 +235,12 @@ class CheckoutController extends AbstractController
                 return $this->redirectToRoute('shop_checkout', ['_locale' => $_locale]);
             }
 
+            if ($this->shipmentPlanner->findBelowMinimum($this->shipmentPlanner->plan($cart)) !== []) {
+                $this->addFlash('error', 'shop.checkout.min_order_blocked');
+
+                return $this->redirectToRoute('shop_checkout', ['_locale' => $_locale]);
+            }
+
             if ($paymentForm->isValid()) {
                 $deliveryMethod = (string) ($checkoutData['deliveryMethod'] ?? '');
                 $availablePaymentMethods = $this->paymentMethodResolver->filterByDeliveryMethod(
@@ -279,7 +289,18 @@ class CheckoutController extends AbstractController
             }
         }
 
-        $checkoutTotals = $this->resolveCheckoutTotals($cart, \is_array($savedDelivery) ? $savedDelivery : null, $request);
+        $shipmentParcels = $this->shipmentPlanner->plan($cart);
+        $parcelCount = max(1, \count($shipmentParcels));
+        $checkoutTotals = $this->resolveCheckoutTotals($cart, \is_array($savedDelivery) ? $savedDelivery : null, $request, $parcelCount);
+        $savedDeliveryParcels = $parcelCount > 1 && \is_array($savedDelivery)
+            ? $this->quoteParcels(
+                (string) ($savedDelivery['deliveryMethod'] ?? ''),
+                (string) ($savedDelivery['npCityRef'] ?? ''),
+                $shipmentParcels,
+                $request,
+            )['parcels']
+            : [];
+        $courierParcelCost = $this->resolveCourierDeliveryCost($request);
         $preferredCity = $this->userCityService->resolveData($request);
         $defaultCity = $this->novaPoshtaClient->isConfigured()
             ? ($preferredCity['ref'] !== '' ? $preferredCity : $this->novaPoshtaClient->findCityByName(self::DEFAULT_CITY_NAME))
@@ -320,7 +341,12 @@ class CheckoutController extends AbstractController
             'npWarehousesUrl' => $this->generateUrl('shop_checkout_np_warehouses', ['_locale' => $_locale]),
             'npDeliveryPriceUrl' => $this->generateUrl('shop_checkout_np_delivery_price', ['_locale' => $_locale]),
             'deliveryQuoteEnabled' => $this->deliveryQuoteService->isAvailable(),
-            'courierDeliveryCost' => $this->resolveCourierDeliveryCost($request),
+            'courierDeliveryCost' => round($courierParcelCost * $parcelCount, 2),
+            'courierParcelCost' => $courierParcelCost,
+            'shipmentParcels' => $shipmentParcels,
+            'parcelCount' => $parcelCount,
+            'savedDeliveryParcels' => $savedDeliveryParcels,
+            'belowMinimumParcels' => $this->shipmentPlanner->findBelowMinimum($shipmentParcels),
             'codCommissionSettings' => $this->siteSettingsProvider->getCodCommissionSettings(
                 $request->getHost(),
                 $_locale,
@@ -509,16 +535,8 @@ class CheckoutController extends AbstractController
             return new JsonResponse(['error' => 'Invalid delivery quote request'], Response::HTTP_BAD_REQUEST);
         }
 
-        try {
-            $cost = $this->deliveryQuoteService->quoteForDeliveryMethod(
-                $deliveryMethod,
-                $cityRef,
-                $this->getCartSubtotal($cart),
-                $this->getCartWeight($cart),
-            );
-        } catch (\Throwable $exception) {
-            return new JsonResponse(['error' => $exception->getMessage()], Response::HTTP_BAD_GATEWAY);
-        }
+        $quote = $this->quoteParcels($deliveryMethod, $cityRef, $this->shipmentPlanner->plan($cart), $request);
+        $cost = $quote['total'];
 
         if ($cost === null) {
             return new JsonResponse(['error' => 'Unable to calculate delivery price'], Response::HTTP_BAD_GATEWAY);
@@ -528,6 +546,139 @@ class CheckoutController extends AbstractController
             'cost' => $cost,
             'subtotal' => $this->getCartSubtotal($cart),
             'total' => round($this->getCartSubtotal($cart) + $cost, 2),
+            'parcelCount' => max(1, \count($quote['parcels'])),
+            'parcels' => array_map(static fn (array $parcel): array => [
+                'key' => $parcel['key'],
+                'cost' => $parcel['cost'],
+            ], $quote['parcels']),
+        ]);
+    }
+
+    #[Route(
+        '/{_locale}/checkout/cart/update',
+        name: 'shop_checkout_cart_update',
+        requirements: ['_locale' => ShopRoutes::LOCALE_REQUIREMENTS],
+        methods: ['POST'],
+    )]
+    public function updateCartItem(string $_locale, Request $request): JsonResponse
+    {
+        if ($errorResponse = $this->validateCartRequest($request)) {
+            return $errorResponse;
+        }
+
+        $cartItemId = (int) $request->request->get('cart_item_id');
+        $quantity = (int) $request->request->get('quantity', 1);
+        if ($cartItemId <= 0 || $this->cartStorage->updateItemQuantity($cartItemId, $quantity) === null) {
+            return new JsonResponse(['success' => false, 'error' => 'Item not found in cart.'], Response::HTTP_NOT_FOUND);
+        }
+
+        return $this->buildCartRefreshResponse($_locale, $request);
+    }
+
+    #[Route(
+        '/{_locale}/checkout/cart/remove',
+        name: 'shop_checkout_cart_remove',
+        requirements: ['_locale' => ShopRoutes::LOCALE_REQUIREMENTS],
+        methods: ['POST'],
+    )]
+    public function removeCartItems(string $_locale, Request $request): JsonResponse
+    {
+        if ($errorResponse = $this->validateCartRequest($request)) {
+            return $errorResponse;
+        }
+
+        $ids = array_values(array_filter(
+            array_map('intval', (array) $request->request->all('cart_item_ids')),
+            static fn (int $id): bool => $id > 0,
+        ));
+        if ($ids === [] || $this->cartStorage->removeItemsKeepingCheckout($ids) === 0) {
+            return new JsonResponse(['success' => false, 'error' => 'Item not found in cart.'], Response::HTTP_NOT_FOUND);
+        }
+
+        return $this->buildCartRefreshResponse($_locale, $request);
+    }
+
+    private function validateCartRequest(Request $request): ?JsonResponse
+    {
+        if ($blockedResponse = $this->createOutsideUkraineCheckoutBlockedJson()) {
+            return $blockedResponse;
+        }
+
+        if (!$this->isCsrfTokenValid('checkout_cart', (string) $request->request->get('_token'))) {
+            return new JsonResponse(['success' => false, 'error' => 'Invalid CSRF token.'], Response::HTTP_FORBIDDEN);
+        }
+
+        return null;
+    }
+
+    /**
+     * Re-renders the order summary and delivery parcels after the cart changed on the checkout page.
+     */
+    private function buildCartRefreshResponse(string $_locale, Request $request): JsonResponse
+    {
+        $cart = $this->cartStorage->getCartData();
+        $cartSummary = $this->cartSummaryFormatter->format($this->cartStorage->getSummary());
+
+        if (!\is_array($cart) || empty($cart['items'])) {
+            return new JsonResponse([
+                'success' => true,
+                'redirect' => $this->generateUrl('shop_home', ['_locale' => $_locale]),
+                'cart' => $cartSummary,
+            ]);
+        }
+
+        $savedDelivery = $this->cartStorage->getDeliveryData();
+        if (\is_array($savedDelivery)) {
+            $deliveryData = $this->hydrateDeliveryData($savedDelivery, $request);
+            $this->applyDeliveryCost($deliveryData, $cart, $request);
+            $this->cartStorage->setDeliveryData($this->deliveryToArray($deliveryData));
+            $savedDelivery = $this->cartStorage->getDeliveryData();
+        }
+
+        $shipmentParcels = $this->shipmentPlanner->plan($cart);
+        $parcelCount = max(1, \count($shipmentParcels));
+        $subtotal = $this->getCartSubtotal($cart);
+        $belowMinimum = $this->shipmentPlanner->findBelowMinimum($shipmentParcels);
+        $courierParcelCost = $this->resolveCourierDeliveryCost($request);
+
+        $savedDeliveryHtml = null;
+        if (\is_array($savedDelivery)) {
+            $savedDeliveryParcels = $parcelCount > 1
+                ? $this->quoteParcels(
+                    (string) ($savedDelivery['deliveryMethod'] ?? ''),
+                    (string) ($savedDelivery['npCityRef'] ?? ''),
+                    $shipmentParcels,
+                    $request,
+                )['parcels']
+                : [];
+            $savedDeliveryHtml = $this->renderView('shop/checkout/_saved_delivery.html.twig', [
+                'savedDelivery' => $savedDelivery,
+                'parcelCount' => $parcelCount,
+                'savedDeliveryParcels' => $savedDeliveryParcels,
+            ]);
+        }
+
+        return new JsonResponse([
+            'success' => true,
+            'summaryHtml' => $this->renderView('shop/checkout/_summary.html.twig', [
+                'shipmentParcels' => $shipmentParcels,
+                'parcelCount' => $parcelCount,
+                'subtotal' => $subtotal,
+                'belowMinimumParcels' => $belowMinimum,
+            ]),
+            'savedDeliveryHtml' => $savedDeliveryHtml,
+            'deliveryParcelsHtml' => $parcelCount > 1
+                ? $this->renderView('shop/checkout/_parcels.html.twig', [
+                    'id' => 'checkout-delivery-parcels',
+                    'parcels' => $shipmentParcels,
+                    'parcelCount' => $parcelCount,
+                ])
+                : '',
+            'subtotal' => $subtotal,
+            'parcelCount' => $parcelCount,
+            'courierDeliveryCost' => round($courierParcelCost * $parcelCount, 2),
+            'minOrderBlocked' => $belowMinimum !== [],
+            'cart' => $cartSummary,
         ]);
     }
 
@@ -730,8 +881,10 @@ class CheckoutController extends AbstractController
     private function applyDeliveryCost(CheckoutDeliveryData $data, array $cart, Request $request): void
     {
         $method = (string) ($data->deliveryMethod ?? '');
+        $parcels = $this->shipmentPlanner->plan($cart);
+
         if ($method === 'courier') {
-            $data->deliveryCost = $this->resolveCourierDeliveryCost($request);
+            $data->deliveryCost = round($this->resolveCourierDeliveryCost($request) * max(1, \count($parcels)), 2);
 
             return;
         }
@@ -742,30 +895,79 @@ class CheckoutController extends AbstractController
             return;
         }
 
-        try {
-            $quoted = $this->deliveryQuoteService->quoteForDeliveryMethod(
-                $method,
-                (string) $data->npCityRef,
-                $this->getCartSubtotal($cart),
-                $this->getCartWeight($cart),
-            );
-            $data->deliveryCost = $quoted ?? (is_numeric($data->deliveryCost ?? null) ? (float) $data->deliveryCost : 0.0);
-        } catch (\Throwable) {
-            $data->deliveryCost = is_numeric($data->deliveryCost ?? null) ? (float) $data->deliveryCost : 0.0;
+        $quoted = $this->quoteParcels($method, (string) $data->npCityRef, $parcels, $request)['total'];
+        $data->deliveryCost = $quoted ?? (is_numeric($data->deliveryCost ?? null) ? (float) $data->deliveryCost : 0.0);
+    }
+
+    /**
+     * Prices every parcel separately; the total is null when any parcel could not be quoted.
+     *
+     * @param list<array<string, mixed>> $parcels
+     *
+     * @return array{total: float|null, parcels: list<array{key: string, supplierName: string, senderCityName: string|null, itemCount: int, weight: float, subtotal: float, cost: float|null}>}
+     */
+    private function quoteParcels(string $method, string $cityRef, array $parcels, Request $request): array
+    {
+        $isNovaPoshta = in_array($method, ['np_branch', 'np_postomat'], true);
+        $courierCost = $method === 'courier' ? $this->resolveCourierDeliveryCost($request) : 0.0;
+        $quoted = [];
+        $total = 0.0;
+        $complete = true;
+
+        foreach ($parcels as $parcel) {
+            $cost = 0.0;
+            if ($method === 'courier') {
+                $cost = $courierCost;
+            } elseif ($isNovaPoshta) {
+                try {
+                    $cost = $cityRef !== ''
+                        ? $this->deliveryQuoteService->quoteForDeliveryMethod(
+                            $method,
+                            $cityRef,
+                            (float) $parcel['subtotal'],
+                            (float) $parcel['weight'],
+                            $parcel['senderCityRef'] ?? null,
+                        )
+                        : null;
+                } catch (\Throwable) {
+                    $cost = null;
+                }
+            }
+
+            if ($cost === null) {
+                $complete = false;
+            } else {
+                $total += $cost;
+            }
+
+            $quoted[] = [
+                'key' => (string) $parcel['key'],
+                'supplierName' => (string) $parcel['supplierName'],
+                'senderCityName' => $parcel['senderCityName'] ?? null,
+                'itemCount' => (int) $parcel['itemCount'],
+                'weight' => (float) $parcel['weight'],
+                'subtotal' => (float) $parcel['subtotal'],
+                'cost' => $cost === null ? null : round($cost, 2),
+            ];
         }
+
+        return [
+            'total' => $complete && $quoted !== [] ? round($total, 2) : null,
+            'parcels' => $quoted,
+        ];
     }
 
     /** @param array<string, mixed> $cart */
     /** @param array<string, mixed>|null $savedDelivery */
     /** @return array{subtotal: float, deliveryCost: float, total: float} */
-    private function resolveCheckoutTotals(array $cart, ?array $savedDelivery, Request $request): array
+    private function resolveCheckoutTotals(array $cart, ?array $savedDelivery, Request $request, int $parcelCount = 1): array
     {
         $subtotal = $this->getCartSubtotal($cart);
         $deliveryCost = 0.0;
 
         if (\is_array($savedDelivery)) {
             if (($savedDelivery['deliveryMethod'] ?? '') === 'courier') {
-                $deliveryCost = $this->resolveCourierDeliveryCost($request);
+                $deliveryCost = round($this->resolveCourierDeliveryCost($request) * max(1, $parcelCount), 2);
             } elseif (in_array($savedDelivery['deliveryMethod'] ?? '', ['np_branch', 'np_postomat'], true)) {
                 $deliveryCost = max(0.0, (float) ($savedDelivery['deliveryCost'] ?? 0));
             }
@@ -814,37 +1016,6 @@ class CheckoutController extends AbstractController
         }
 
         return round((float) ($cart['product']['price'] ?? 0) * (int) ($cart['quantity'] ?? 1), 2);
-    }
-
-    /** @param array<string, mixed> $cart */
-    private function getCartWeight(array $cart): float
-    {
-        $items = $cart['items'] ?? [];
-        if (\is_array($items) && $items !== []) {
-            $weight = 0.0;
-            foreach ($items as $cartItem) {
-                if (!\is_array($cartItem)) {
-                    continue;
-                }
-
-                $product = $cartItem['product'] ?? null;
-                if (!\is_array($product)) {
-                    continue;
-                }
-
-                $quantity = max(1, (int) ($cartItem['quantity'] ?? 1));
-                $weight += max(0.1, (float) ($product['weight'] ?? 1)) * $quantity;
-            }
-
-            return max(0.1, $weight);
-        }
-
-        $product = $cart['product'] ?? null;
-        if (!\is_array($product)) {
-            return 1.0;
-        }
-
-        return max(0.1, (float) ($product['weight'] ?? 1));
     }
 
     /** @param array<string, mixed>|null $savedDelivery */

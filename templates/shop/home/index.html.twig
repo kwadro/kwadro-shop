@@ -1,7 +1,12 @@
 {% extends 'shop/layout.html.twig' %}
 {% set setting = site_settings() %}
+{% set brandName = setting.header.title|default(setting.seo.title|default('Kvadro')) %}
+{% set shopCtaPath = primaryCategory
+    ? path('shop_category', {_locale: app.request.locale, slug: primaryCategory.slug})
+    : path('shop_search', {_locale: app.request.locale})
+%}
 
-{# Featured product on homepage is UI only — SEO always comes from site settings. #}
+{# Homepage SEO always comes from site settings. #}
 {% block title %}{{ setting.seo.title|default(setting.seo.meta_title) }}{% endblock %}
 {% block meta_title %}{{ setting.seo.meta_title }}{% endblock %}
 {% block meta_description %}{{ setting.seo.meta_description }}{% endblock %}
@@ -13,11 +18,121 @@
 {% block canonical_url %}{{ absolute_url(path('shop_home', {_locale: app.request.locale})) }}{% endblock %}
 
 {% block main %}
-    {% include 'shop/partials/_product_view.html.twig' %}
-{% endblock %}
+    <div class="shop-home">
+        <section class="shop-home-hero">
+            <div class="shop-home-hero__media" aria-hidden="true">
+                <img
+                    class="shop-home-hero__image"
+                    src="{{ asset('images/home/hero-living-room.jpg') }}"
+                    alt=""
+                    width="1152"
+                    height="864"
+                    fetchpriority="high"
+                    decoding="async"
+                >
+            </div>
+            <div class="shop-home-hero__inner">
+                <p class="shop-home-hero__brand">{{ brandName }}</p>
+                <h1 class="shop-home-hero__title">{{ 'shop.home.hero_title'|trans }}</h1>
+                <p class="shop-home-hero__lead">{{ 'shop.home.hero_lead'|trans }}</p>
+                <div class="shop-home-hero__actions">
+                    <a class="shop-home__btn shop-home__btn--primary" href="{{ shopCtaPath }}">
+                        {{ 'shop.home.cta_buy'|trans }}
+                    </a>
+                    {% if articles is not empty %}
+                        <a class="shop-home__btn shop-home__btn--ghost" href="{{ path('shop_blog_index', {_locale: app.request.locale}) }}">
+                            {{ 'shop.home.cta_blog'|trans }}
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
 
-{% block javascripts %}
-    {% if product %}
-        {% include 'shop/partials/_product_view_scripts.html.twig' %}
-    {% endif %}
+        {% if categories is not empty %}
+            <section class="shop-home-section" aria-labelledby="shop-home-categories-title">
+                <div class="shop-home-section__head">
+                    <h2 id="shop-home-categories-title" class="shop-home-section__title">{{ 'shop.home.categories_title'|trans }}</h2>
+                    <p class="shop-home-section__lead">{{ 'shop.home.categories_lead'|trans }}</p>
+                </div>
+                <div class="shop-home-categories">
+                    {% for category in categories %}
+                        <a class="shop-home-category{% if category.ogImage %} shop-home-category--with-image{% endif %}" href="{{ path('shop_category', {_locale: app.request.locale, slug: category.slug}) }}">
+                            {% if category.ogImage %}
+                                <span class="shop-home-category__media">
+                                    <img
+                                        class="shop-home-category__image"
+                                        src="{{ asset('uploads/images/' ~ category.ogImage) }}"
+                                        alt="{{ category.name }}"
+                                        width="1200"
+                                        height="630"
+                                        loading="lazy"
+                                        decoding="async"
+                                    >
+                                </span>
+                            {% endif %}
+                            <span class="shop-home-category__name">{{ category.name }}</span>
+                            {% if category.productCount > 0 %}
+                                <span class="shop-home-category__meta">
+                                    {{ 'shop.home.category_products'|trans({ '%count%': category.productCount }) }}
+                                </span>
+                            {% elseif category.childrenCount > 0 %}
+                                <span class="shop-home-category__meta">
+                                    {{ 'shop.home.category_subcategories'|trans({ '%count%': category.childrenCount }) }}
+                                </span>
+                            {% endif %}
+                            <span class="shop-home-category__cta">{{ 'shop.home.cta_buy'|trans }}</span>
+                        </a>
+                    {% endfor %}
+                </div>
+            </section>
+        {% endif %}
+
+        {% if products is not empty %}
+            <section class="shop-home-section" aria-labelledby="shop-home-products-title">
+                <div class="shop-home-section__head">
+                    <h2 id="shop-home-products-title" class="shop-home-section__title">{{ homeBlocks.products_title ?: 'shop.home.products_title'|trans }}</h2>
+                    <p class="shop-home-section__lead">{{ homeBlocks.products_lead ?: 'shop.home.products_lead'|trans }}</p>
+                </div>
+                <div class="shop-home-products">
+                    {% for product in products %}
+                        <div class="shop-home-product">
+                            {% include 'shop/partials/_product_card.html.twig' with { product: product, showBuyCta: true } %}
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="shop-home-section__footer">
+                    <a class="shop-home__btn shop-home__btn--primary" href="{{ shopCtaPath }}">
+                        {{ 'shop.home.cta_all_products'|trans }}
+                    </a>
+                </div>
+            </section>
+        {% endif %}
+
+        {% if articles is not empty %}
+            <section class="shop-home-section shop-home-section--blog" aria-labelledby="shop-home-blog-title">
+                <div class="shop-home-section__head">
+                    <h2 id="shop-home-blog-title" class="shop-home-section__title">{{ homeBlocks.articles_title ?: 'shop.home.blog_title'|trans }}</h2>
+                    <p class="shop-home-section__lead">{{ homeBlocks.articles_lead ?: 'shop.home.blog_lead'|trans }}</p>
+                </div>
+                <div class="shop-home-blog">
+                    {% for article in articles %}
+                        {% include 'shop/blog/_article_card.html.twig' with { article: article } %}
+                    {% endfor %}
+                </div>
+                <div class="shop-home-section__footer">
+                    <a class="shop-home__btn shop-home__btn--ghost" href="{{ path('shop_blog_index', {_locale: app.request.locale}) }}">
+                        {{ 'shop.home.cta_all_articles'|trans }}
+                    </a>
+                </div>
+            </section>
+        {% endif %}
+
+        <section class="shop-home-final-cta" aria-labelledby="shop-home-final-title">
+            <h2 id="shop-home-final-title" class="shop-home-final-cta__title">{{ 'shop.home.final_title'|trans }}</h2>
+            <p class="shop-home-final-cta__lead">{{ 'shop.home.final_lead'|trans }}</p>
+            <a class="shop-home__btn shop-home__btn--primary" href="{{ shopCtaPath }}">
+                {{ 'shop.home.cta_buy'|trans }}
+            </a>
+        </section>
+    </div>
 {% endblock %}

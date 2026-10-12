@@ -2,9 +2,11 @@
 
 namespace App\Service;
 
+use App\Entity\Category;
 use App\Entity\ShopDeliveryMethod;
 use App\Entity\ShopPaymentMethod;
 use App\Entity\Site;
+use App\Repository\CategoryRepository;
 use App\Repository\FooterSettingRepository;
 use App\Repository\HeaderSettingRepository;
 use App\Repository\LocaleRepository;
@@ -22,6 +24,7 @@ class SiteSettingsProvider
         private FooterSettingRepository $footerRepo,
         private MegaMenuSettingRepository $menuRepo,
         private LocaleRepository $localeRepo,
+        private CategoryRepository $categoryRepository,
         private EntityManagerInterface $em
     ) {
     }
@@ -34,6 +37,7 @@ class SiteSettingsProvider
         if (!$site || !$localeObject) {
             return [];
         }
+
         $seoSetting = $this->seoRepo->findOneBySiteAndLocale($site->getId(), $localeObject->getId()) ?? [];
         $headerSetting = $this->headerRepo->findOneBySiteAndLocale($site->getId(), $localeObject->getId()) ?? [];
         $footerSetting = $this->footerRepo->findOneBySiteAndLocale($site->getId(), $localeObject->getId()) ?? [];
@@ -46,13 +50,16 @@ class SiteSettingsProvider
             if ($menuSettingItem->getLocale()?->getId() !== $localeObject->getId()) {
                 continue;
             }
+
             $menuType = $menuSettingItem->getMegamenutype()?->getName();
             $content = $menuSettingItem->getContent();
+
             if ($menuType === 'Link') {
                 $menuPages[$menuSettingItem->getUrl()] = [
                     'content' => $menuSettingItem->getContent()
                 ];
             }
+
             if ($menuType === 'Form' && $menuSettingItem->getUrl() !== 'holiday_table') {
                 $content = explode('"', $content)[1];
                 $entityClass = 'App\\Form\\' . ucfirst($content) . 'FormType';
@@ -61,38 +68,69 @@ class SiteSettingsProvider
                     'isForm' => true,
                 ];
             }
+
             if ($menuType === 'Collection') {
                 $menuUrlKey = $menuSettingItem->getUrl();
                 $content = explode('"', $content)[1];
                 $entityClass = 'App\\Entity\\' . $content;
                 $repo = $this->em->getRepository($entityClass);
                 $defaultCategory = $repo->findDefaultItem();
+                $directCounts = ($entityClass === Category::class)
+                    ? $this->categoryRepository->countStorefrontVisibleProductsGroupedByCategoryId()
+                    : [];
                 $content = [];
                 foreach ($defaultCategory->getChildren() as $child) {
+                    if (!$child->isEnabled()) {
+                        continue;
+                    }
                     $childrenCategories = [];
                     if ($child->getChildren()->count() > 0) {
                         foreach ($child->getChildren() as $child2) {
+                            if (!$child2->isEnabled()) {
+                                continue;
+                            }
                             $children2Categories = [];
                             if ($child2->getChildren()->count() > 0) {
                                 foreach ($child2->getChildren() as $child3) {
+                                    if (!$child3->isEnabled()) {
+                                        continue;
+                                    }
+                                    $child3Id = $child3->getId();
+                                    if ($child3Id === null || ($directCounts[$child3Id] ?? 0) < 1) {
+                                        continue;
+                                    }
                                     $children2Categories[] = [
                                         'name' => $child3->getName(),
-                                        'slug' => $child3->getSlug()
+                                        'slug' => $child3->getSlug(),
                                     ];
                                 }
+                            }
+                            $child2Id = $child2->getId();
+                            $child2Products = $child2Id !== null ? ($directCounts[$child2Id] ?? 0) : 0;
+                            if ($child2Products < 1 && $children2Categories === []) {
+                                continue;
                             }
                             $childrenCategories[] = [
                                 'name' => $child2->getName(),
                                 'slug' => $child2->getSlug(),
-                                'children' => $children2Categories
+                                'children' => $children2Categories,
                             ];
                         }
                     }
+
+                    $childId = $child->getId();
+                    $childProducts = $childId !== null ? ($directCounts[$childId] ?? 0) : 0;
+
+                    if ($childProducts < 1 && $childrenCategories === []) {
+                        continue;
+                    }
+
                     $content[] = [
                         'name' => $child->getName(),
                         'slug' => $child->getSlug(),
-                        'children' => $childrenCategories
+                        'children' => $childrenCategories,
                     ];
+
                 }
             }
             $menuSetting[] = [

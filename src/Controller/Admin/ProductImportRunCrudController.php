@@ -52,14 +52,15 @@ class ProductImportRunCrudController extends AbstractCrudController
         yield DateTimeField::new('startedAt', $this->translator->trans('admin.product_import_run.started_at', [], 'messages'));
         yield DateTimeField::new('finishedAt', $this->translator->trans('admin.product_import_run.finished_at', [], 'messages'));
         yield ChoiceField::new('status', $this->translator->trans('admin.product_import_run.status', [], 'messages'))
+            ->setChoices([
+                'Running' => ProductImportRunStatus::Running,
+                'Success' => ProductImportRunStatus::Success,
+                'Failed' => ProductImportRunStatus::Failed,
+            ])
             ->setFormType(EnumType::class)
             ->setFormTypeOption('class', ProductImportRunStatus::class)
-            ->setFormTypeOption('choice_label', static fn (ProductImportRunStatus $status): string => ucfirst($status->value))
             ->onlyOnForms();
-        yield TextField::new('status', $this->translator->trans('admin.product_import_run.status', [], 'messages'))
-            ->formatValue(static fn (mixed $value): string => $value instanceof ProductImportRunStatus
-                ? ucfirst($value->value)
-                : ucfirst((string) $value))
+        yield TextField::new('statusLabel', $this->translator->trans('admin.product_import_run.status', [], 'messages'))
             ->hideOnForm();
         yield IntegerField::new('createdCount', $this->translator->trans('admin.product_import_run.created', [], 'messages'))
             ->hideOnIndex();

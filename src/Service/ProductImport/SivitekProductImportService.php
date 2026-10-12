@@ -221,6 +221,10 @@ final class SivitekProductImportService
             ->addCategory($category)
             ->addCategory($parent);
 
+        if (($row['weight'] ?? null) !== null) {
+            $product->setWeight($row['weight']);
+        }
+
         $product->ensureSlug();
         $this->ensureUniqueProductSlug($product);
 
@@ -252,6 +256,10 @@ final class SivitekProductImportService
             ->setInStock($row['in_stock'])
             ->setStockQty($row['in_stock'] ? max(1, $row['stock_qty']) : 0)
             ->setBadge($row['in_stock'] ? null : 'Очікується');
+
+        if (($row['weight'] ?? null) !== null) {
+            $product->setWeight($row['weight']);
+        }
 
         if ($forceDisabled) {
             $product->setEnabled(false);
@@ -469,6 +477,8 @@ final class SivitekProductImportService
                     $roles['avail'] = $col;
                 } elseif ((str_starts_with($h, 'ціна') || str_starts_with($h, 'цена')) && !isset($roles['price'])) {
                     $roles['price'] = $col;
+                } elseif ((str_starts_with($h, 'вага') || str_starts_with($h, 'вес')) && !isset($roles['weight'])) {
+                    $roles['weight'] = $col;
                 }
             }
             if (isset($cols['D']) && str_contains(mb_strtolower($cols['D']), 'характерист')) {
@@ -546,6 +556,7 @@ final class SivitekProductImportService
                 'availability' => $avail,
                 'in_stock' => $inStock,
                 'stock_qty' => $inStock ? 1 : 0,
+                'weight' => WeightParser::parseKg($get('weight')),
             ];
         }
 
@@ -613,7 +624,7 @@ final class SivitekProductImportService
         $supplier = (new Supplier())
             ->setName('SiViTek')
             ->setSlug('sivitek')
-            ->setDescription('Import from SiViTek price sheet');
+            ->setDescription('SiViTek кронштейни');
         $this->em->persist($supplier);
         $this->em->flush();
 

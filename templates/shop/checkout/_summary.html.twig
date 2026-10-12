@@ -1,0 +1,147 @@
+{% set grouped = parcelCount|default(1) > 1 %}
+<section
+    class="shop-checkout__summary{% if belowMinimumParcels|default([]) is not empty %} shop-checkout__summary--invalid{% endif %}"
+    id="checkout-summary"
+    data-checkout-summary
+>
+    <h2 class="shop-checkout__heading">{{ 'shop.checkout.order_summary'|trans }}</h2>
+
+    {% for group in shipmentParcels %}
+        {% set shortfall = group.minOrderShortfall|default(0) %}
+        {% set groupItemIds = group.items|map(item => item.cart_item_id|default(0))|filter(id => id > 0) %}
+        <div
+            class="shop-checkout__summary-group{% if grouped %} shop-checkout__supplier-group{% endif %}{% if shortfall > 0 %} shop-checkout__summary-group--invalid{% endif %}"
+            data-parcel-key="{{ group.key }}"
+        >
+            {% if grouped %}
+                <div class="shop-checkout__supplier-header">
+                    <span class="shop-checkout__supplier-name">
+                        {{ 'shop.checkout.parcel_title'|trans({'%number%': loop.index}) }}:
+                        {{ group.supplierName ?: 'shop.checkout.supplier_unknown'|trans }}
+                    </span>
+                    <span class="shop-checkout__supplier-meta">
+                        {{ 'shop.checkout.parcel_weight'|trans({'%weight%': group.weight|number_format(2, ',', ' ')}) }}
+                    </span>
+                </div>
+            {% endif %}
+
+            {% if shortfall > 0 %}
+                <div class="shop-checkout__min-order" role="alert">
+                    <p class="shop-checkout__min-order-title">
+                        {{ 'shop.checkout.min_order_notice'|trans({
+                            '%supplier%': group.supplierName ?: 'shop.checkout.supplier_unknown'|trans,
+                            '%amount%': group.minOrderAmount|number_format(2, ',', ' ') ~ ' ₴',
+                        }) }}
+                    </p>
+                    <p class="shop-checkout__min-order-text">
+                        {{ 'shop.checkout.min_order_remaining'|trans({
+                            '%subtotal%': group.subtotal|number_format(2, ',', ' ') ~ ' ₴',
+                        }) }}
+                        <strong>{{ shortfall|number_format(2, ',', ' ') }} ₴</strong>
+                    </p>
+                    <div class="shop-checkout__min-order-actions">
+                        {% if group.supplierSlug|default(null) %}
+                            <a
+                                class="shop-checkout__min-order-btn shop-checkout__min-order-btn--primary"
+                                href="{{ path('shop_supplier', {_locale: app.request.locale, slug: group.supplierSlug}) }}"
+                            >{{ 'shop.checkout.min_order_add_more'|trans }}</a>
+                        {% endif %}
+                        {% if groupItemIds is not empty %}
+                            <button
+                                type="button"
+                                class="shop-checkout__min-order-btn shop-checkout__min-order-btn--secondary"
+                                data-checkout-remove-items="{{ groupItemIds|join(',') }}"
+                            >{{ (groupItemIds|length > 1 ? 'shop.checkout.min_order_remove_items' : 'shop.checkout.min_order_remove_item')|trans }}</button>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+
+            {% for item in group.items %}
+                {% set unitPrice = item.product.price|default(0) %}
+                {% set oldPrice = item.product.oldPrice|default(null) %}
+                {% set hasOldPrice = oldPrice and oldPrice > unitPrice %}
+                {% set cartItemId = item.cart_item_id|default(0) %}
+                {% set stockQty = item.product.stockQty|default(0) %}
+                <div class="shop-checkout__item" data-cart-item-id="{{ cartItemId }}">
+                    <div class="shop-checkout__item-info">
+                        <p class="shop-checkout__product-name">
+                            {%- if item.product.slug|default('') -%}
+                                <a class="shop-checkout__product-link" href="{{ path('shop_product', {_locale: app.request.locale, slug: item.product.slug}) }}">{{ item.product.name }}</a>
+                            {%- else -%}
+                                {{ item.product.name }}
+                            {%- endif -%}
+                        </p>
+                        <p class="shop-checkout__meta">
+                            {{ 'shop.product.sku'|trans }}: {{ item.product.offerSku|default(item.product.sku) }}
+                        </p>
+                    </div>
+                    <div class="shop-checkout__item-side">
+                        {% if hasOldPrice %}
+                            <span class="shop-checkout__old-price">
+                                <del>{{ oldPrice|number_format(2, ',', ' ') }} ₴</del>
+                            </span>
+                        {% endif %}
+                        <span class="shop-checkout__price">
+                            {{ unitPrice|number_format(2, ',', ' ') }} ₴
+                        </span>
+                        {% if cartItemId > 0 %}
+                            <span class="shop-checkout__qty" data-checkout-qty>
+                                <button
+                                    type="button"
+                                    class="shop-checkout__qty-btn"
+                                    data-qty-step="-1"
+                                    aria-label="{{ 'shop.checkout.qty_decrease'|trans }}"
+                                    {% if item.quantity <= 1 %}disabled{% endif %}
+                                >−</button>
+                                <input
+                                    type="number"
+                                    class="shop-checkout__qty-input"
+                                    value="{{ item.quantity }}"
+                                    min="1"
+                                    {% if stockQty > 0 %}max="{{ stockQty }}"{% endif %}
+                                    inputmode="numeric"
+                                    aria-label="{{ 'shop.product.quantity'|trans }}"
+                                    data-cart-item-id="{{ cartItemId }}"
+                                >
+                                <button
+                                    type="button"
+                                    class="shop-checkout__qty-btn"
+                                    data-qty-step="1"
+                                    aria-label="{{ 'shop.checkout.qty_increase'|trans }}"
+                                    {% if stockQty > 0 and item.quantity >= stockQty %}disabled{% endif %}
+                                >+</button>
+                            </span>
+                        {% else %}
+                            <span class="shop-checkout__quantity">{{ item.quantity }}</span>
+                        {% endif %}
+                        <span class="shop-checkout__price shop-checkout__line-total">
+                            {{ (unitPrice * item.quantity)|number_format(2, ',', ' ') }} ₴
+                        </span>
+                        {% if cartItemId > 0 %}
+                            <button
+                                type="button"
+                                class="shop-checkout__item-remove"
+                                data-checkout-remove-items="{{ cartItemId }}"
+                                aria-label="{{ 'shop.minicart.remove'|trans }}"
+                                title="{{ 'shop.minicart.remove'|trans }}"
+                            >&times;</button>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+
+            {% if grouped %}
+                <div class="shop-checkout__supplier-subtotal">
+                    <span>{{ 'shop.checkout.parcel_subtotal'|trans }}</span>
+                    <strong>{{ group.subtotal|number_format(2, ',', ' ') }} ₴</strong>
+                </div>
+            {% endif %}
+        </div>
+    {% endfor %}
+
+    <div class="shop-checkout__total shop-checkout__total--products">
+        <span>{{ 'shop.checkout.subtotal'|trans }}</span>
+        <strong id="checkout-subtotal-value">{{ subtotal|number_format(2, ',', ' ') }} ₴</strong>
+    </div>
+</section>
