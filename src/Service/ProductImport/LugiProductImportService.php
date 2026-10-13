@@ -42,7 +42,7 @@ class LugiProductImportService
 
     public function run(ProductImport $import, bool $dryRun = false, bool $loadImages = false): ProductImportRun
     {
-        @ini_set('memory_limit', '512M');
+        @ini_set('memory_limit', '1512M');
 
         $run = (new ProductImportRun())
             ->setProductImport($import)
@@ -346,6 +346,7 @@ class LugiProductImportService
         if (isset($node->picture)) {
             foreach ($node->picture as $picture) {
                 $url = trim(html_entity_decode((string) $picture, ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+                $url = urldecode($url);
                 if ($url === '' || !filter_var($url, FILTER_VALIDATE_URL)) {
                     continue;
                 }

@@ -9,7 +9,10 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Assets;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
+use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\BatchActionDto;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
@@ -19,10 +22,13 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\NumberField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\BooleanFilter;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\EntityFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class ProductCrudController extends AbstractCrudController
@@ -55,6 +61,15 @@ class ProductCrudController extends AbstractCrudController
         return $assets->addJsFile('js/admin-product-clean-image.js');
     }
 
+    public function configureFilters(Filters $filters): Filters
+    {
+        return $filters
+            ->add(EntityFilter::new('categories', $this->translator->trans('admin.product.categories', [], 'messages'))
+                ->canSelectMultiple()
+                ->autocomplete())
+            ->add(BooleanFilter::new('enabled', $this->translator->trans('admin.product.enabled', [], 'messages')));
+    }
+
     public function configureActions(Actions $actions): Actions
     {
         $viewAllOffers = Action::new('viewAllOffers', $this->translator->trans('admin.product.view_all_offers', [], 'messages'))
@@ -69,9 +84,89 @@ class ProductCrudController extends AbstractCrudController
             ->addCssClass('btn btn-secondary')
             ->setIcon('fa fa-list');
 
+        $batchEnable = Action::new('batchEnable', $this->translator->trans('admin.product.batch_enable', [], 'messages'))
+            ->linkToCrudAction('batchEnable')
+            ->createAsBatchAction()
+            ->asSuccessAction()
+            ->setIcon('fa fa-check');
+
+        $batchDisable = Action::new('batchDisable', $this->translator->trans('admin.product.batch_disable', [], 'messages'))
+            ->linkToCrudAction('batchDisable')
+            ->createAsBatchAction()
+            ->asWarningAction()
+            ->setIcon('fa fa-ban');
+
         return $actions
             ->add(Crud::PAGE_EDIT, $viewAllOffers)
-            ->add(Crud::PAGE_DETAIL, $viewAllOffers);
+            ->add(Crud::PAGE_DETAIL, $viewAllOffers)
+            ->addBatchAction($batchEnable)
+            ->addBatchAction($batchDisable);
+    }
+
+    public function batchEnable(AdminContext $context, BatchActionDto $batchActionDto, EntityManagerInterface $entityManager): Response
+    {
+        return $this->batchSetEnabled($context, $batchActionDto, $entityManager, true);
+    }
+
+    public function batchDisable(AdminContext $context, BatchActionDto $batchActionDto, EntityManagerInterface $entityManager): Response
+    {
+        return $this->batchSetEnabled($context, $batchActionDto, $entityManager, false);
+    }
+
+    private function batchSetEnabled(
+        AdminContext $context,
+        BatchActionDto $batchActionDto,
+        EntityManagerInterface $entityManager,
+        bool $enabled,
+    ): Response {
+        $actionName = $enabled ? 'batchEnable' : 'batchDisable';
+        if (!$this->isCsrfTokenValid('ea-batch-action-'.$actionName.'-'.$batchActionDto->getEntityFqcn(), $batchActionDto->getCsrfToken())) {
+            return $this->redirectToRoute($context->getDashboardRouteName());
+        }
+
+        if ($batchActionDto->getEntityFqcn() !== Product::class) {
+            return $this->redirectToProductIndex();
+        }
+
+        $updated = 0;
+        foreach ($batchActionDto->getEntityIds() as $entityId) {
+            $product = $this->productRepository->find($entityId);
+            if (!$product instanceof Product) {
+                continue;
+            }
+
+            if ($product->isEnabled() === $enabled) {
+                continue;
+            }
+
+            $product->setEnabled($enabled);
+            ++$updated;
+        }
+
+        if ($updated > 0) {
+            $entityManager->flush();
+        }
+
+        $this->addFlash(
+            'success',
+            $this->translator->trans(
+                $enabled ? 'admin.product.batch_enable_success' : 'admin.product.batch_disable_success',
+                ['%count%' => $updated],
+                'messages',
+            ),
+        );
+
+        return $this->redirectToProductIndex();
+    }
+
+    private function redirectToProductIndex(): Response
+    {
+        return $this->redirect(
+            $this->adminUrlGenerator
+                ->setController(self::class)
+                ->setAction(Action::INDEX)
+                ->generateUrl()
+        );
     }
 
     public function configureFields(string $pageName): iterable

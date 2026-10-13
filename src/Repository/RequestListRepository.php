@@ -72,7 +72,8 @@ class RequestListRepository extends ServiceEntityRepository
                    COUNT(r.id) AS requests,
                    SUM(
                        CASE
-                           WHEN LOWER(COALESCE(r.user_agent, '')) LIKE :googlePattern THEN 1
+                           WHEN LOWER(COALESCE(r.user_agent, '')) LIKE :googlePattern
+                             OR LOWER(COALESCE(r.user_agent, '')) LIKE :bingPattern THEN 1
                            ELSE 0
                        END
                    ) AS google_bot_requests,
@@ -90,6 +91,7 @@ class RequestListRepository extends ServiceEntityRepository
             'from' => $fromStr,
             'to' => $toStr,
             'googlePattern' => '%google.com%',
+            'bingPattern' => '%bing.com%',
         ]);
 
         $newIpsSql = <<<'SQL'

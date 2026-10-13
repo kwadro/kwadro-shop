@@ -207,6 +207,10 @@ admin.product.in_stock: В наявності
 admin.product.enabled: Включено
 admin.product.enabled_yes: Так
 admin.product.enabled_no: Ні
+admin.product.batch_enable: Увімкнути
+admin.product.batch_disable: Вимкнути
+admin.product.batch_enable_success: 'Увімкнено товарів: %count%'
+admin.product.batch_disable_success: 'Вимкнено товарів: %count%'
 admin.product_import.add_new: Додати новий
 admin.product_import.name: Назва
 admin.product_import.code: Код
@@ -437,10 +441,10 @@ admin.request_list.path_after_redirect: URL після редіректу
 admin.request_list.user_agent: User-Agent
 admin.request_list.unique_ips_today: Унікальних IP сьогодні
 admin.request_list.requests_today: Всього запитів сьогодні
-admin.report_visitor_ids.intro: 'Статистика запитів IP за останні %days% днів. Google bot — User-Agent містить google.com. Unique IPs — унікальні IP за день / за період. New IPs — адреси, які вперше з’явилися в базі.'
+admin.report_visitor_ids.intro: 'Статистика запитів IP за останні %days% днів. Boot — User-Agent містить google.com або bing.com. Unique IPs — унікальні IP за день / за період. New IPs — адреси, які вперше з’явилися в базі.'
 admin.report_visitor_ids.day: День
 admin.report_visitor_ids.requests: Запити
-admin.report_visitor_ids.google_bot: Google bot
+admin.report_visitor_ids.google_bot: Boot
 admin.report_visitor_ids.unique_ips: Унікальні IP
 admin.report_visitor_ids.new_ips: Нові IP
 admin.report_visitor_ids.total_7_days: 'Усього за %days% днів'
