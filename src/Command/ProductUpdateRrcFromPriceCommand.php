@@ -227,9 +227,35 @@ final class ProductUpdateRrcFromPriceCommand extends Command
             return $source;
         }
 
+        $binary = null;
+        foreach (['libreoffice', 'soffice', '/usr/bin/libreoffice', '/usr/bin/soffice', '/bin/libreoffice', '/bin/soffice'] as $candidate) {
+            if (str_contains($candidate, '/')) {
+                if (is_executable($candidate)) {
+                    $binary = $candidate;
+                    break;
+                }
+                continue;
+            }
+            $found = [];
+            $code = 1;
+            exec(sprintf('command -v %s 2>/dev/null', escapeshellarg($candidate)), $found, $code);
+            if ($code === 0 && isset($found[0]) && is_executable($found[0])) {
+                $binary = $found[0];
+                break;
+            }
+        }
+
+        if ($binary === null) {
+            throw new \RuntimeException(
+                'Cannot convert .xls to .xlsx: LibreOffice is not installed. '
+                .'Use a .xlsx file instead, or install LibreOffice on this server.'
+            );
+        }
+
         $targetDir = sys_get_temp_dir();
         $cmd = sprintf(
-            'libreoffice --headless --convert-to xlsx --outdir %s %s 2>&1',
+            '%s --headless --convert-to xlsx --outdir %s %s 2>&1',
+            escapeshellarg($binary),
             escapeshellarg($targetDir),
             escapeshellarg($source),
         );

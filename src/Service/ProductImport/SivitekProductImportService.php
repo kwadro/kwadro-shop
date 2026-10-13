@@ -318,9 +318,19 @@ final class SivitekProductImportService
             return $source;
         }
 
+        $binary = $this->resolveLibreOfficeBinary();
+        if ($binary === null) {
+            throw new \RuntimeException(
+                'Cannot convert .xls to .xlsx: LibreOffice is not installed (libreoffice/soffice not found). '
+                .'Convert the file to .xlsx and set the import file path to the .xlsx file, '
+                .'or install LibreOffice on this server.'
+            );
+        }
+
         $targetDir = sys_get_temp_dir();
         $cmd = sprintf(
-            'libreoffice --headless --convert-to xlsx --outdir %s %s 2>&1',
+            '%s --headless --convert-to xlsx --outdir %s %s 2>&1',
+            escapeshellarg($binary),
             escapeshellarg($targetDir),
             escapeshellarg($source),
         );
@@ -335,6 +345,27 @@ final class SivitekProductImportService
         }
 
         return $xlsx;
+    }
+
+    private function resolveLibreOfficeBinary(): ?string
+    {
+        foreach (['libreoffice', 'soffice', '/usr/bin/libreoffice', '/usr/bin/soffice', '/bin/libreoffice', '/bin/soffice'] as $candidate) {
+            if (str_contains($candidate, '/')) {
+                if (is_executable($candidate)) {
+                    return $candidate;
+                }
+                continue;
+            }
+
+            $output = [];
+            $code = 1;
+            exec(sprintf('command -v %s 2>/dev/null', escapeshellarg($candidate)), $output, $code);
+            if ($code === 0 && isset($output[0]) && is_executable($output[0])) {
+                return $output[0];
+            }
+        }
+
+        return null;
     }
 
     /**
