@@ -2379,7 +2379,7 @@ body.shop-offers-modal-open {
     }
 
     .shop-product__attributes-list .shop-product__attribute {
-        padding: 0.55rem 0;
+        padding: 0.25rem 0;
     }
 
     .shop-product__attributes-list .shop-product__attribute:last-child {

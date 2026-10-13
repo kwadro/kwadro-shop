@@ -9,6 +9,7 @@ use App\Service\ProductImport\LugiProductImportService;
 use App\Service\ProductImport\SivitekProductImportService;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -78,6 +79,31 @@ final class ProductImportRunCommand extends Command
 
         $io->success(($dryRun ? '[dry-run] ' : '').($run->getResult() ?? 'Done.'));
 
-        return Command::SUCCESS;
+        return $this->assignImportImages((string) $import->getCode(), $dryRun, $output, $io);
+    }
+
+    private function assignImportImages(string $importCode, bool $dryRun, OutputInterface $output, SymfonyStyle $io): int
+    {
+        $application = $this->getApplication();
+        if ($application === null) {
+            $io->warning('Console application is not available; skipped app:product:assign-import-images.');
+
+            return Command::SUCCESS;
+        }
+
+        $arguments = ['import-code' => $importCode];
+        if ($dryRun) {
+            $arguments['--dry-run'] = true;
+        }
+
+        $assignInput = new ArrayInput($arguments);
+        $assignInput->setInteractive(false);
+
+        $exitCode = $application->find('app:product:assign-import-images')->run($assignInput, $output);
+        if ($exitCode !== Command::SUCCESS) {
+            $io->error(sprintf('app:product:assign-import-images %s failed (exit code %d).', $importCode, $exitCode));
+        }
+
+        return $exitCode;
     }
 }

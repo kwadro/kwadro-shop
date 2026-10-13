@@ -77,6 +77,7 @@ class LugiProductImportService
             $baseCategoryId = (int) $baseCategory->getId();
             $supplier = $this->resolveSupplier();
             $supplierId = (int) $supplier->getId();
+            $supplierCode = $supplier->getSlug();
             $importId = (int) $import->getId();
             $runId = $run->getId();
             $lastRunDate = $import->getLastRunAt();
@@ -96,10 +97,8 @@ class LugiProductImportService
             }
 
             if ($loadImages && !$dryRun) {
-                $this->downloadOfferImages($localPath);
+                $this->downloadOfferImages($localPath, $supplierCode);
             }
-
-
             // load category map
             $reader = new \XMLReader();
             $reader->open($localPath);
@@ -311,7 +310,7 @@ class LugiProductImportService
      * …
      * Example: HP-42-91 → …/lugi/H/P/HP-42-91.jpg
      */
-    private function downloadOfferImages(string $localPath): void
+    private function downloadOfferImages(string $localPath,$supplierCode): void
     {
         $reader = new \XMLReader();
         if (!$reader->open($localPath)) {
@@ -329,14 +328,14 @@ class LugiProductImportService
                     continue;
                 }
 
-                $this->downloadOfferPictures($node);
+                $this->downloadOfferPictures($node,$supplierCode);
             }
         } finally {
             $reader->close();
         }
     }
 
-    private function downloadOfferPictures(SimpleXMLElement $node): void
+    private function downloadOfferPictures(SimpleXMLElement $node,$supplierCode): void
     {
         $vendorCode = $this->sanitizeImageBasename((string) ($node->vendorCode ?: $node['id'] ?? ''));
         if ($vendorCode === '') {
@@ -360,7 +359,7 @@ class LugiProductImportService
                 ? $vendorCode
                 : sprintf('%s_%d', $vendorCode, $index);
             $filename = sprintf('%s.%s', $basename, $extension);
-            $targetPath = ProductImagePath::absolutePath($this->projectDir, $filename, 'lugi');
+            $targetPath = ProductImagePath::absolutePath($this->projectDir, $filename, $supplierCode);
             if ($targetPath === '') {
                 continue;
             }

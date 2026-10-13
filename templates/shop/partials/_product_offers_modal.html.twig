@@ -19,7 +19,7 @@
                         <span class="shop-offers-modal__item-main">
                             <span class="shop-offers-modal__supplier">{{ offer.supplier ? offer.supplier.name : '—' }}</span>
                             <span class="shop-offers-modal__sku">
-                                {{ 'shop.product.offer_sku'|trans }}: {{ offer.sku }}
+                                {{ 'shop.product.offer_sku'|trans }}: {{ offer.sku|display_sku }}
                                 · {{ 'shop.product.in_stock'|trans({'%qty%': offer.qty}) }}
                             </span>
                         </span>

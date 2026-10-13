@@ -39,7 +39,7 @@ final class ProductAssignImportImagesCommand extends Command
      */
     private const IMPORT_CODE_CATEGORY_SLUG = [
         ProductImport::CODE_SIVITEK => 'kronshteyny',
-        ProductImport::CODE_LUGI => 'lugi',
+        ProductImport::CODE_LUGI => 'homeware',
     ];
 
     public function __construct(
@@ -102,7 +102,8 @@ final class ProductAssignImportImagesCommand extends Command
             return Command::FAILURE;
         }
 
-        $supplierSlug = $this->resolveSupplierSlug($importCode);
+        $supplierSlug = $category->getSlug();
+
         $io->title(sprintf(
             'Assign images · import=%s · category=%s (id=%d, external_id=%s) · supplier=%s',
             $importCode,
@@ -115,6 +116,7 @@ final class ProductAssignImportImagesCommand extends Command
         $copied = $this->copyFromSource($sourceDir, $supplierSlug, $dryRun, $io);
 
         $categoryIds = $this->collectCategoryIds($category);
+
         $products = $this->productRepository->createQueryBuilder('p')
             ->innerJoin('p.categories', 'c')
             ->andWhere('c.id IN (:categoryIds)')
@@ -129,13 +131,13 @@ final class ProductAssignImportImagesCommand extends Command
         $updated = 0;
         $skipped = 0;
         $missing = 0;
-
         foreach ($products as $product) {
             if (!$product instanceof Product) {
                 continue;
             }
 
-            $imageKey = $this->resolveImageKey($product, $importCode);
+            $imageKey = $this->resolveImageKey($product, $supplierSlug);
+
             if ($imageKey === '') {
                 ++$skipped;
                 continue;
@@ -143,6 +145,7 @@ final class ProductAssignImportImagesCommand extends Command
 
             $productSupplier = $product->getImageSupplierSlug() ?: $supplierSlug;
             $gallery = $this->buildGalleryForModel($imageKey, $product->getName(), $productSupplier, $dryRun);
+
             if ($gallery === []) {
                 ++$missing;
                 $io->text(sprintf('  ? no images for %s', $imageKey));
@@ -202,9 +205,9 @@ final class ProductAssignImportImagesCommand extends Command
     }
 
     /**
-     * Image basename key: product model, or SKU without "{importCode}-" prefix.
+     * Image basename key: product model, or SKU without "{skuPrefix}-" prefix.
      */
-    private function resolveImageKey(Product $product, string $importCode): string
+    private function resolveImageKey(Product $product, string $skuPrefix): string
     {
         $model = trim((string) $product->getModel());
         if ($model !== '') {
@@ -216,7 +219,7 @@ final class ProductAssignImportImagesCommand extends Command
             return '';
         }
 
-        $prefix = $importCode.'-';
+        $prefix = $skuPrefix.'-';
         if (str_starts_with(mb_strtolower($sku), $prefix)) {
             return trim(substr($sku, \strlen($prefix)));
         }

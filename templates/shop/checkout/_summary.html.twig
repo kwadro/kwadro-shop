@@ -73,7 +73,7 @@
                             {%- endif -%}
                         </p>
                         <p class="shop-checkout__meta">
-                            {{ 'shop.product.sku'|trans }}: {{ item.product.offerSku|default(item.product.sku) }}
+                            {{ 'shop.product.sku'|trans }}: {{ item.product.offerSku|default(item.product.sku)|display_sku }}
                         </p>
                     </div>
                     <div class="shop-checkout__item-side">

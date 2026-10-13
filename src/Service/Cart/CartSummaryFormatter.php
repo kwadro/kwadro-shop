@@ -2,6 +2,7 @@
 
 namespace App\Service\Cart;
 
+use App\Service\Product\SkuDisplayFormatter;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 /**
@@ -11,6 +12,7 @@ final class CartSummaryFormatter
 {
     public function __construct(
         private readonly UrlGeneratorInterface $urlGenerator,
+        private readonly SkuDisplayFormatter $skuFormatter,
     ) {
     }
 
@@ -30,7 +32,7 @@ final class CartSummaryFormatter
                 'supplier_name' => $item['supplier_name'] ?? null,
                 'name' => $item['name'],
                 'url' => $this->productUrl($item['snapshot'] ?? null),
-                'sku' => $item['sku'],
+                'sku' => $this->skuFormatter->format($item['sku'] ?? null),
                 'quantity' => $item['quantity'],
                 'price' => $item['price'],
                 'price_formatted' => $this->formatPrice((float) $item['price']),

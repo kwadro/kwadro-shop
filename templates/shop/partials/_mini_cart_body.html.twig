@@ -28,7 +28,7 @@
                         </p>
                     {% endif %}
                     <p class="shop-minicart__item-meta">
-                        {{ 'shop.product.sku'|trans }}: {{ item.sku }} · {{ 'shop.product.quantity'|trans }}: {{ item.quantity }}
+                        {{ 'shop.product.sku'|trans }}: {{ item.sku|display_sku }} · {{ 'shop.product.quantity'|trans }}: {{ item.quantity }}
                     </p>
                     <p class="shop-minicart__item-price">
                         {{ item.line_total|number_format(2, ',', ' ') }} ₴

@@ -15,7 +15,7 @@
         <h2 class="shop-product-card__title">
             <a href="{{ path('shop_product', {_locale: app.request.locale, slug: product.slug}) }}">{{ product.name }}</a>
         </h2>
-        <p class="shop-product-card__sku">{{ 'shop.product.sku'|trans }}: {{ product.sku }}</p>
+        <p class="shop-product-card__sku">{{ 'shop.product.sku'|trans }}: {{ product.sku|display_sku }}</p>
         <div class="shop-product-card__price">
             {% if product.hasPrice %}
                 <strong>{{ product.price|number_format(2, ',', ' ') }} ₴</strong>

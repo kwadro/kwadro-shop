@@ -86,7 +86,7 @@
                 {% endif %}
             </p>
             <h1 class="shop-product__title">{{ product.name }}</h1>
-            <p class="shop-product__sku">{{ 'shop.product.sku'|trans }}: {{ product.sku }}</p>
+            <p class="shop-product__sku">{{ 'shop.product.sku'|trans }}: {{ product.sku|display_sku }}</p>
 
 
             <div
@@ -140,7 +140,7 @@
                     {% endif %}
                 </span>
             </div>
-            {% set productModel = product.sku|default('') matches '/^lugi-/i' ? product.sku|slice(5) : product.sku|default('') %}
+            {% set productModel = product.sku|default('')|display_sku %}
             {% if productModel or product.brand|default('') %}
                 <dl class="shop-product__meta">
                     {% if productModel %}
