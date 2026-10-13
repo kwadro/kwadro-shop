@@ -225,9 +225,9 @@ admin.product_import.settings_panel: Налаштування імпорту
 admin.product_import.default_category: Дефолтна категорія
 admin.product_import.default_category_help: 'Категорія за замовчуванням для імпортованих товарів. У базу зберігається external_id (не внутрішній id). У списку лише категорії з external_id.'
 admin.product_import.disable_categories_after_import: Статус категорій після імпорту
-admin.product_import.disable_categories_after_import_help: 'Yes — після імпорту вимкнути вказані категорії. No — не змінювати статус категорій.'
+admin.product_import.disable_categories_after_import_help: 'Yes — після імпорту вимкнути вказані категорії та всі товари в них. No — не змінювати статус категорій і товарів.'
 admin.product_import.disabled_category_slugs: Які категорії вимкнути
-admin.product_import.disabled_category_slugs_help: 'Один slug категорії на рядок.'
+admin.product_import.disabled_category_slugs_help: 'Один slug категорії на рядок. Якщо вище обрано Yes — ці категорії і товари в них будуть вимкнені після імпорту.'
 admin.product_import.markup_percent: Націнка
 admin.product_import.markup_percent_help: 'Націнка у відсотках для розрахунку ціни, наприклад 30 = +30%.'
 admin.product_import.yes: 'Yes'

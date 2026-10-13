@@ -110,7 +110,6 @@ final class ProductMigrateGalleryPathsCommand extends Command
                 $product->setGallery($normalized);
             }
             ++$updated;
-            $io->text(sprintf('  ✓ product #%d (%d images)', $product->getId(), \count($normalized)));
         }
 
         if (!$dryRun) {

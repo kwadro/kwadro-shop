@@ -5,6 +5,7 @@ namespace App\Controller\Admin;
 use App\Entity\Product;
 use App\Repository\ProductRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminRoute;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Assets;
@@ -103,11 +104,13 @@ class ProductCrudController extends AbstractCrudController
             ->addBatchAction($batchDisable);
     }
 
+    #[AdminRoute('/batch-enable', name: 'batch_enable')]
     public function batchEnable(AdminContext $context, BatchActionDto $batchActionDto, EntityManagerInterface $entityManager): Response
     {
         return $this->batchSetEnabled($context, $batchActionDto, $entityManager, true);
     }
 
+    #[AdminRoute('/batch-disable', name: 'batch_disable')]
     public function batchDisable(AdminContext $context, BatchActionDto $batchActionDto, EntityManagerInterface $entityManager): Response
     {
         return $this->batchSetEnabled($context, $batchActionDto, $entityManager, false);

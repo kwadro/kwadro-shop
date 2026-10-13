@@ -48,6 +48,7 @@ final class SivitekProductImportService
         private readonly CategoryRepository $categoryRepository,
         private readonly ProductRepository $productRepository,
         private readonly SupplierRepository $supplierRepository,
+        private readonly CategoryService $categoryService,
         #[Autowire('%kernel.project_dir%')]
         private readonly string $projectDir,
     ) {
@@ -133,12 +134,16 @@ final class SivitekProductImportService
                 ++$disabled;
             }
 
+            $disabledCategories = $this->categoryService->disableConfiguredAfterImport($import, $dryRun);
+
             $summary = sprintf(
-                'Created: %d, updated: %d, disabled: %d, deleted/deactivated: %d (mode: %s)',
+                'Created: %d, updated: %d, disabled: %d, deleted/deactivated: %d, categories off: %d, products off by category: %d (mode: %s)',
                 $created,
                 $updated,
                 $disabled,
                 $deleted,
+                $disabledCategories['categories'],
+                $disabledCategories['products'],
                 $import->getMode()->label(),
             );
 

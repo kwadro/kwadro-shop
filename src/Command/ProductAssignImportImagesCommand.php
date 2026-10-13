@@ -67,16 +67,16 @@ final class ProductAssignImportImagesCommand extends Command
                 null,
                 InputOption::VALUE_REQUIRED,
                 'Optional source dir to copy missing images from',
-                $this->projectDir.'/data-product/image',
+                $this->projectDir . '/data-product/image',
             );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $dryRun = (bool) $input->getOption('dry-run');
-        $sourceDir = rtrim((string) $input->getOption('source-dir'), '/');
-        $importCode = trim(mb_strtolower((string) $input->getArgument('import-code')));
+        $dryRun = (bool)$input->getOption('dry-run');
+        $sourceDir = rtrim((string)$input->getOption('source-dir'), '/');
+        $importCode = trim(mb_strtolower((string)$input->getArgument('import-code')));
 
         if ($importCode === '') {
             $io->error('Import code is required (e.g. sivitek or lugi).');
@@ -93,25 +93,29 @@ final class ProductAssignImportImagesCommand extends Command
 
         $category = $this->resolveDefaultCategory($import);
         if ($category === null) {
-            $io->error(sprintf(
-                'Default category for import "%s" not found (external_id=%s).',
-                $importCode,
-                $import->getDefaultCategoryExternalId() ?? 'null',
-            ));
+            $io->error(
+                sprintf(
+                    'Default category for import "%s" not found (external_id=%s).',
+                    $importCode,
+                    $import->getDefaultCategoryExternalId() ?? 'null',
+                )
+            );
 
             return Command::FAILURE;
         }
 
         $supplierSlug = $category->getSlug();
 
-        $io->title(sprintf(
-            'Assign images · import=%s · category=%s (id=%d, external_id=%s) · supplier=%s',
-            $importCode,
-            $category->getSlug(),
-            (int) $category->getId(),
-            $category->getExternalId() ?? '—',
-            $supplierSlug,
-        ));
+        $io->title(
+            sprintf(
+                'Assign images · import=%s · category=%s (id=%d, external_id=%s) · supplier=%s',
+                $importCode,
+                $category->getSlug(),
+                (int)$category->getId(),
+                $category->getExternalId() ?? '—',
+                $supplierSlug,
+            )
+        );
 
         $copied = $this->copyFromSource($sourceDir, $supplierSlug, $dryRun, $io);
 
@@ -135,9 +139,8 @@ final class ProductAssignImportImagesCommand extends Command
             if (!$product instanceof Product) {
                 continue;
             }
-
             $imageKey = $this->resolveImageKey($product, $supplierSlug);
-
+            $imageKey = str_replace(['/', '`', ' '], '-', $imageKey);
             if ($imageKey === '') {
                 ++$skipped;
                 continue;
@@ -145,7 +148,6 @@ final class ProductAssignImportImagesCommand extends Command
 
             $productSupplier = $product->getImageSupplierSlug() ?: $supplierSlug;
             $gallery = $this->buildGalleryForModel($imageKey, $product->getName(), $productSupplier, $dryRun);
-
             if ($gallery === []) {
                 ++$missing;
                 $io->text(sprintf('  ? no images for %s', $imageKey));
@@ -157,26 +159,30 @@ final class ProductAssignImportImagesCommand extends Command
                 $product->relocateGalleryFiles($this->projectDir);
             }
             ++$updated;
-            $io->text(sprintf(
-                '  ✓ %s → %s (%d images)',
-                $imageKey,
-                ProductImagePath::relativePath($gallery[0]['full'], $productSupplier),
-                \count($gallery),
-            ));
+            $io->text(
+                sprintf(
+                    '  ✓ %s → %s (%d images)',
+                    $imageKey,
+                    ProductImagePath::relativePath($gallery[0]['full'], $productSupplier),
+                    \count($gallery),
+                )
+            );
         }
 
         if (!$dryRun) {
             $this->em->flush();
         }
 
-        $io->success(sprintf(
-            '%sUpdated: %d, missing images: %d, skipped (no model/sku): %d, copied files: %d',
-            $dryRun ? '[dry-run] ' : '',
-            $updated,
-            $missing,
-            $skipped,
-            $copied,
-        ));
+        $io->success(
+            sprintf(
+                '%sUpdated: %d, missing images: %d, skipped (no model/sku): %d, copied files: %d',
+                $dryRun ? '[dry-run] ' : '',
+                $updated,
+                $missing,
+                $skipped,
+                $copied,
+            )
+        );
 
         return Command::SUCCESS;
     }
@@ -209,17 +215,17 @@ final class ProductAssignImportImagesCommand extends Command
      */
     private function resolveImageKey(Product $product, string $skuPrefix): string
     {
-        $model = trim((string) $product->getModel());
+        $model = trim((string)$product->getModel());
         if ($model !== '') {
             return $model;
         }
 
-        $sku = trim((string) $product->getSku());
+        $sku = trim((string)$product->getSku());
         if ($sku === '') {
             return '';
         }
 
-        $prefix = $skuPrefix.'-';
+        $prefix = $skuPrefix . '-';
         if (str_starts_with(mb_strtolower($sku), $prefix)) {
             return trim(substr($sku, \strlen($prefix)));
         }
@@ -258,7 +264,7 @@ final class ProductAssignImportImagesCommand extends Command
             if ($file === '.' || $file === '..') {
                 continue;
             }
-            $src = $sourceDir.'/'.$file;
+            $src = $sourceDir . '/' . $file;
             if (!is_file($src)) {
                 continue;
             }
@@ -303,7 +309,7 @@ final class ProductAssignImportImagesCommand extends Command
     {
         $gallery = [];
         foreach (self::SUFFIXES as $suffix) {
-            $filename = $this->resolveImageFilename($model.$suffix, $supplierSlug, $dryRun);
+            $filename = $this->resolveImageFilename($model . $suffix, $supplierSlug, $dryRun);
             if ($filename === null) {
                 continue;
             }
@@ -324,10 +330,10 @@ final class ProductAssignImportImagesCommand extends Command
     private function resolveImageFilename(string $basename, string $supplierSlug, bool $dryRun): ?string
     {
         foreach (self::EXTENSIONS as $ext) {
-            $filename = $basename.'.'.$ext;
+            $filename = $basename . '.' . $ext;
             $supplierPath = ProductImagePath::absolutePath($this->projectDir, $filename, $supplierSlug);
             $legacyPath = ProductImagePath::absolutePath($this->projectDir, $filename, null);
-            $flat = $this->projectDir.'/public'.ProductImagePath::WEB_BASE.'/'.$filename;
+            $flat = $this->projectDir . '/public' . ProductImagePath::WEB_BASE . '/' . $filename;
 
             if (!$dryRun && $supplierPath !== '' && !is_file($supplierPath)) {
                 ProductImagePath::ensureStored($this->projectDir, $filename, $supplierSlug);

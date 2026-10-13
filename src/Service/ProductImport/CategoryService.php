@@ -3,19 +3,84 @@
 namespace App\Service\ProductImport;
 
 use App\Entity\Category;
+use App\Entity\Product;
+use App\Entity\ProductImport;
 use App\Repository\CategoryRepository;
+use App\Repository\ProductRepository;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use SimpleXMLElement;
 
 readonly class CategoryService
 {
-
     public function __construct(
         private EntityManagerInterface $em,
         private CategoryRepository $categoryRepository,
-        private GeneratorSlugService $generatorSlugService
+        private ProductRepository $productRepository,
+        private GeneratorSlugService $generatorSlugService,
     ) {
+    }
+
+    /**
+     * After import: disable configured category slugs and every product linked to them.
+     *
+     * @return array{categories: int, products: int}
+     */
+    public function disableConfiguredAfterImport(ProductImport $import, bool $dryRun = false): array
+    {
+        $result = ['categories' => 0, 'products' => 0];
+        $slugs = $import->getDisabledCategorySlugs();
+        if (!$import->isDisableCategoriesAfterImport() || $slugs === []) {
+            return $result;
+        }
+
+        $categories = $this->categoryRepository->createQueryBuilder('c')
+            ->andWhere('c.slug IN (:slugs)')
+            ->setParameter('slugs', $slugs)
+            ->getQuery()
+            ->getResult();
+
+        $categoryIds = [];
+        foreach ($categories as $category) {
+            if (!$category instanceof Category) {
+                continue;
+            }
+            $categoryIds[] = (int) $category->getId();
+            if ($category->isEnabled()) {
+                $category->setEnabled(false);
+                ++$result['categories'];
+            }
+        }
+
+        if ($categoryIds === []) {
+            if (!$dryRun) {
+                $this->em->flush();
+            }
+
+            return $result;
+        }
+
+        $products = $this->productRepository->createQueryBuilder('p')
+            ->innerJoin('p.categories', 'c')
+            ->andWhere('c.id IN (:categoryIds)')
+            ->andWhere('p.enabled = true')
+            ->setParameter('categoryIds', $categoryIds)
+            ->getQuery()
+            ->getResult();
+
+        foreach ($products as $product) {
+            if (!$product instanceof Product) {
+                continue;
+            }
+            $product->setEnabled(false);
+            ++$result['products'];
+        }
+
+        if (!$dryRun) {
+            $this->em->flush();
+        }
+
+        return $result;
     }
 
     public function update(

@@ -13,6 +13,8 @@ use App\Repository\ProductRepository;
 use App\Repository\SupplierRepository;
 use App\Service\Product\ProductImagePath;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Exception\ORMException;
+use Doctrine\ORM\OptimisticLockException;
 use SimpleXMLElement;
 use Symfony\Bridge\Doctrine\Middleware\Debug\DebugDataHolder;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -40,6 +42,10 @@ class LugiProductImportService
     ) {
     }
 
+    /**
+     * @throws OptimisticLockException
+     * @throws ORMException
+     */
     public function run(ProductImport $import, bool $dryRun = false, bool $loadImages = false): ProductImportRun
     {
         @ini_set('memory_limit', '1512M');
@@ -74,11 +80,11 @@ class LugiProductImportService
                     )
                 );
             }
-            $baseCategoryId = (int) $baseCategory->getId();
+            $baseCategoryId = (int)$baseCategory->getId();
             $supplier = $this->resolveSupplier();
-            $supplierId = (int) $supplier->getId();
+            $supplierId = (int)$supplier->getId();
             $supplierCode = $supplier->getSlug();
-            $importId = (int) $import->getId();
+            $importId = (int)$import->getId();
             $runId = $run->getId();
             $lastRunDate = $import->getLastRunAt();
 
@@ -95,7 +101,6 @@ class LugiProductImportService
             if ($catalogDate === $lastRunDate) {
                 throw new \RuntimeException('Import this price  is  run  as another process.');
             }
-
             if ($loadImages && !$dryRun) {
                 $this->downloadOfferImages($localPath, $supplierCode);
             }
@@ -191,18 +196,21 @@ class LugiProductImportService
                 $deleted = $this->productService->disableMissingProducts($supplier, $seenSkus, $dryRun);
             }
 
+            [$import, $run] = $this->reloadImportRun($import, $run, $importId, $runId);
+            $disabledCategories = $this->categoryService->disableConfiguredAfterImport($import, $dryRun);
+
             $summary = sprintf(
-                'Created: %d, updated: %d, disabled: %d, deleted/deactivated: %d, attr groups: %d, attributes: %d (mode: %s)',
+                'Created: %d, updated: %d, disabled: %d, deleted/deactivated: %d, attr groups: %d, attributes: %d, categories off: %d, products off by category: %d (mode: %s)',
                 $result['created'],
                 $result['updated'],
                 $result['disabled'],
                 $deleted,
                 $attributeStats['groups'],
                 $attributeStats['attributes'],
+                $disabledCategories['categories'],
+                $disabledCategories['products'],
                 $import->getMode()->label(),
             );
-
-            [$import, $run] = $this->reloadImportRun($import, $run, $importId, $runId);
 
             $run
                 ->setCreatedCount($result['created'])
@@ -220,14 +228,13 @@ class LugiProductImportService
             if (!$dryRun && $this->em->isOpen()) {
                 $this->em->flush();
             }
-
         } catch (Throwable $e) {
             if ($this->em->isOpen()) {
                 [$import, $run] = $this->reloadImportRun(
                     $import,
                     $run,
-                    isset($importId) ? $importId : (int) ($import->getId() ?? 0),
-                    isset($runId) ? $runId : $run->getId(),
+                    $importId ?? (int)($import->getId() ?? 0),
+                    $runId ?? $run->getId(),
                 );
             }
 
@@ -310,7 +317,7 @@ class LugiProductImportService
      * …
      * Example: HP-42-91 → …/lugi/H/P/HP-42-91.jpg
      */
-    private function downloadOfferImages(string $localPath,$supplierCode): void
+    private function downloadOfferImages(string $localPath, $supplierCode): void
     {
         $reader = new \XMLReader();
         if (!$reader->open($localPath)) {
@@ -327,17 +334,17 @@ class LugiProductImportService
                 if ($node === false) {
                     continue;
                 }
-
-                $this->downloadOfferPictures($node,$supplierCode);
+                $sku = $node->vendorCode;
+                $this->downloadOfferPictures($node, $supplierCode);
             }
         } finally {
             $reader->close();
         }
     }
 
-    private function downloadOfferPictures(SimpleXMLElement $node,$supplierCode): void
+    private function downloadOfferPictures(SimpleXMLElement $node, $supplierCode): void
     {
-        $vendorCode = $this->sanitizeImageBasename((string) ($node->vendorCode ?: $node['id'] ?? ''));
+        $vendorCode = $this->sanitizeImageBasename((string)($node->vendorCode ?: $node['id'] ?? ''));
         if ($vendorCode === '') {
             return;
         }
@@ -345,9 +352,9 @@ class LugiProductImportService
         $pictureUrls = [];
         if (isset($node->picture)) {
             foreach ($node->picture as $picture) {
-                $url = trim(html_entity_decode((string) $picture, ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+                $url = trim(html_entity_decode((string)$picture, ENT_QUOTES | ENT_HTML5, 'UTF-8'));
                 $url = urldecode($url);
-                if ($url === '' || !filter_var($url, FILTER_VALIDATE_URL)) {
+                if ($url === '') {
                     continue;
                 }
                 $pictureUrls[] = $url;
@@ -364,9 +371,8 @@ class LugiProductImportService
             if ($targetPath === '') {
                 continue;
             }
-
             // Skip when this picture (or a legacy/alternate copy) is already on disk.
-            if ($this->isOfferImageAlreadyDownloaded($basename, $targetPath)) {
+            if ($this->isOfferImageAlreadyDownloaded($basename, $targetPath, $supplierCode)) {
                 continue;
             }
 
@@ -387,24 +393,23 @@ class LugiProductImportService
     /**
      * True when the sharded target (or an existing copy we can reuse) is already present.
      */
-    private function isOfferImageAlreadyDownloaded(string $basename, string $targetPath): bool
+    private function isOfferImageAlreadyDownloaded(string $basename, string $targetPath, string $supplierCode): bool
     {
         if ($this->isNonEmptyFile($targetPath)) {
             return true;
         }
 
         $extensions = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
-        $publicRoot = rtrim($this->projectDir, '/').'/public'.ProductImagePath::WEB_BASE;
-        $supplier = 'lugi';
+        $publicRoot = rtrim($this->projectDir, '/') . '/public' . ProductImagePath::WEB_BASE;
 
         foreach ($extensions as $ext) {
             $filename = sprintf('%s.%s', $basename, $ext);
             $candidates = [
-                ProductImagePath::absolutePath($this->projectDir, $filename, $supplier),
+                ProductImagePath::absolutePath($this->projectDir, $filename, $supplierCode),
                 // Legacy flat layout: …/uploads/products/lugi/{file}
-                $publicRoot.'/'.$supplier.'/'.$filename,
+                $publicRoot . '/' . $supplierCode . '/' . $filename,
                 // Legacy sharded without supplier: …/uploads/products/{a}/{b}/{file}
-                $publicRoot.'/'.ProductImagePath::relativePath($filename, null),
+                $publicRoot . '/' . ProductImagePath::relativePath($filename, null),
             ];
 
             foreach ($candidates as $candidate) {
@@ -450,11 +455,13 @@ class LugiProductImportService
         ]);
 
         if ($response->getStatusCode() !== 200) {
-            throw new \RuntimeException(sprintf(
-                'Image download failed with HTTP %d: %s',
-                $response->getStatusCode(),
-                $url,
-            ));
+            throw new \RuntimeException(
+                sprintf(
+                    'Image download failed with HTTP %d: %s',
+                    $response->getStatusCode(),
+                    $url,
+                )
+            );
         }
 
         $handle = fopen($targetPath, 'wb');
@@ -543,7 +550,13 @@ class LugiProductImportService
     }
 
     /**
+     * @param ProductImport $import
+     * @param ProductImportRun $run
+     * @param int $importId
+     * @param int|null $runId
      * @return array{0: ProductImport, 1: ProductImportRun}
+     * @throws ORMException
+     * @throws OptimisticLockException
      */
     private function reloadImportRun(
         ProductImport $import,

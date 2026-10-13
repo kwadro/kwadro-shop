@@ -225,9 +225,9 @@ admin.product_import.settings_panel: Import settings
 admin.product_import.default_category: Default category
 admin.product_import.default_category_help: 'Fallback category for imported products. Stored as category external_id (not internal id). Only categories with external_id are listed.'
 admin.product_import.disable_categories_after_import: Category status after import
-admin.product_import.disable_categories_after_import_help: 'Yes — disable selected category slugs after import. No — leave categories unchanged.'
+admin.product_import.disable_categories_after_import_help: 'Yes — after import disable the listed categories and all products in them. No — leave categories and products unchanged.'
 admin.product_import.disabled_category_slugs: Categories to disable
-admin.product_import.disabled_category_slugs_help: 'One category slug per line.'
+admin.product_import.disabled_category_slugs_help: 'One category slug per line. When Yes is selected above, those categories and their products are disabled after import.'
 admin.product_import.markup_percent: Markup
 admin.product_import.markup_percent_help: 'Markup in percent for price calculation, e.g. 30 = +30%.'
 admin.product_import.yes: 'Yes'
