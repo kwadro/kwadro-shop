@@ -56,7 +56,7 @@ readonly class ProductService
             'description' => (string)$node->description,
             'brand' => (string)$node->vendor,
             'stock_qty' => (int)$node->quantity_in_stock,
-            'sku' => 'lugi-' . $node->vendorCode,
+            'sku' => 'homeware-' . $node->vendorCode,
             'params' => $params,
             'weight' => WeightParser::fromParams($params),
         ];

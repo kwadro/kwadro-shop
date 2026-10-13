@@ -16,11 +16,11 @@ final class Version20261011190000 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        $this->addSql("UPDATE shop_category SET name = 'Товари для дому', position = 0 WHERE slug = 'lugi'");
+        $this->addSql("UPDATE shop_category SET name = 'Товари для дому', position = 0 WHERE slug = 'homeware'");
     }
 
     public function down(Schema $schema): void
     {
-        $this->addSql("UPDATE shop_category SET name = 'Lugi', position = 3 WHERE slug = 'lugi'");
+        $this->addSql("UPDATE shop_category SET name = 'Lugi', position = 3 WHERE slug = 'homeware'");
     }
 }

@@ -95,10 +95,10 @@ class LugiProductImportService
                 throw new \RuntimeException('Import this price  is  run  as another process.');
             }
 
-            if (3===4 && $loadImages && !$dryRun) {
+            if ($loadImages && !$dryRun) {
                 $this->downloadOfferImages($localPath);
             }
-           
+
 
             // load category map
             $reader = new \XMLReader();
@@ -505,17 +505,17 @@ class LugiProductImportService
 
     private function resolveSupplier(): Supplier
     {
-        $supplier = $this->supplierRepository->findOneBy(['slug' => 'lugi'])
-            ?? $this->supplierRepository->findOneBy(['name' => 'Lugi']);
+        $supplier = $this->supplierRepository->findOneBy(['slug' => 'homeware'])
+            ?? $this->supplierRepository->findOneBy(['name' => 'Товари для дому']);
 
         if ($supplier !== null) {
             return $supplier;
         }
 
         $supplier = (new Supplier())
-            ->setName('Lugi')
-            ->setSlug('lugi')
-            ->setDescription('Lugi побутові товари для всіх');
+            ->setName('Товари для дому')
+            ->setSlug('homeware')
+            ->setDescription('Побутові товари для всіх');
         $this->em->persist($supplier);
         $this->em->flush();
 
