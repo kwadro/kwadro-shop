@@ -90,4 +90,30 @@ class MailboxMessageRepository extends ServiceEntityRepository
             ->getQuery()
             ->execute();
     }
+
+    /**
+     * Distinct message groups for admin filters (label => value).
+     *
+     * @return array<string, string>
+     */
+    public function findDistinctMessageGroupChoices(): array
+    {
+        /** @var list<string> $groups */
+        $groups = $this->createQueryBuilder('m')
+            ->select('DISTINCT m.messageGroup')
+            ->orderBy('m.messageGroup', 'ASC')
+            ->getQuery()
+            ->getSingleColumnResult();
+
+        $choices = [];
+        foreach ($groups as $group) {
+            $group = trim((string) $group);
+            if ($group === '') {
+                continue;
+            }
+            $choices[$group] = $group;
+        }
+
+        return $choices;
+    }
 }

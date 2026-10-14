@@ -3,12 +3,14 @@
 namespace App\Controller\Admin;
 
 use App\Entity\MailboxMessage;
+use App\Repository\MailboxMessageRepository;
 use App\Service\Mail\Mailbox\MailboxImapSyncService;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Assets;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
@@ -17,6 +19,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\Field;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\ChoiceFilter;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\EntityFilter;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -27,6 +31,7 @@ class MailboxMessageCrudController extends AbstractCrudController
         private readonly EntityManagerInterface $entityManager,
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly MailboxImapSyncService $mailboxSyncService,
+        private readonly MailboxMessageRepository $messageRepository,
     ) {
     }
 
@@ -75,6 +80,24 @@ class MailboxMessageCrudController extends AbstractCrudController
             ->add(Crud::PAGE_INDEX, $compose)
             ->add(Crud::PAGE_INDEX, $reply)
             ->add(Crud::PAGE_DETAIL, $reply);
+    }
+
+    public function configureFilters(Filters $filters): Filters
+    {
+        $groupChoices = $this->messageRepository->findDistinctMessageGroupChoices();
+
+        $filters = $filters
+            ->add(EntityFilter::new('mailbox', $this->translator->trans('admin.mailbox_message.mailbox', [], 'messages')));
+
+        if ($groupChoices !== []) {
+            $filters = $filters->add(
+                ChoiceFilter::new('messageGroup', $this->translator->trans('admin.mailbox_message.group', [], 'messages'))
+                    ->setChoices($groupChoices)
+                    ->canSelectMultiple(),
+            );
+        }
+
+        return $filters;
     }
 
     public function configureFields(string $pageName): iterable

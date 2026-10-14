@@ -136,9 +136,7 @@ final class MailboxImapSyncService
 
             return ['imported' => $imported, 'updated' => $updated, 'error' => $error];
         } finally {
-            if (\is_resource($mailbox) || $mailbox instanceof \IMAP\Connection) {
-                imap_close($mailbox);
-            }
+            $this->closeMailbox($mailbox);
         }
     }
 
@@ -190,9 +188,7 @@ final class MailboxImapSyncService
 
             return [];
         } finally {
-            if (\is_resource($mailbox) || $mailbox instanceof \IMAP\Connection) {
-                imap_close($mailbox);
-            }
+            $this->closeMailbox($mailbox);
         }
     }
 
@@ -205,6 +201,23 @@ final class MailboxImapSyncService
         };
 
         return sprintf('{%s:%d%s}INBOX', $account->getImapHost(), $account->getImapPort(), $flags);
+    }
+
+    /**
+     * @param resource|\IMAP\Connection|false|null $mailbox
+     */
+    private function closeMailbox(mixed $mailbox): void
+    {
+        // Flush IMAP error queue so PHP shutdown does not turn leftover notices into fatals.
+        imap_errors();
+        imap_alerts();
+
+        if (\is_resource($mailbox) || $mailbox instanceof \IMAP\Connection) {
+            @imap_close($mailbox);
+        }
+
+        imap_errors();
+        imap_alerts();
     }
 
     private function resolveLastSyncedUid(MailboxAccount $account): int
@@ -225,10 +238,35 @@ final class MailboxImapSyncService
     private function searchUidsAfter($mailbox, MailboxAccount $account, int $afterUid): array
     {
         if ($afterUid > 0) {
-            // Incremental: only UIDs newer than the cursor (oldest first, then cap).
+            // Prefer IMAP UID range when the server supports it.
+            imap_errors();
+            imap_alerts();
             $criteria = 'UID '.($afterUid + 1).':*';
-            $found = imap_search($mailbox, $criteria, \SE_UID) ?: [];
-            $uids = \is_array($found) ? array_values($found) : [];
+            $found = @imap_search($mailbox, $criteria, \SE_UID);
+            $imapErrors = imap_errors() ?: [];
+            $uidSearchUnsupported = false;
+            foreach ($imapErrors as $imapError) {
+                if (stripos((string) $imapError, 'Unknown search criterion: UID') !== false
+                    || stripos((string) $imapError, 'invalid search') !== false
+                ) {
+                    $uidSearchUnsupported = true;
+                    break;
+                }
+            }
+
+            if (\is_array($found) && $found !== [] && !$uidSearchUnsupported) {
+                $uids = array_values($found);
+                sort($uids, \SORT_NUMERIC);
+
+                return \array_slice($uids, 0, self::FETCH_LIMIT);
+            }
+
+            // Fallback for hosts (e.g. mail.adm.tools) that reject UID search criteria:
+            // fetch candidate UIDs and filter in PHP.
+            $uids = array_values(array_filter(
+                $this->searchAllCandidateUids($mailbox, $account),
+                static fn (int|string $uid): bool => (int) $uid > $afterUid,
+            ));
             sort($uids, \SORT_NUMERIC);
 
             return \array_slice($uids, 0, self::FETCH_LIMIT);
@@ -254,7 +292,9 @@ final class MailboxImapSyncService
         $allowed = $account->getAllowedFromEmailList();
         // Empty filter or *|Group => fetch all senders.
         if ($allowed === [] || $account->hasWildcardFromFilter()) {
-            $uids = imap_search($mailbox, 'ALL', \SE_UID) ?: [];
+            imap_errors();
+            $uids = @imap_search($mailbox, 'ALL', \SE_UID) ?: [];
+            imap_errors();
 
             return \is_array($uids) ? array_values($uids) : [];
         }
@@ -262,7 +302,9 @@ final class MailboxImapSyncService
         $uids = [];
         foreach ($allowed as $email) {
             $criteria = 'FROM "'.str_replace(['\\', '"'], ['\\\\', '\\"'], $email).'"';
-            $found = imap_search($mailbox, $criteria, \SE_UID) ?: [];
+            imap_errors();
+            $found = @imap_search($mailbox, $criteria, \SE_UID) ?: [];
+            imap_errors();
             if (\is_array($found)) {
                 foreach ($found as $uid) {
                     $uids[(string) $uid] = $uid;
