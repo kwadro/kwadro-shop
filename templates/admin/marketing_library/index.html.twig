@@ -1,0 +1,228 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block head_stylesheets %}
+    {{ parent() }}
+    <style>
+        .mkt-lib__grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: .85rem;
+        }
+        .mkt-lib__item {
+            border: 1px solid #e2e8f0;
+            border-radius: .5rem;
+            overflow: hidden;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+        }
+        .mkt-lib__thumb {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background:
+                linear-gradient(45deg, #e2e8f0 25%, transparent 25%),
+                linear-gradient(-45deg, #e2e8f0 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #e2e8f0 75%),
+                linear-gradient(-45deg, transparent 75%, #e2e8f0 75%);
+            background-size: 14px 14px;
+            background-position: 0 0, 0 7px, 7px -7px, -7px 0;
+        }
+        .mkt-lib__thumb img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+        .mkt-lib__meta { padding: .55rem .6rem .65rem; }
+        .mkt-lib__name {
+            font-size: .85rem;
+            font-weight: 600;
+            margin-bottom: .4rem;
+            word-break: break-word;
+        }
+        .mkt-lib__actions { display: flex; flex-wrap: wrap; gap: .3rem; }
+        .mkt-lib__actions .btn { font-size: .75rem; }
+        .mkt-lib__upload-card { max-width: 420px; }
+    </style>
+{% endblock %}
+
+{% block content_title %}{{ page_title }}{% endblock %}
+
+{% block main %}
+    <div class="mkt-lib" id="marketing-library"
+         data-kind="{{ kind }}"
+         data-upload-url="{{ upload_url }}"
+         data-list-url="{{ list_url }}"
+         data-rename-template="{{ rename_url_template }}"
+         data-delete-template="{{ delete_url_template }}">
+        <div class="card shadow-sm mb-3 mkt-lib__upload-card">
+            <div class="card-body">
+                <p class="text-muted small mb-3">{{ (i18n_prefix ~ '.help')|trans }}</p>
+                <label class="form-label">{{ (i18n_prefix ~ '.name')|trans }}</label>
+                <input type="text" class="form-control mb-2" data-lib-name placeholder="{{ (i18n_prefix ~ '.name_placeholder')|trans }}">
+                <label class="form-label">{{ (i18n_prefix ~ '.file')|trans }}</label>
+                <input type="file" class="form-control" accept="image/*,.svg" data-lib-file>
+                <button type="button" class="btn btn-primary mt-3" data-lib-upload>{{ (i18n_prefix ~ '.upload')|trans }}</button>
+                <div class="small text-muted mt-2" data-lib-status></div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h3 class="h5 mb-3">{{ (i18n_prefix ~ '.items')|trans }}</h3>
+                <div class="mkt-lib__grid" data-lib-grid>
+                    {% for item in items %}
+                        <div class="mkt-lib__item" data-filename="{{ item.filename }}">
+                            <div class="mkt-lib__thumb">
+                                <img src="{{ item.url }}" alt="{{ item.name }}">
+                            </div>
+                            <div class="mkt-lib__meta">
+                                <div class="mkt-lib__name" data-lib-item-name>{{ item.name }}</div>
+                                <div class="mkt-lib__actions">
+                                    <a class="btn btn-sm btn-outline-primary" href="{{ item.url }}" target="_blank" rel="noopener">{{ (i18n_prefix ~ '.open')|trans }}</a>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" data-lib-rename="{{ item.filename }}">{{ (i18n_prefix ~ '.rename')|trans }}</button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" data-lib-delete="{{ item.filename }}">{{ (i18n_prefix ~ '.delete')|trans }}</button>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-muted small" data-lib-empty>{{ (i18n_prefix ~ '.empty')|trans }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body_javascript %}
+    {{ parent() }}
+    <script>
+    (function () {
+        const root = document.getElementById('marketing-library');
+        if (!root) return;
+        const uploadUrl = root.dataset.uploadUrl;
+        const renameTpl = root.dataset.renameTemplate;
+        const deleteTpl = root.dataset.deleteTemplate;
+        const i18n = {
+            uploaded: {{ (i18n_prefix ~ '.uploaded')|trans|json_encode|raw }},
+            renamed: {{ (i18n_prefix ~ '.renamed')|trans|json_encode|raw }},
+            deleted: {{ (i18n_prefix ~ '.deleted')|trans|json_encode|raw }},
+            error: {{ (i18n_prefix ~ '.error')|trans|json_encode|raw }},
+            deleteConfirm: {{ (i18n_prefix ~ '.delete_confirm')|trans|json_encode|raw }},
+            renamePrompt: {{ (i18n_prefix ~ '.rename_prompt')|trans|json_encode|raw }},
+            pickFile: {{ (i18n_prefix ~ '.pick_file')|trans|json_encode|raw }},
+            open: {{ (i18n_prefix ~ '.open')|trans|json_encode|raw }},
+            rename: {{ (i18n_prefix ~ '.rename')|trans|json_encode|raw }},
+            delete: {{ (i18n_prefix ~ '.delete')|trans|json_encode|raw }},
+            empty: {{ (i18n_prefix ~ '.empty')|trans|json_encode|raw }},
+            uploading: {{ (i18n_prefix ~ '.uploading')|trans|json_encode|raw }},
+        };
+        const grid = root.querySelector('[data-lib-grid]');
+        const statusEl = root.querySelector('[data-lib-status]');
+        const fileInput = root.querySelector('[data-lib-file]');
+        const nameInput = root.querySelector('[data-lib-name]');
+
+        function setStatus(msg) { statusEl.textContent = msg || ''; }
+
+        function render(items) {
+            if (!Array.isArray(items) || items.length === 0) {
+                grid.innerHTML = '<div class="text-muted small" data-lib-empty>' + i18n.empty + '</div>';
+                return;
+            }
+            grid.innerHTML = items.map(function (item) {
+                return '<div class="mkt-lib__item" data-filename="' + item.filename + '">' +
+                    '<div class="mkt-lib__thumb"><img src="' + item.url + '?t=' + Date.now() + '" alt=""></div>' +
+                    '<div class="mkt-lib__meta"><div class="mkt-lib__name" data-lib-item-name>' + escapeHtml(item.name || item.filename) + '</div>' +
+                    '<div class="mkt-lib__actions">' +
+                    '<a class="btn btn-sm btn-outline-primary" href="' + item.url + '" target="_blank" rel="noopener">' + i18n.open + '</a>' +
+                    '<button type="button" class="btn btn-sm btn-outline-secondary" data-lib-rename="' + item.filename + '">' + i18n.rename + '</button>' +
+                    '<button type="button" class="btn btn-sm btn-outline-danger" data-lib-delete="' + item.filename + '">' + i18n.delete + '</button>' +
+                    '</div></div></div>';
+            }).join('');
+        }
+
+        function escapeHtml(s) {
+            return String(s).replace(/[&<>"']/g, function (c) {
+                return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+            });
+        }
+
+        root.querySelector('[data-lib-upload]').addEventListener('click', async function () {
+            const file = fileInput.files && fileInput.files[0];
+            if (!file) {
+                setStatus(i18n.pickFile);
+                return;
+            }
+            const body = new FormData();
+            body.append('file', file);
+            if (nameInput.value.trim()) body.append('name', nameInput.value.trim());
+            setStatus(i18n.uploading);
+            try {
+                const res = await fetch(uploadUrl, {
+                    method: 'POST',
+                    body: body,
+                    credentials: 'same-origin',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                });
+                const data = await res.json();
+                if (!res.ok || !data.ok) throw new Error(data.error || 'fail');
+                fileInput.value = '';
+                nameInput.value = '';
+                setStatus(data.message || i18n.uploaded);
+                render(data.items || []);
+            } catch (e) {
+                setStatus(i18n.error);
+            }
+        });
+
+        grid.addEventListener('click', async function (e) {
+            const renameBtn = e.target.closest('[data-lib-rename]');
+            const deleteBtn = e.target.closest('[data-lib-delete]');
+            if (renameBtn) {
+                const filename = renameBtn.getAttribute('data-lib-rename');
+                const item = renameBtn.closest('.mkt-lib__item');
+                const current = item ? (item.querySelector('[data-lib-item-name]') || {}).textContent || '' : '';
+                const name = prompt(i18n.renamePrompt, current.trim());
+                if (name === null || !name.trim()) return;
+                try {
+                    const res = await fetch(renameTpl.replace('__FILENAME__', filename), {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ name: name.trim() }),
+                    });
+                    const data = await res.json();
+                    if (!res.ok || !data.ok) throw new Error('fail');
+                    setStatus(data.message || i18n.renamed);
+                    render(data.items || []);
+                } catch (err) {
+                    setStatus(i18n.error);
+                }
+                return;
+            }
+            if (deleteBtn) {
+                const filename = deleteBtn.getAttribute('data-lib-delete');
+                if (!filename || !confirm(i18n.deleteConfirm)) return;
+                try {
+                    const res = await fetch(deleteTpl.replace('__FILENAME__', filename), {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    });
+                    const data = await res.json();
+                    if (!res.ok || !data.ok) throw new Error('fail');
+                    setStatus(data.message || i18n.deleted);
+                    render(data.items || []);
+                } catch (err) {
+                    setStatus(i18n.error);
+                }
+            }
+        });
+    })();
+    </script>
+{% endblock %}

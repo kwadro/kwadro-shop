@@ -648,6 +648,35 @@ class ProductRepository extends ServiceEntityRepository
     }
 
     /**
+     * Admin search by SKU / name / model / brand.
+     *
+     * @return list<Product>
+     */
+    public function searchForAdmin(string $query, int $limit = 20): array
+    {
+        $query = trim($query);
+        if ($query === '') {
+            return [];
+        }
+
+        $qb = $this->createQueryBuilder('p')
+            ->leftJoin('p.offers', 'o')
+            ->addSelect('o')
+            ->orderBy('p.name', 'ASC')
+            ->setMaxResults(max(1, min(50, $limit)));
+
+        $like = '%'.mb_strtolower($query).'%';
+        $qb->andWhere($qb->expr()->orX(
+            'LOWER(p.sku) LIKE :q',
+            'LOWER(p.name) LIKE :q',
+            'LOWER(COALESCE(p.model, \'\')) LIKE :q',
+            'LOWER(COALESCE(p.brand, \'\')) LIKE :q',
+        ))->setParameter('q', $like);
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
      * Products assigned to at least one public (enabled, non-default) category.
      * Products offered only by suppliers hidden from the sitemap are skipped;
      * products without offers or with offers from a visible supplier stay listed.

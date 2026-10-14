@@ -11,6 +11,10 @@ menu.group_marketing: Маркетинг
 menu.link_promo_image_editor: Редактор промо-картинок
 menu.link_image_editor: Редактор картинок
 menu.link_background_remover: Прибрати фон
+menu.link_image_transform: Трансформувати картинку
+menu.link_media_library: Бібліотека картинок
+menu.link_shape_library: Бібліотека фігур
+menu.link_product_social_posts: Facebook пости товарів
 menu.link_email_template: Шаблони листів
 menu.link_email_template_single: Шаблон листа
 menu.link_email_template_section: Секції листів
@@ -296,7 +300,10 @@ admin.product.features_help: Один пункт на рядок.
 admin.product.gallery: Галерея
 admin.product.gallery_image: 'Зображення %number%'
 admin.product.gallery_alt: 'Alt-текст (зображення %number%)'
-admin.product.gallery_help: До 5 фото товару. JSON у базі формується автоматично при збереженні.
+admin.product.gallery_alt_label: Alt-текст
+admin.product.gallery_file: Файл картинки
+admin.product.gallery_no_preview: Немає прев’ю
+admin.product.gallery_help: Додавайте або видаляйте фото без обмеження кількості. Для кожного можна змінити alt-текст.
 admin.product.clean_image: Чиста картинка (без фону)
 admin.product.clean_image_help: PNG з прозорістю без фону. Натисніть «Згенерувати картинку без країв» біля фото галереї або завантажте вручну.
 admin.product.generate_clean_image: Згенерувати картинку без країв
@@ -699,6 +706,118 @@ admin.background_remover.delete_confirm: Видалити цей результ�
 admin.background_remover.open: Відкрити
 admin.background_remover.delete: Видалити
 
+admin.image_transform.title: Трансформувати картинку
+admin.image_transform.help: Генерує нову картинку потрібного формату. Уся оригінальна вміщується без обрізання; смуги — колір краю фото з градієнтом до світлішого на зовнішньому краї кадру. Зручно для Stories / Reels (9:16).
+admin.image_transform.file: Файл картинки
+admin.image_transform.aspect: Формат
+admin.image_transform.blur: Світлість краю
+admin.image_transform.blur_help: Наскільки світліший зовнішній край градієнта відносно кольору краю картинки.
+admin.image_transform.rotate: Поворот оригіналу
+admin.image_transform.rotate_help: Повертає вихідну картинку на 90° перед трансформацією. Прев’ю зліва оновлюється одразу.
+admin.image_transform.rotate_left: Вліво на 90°
+admin.image_transform.rotate_right: Вправо на 90°
+admin.image_transform.rotate_reset: Скинути
+admin.image_transform.include_subject: Додати об’єкт (зменшений)
+admin.image_transform.include_subject_help: Увімкнено — картинка трохи менша (слайдер розміру). Вимкнено — уся картинка максимально велика, але все одно повністю в кадрі (нічого не обрізається).
+admin.image_transform.subject_scale: Розмір об’єкта
+admin.image_transform.subject_scale_help: Наскільки велика чітка картинка відносно кадру (пропорції зберігаються, написи не обрізаються).
+admin.image_transform.save_to_library: Також зберегти в бібліотеку картинок
+admin.image_transform.download_name: Ім’я файлу для завантаження
+admin.image_transform.download_name_help: Можна змінити перед завантаженням.
+admin.image_transform.run: Трансформувати
+admin.image_transform.download: Завантажити JPG
+admin.image_transform.preview: Перегляд
+admin.image_transform.before: Оригінал
+admin.image_transform.after: Результат
+admin.image_transform.recent: Останні результати
+admin.image_transform.upload_hint: Оберіть файл
+admin.image_transform.processing: Обробка…
+admin.image_transform.done: Картинку трансформовано.
+admin.image_transform.error: Не вдалося обробити картинку.
+admin.image_transform.deleted: Результат видалено.
+admin.image_transform.delete_confirm: Видалити цей результат?
+admin.image_transform.open: Відкрити
+admin.image_transform.delete: Видалити
+admin.image_transform.pick_file: Спочатку оберіть файл.
+
+admin.media_library.title: Бібліотека картинок
+admin.media_library.help: Картинки для повторного використання в редакторі (фон і накладки). Можна додавати й видаляти тут.
+admin.media_library.name: Назва
+admin.media_library.name_placeholder: Наприклад, гірлянда Garlando
+admin.media_library.file: Файл
+admin.media_library.upload: Додати в бібліотеку
+admin.media_library.items: Збережені картинки
+admin.media_library.empty: Бібліотека порожня.
+admin.media_library.open: Відкрити
+admin.media_library.rename: Перейменувати
+admin.media_library.delete: Видалити
+admin.media_library.uploaded: Картинку додано в бібліотеку.
+admin.media_library.renamed: Назву оновлено.
+admin.media_library.deleted: Картинку видалено з бібліотеки.
+admin.media_library.error: Помилка бібліотеки.
+admin.media_library.delete_confirm: Видалити картинку з бібліотеки?
+admin.media_library.rename_prompt: Нова назва
+admin.media_library.pick_file: Оберіть файл для завантаження.
+admin.media_library.uploading: Завантаження…
+
+admin.shape_library.title: Бібліотека фігур
+admin.shape_library.help: Готові фігури (стрілки, бейджі, рамки PNG/SVG) для вставки в редактор картинок.
+admin.shape_library.name: Назва
+admin.shape_library.name_placeholder: Наприклад, стрілка вниз
+admin.shape_library.file: Файл фігури
+admin.shape_library.upload: Додати фігуру
+admin.shape_library.items: Збережені фігури
+admin.shape_library.empty: Бібліотека фігур порожня.
+admin.shape_library.open: Відкрити
+admin.shape_library.rename: Перейменувати
+admin.shape_library.delete: Видалити
+admin.shape_library.uploaded: Фігуру додано в бібліотеку.
+admin.shape_library.renamed: Назву оновлено.
+admin.shape_library.deleted: Фігуру видалено з бібліотеки.
+admin.shape_library.error: Помилка бібліотеки фігур.
+admin.shape_library.delete_confirm: Видалити фігуру з бібліотеки?
+admin.shape_library.rename_prompt: Нова назва
+admin.shape_library.pick_file: Оберіть файл для завантаження.
+admin.shape_library.uploading: Завантаження…
+
+admin.image_editor.from_library: З бібліотеки
+admin.image_editor.from_shape_library: З бібліотеки фігур
+admin.image_editor.library_title: Бібліотека картинок
+admin.image_editor.shape_library_title: Бібліотека фігур
+admin.image_editor.library_empty: Бібліотека порожня. Додайте файли в меню «Бібліотека картинок».
+admin.image_editor.shape_library_empty: Бібліотека фігур порожня. Додайте файли в меню «Бібліотека фігур».
+admin.image_editor.library_close: Закрити
+admin.image_editor.library_use: Використати
+admin.image_editor.library_loading: Завантаження бібліотеки…
+
+admin.social_posts.title: Facebook пости товарів
+admin.social_posts.help: Знайдіть товар за SKU або назвою, згенеруйте текст поста й збережіть кілька варіантів для одного товару.
+admin.social_posts.search: Пошук товару
+admin.social_posts.search_placeholder: SKU або назва…
+admin.social_posts.search_hint: Введіть щонайменше 2 символи.
+admin.social_posts.no_results: Нічого не знайдено.
+admin.social_posts.select_product: Оберіть товар зі списку зліва.
+admin.social_posts.generate: Згенерувати пост
+admin.social_posts.add_blank: Додати порожній
+admin.social_posts.posts: Пости
+admin.social_posts.empty_posts: Постів ще немає. Натисніть «Згенерувати пост».
+admin.social_posts.save: Зберегти
+admin.social_posts.delete: Видалити
+admin.social_posts.copy: Копіювати
+admin.social_posts.copied: Скопійовано в буфер.
+admin.social_posts.delete_confirm: Видалити цей пост?
+admin.social_posts.error: Помилка. Спробуйте ще раз.
+admin.social_posts.no_price: Без ціни
+admin.social_posts.generating: Генерація…
+admin.social_posts.saving: Збереження…
+admin.social_posts.post_n: 'Пост %number%'
+admin.social_posts.blank_placeholder: "Новий пост — відредагуйте текст."
+admin.social_posts.generated: Текст згенеровано.
+admin.social_posts.generated_saved: Пост згенеровано і збережено.
+admin.social_posts.saved: Пост збережено.
+admin.social_posts.updated: Пост оновлено.
+admin.social_posts.deleted: Пост видалено.
+
 admin.promo_image_editor.no_edit_data: Немає даних для редагування
 
 admin.blog.site: Сайт
@@ -791,6 +910,8 @@ admin.mailbox_message.from: Від
 admin.mailbox_message.subject: Тема
 admin.mailbox_message.is_seen: Прочитано
 admin.mailbox_message.has_attachments: Вкладення
+admin.mailbox_message.attachments: Файли
+admin.mailbox_message.attachments_pending: Є вкладення, але файли ще не завантажені. Відкрийте лист ще раз або запустіть синхронізацію.
 admin.mailbox_message.preview: Превʼю
 admin.mailbox_message.body_text: Текст
 admin.mailbox_message.body_html: HTML
@@ -1149,6 +1270,10 @@ auth.password: Пароль
 auth.repeat_password: Повторіть пароль
 auth.agree_terms: Я погоджуюсь з умовами використання
 auth.sign_in: Увійти
+auth.continue_with_facebook: Продовжити з Facebook
+auth.or_email: або через email
+auth.facebook_failed: Не вдалося увійти через Facebook. Спробуйте ще раз.
+auth.facebook_email_required: Facebook не надав email. Дозвольте доступ до email або увійдіть через форму.
 auth.sign_up: Зареєструватись
 auth.no_account: Немає облікового запису?
 auth.have_account: Вже маєте обліковий запис?

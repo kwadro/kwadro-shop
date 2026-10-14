@@ -19,6 +19,9 @@ security:
         main:
             lazy: true
             provider: app_user_provider
+            entry_point: form_login
+            custom_authenticators:
+                - App\Security\FacebookAuthenticator
             form_login:
                 login_path: app_login
                 check_path: app_login
@@ -31,6 +34,7 @@ security:
     access_control:
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/register, roles: PUBLIC_ACCESS }
+        - { path: ^/connect/facebook, roles: PUBLIC_ACCESS }
         - { path: ^/admin, roles: ROLE_SUPER_ADMIN }
 
 when@test:

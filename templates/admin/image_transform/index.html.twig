@@ -1,0 +1,341 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block head_stylesheets %}
+    {{ parent() }}
+    <style>
+        .img-tf__layout { display: grid; grid-template-columns: minmax(280px, 360px) 1fr; gap: 1rem; align-items: start; }
+        @media (max-width: 992px) { .img-tf__layout { grid-template-columns: 1fr; } }
+        .img-tf__preview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+        @media (max-width: 768px) { .img-tf__preview-grid { grid-template-columns: 1fr; } }
+        .img-tf__frame {
+            border: 1px solid #e2e8f0; border-radius: .5rem; overflow: hidden; min-height: 220px;
+            display: flex; align-items: center; justify-content: center; background: #0f172a;
+        }
+        .img-tf__frame img { max-width: 100%; max-height: 480px; display: block; transition: transform .15s ease; }
+        .img-tf__frame img.is-rotated-90,
+        .img-tf__frame img.is-rotated-270 { max-height: 360px; }
+        .img-tf__empty { color: #64748b; padding: 2rem 1rem; text-align: center; }
+        .img-tf__recent { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: .75rem; }
+        .img-tf__recent-item { border: 1px solid #e2e8f0; border-radius: .5rem; overflow: hidden; background: #fff; }
+        .img-tf__recent-item img { display: block; width: 100%; aspect-ratio: 9/16; object-fit: cover; background: #0f172a; }
+        .img-tf__recent-actions { display: flex; gap: .25rem; padding: .4rem; }
+        .img-tf__recent-actions .btn { flex: 1; font-size: .75rem; }
+        .img-tf__aspects { display: grid; grid-template-columns: repeat(2, 1fr); gap: .5rem; }
+        .img-tf__aspect {
+            border: 1px solid #cbd5e1; border-radius: .5rem; background: #fff; padding: .55rem .4rem;
+            text-align: center; cursor: pointer;
+        }
+        .img-tf__aspect.is-active { border-color: #0d6efd; box-shadow: 0 0 0 2px rgba(13,110,253,.2); }
+        .img-tf__aspect strong { display: block; font-size: .9rem; }
+        .img-tf__aspect small { color: #64748b; }
+    </style>
+{% endblock %}
+
+{% block content_title %}{{ page_title }}{% endblock %}
+
+{% block main %}
+    <div class="img-tf" id="image-transform"
+         data-process-url="{{ process_url }}"
+         data-download-template="{{ download_url_template }}"
+         data-delete-template="{{ delete_url_template }}">
+        <div class="img-tf__layout">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <p class="text-muted small">{{ 'admin.image_transform.help'|trans }}</p>
+
+                    <label class="form-label">{{ 'admin.image_transform.file'|trans }}</label>
+                    <input type="file" class="form-control" accept="image/*" data-tf-file>
+
+                    <label class="form-label mt-3">{{ 'admin.image_transform.rotate'|trans }}</label>
+                    <div class="d-flex flex-wrap gap-2 align-items-center mb-1">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-tf-rotate="-90" title="{{ 'admin.image_transform.rotate_left'|trans }}">↺ 90°</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-tf-rotate="90" title="{{ 'admin.image_transform.rotate_right'|trans }}">↻ 90°</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-tf-rotate-reset>{{ 'admin.image_transform.rotate_reset'|trans }}</button>
+                        <span class="text-muted small" data-tf-rotate-label>0°</span>
+                    </div>
+                    <p class="text-muted small">{{ 'admin.image_transform.rotate_help'|trans }}</p>
+
+                    <label class="form-label mt-2">{{ 'admin.image_transform.aspect'|trans }}</label>
+                    <div class="img-tf__aspects" data-tf-aspects>
+                        {% for key, aspect in aspects %}
+                            <button type="button" class="img-tf__aspect{% if key == '9:16' %} is-active{% endif %}" data-aspect="{{ key }}">
+                                <strong>{{ aspect.label }}</strong>
+                                <small>{{ aspect.w }}×{{ aspect.h }}</small>
+                            </button>
+                        {% endfor %}
+                    </div>
+
+                    <label class="form-label mt-3">{{ 'admin.image_transform.blur'|trans }} <span data-tf-blur-label>18</span></label>
+                    <input type="range" class="form-range" min="0" max="40" value="18" data-tf-blur>
+                    <p class="text-muted small">{{ 'admin.image_transform.blur_help'|trans }}</p>
+
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="tf-include-subject" data-tf-include-subject checked>
+                        <label class="form-check-label" for="tf-include-subject">{{ 'admin.image_transform.include_subject'|trans }}</label>
+                    </div>
+                    <p class="text-muted small">{{ 'admin.image_transform.include_subject_help'|trans }}</p>
+
+                    <div data-tf-subject-scale-block>
+                        <label class="form-label">{{ 'admin.image_transform.subject_scale'|trans }} <span data-tf-scale-label>88%</span></label>
+                        <input type="range" class="form-range" min="40" max="100" value="88" data-tf-scale>
+                        <p class="text-muted small">{{ 'admin.image_transform.subject_scale_help'|trans }}</p>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="tf-save-library" data-tf-save-library checked>
+                        <label class="form-check-label" for="tf-save-library">{{ 'admin.image_transform.save_to_library'|trans }}</label>
+                    </div>
+
+                    <label class="form-label">{{ 'admin.image_transform.download_name'|trans }}</label>
+                    <input type="text" class="form-control" data-tf-download-name placeholder="product_9x16.jpg">
+                    <p class="text-muted small mt-1">{{ 'admin.image_transform.download_name_help'|trans }}</p>
+
+                    <div class="d-flex flex-wrap gap-2 mt-3">
+                        <button type="button" class="btn btn-primary" data-tf-run>{{ 'admin.image_transform.run'|trans }}</button>
+                        <a class="btn btn-success" data-tf-download hidden href="#">{{ 'admin.image_transform.download'|trans }}</a>
+                    </div>
+                    <div class="small text-muted mt-2" data-tf-status></div>
+                </div>
+            </div>
+
+            <div>
+                <div class="card shadow-sm mb-3">
+                    <div class="card-body">
+                        <h3 class="h5">{{ 'admin.image_transform.preview'|trans }}</h3>
+                        <div class="img-tf__preview-grid">
+                            <div>
+                                <div class="small text-muted mb-1">{{ 'admin.image_transform.before'|trans }}</div>
+                                <div class="img-tf__frame" data-tf-before>
+                                    <div class="img-tf__empty">{{ 'admin.image_transform.upload_hint'|trans }}</div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="small text-muted mb-1">{{ 'admin.image_transform.after'|trans }}</div>
+                                <div class="img-tf__frame" data-tf-after>
+                                    <div class="img-tf__empty">—</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h5">{{ 'admin.image_transform.recent'|trans }}</h3>
+                        <div class="img-tf__recent" data-tf-recent>
+                            {% for item in recent %}
+                                <div class="img-tf__recent-item" data-filename="{{ item.filename }}">
+                                    <img src="{{ item.url }}?t={{ item.savedAt|default('1')|url_encode }}" alt="">
+                                    <div class="img-tf__recent-actions">
+                                        <a class="btn btn-sm btn-outline-primary" href="{{ item.url }}" target="_blank" rel="noopener">{{ 'admin.image_transform.open'|trans }}</a>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" data-tf-delete="{{ item.filename }}">{{ 'admin.image_transform.delete'|trans }}</button>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="text-muted small">—</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body_javascript %}
+    {{ parent() }}
+    <script>
+    (function () {
+        const root = document.getElementById('image-transform');
+        if (!root) return;
+        const processUrl = root.dataset.processUrl;
+        const downloadTpl = root.dataset.downloadTemplate;
+        const deleteTpl = root.dataset.deleteTemplate;
+        const i18n = {
+            processing: {{ 'admin.image_transform.processing'|trans|json_encode|raw }},
+            done: {{ 'admin.image_transform.done'|trans|json_encode|raw }},
+            error: {{ 'admin.image_transform.error'|trans|json_encode|raw }},
+            deleteConfirm: {{ 'admin.image_transform.delete_confirm'|trans|json_encode|raw }},
+            deleted: {{ 'admin.image_transform.deleted'|trans|json_encode|raw }},
+            open: {{ 'admin.image_transform.open'|trans|json_encode|raw }},
+            delete: {{ 'admin.image_transform.delete'|trans|json_encode|raw }},
+            pickFile: {{ 'admin.image_transform.pick_file'|trans|json_encode|raw }},
+        };
+
+        let aspect = '9:16';
+        let rotateDeg = 0;
+        let resultFilename = null;
+        let objectUrl = null;
+
+        const fileInput = root.querySelector('[data-tf-file]');
+        const beforeEl = root.querySelector('[data-tf-before]');
+        const afterEl = root.querySelector('[data-tf-after]');
+        const statusEl = root.querySelector('[data-tf-status]');
+        const downloadBtn = root.querySelector('[data-tf-download]');
+        const downloadNameInput = root.querySelector('[data-tf-download-name]');
+        const blurInput = root.querySelector('[data-tf-blur]');
+        const scaleInput = root.querySelector('[data-tf-scale]');
+        const blurLabel = root.querySelector('[data-tf-blur-label]');
+        const scaleLabel = root.querySelector('[data-tf-scale-label]');
+        const includeSubjectInput = root.querySelector('[data-tf-include-subject]');
+        const subjectScaleBlock = root.querySelector('[data-tf-subject-scale-block]');
+        const rotateLabel = root.querySelector('[data-tf-rotate-label]');
+        const recentEl = root.querySelector('[data-tf-recent]');
+
+        function normalizeRotate(deg) {
+            deg = ((deg % 360) + 360) % 360;
+            return [0, 90, 180, 270].indexOf(deg) >= 0 ? deg : 0;
+        }
+
+        function applyBeforeRotate() {
+            const img = beforeEl.querySelector('img');
+            if (rotateLabel) {
+                rotateLabel.textContent = rotateDeg + '°';
+            }
+            if (!img) return;
+            img.style.transform = rotateDeg ? ('rotate(' + rotateDeg + 'deg)') : '';
+            img.classList.remove('is-rotated-90', 'is-rotated-180', 'is-rotated-270');
+            if (rotateDeg === 90) img.classList.add('is-rotated-90');
+            if (rotateDeg === 180) img.classList.add('is-rotated-180');
+            if (rotateDeg === 270) img.classList.add('is-rotated-270');
+        }
+
+        root.querySelectorAll('[data-tf-rotate]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                const step = parseInt(btn.getAttribute('data-tf-rotate') || '0', 10);
+                rotateDeg = normalizeRotate(rotateDeg + step);
+                applyBeforeRotate();
+            });
+        });
+        const rotateResetBtn = root.querySelector('[data-tf-rotate-reset]');
+        if (rotateResetBtn) {
+            rotateResetBtn.addEventListener('click', function () {
+                rotateDeg = 0;
+                applyBeforeRotate();
+            });
+        }
+
+        root.querySelectorAll('[data-aspect]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                root.querySelectorAll('[data-aspect]').forEach(function (b) { b.classList.remove('is-active'); });
+                btn.classList.add('is-active');
+                aspect = btn.getAttribute('data-aspect') || '9:16';
+            });
+        });
+
+        blurInput.addEventListener('input', function () {
+            blurLabel.textContent = blurInput.value;
+        });
+        scaleInput.addEventListener('input', function () {
+            scaleLabel.textContent = scaleInput.value + '%';
+        });
+        function syncSubjectControls() {
+            if (!subjectScaleBlock || !includeSubjectInput) return;
+            subjectScaleBlock.hidden = !includeSubjectInput.checked;
+        }
+        if (includeSubjectInput) {
+            includeSubjectInput.addEventListener('change', syncSubjectControls);
+            syncSubjectControls();
+        }
+
+        fileInput.addEventListener('change', function () {
+            const file = fileInput.files && fileInput.files[0];
+            if (!file) return;
+            if (objectUrl) URL.revokeObjectURL(objectUrl);
+            objectUrl = URL.createObjectURL(file);
+            beforeEl.innerHTML = '<img src="' + objectUrl + '" alt="">';
+            rotateDeg = 0;
+            applyBeforeRotate();
+            const base = (file.name || 'image').replace(/\.[^.]+$/, '').replace(/[^\w.\-]+/g, '_') || 'image';
+            downloadNameInput.value = base + '_9x16.jpg';
+            afterEl.innerHTML = '<div class="img-tf__empty">—</div>';
+            downloadBtn.hidden = true;
+            resultFilename = null;
+            statusEl.textContent = '';
+        });
+
+        function setStatus(msg) { statusEl.textContent = msg || ''; }
+
+        function renderRecent(items) {
+            if (!Array.isArray(items) || items.length === 0) {
+                recentEl.innerHTML = '<div class="text-muted small">—</div>';
+                return;
+            }
+            recentEl.innerHTML = items.map(function (item) {
+                return '<div class="img-tf__recent-item" data-filename="' + item.filename + '">' +
+                    '<img src="' + item.url + '?t=' + encodeURIComponent(item.savedAt || '1') + '" alt="">' +
+                    '<div class="img-tf__recent-actions">' +
+                    '<a class="btn btn-sm btn-outline-primary" href="' + item.url + '" target="_blank" rel="noopener">' + i18n.open + '</a>' +
+                    '<button type="button" class="btn btn-sm btn-outline-danger" data-tf-delete="' + item.filename + '">' + i18n.delete + '</button>' +
+                    '</div></div>';
+            }).join('');
+        }
+
+        root.querySelector('[data-tf-run]').addEventListener('click', async function () {
+            const file = fileInput.files && fileInput.files[0];
+            if (!file) {
+                setStatus(i18n.pickFile);
+                return;
+            }
+            const body = new FormData();
+            body.append('file', file);
+            body.append('aspect', aspect);
+            body.append('blur', blurInput.value);
+            body.append('subjectScale', (parseInt(scaleInput.value, 10) / 100).toFixed(2));
+            body.append('includeSubject', includeSubjectInput && includeSubjectInput.checked ? '1' : '0');
+            body.append('rotate', String(rotateDeg));
+            body.append('saveToLibrary', root.querySelector('[data-tf-save-library]').checked ? '1' : '0');
+            setStatus(i18n.processing);
+            try {
+                const res = await fetch(processUrl, {
+                    method: 'POST',
+                    body: body,
+                    credentials: 'same-origin',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                });
+                const data = await res.json();
+                if (!res.ok || !data.ok) throw new Error(data.error || 'fail');
+                resultFilename = data.filename;
+                afterEl.innerHTML = '<img src="' + data.url + '?t=' + Date.now() + '" alt="">';
+                if (data.downloadName) downloadNameInput.value = data.downloadName;
+                const name = encodeURIComponent(downloadNameInput.value || data.downloadName || data.filename);
+                downloadBtn.href = downloadTpl.replace('__FILENAME__', data.filename) + '?name=' + name;
+                downloadBtn.hidden = false;
+                setStatus(data.message || i18n.done);
+                if (data.recent) renderRecent(data.recent);
+            } catch (e) {
+                setStatus(i18n.error);
+            }
+        });
+
+        downloadBtn.addEventListener('click', function (e) {
+            if (!resultFilename) {
+                e.preventDefault();
+                return;
+            }
+            const name = encodeURIComponent(downloadNameInput.value || resultFilename);
+            downloadBtn.href = downloadTpl.replace('__FILENAME__', resultFilename) + '?name=' + name;
+        });
+
+        recentEl.addEventListener('click', async function (e) {
+            const btn = e.target.closest('[data-tf-delete]');
+            if (!btn) return;
+            const filename = btn.getAttribute('data-tf-delete');
+            if (!filename || !confirm(i18n.deleteConfirm)) return;
+            try {
+                const res = await fetch(deleteTpl.replace('__FILENAME__', filename), {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                });
+                const data = await res.json();
+                if (!res.ok || !data.ok) throw new Error('fail');
+                setStatus(data.message || i18n.deleted);
+                if (data.recent) renderRecent(data.recent);
+            } catch (err) {
+                setStatus(i18n.error);
+            }
+        });
+    })();
+    </script>
+{% endblock %}

@@ -3,6 +3,7 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Product;
+use App\Form\Admin\ProductGalleryItemType;
 use App\Repository\ProductRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminRoute;
@@ -54,12 +55,15 @@ class ProductCrudController extends AbstractCrudController
         return $crud
             ->setEntityLabelInSingular($this->translator->trans('menu.link_product_single', [], 'messages'))
             ->setEntityLabelInPlural($this->translator->trans('menu.link_product', [], 'messages'))
-            ->setDefaultSort(['id' => 'DESC']);
+            ->setDefaultSort(['id' => 'DESC'])
+            ->setFormThemes(['admin/form/product_gallery_item.html.twig', '@EasyAdmin/crud/form_theme.html.twig']);
     }
 
     public function configureAssets(Assets $assets): Assets
     {
-        return $assets->addJsFile('js/admin-product-clean-image.js');
+        return $assets
+            ->addJsFile('js/admin-product-clean-image.js')
+            ->addCssFile('lib/admin-product-gallery.css');
     }
 
     public function configureFilters(Filters $filters): Filters
@@ -235,10 +239,11 @@ class ProductCrudController extends AbstractCrudController
             ->hideOnIndex()
             ->setHelp($this->translator->trans('admin.product.og_type_help', [], 'messages'));
         yield ImageField::new('ogImage', $this->translator->trans('admin.product.og_image', [], 'messages'))
-            ->setBasePath('/uploads/images')
-            ->setUploadDir('public/uploads/images')
+            ->setBasePath('/uploads/images/og-images')
+            ->setUploadDir('public/uploads/images/og-images')
             ->setRequired(false)
-            ->hideOnIndex();
+            ->hideOnIndex()
+            ->setHelp('Stored as /uploads/images/og-images/{first}/{second}/{filename}');
 
         yield TextField::new('lowestOfferSummary', $this->translator->trans('admin.product.lowest_offer', [], 'messages'))
             ->onlyOnForms()
@@ -291,7 +296,6 @@ class ProductCrudController extends AbstractCrudController
                 'id' => $productId,
                 'slot' => 1,
             ]);
-            // Keep a JS placeholder for slots 1–5 without violating route requirements.
             $urlTemplate = substr($urlTemplate, 0, (int) strrpos($urlTemplate, '/') + 1).'__SLOT__';
             $config = [
                 'urlTemplate' => $urlTemplate,
@@ -316,47 +320,18 @@ class ProductCrudController extends AbstractCrudController
                 ->hideOnIndex();
         }
 
-        yield ImageField::new('galleryImage1', $this->translator->trans('admin.product.gallery_image', ['%number%' => 1], 'messages'))
-            ->setBasePath($galleryBasePath)
-            ->setUploadDir($galleryUploadDir)
-            ->setRequired(false)
-            ->hideOnIndex();
-        yield TextField::new('galleryAlt1', $this->translator->trans('admin.product.gallery_alt', ['%number%' => 1], 'messages'))
-            ->setRequired(false)
-            ->hideOnIndex();
-        yield ImageField::new('galleryImage2', $this->translator->trans('admin.product.gallery_image', ['%number%' => 2], 'messages'))
-            ->setBasePath($galleryBasePath)
-            ->setUploadDir($galleryUploadDir)
-            ->setRequired(false)
-            ->hideOnIndex();
-        yield TextField::new('galleryAlt2', $this->translator->trans('admin.product.gallery_alt', ['%number%' => 2], 'messages'))
-            ->setRequired(false)
-            ->hideOnIndex();
-        yield ImageField::new('galleryImage3', $this->translator->trans('admin.product.gallery_image', ['%number%' => 3], 'messages'))
-            ->setBasePath($galleryBasePath)
-            ->setUploadDir($galleryUploadDir)
-            ->setRequired(false)
-            ->hideOnIndex();
-        yield TextField::new('galleryAlt3', $this->translator->trans('admin.product.gallery_alt', ['%number%' => 3], 'messages'))
-            ->setRequired(false)
-            ->hideOnIndex();
-        yield ImageField::new('galleryImage4', $this->translator->trans('admin.product.gallery_image', ['%number%' => 4], 'messages'))
-            ->setBasePath($galleryBasePath)
-            ->setUploadDir($galleryUploadDir)
-            ->setRequired(false)
-            ->hideOnIndex();
-        yield TextField::new('galleryAlt4', $this->translator->trans('admin.product.gallery_alt', ['%number%' => 4], 'messages'))
-            ->setRequired(false)
-            ->hideOnIndex();
-        yield ImageField::new('galleryImage5', $this->translator->trans('admin.product.gallery_image', ['%number%' => 5], 'messages'))
-            ->setBasePath($galleryBasePath)
-            ->setUploadDir($galleryUploadDir)
-            ->setRequired(false)
-            ->hideOnIndex()
-            ->setHelp($this->translator->trans('admin.product.gallery_help', [], 'messages'));
-        yield TextField::new('galleryAlt5', $this->translator->trans('admin.product.gallery_alt', ['%number%' => 5], 'messages'))
-            ->setRequired(false)
-            ->hideOnIndex();
+        yield CollectionField::new('galleryItems', $this->translator->trans('admin.product.gallery', [], 'messages'))
+            ->setEntryType(ProductGalleryItemType::class)
+            ->allowAdd()
+            ->allowDelete()
+            ->setEntryIsComplex()
+            ->renderExpanded()
+            ->setFormTypeOptions([
+                'by_reference' => false,
+                'entry_options' => ['label' => false],
+            ])
+            ->setHelp($this->translator->trans('admin.product.gallery_help', [], 'messages'))
+            ->onlyOnForms();
 
         yield ImageField::new('cleanImage', $this->translator->trans('admin.product.clean_image', [], 'messages'))
             ->setBasePath($galleryBasePath)
@@ -370,9 +345,10 @@ class ProductCrudController extends AbstractCrudController
     {
         if ($entityInstance instanceof Product) {
             $entityInstance->rebuildNameFromModelBrand();
-            $entityInstance->syncGalleryFromFormFields();
+            $entityInstance->syncGalleryFromGalleryItems($this->projectDir);
             $entityInstance->relocateGalleryFiles($this->projectDir);
             $entityInstance->relocateCleanImageFile($this->projectDir);
+            $entityInstance->relocateOgImageFile($this->projectDir);
             $this->ensureUniqueSlug($entityInstance);
         }
 
@@ -383,9 +359,10 @@ class ProductCrudController extends AbstractCrudController
     {
         if ($entityInstance instanceof Product) {
             $entityInstance->rebuildNameFromModelBrand();
-            $entityInstance->syncGalleryFromFormFields();
+            $entityInstance->syncGalleryFromGalleryItems($this->projectDir);
             $entityInstance->relocateGalleryFiles($this->projectDir);
             $entityInstance->relocateCleanImageFile($this->projectDir);
+            $entityInstance->relocateOgImageFile($this->projectDir);
             $this->ensureUniqueSlug($entityInstance);
         }
 

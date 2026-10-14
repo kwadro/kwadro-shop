@@ -72,6 +72,14 @@ class MailboxMessage
     #[ORM\Column(options: ['default' => false])]
     private bool $hasAttachments = false;
 
+    /**
+     * Saved attachment files metadata.
+     *
+     * @var list<array{name: string, stored: string, size: int, mime: string}>
+     */
+    #[ORM\Column(type: 'json')]
+    private array $attachments = [];
+
     #[ORM\Column(length: 64, options: ['default' => 'INBOX'])]
     private string $folder = 'INBOX';
 
@@ -265,6 +273,42 @@ class MailboxMessage
     public function setHasAttachments(bool $hasAttachments): static
     {
         $this->hasAttachments = $hasAttachments;
+
+        return $this;
+    }
+
+    /**
+     * @return list<array{name: string, stored: string, size: int, mime: string}>
+     */
+    public function getAttachments(): array
+    {
+        return $this->attachments;
+    }
+
+    /**
+     * @param list<array{name: string, stored: string, size: int, mime: string}>|array<int|string, mixed> $attachments
+     */
+    public function setAttachments(array $attachments): static
+    {
+        $normalized = [];
+        foreach ($attachments as $item) {
+            if (!\is_array($item)) {
+                continue;
+            }
+            $name = trim((string) ($item['name'] ?? ''));
+            $stored = trim((string) ($item['stored'] ?? ''));
+            if ($name === '' || $stored === '') {
+                continue;
+            }
+            $normalized[] = [
+                'name' => mb_substr($name, 0, 255),
+                'stored' => mb_substr($stored, 0, 255),
+                'size' => max(0, (int) ($item['size'] ?? 0)),
+                'mime' => mb_substr(trim((string) ($item['mime'] ?? 'application/octet-stream')), 0, 128),
+            ];
+        }
+        $this->attachments = array_values($normalized);
+        $this->hasAttachments = $this->attachments !== [];
 
         return $this;
     }

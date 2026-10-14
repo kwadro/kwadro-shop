@@ -1,0 +1,37 @@
+{# @var ea \EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext #}
+{# @var field \EasyCorp\Bundle\EasyAdminBundle\Dto\FieldDto #}
+{# @var entity \EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto #}
+{% set message = entity.instance %}
+{% set attachments = message.attachments|default([]) %}
+{% set locale = app.request.locale|default('uk') %}
+
+{% if attachments is empty %}
+    {% if message.hasAttachments %}
+        <p class="text-muted mb-0">{{ 'admin.mailbox_message.attachments_pending'|trans }}</p>
+    {% else %}
+        <span class="text-muted">—</span>
+    {% endif %}
+{% else %}
+    <ul class="mailbox-attachments list-unstyled mb-0">
+        {% for item in attachments %}
+            <li class="mailbox-attachments__item">
+                <a
+                    class="mailbox-attachments__link"
+                    href="{{ path('admin_mailbox_message_attachment', {
+                        _locale: locale,
+                        id: message.id,
+                        stored: item.stored
+                    }) }}"
+                >
+                    <i class="fa fa-paperclip" aria-hidden="true"></i>
+                    {{ item.name }}
+                </a>
+                {% if item.size|default(0) > 0 %}
+                    <span class="text-muted mailbox-attachments__size">
+                        ({{ (item.size / 1024)|number_format(1, ',', ' ') }} KB)
+                    </span>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+{% endif %}

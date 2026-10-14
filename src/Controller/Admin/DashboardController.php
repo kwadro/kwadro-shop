@@ -157,6 +157,30 @@ class DashboardController extends AbstractDashboardController
             'admin_background_remover',
             ['_locale' => 'uk'],
         );
+        yield MenuItem::linkToRoute(
+            $this->translator->trans('menu.link_image_transform', [], 'messages'),
+            'fas fa-expand',
+            'admin_image_transform',
+            ['_locale' => 'uk'],
+        );
+        yield MenuItem::linkToRoute(
+            $this->translator->trans('menu.link_media_library', [], 'messages'),
+            'fas fa-photo-video',
+            'admin_media_library',
+            ['_locale' => 'uk'],
+        );
+        yield MenuItem::linkToRoute(
+            $this->translator->trans('menu.link_shape_library', [], 'messages'),
+            'fas fa-shapes',
+            'admin_shape_library',
+            ['_locale' => 'uk'],
+        );
+        yield MenuItem::linkToRoute(
+            $this->translator->trans('menu.link_product_social_posts', [], 'messages'),
+            'fas fa-share-alt',
+            'admin_product_social_posts',
+            ['_locale' => 'uk'],
+        );
         yield MenuItem::section($this->translator->trans('menu.group_email', [], 'messages'));
         yield MenuItem::linkTo(EmailTemplateCrudController::class, $this->translator->trans('menu.link_email_template', [], 'messages'), 'fas fa-envelope');
         yield MenuItem::linkTo(EmailTemplateSectionCrudController::class, $this->translator->trans('menu.link_email_template_section', [], 'messages'), 'fas fa-layer-group');

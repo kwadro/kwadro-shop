@@ -16,9 +16,13 @@
             aspects: {{ aspects|json_encode(constant('JSON_UNESCAPED_UNICODE'))|raw }},
             saveUrl: {{ save_url|json_encode|raw }},
             uploadUrl: {{ upload_url|json_encode|raw }},
+            mediaLibraryUrl: {{ media_library_url|json_encode|raw }},
+            shapeLibraryUrl: {{ shape_library_url|json_encode|raw }},
             loadUrlTemplate: {{ load_url_template|json_encode|raw }},
             deleteUrlTemplate: {{ delete_url_template|json_encode|raw }},
             savedImages: {{ saved_images|json_encode(constant('JSON_UNESCAPED_UNICODE'))|raw }},
+            mediaLibrary: {{ media_library|json_encode(constant('JSON_UNESCAPED_UNICODE'))|raw }},
+            shapeLibrary: {{ shape_library|json_encode(constant('JSON_UNESCAPED_UNICODE'))|raw }},
             i18n: {
                 saving: {{ 'admin.image_editor.saving'|trans|json_encode|raw }},
                 saved: {{ 'admin.image_editor.saved'|trans|json_encode|raw }},
@@ -50,6 +54,15 @@
                 regionSizeHint: {{ 'admin.image_editor.region_size_hint'|trans|json_encode|raw }},
                 overlaySizeHelp: {{ 'admin.image_editor.overlay_size_help'|trans|json_encode|raw }},
                 overlayNaturalSize: {{ 'admin.image_editor.overlay_natural_size'|trans|json_encode|raw }},
+                fromLibrary: {{ 'admin.image_editor.from_library'|trans|json_encode|raw }},
+                fromShapeLibrary: {{ 'admin.image_editor.from_shape_library'|trans|json_encode|raw }},
+                libraryTitle: {{ 'admin.image_editor.library_title'|trans|json_encode|raw }},
+                shapeLibraryTitle: {{ 'admin.image_editor.shape_library_title'|trans|json_encode|raw }},
+                libraryEmpty: {{ 'admin.image_editor.library_empty'|trans|json_encode|raw }},
+                shapeLibraryEmpty: {{ 'admin.image_editor.shape_library_empty'|trans|json_encode|raw }},
+                libraryClose: {{ 'admin.image_editor.library_close'|trans|json_encode|raw }},
+                libraryUse: {{ 'admin.image_editor.library_use'|trans|json_encode|raw }},
+                libraryLoading: {{ 'admin.image_editor.library_loading'|trans|json_encode|raw }},
             },
             fonts: [
                 { id: 'Montserrat', stack: 'Montserrat, Arial, sans-serif' },
@@ -148,6 +161,9 @@
                             <div data-ie-bg-image-block hidden>
                                 <label class="form-label">{{ 'admin.image_editor.upload_bg'|trans }}</label>
                                 <input type="file" class="form-control" accept="image/*" data-ie-bg-upload>
+                                <button type="button" class="btn btn-outline-primary btn-sm mt-2" data-ie-open-library="bg">
+                                    {{ 'admin.image_editor.from_library'|trans }}
+                                </button>
                                 <p class="text-muted small mt-2 mb-0" data-ie-crop-hint hidden>{{ 'admin.image_editor.crop_hint'|trans }}</p>
                             </div>
                         </div>
@@ -235,12 +251,17 @@
                     </section>
 
                     <section class="img-editor__panel" data-ie-panel="4">
-                        <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
+                        <div class="d-flex justify-content-between align-items-center gap-2 mb-2 flex-wrap">
                             <h3 class="mb-0">{{ 'admin.image_editor.edit_overlays'|trans }}</h3>
-                            <label class="btn btn-sm btn-primary mb-0">
-                                {{ 'admin.image_editor.add_overlay'|trans }}
-                                <input type="file" accept="image/*" hidden data-ie-overlay-upload>
-                            </label>
+                            <div class="d-flex flex-wrap gap-1">
+                                <label class="btn btn-sm btn-primary mb-0">
+                                    {{ 'admin.image_editor.add_overlay'|trans }}
+                                    <input type="file" accept="image/*" hidden data-ie-overlay-upload>
+                                </label>
+                                <button type="button" class="btn btn-sm btn-outline-primary" data-ie-open-library="overlay">
+                                    {{ 'admin.image_editor.from_library'|trans }}
+                                </button>
+                            </div>
                         </div>
                         <p class="text-muted small">{{ 'admin.image_editor.overlay_hint'|trans }}</p>
                         <div class="img-editor__layer-list" data-ie-overlay-list></div>
@@ -282,6 +303,9 @@
                         <div class="d-flex flex-wrap gap-2 mb-2">
                             <button type="button" class="btn btn-sm btn-primary" data-ie-add-line>{{ 'admin.image_editor.add_line'|trans }}</button>
                             <button type="button" class="btn btn-sm btn-primary" data-ie-add-frame>{{ 'admin.image_editor.add_frame'|trans }}</button>
+                            <button type="button" class="btn btn-sm btn-outline-primary" data-ie-open-library="shape">
+                                {{ 'admin.image_editor.from_shape_library'|trans }}
+                            </button>
                         </div>
 
                         <h4 class="h6 mt-3 mb-2">{{ 'admin.image_editor.lines'|trans }}</h4>
@@ -449,6 +473,16 @@
             <div class="card-header"><strong>{{ 'admin.image_editor.saved_list'|trans }}</strong></div>
             <div class="card-body">
                 <div class="img-editor__saved" data-ie-saved></div>
+            </div>
+        </div>
+
+        <div class="img-editor__library-modal" data-ie-library-modal hidden>
+            <div class="img-editor__library-dialog" role="dialog" aria-modal="true">
+                <div class="img-editor__library-header">
+                    <strong data-ie-library-title>{{ 'admin.image_editor.library_title'|trans }}</strong>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-ie-library-close>{{ 'admin.image_editor.library_close'|trans }}</button>
+                </div>
+                <div class="img-editor__library-grid" data-ie-library-grid></div>
             </div>
         </div>
     </div>

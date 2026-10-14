@@ -7,12 +7,17 @@
         "php": ">=8.2",
         "ext-ctype": "*",
         "ext-iconv": "*",
+        "ext-imap": "*",
+        "ext-simplexml": "*",
+        "ext-xmlreader": "*",
         "chillerlan/php-qrcode": "^6.0",
         "deployer/deployer": "^7.5",
         "doctrine/doctrine-bundle": "^2.19",
         "doctrine/doctrine-migrations-bundle": "^3.7",
         "doctrine/orm": "^3.6",
         "easycorp/easyadmin-bundle": "^5.5",
+        "knpuniversity/oauth2-client-bundle": "^2.20",
+        "league/oauth2-facebook": "^2.2",
         "symfony/asset": "7.4.*",
         "symfony/console": "7.4.*",
         "symfony/dotenv": "7.4.*",
@@ -27,10 +32,7 @@
         "symfony/validator": "7.4.*",
         "symfony/yaml": "7.4.*",
         "twig/extra-bundle": "^2.12|^3.0",
-        "twig/twig": "^2.12|^3.0",
-        "ext-imap": "*",
-        "ext-xmlreader": "*",
-        "ext-simplexml": "*"
+        "twig/twig": "^2.12|^3.0"
     },
     "config": {
         "allow-plugins": {

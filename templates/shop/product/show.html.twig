@@ -15,7 +15,7 @@
 
 {% set galleryImage = product.gallery[0].full|default('')|product_image(product.supplier.slug|default(null)) %}
 {% if product.ogImage %}
-    {% set pageOgImage = absolute_url(asset('uploads/images/' ~ product.ogImage)) %}
+    {% set pageOgImage = absolute_url(product.ogImage|product_og_image) %}
 {% elseif galleryImage %}
     {% set pageOgImage = galleryImage starts with 'http' ? galleryImage : absolute_url(galleryImage) %}
 {% elseif setting.seo.og_image %}
@@ -33,6 +33,10 @@
 {% block og_image %}{{ pageOgImage }}{% endblock %}
 {% block og_url %}{{ absolute_url(path('shop_product', {_locale: app.request.locale, slug: product.slug})) }}{% endblock %}
 {% block canonical_url %}{{ absolute_url(path('shop_product', {_locale: app.request.locale, slug: product.slug})) }}{% endblock %}
+
+{% block structured_data %}
+    {{ product_json_ld(product) }}
+{% endblock %}
 
 {% block main %}
     {% include 'shop/partials/_product_view.html.twig' %}

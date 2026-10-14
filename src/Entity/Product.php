@@ -3,12 +3,15 @@
 namespace App\Entity;
 
 use App\Entity\Traits\TimeStampAbleTrait;
+use App\Form\Model\ProductGalleryItem;
 use App\Repository\ProductRepository;
 use App\Routing\ShopRoutes;
 use App\Service\Product\ProductImagePath;
+use App\Service\Product\ProductOgImagePath;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
@@ -120,25 +123,16 @@ class Product
     #[ORM\Column(type: 'json')]
     private array $gallery = [];
 
-    private ?string $galleryImage1 = null;
+    /**
+     * Facebook / social post variants for this product.
+     *
+     * @var list<array{id: string, text: string, createdAt: string, updatedAt: string|null}>
+     */
+    #[ORM\Column(name: 'social_posts', type: 'json')]
+    private array $socialPosts = [];
 
-    private ?string $galleryImage2 = null;
-
-    private ?string $galleryImage3 = null;
-
-    private ?string $galleryImage4 = null;
-
-    private ?string $galleryImage5 = null;
-
-    private ?string $galleryAlt1 = null;
-
-    private ?string $galleryAlt2 = null;
-
-    private ?string $galleryAlt3 = null;
-
-    private ?string $galleryAlt4 = null;
-
-    private ?string $galleryAlt5 = null;
+    /** @var Collection<int, ProductGalleryItem>|null */
+    private ?Collection $galleryItems = null;
 
     /** @var Collection<int, ProductOffer> */
     #[ORM\OneToMany(mappedBy: 'product', targetEntity: ProductOffer::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
@@ -154,6 +148,7 @@ class Product
         $this->categories = new ArrayCollection();
         $this->offers = new ArrayCollection();
         $this->attributeValues = new ArrayCollection();
+        $this->galleryItems = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -539,15 +534,36 @@ class Product
 
     public function getOgImage(): ?string
     {
-        return $this->og_image;
+        if ($this->og_image === null || $this->og_image === '') {
+            return null;
+        }
+
+        // Relative to /uploads/images/og-images for EasyAdmin ImageField.
+        return ProductOgImagePath::relativePath($this->og_image) ?: $this->og_image;
     }
 
     public function setOgImage(?string $ogImage): static
     {
         $ogImage = $ogImage !== null ? trim($ogImage) : null;
-        $this->og_image = $ogImage !== '' ? $ogImage : null;
+        if ($ogImage === null || $ogImage === '') {
+            $this->og_image = null;
+
+            return $this;
+        }
+
+        $this->og_image = ProductOgImagePath::relativePath($ogImage) ?: null;
 
         return $this;
+    }
+
+    public function relocateOgImageFile(string $projectDir): void
+    {
+        $relative = $this->getOgImage();
+        if ($relative === null) {
+            return;
+        }
+
+        ProductOgImagePath::ensureStored($projectDir, $relative);
     }
 
     /**
@@ -690,181 +706,69 @@ class Product
         return $this;
     }
 
-    public function getGalleryImage1(): ?string
+    /** @return Collection<int, ProductGalleryItem> */
+    public function getGalleryItems(): Collection
     {
-        return $this->galleryImage1;
+        if ($this->galleryItems === null) {
+            $this->hydrateGalleryItems();
+        }
+
+        return $this->galleryItems;
     }
 
-    public function setGalleryImage1(?string $galleryImage1): static
+    /** @param Collection<int, ProductGalleryItem>|list<ProductGalleryItem> $galleryItems */
+    public function setGalleryItems(Collection|array $galleryItems): static
     {
-        $this->galleryImage1 = $this->normalizeGalleryFormValue($galleryImage1);
-
-        return $this;
-    }
-
-    public function getGalleryImage2(): ?string
-    {
-        return $this->galleryImage2;
-    }
-
-    public function setGalleryImage2(?string $galleryImage2): static
-    {
-        $this->galleryImage2 = $this->normalizeGalleryFormValue($galleryImage2);
-
-        return $this;
-    }
-
-    public function getGalleryImage3(): ?string
-    {
-        return $this->galleryImage3;
-    }
-
-    public function setGalleryImage3(?string $galleryImage3): static
-    {
-        $this->galleryImage3 = $this->normalizeGalleryFormValue($galleryImage3);
-
-        return $this;
-    }
-
-    public function getGalleryImage4(): ?string
-    {
-        return $this->galleryImage4;
-    }
-
-    public function setGalleryImage4(?string $galleryImage4): static
-    {
-        $this->galleryImage4 = $this->normalizeGalleryFormValue($galleryImage4);
-
-        return $this;
-    }
-
-    public function getGalleryImage5(): ?string
-    {
-        return $this->galleryImage5;
-    }
-
-    public function setGalleryImage5(?string $galleryImage5): static
-    {
-        $this->galleryImage5 = $this->normalizeGalleryFormValue($galleryImage5);
-
-        return $this;
-    }
-
-    public function getGalleryAlt1(): ?string
-    {
-        return $this->galleryAlt1;
-    }
-
-    public function setGalleryAlt1(?string $galleryAlt1): static
-    {
-        $this->galleryAlt1 = $galleryAlt1 !== null ? trim($galleryAlt1) : null;
-
-        return $this;
-    }
-
-    public function getGalleryAlt2(): ?string
-    {
-        return $this->galleryAlt2;
-    }
-
-    public function setGalleryAlt2(?string $galleryAlt2): static
-    {
-        $this->galleryAlt2 = $galleryAlt2 !== null ? trim($galleryAlt2) : null;
-
-        return $this;
-    }
-
-    public function getGalleryAlt3(): ?string
-    {
-        return $this->galleryAlt3;
-    }
-
-    public function setGalleryAlt3(?string $galleryAlt3): static
-    {
-        $this->galleryAlt3 = $galleryAlt3 !== null ? trim($galleryAlt3) : null;
-
-        return $this;
-    }
-
-    public function getGalleryAlt4(): ?string
-    {
-        return $this->galleryAlt4;
-    }
-
-    public function setGalleryAlt4(?string $galleryAlt4): static
-    {
-        $this->galleryAlt4 = $galleryAlt4 !== null ? trim($galleryAlt4) : null;
-
-        return $this;
-    }
-
-    public function getGalleryAlt5(): ?string
-    {
-        return $this->galleryAlt5;
-    }
-
-    public function setGalleryAlt5(?string $galleryAlt5): static
-    {
-        $this->galleryAlt5 = $galleryAlt5 !== null ? trim($galleryAlt5) : null;
+        $this->galleryItems = $galleryItems instanceof Collection
+            ? $galleryItems
+            : new ArrayCollection(array_values($galleryItems));
 
         return $this;
     }
 
     #[ORM\PostLoad]
-    public function hydrateGalleryFormFields(): void
+    public function hydrateGalleryItems(): void
     {
-        $this->galleryImage1 = null;
-        $this->galleryImage2 = null;
-        $this->galleryImage3 = null;
-        $this->galleryImage4 = null;
-        $this->galleryImage5 = null;
-        $this->galleryAlt1 = null;
-        $this->galleryAlt2 = null;
-        $this->galleryAlt3 = null;
-        $this->galleryAlt4 = null;
-        $this->galleryAlt5 = null;
-
-        if (isset($this->gallery[0]) && \is_array($this->gallery[0])) {
-            $this->galleryImage1 = $this->adminGalleryRelativePath((string) ($this->gallery[0]['full'] ?? ''));
-            $this->galleryAlt1 = trim((string) ($this->gallery[0]['alt'] ?? ''));
+        $items = new ArrayCollection();
+        foreach ($this->gallery as $row) {
+            if (!\is_array($row)) {
+                continue;
+            }
+            $item = new ProductGalleryItem();
+            $item->path = $this->adminGalleryRelativePath((string) ($row['full'] ?? $row['thumb'] ?? ''));
+            $item->alt = trim((string) ($row['alt'] ?? $this->name));
+            $items->add($item);
         }
-
-        if (isset($this->gallery[1]) && \is_array($this->gallery[1])) {
-            $this->galleryImage2 = $this->adminGalleryRelativePath((string) ($this->gallery[1]['full'] ?? ''));
-            $this->galleryAlt2 = trim((string) ($this->gallery[1]['alt'] ?? ''));
-        }
-
-        if (isset($this->gallery[2]) && \is_array($this->gallery[2])) {
-            $this->galleryImage3 = $this->adminGalleryRelativePath((string) ($this->gallery[2]['full'] ?? ''));
-            $this->galleryAlt3 = trim((string) ($this->gallery[2]['alt'] ?? ''));
-        }
-
-        if (isset($this->gallery[3]) && \is_array($this->gallery[3])) {
-            $this->galleryImage4 = $this->adminGalleryRelativePath((string) ($this->gallery[3]['full'] ?? ''));
-            $this->galleryAlt4 = trim((string) ($this->gallery[3]['alt'] ?? ''));
-        }
-
-        if (isset($this->gallery[4]) && \is_array($this->gallery[4])) {
-            $this->galleryImage5 = $this->adminGalleryRelativePath((string) ($this->gallery[4]['full'] ?? ''));
-            $this->galleryAlt5 = trim((string) ($this->gallery[4]['alt'] ?? ''));
-        }
+        $this->galleryItems = $items;
     }
 
-    public function syncGalleryFromFormFields(): void
+    /**
+     * Persist uploaded gallery files into the flat products upload dir, then rebuild JSON gallery.
+     */
+    public function syncGalleryFromGalleryItems(string $projectDir): void
     {
+        $uploadDir = rtrim($projectDir, '/').'/public/uploads/products';
+        if (!is_dir($uploadDir) && !mkdir($uploadDir, 0775, true) && !is_dir($uploadDir)) {
+            throw new \RuntimeException('Cannot create product upload directory.');
+        }
+
         $items = [];
-        foreach ([
-            [$this->galleryImage1, $this->galleryAlt1],
-            [$this->galleryImage2, $this->galleryAlt2],
-            [$this->galleryImage3, $this->galleryAlt3],
-            [$this->galleryImage4, $this->galleryAlt4],
-            [$this->galleryImage5, $this->galleryAlt5],
-        ] as [$image, $alt]) {
-            if (!\is_string($image) || trim($image) === '') {
+        foreach ($this->getGalleryItems() as $item) {
+            if (!$item instanceof ProductGalleryItem) {
                 continue;
             }
 
-            $filename = ProductImagePath::filename($image);
+            $filename = '';
+            if ($item->file instanceof UploadedFile && $item->file->isValid()) {
+                $ext = $item->file->guessExtension() ?: 'jpg';
+                $filename = 'gallery-'.date('YmdHis').'-'.bin2hex(random_bytes(4)).'.'.$ext;
+                $item->file->move($uploadDir, $filename);
+                $item->path = $filename;
+                $item->file = null;
+            } else {
+                $filename = ProductImagePath::filename((string) ($item->path ?? ''));
+            }
+
             if ($filename === '') {
                 continue;
             }
@@ -872,11 +776,95 @@ class Product
             $items[] = [
                 'thumb' => $filename,
                 'full' => $filename,
-                'alt' => \is_string($alt) && trim($alt) !== '' ? trim($alt) : $this->name,
+                'alt' => trim($item->alt) !== '' ? trim($item->alt) : $this->name,
             ];
         }
 
         $this->setGallery($items);
+        $this->hydrateGalleryItems();
+    }
+
+    /**
+     * @return list<array{id: string, text: string, createdAt: string, updatedAt: string|null}>
+     */
+    public function getSocialPosts(): array
+    {
+        return $this->socialPosts;
+    }
+
+    /**
+     * @param list<array{id?: string, text?: string, createdAt?: string, updatedAt?: string|null}> $socialPosts
+     */
+    public function setSocialPosts(array $socialPosts): static
+    {
+        $normalized = [];
+        foreach ($socialPosts as $post) {
+            if (!\is_array($post)) {
+                continue;
+            }
+            $text = trim((string) ($post['text'] ?? ''));
+            if ($text === '') {
+                continue;
+            }
+            $id = trim((string) ($post['id'] ?? ''));
+            if ($id === '' || !preg_match('/^[a-zA-Z0-9_-]{6,40}$/', $id)) {
+                $id = bin2hex(random_bytes(8));
+            }
+            $createdAt = isset($post['createdAt']) && \is_string($post['createdAt']) && $post['createdAt'] !== ''
+                ? $post['createdAt']
+                : (new \DateTimeImmutable())->format(\DateTimeInterface::ATOM);
+            $updatedAt = isset($post['updatedAt']) && \is_string($post['updatedAt']) ? $post['updatedAt'] : null;
+            $normalized[] = [
+                'id' => $id,
+                'text' => $text,
+                'createdAt' => $createdAt,
+                'updatedAt' => $updatedAt,
+            ];
+        }
+        $this->socialPosts = $normalized;
+
+        return $this;
+    }
+
+    /** @return array{id: string, text: string, createdAt: string, updatedAt: string|null} */
+    public function addSocialPost(string $text): array
+    {
+        $text = trim($text);
+        $post = [
+            'id' => bin2hex(random_bytes(8)),
+            'text' => $text,
+            'createdAt' => (new \DateTimeImmutable())->format(\DateTimeInterface::ATOM),
+            'updatedAt' => null,
+        ];
+        $this->socialPosts[] = $post;
+
+        return $post;
+    }
+
+    public function updateSocialPost(string $id, string $text): bool
+    {
+        foreach ($this->socialPosts as $i => $post) {
+            if (($post['id'] ?? '') !== $id) {
+                continue;
+            }
+            $this->socialPosts[$i]['text'] = trim($text);
+            $this->socialPosts[$i]['updatedAt'] = (new \DateTimeImmutable())->format(\DateTimeInterface::ATOM);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public function removeSocialPost(string $id): bool
+    {
+        $before = \count($this->socialPosts);
+        $this->socialPosts = array_values(array_filter(
+            $this->socialPosts,
+            static fn (array $post): bool => ($post['id'] ?? '') !== $id,
+        ));
+
+        return \count($this->socialPosts) < $before;
     }
 
     /**

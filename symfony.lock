@@ -47,6 +47,9 @@
             "config/routes/easyadmin.yaml"
         ]
     },
+    "knpuniversity/oauth2-client-bundle": {
+        "version": "v2.20.2"
+    },
     "symfony/console": {
         "version": "7.4",
         "recipe": {

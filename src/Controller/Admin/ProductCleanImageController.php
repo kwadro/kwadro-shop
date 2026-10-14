@@ -27,12 +27,12 @@ final class ProductCleanImageController extends AbstractController
     ) {
     }
 
-    #[Route('/{slot}', name: '_generate', methods: ['POST'], requirements: ['slot' => '[1-5]'])]
+    #[Route('/{slot}', name: '_generate', methods: ['POST'], requirements: ['slot' => '[1-9]|[1-9][0-9]'])]
     public function generate(Product $product, int $slot): JsonResponse
     {
         $gallery = $product->getGallery();
         $index = $slot - 1;
-        if (!isset($gallery[$index]) || !\is_array($gallery[$index])) {
+        if ($slot < 1 || !isset($gallery[$index]) || !\is_array($gallery[$index])) {
             return new JsonResponse([
                 'ok' => false,
                 'error' => $this->translator->trans('admin.product.clean_image_no_source', [], 'messages'),

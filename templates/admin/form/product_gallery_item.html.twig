@@ -1,0 +1,32 @@
+{% block product_gallery_item_widget %}
+    <div class="product-gallery-item" data-gallery-item>
+        {% if form.vars.preview_url %}
+            <div class="product-gallery-item__preview">
+                <img src="{{ form.vars.preview_url }}" alt="">
+            </div>
+        {% else %}
+            <div class="product-gallery-item__preview product-gallery-item__preview--empty">
+                {{ 'admin.product.gallery_no_preview'|trans }}
+            </div>
+        {% endif %}
+        <div class="product-gallery-item__fields">
+            {{ form_row(form.path) }}
+            {{ form_row(form.file, { label: 'admin.product.gallery_file'|trans }) }}
+            {{ form_row(form.alt, { label: 'admin.product.gallery_alt_label'|trans }) }}
+            <button type="button"
+                    class="btn btn-sm btn-outline-primary mt-1"
+                    data-product-clean-slot
+                    hidden>
+                {{ 'admin.product.generate_clean_image'|trans }}
+            </button>
+            <div class="form-text" data-product-clean-status hidden></div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block product_gallery_item_row %}
+    <div class="form-group field-product_gallery_item">
+        {{- block('product_gallery_item_widget') -}}
+        {{- form_errors(form) -}}
+    </div>
+{% endblock %}

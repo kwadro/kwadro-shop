@@ -14,3 +14,21 @@
     border: 0;
     background: #fff;
 }
+
+.mailbox-attachments__item {
+    margin: 0.35rem 0;
+}
+
+.mailbox-attachments__link {
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.mailbox-attachments__link:hover {
+    text-decoration: underline;
+}
+
+.mailbox-attachments__size {
+    margin-left: 0.35rem;
+    font-size: 0.9em;
+}

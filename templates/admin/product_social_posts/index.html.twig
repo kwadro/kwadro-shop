@@ -1,0 +1,302 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block head_stylesheets %}
+    {{ parent() }}
+    <style>
+        .sp__layout { display: grid; grid-template-columns: minmax(280px, 360px) 1fr; gap: 1rem; align-items: start; }
+        @media (max-width: 992px) { .sp__layout { grid-template-columns: 1fr; } }
+        .sp__results { max-height: 420px; overflow: auto; }
+        .sp__result {
+            display: block; width: 100%; text-align: left; border: 1px solid #e2e8f0; border-radius: .5rem;
+            background: #fff; padding: .65rem .75rem; margin-bottom: .4rem; cursor: pointer;
+        }
+        .sp__result.is-active { border-color: #0d6efd; box-shadow: 0 0 0 2px rgba(13,110,253,.15); }
+        .sp__result strong { display: block; font-size: .9rem; }
+        .sp__result small { color: #64748b; }
+        .sp__post {
+            border: 1px solid #e2e8f0; border-radius: .5rem; padding: .85rem; margin-bottom: .75rem; background: #fff;
+        }
+        .sp__post textarea { min-height: 180px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: .9rem; }
+        .sp__meta { color: #64748b; font-size: .8rem; margin-bottom: .5rem; }
+        .sp__empty { color: #64748b; padding: 1rem 0; }
+    </style>
+{% endblock %}
+
+{% block content_title %}{{ page_title }}{% endblock %}
+
+{% block main %}
+    <div class="sp" id="social-posts"
+         data-search-url="{{ search_url }}"
+         data-generate-template="{{ generate_url_template }}"
+         data-save-template="{{ save_url_template }}"
+         data-update-template="{{ update_url_template }}"
+         data-delete-template="{{ delete_url_template }}"
+         data-product-template="{{ product_url_template }}">
+        <div class="sp__layout">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <p class="text-muted small">{{ 'admin.social_posts.help'|trans }}</p>
+                    <label class="form-label">{{ 'admin.social_posts.search'|trans }}</label>
+                    <input type="search" class="form-control" data-sp-search placeholder="{{ 'admin.social_posts.search_placeholder'|trans }}" autocomplete="off">
+                    <div class="sp__results mt-3" data-sp-results>
+                        <div class="sp__empty">{{ 'admin.social_posts.search_hint'|trans }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div data-sp-empty class="sp__empty">{{ 'admin.social_posts.select_product'|trans }}</div>
+                    <div data-sp-editor hidden>
+                        <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+                            <div>
+                                <h3 class="h5 mb-1" data-sp-product-name></h3>
+                                <div class="text-muted small">
+                                    <span data-sp-product-sku></span>
+                                    ·
+                                    <span data-sp-product-price></span>
+                                </div>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2">
+                                <button type="button" class="btn btn-primary" data-sp-generate>{{ 'admin.social_posts.generate'|trans }}</button>
+                                <button type="button" class="btn btn-outline-primary" data-sp-add-blank>{{ 'admin.social_posts.add_blank'|trans }}</button>
+                            </div>
+                        </div>
+                        <div class="small text-muted mb-2" data-sp-status></div>
+                        <div data-sp-posts></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body_javascript %}
+    {{ parent() }}
+    <script>
+    (function () {
+        const root = document.getElementById('social-posts');
+        if (!root) return;
+        const i18n = {
+            posts: {{ 'admin.social_posts.posts'|trans|json_encode|raw }},
+            emptyPosts: {{ 'admin.social_posts.empty_posts'|trans|json_encode|raw }},
+            save: {{ 'admin.social_posts.save'|trans|json_encode|raw }},
+            delete: {{ 'admin.social_posts.delete'|trans|json_encode|raw }},
+            copy: {{ 'admin.social_posts.copy'|trans|json_encode|raw }},
+            copied: {{ 'admin.social_posts.copied'|trans|json_encode|raw }},
+            deleteConfirm: {{ 'admin.social_posts.delete_confirm'|trans|json_encode|raw }},
+            error: {{ 'admin.social_posts.error'|trans|json_encode|raw }},
+            noPrice: {{ 'admin.social_posts.no_price'|trans|json_encode|raw }},
+            generating: {{ 'admin.social_posts.generating'|trans|json_encode|raw }},
+            saving: {{ 'admin.social_posts.saving'|trans|json_encode|raw }},
+            postN: {{ 'admin.social_posts.post_n'|trans|json_encode|raw }},
+        };
+
+        let selectedId = null;
+        let searchTimer = null;
+        const searchInput = root.querySelector('[data-sp-search]');
+        const resultsEl = root.querySelector('[data-sp-results]');
+        const emptyEl = root.querySelector('[data-sp-empty]');
+        const editorEl = root.querySelector('[data-sp-editor]');
+        const postsEl = root.querySelector('[data-sp-posts]');
+        const statusEl = root.querySelector('[data-sp-status]');
+
+        function setStatus(msg) { statusEl.textContent = msg || ''; }
+
+        function tpl(template, id, postId) {
+            let url = template.replace('__ID__', String(id));
+            if (postId) url = url.replace('__POST__', encodeURIComponent(postId));
+            return url;
+        }
+
+        function renderResults(items) {
+            if (!items.length) {
+                resultsEl.innerHTML = '<div class="sp__empty">' + {{ 'admin.social_posts.no_results'|trans|json_encode|raw }} + '</div>';
+                return;
+            }
+            resultsEl.innerHTML = items.map(function (item) {
+                return '<button type="button" class="sp__result' + (String(item.id) === String(selectedId) ? ' is-active' : '') + '" data-sp-pick="' + item.id + '">' +
+                    '<strong>' + escapeHtml(item.name) + '</strong>' +
+                    '<small>SKU: ' + escapeHtml(item.sku) + (item.postsCount ? ' · ' + item.postsCount + ' posts' : '') + '</small>' +
+                    '</button>';
+            }).join('');
+        }
+
+        function escapeHtml(s) {
+            return String(s || '').replace(/[&<>"']/g, function (c) {
+                return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+            });
+        }
+
+        function renderProduct(product) {
+            selectedId = product.id;
+            emptyEl.hidden = true;
+            editorEl.hidden = false;
+            root.querySelector('[data-sp-product-name]').textContent = product.name || '';
+            root.querySelector('[data-sp-product-sku]').textContent = 'SKU: ' + (product.sku || '');
+            root.querySelector('[data-sp-product-price]').textContent = product.priceLabel || i18n.noPrice;
+            renderPosts(product.posts || []);
+            Array.prototype.forEach.call(resultsEl.querySelectorAll('[data-sp-pick]'), function (btn) {
+                btn.classList.toggle('is-active', String(btn.getAttribute('data-sp-pick')) === String(product.id));
+            });
+        }
+
+        function renderPosts(posts) {
+            if (!posts.length) {
+                postsEl.innerHTML = '<div class="sp__empty">' + i18n.emptyPosts + '</div>';
+                return;
+            }
+            postsEl.innerHTML = posts.map(function (post, idx) {
+                const title = i18n.postN.replace('%number%', String(idx + 1));
+                return '<div class="sp__post" data-post-id="' + post.id + '">' +
+                    '<div class="sp__meta">' + title +
+                    (post.createdAt ? ' · ' + escapeHtml(post.createdAt) : '') +
+                    (post.updatedAt ? ' · updated ' + escapeHtml(post.updatedAt) : '') +
+                    '</div>' +
+                    '<textarea class="form-control" data-sp-text>' + escapeHtml(post.text) + '</textarea>' +
+                    '<div class="d-flex flex-wrap gap-2 mt-2">' +
+                    '<button type="button" class="btn btn-sm btn-success" data-sp-save-post>' + i18n.save + '</button>' +
+                    '<button type="button" class="btn btn-sm btn-outline-secondary" data-sp-copy-post>' + i18n.copy + '</button>' +
+                    '<button type="button" class="btn btn-sm btn-outline-danger" data-sp-delete-post>' + i18n.delete + '</button>' +
+                    '</div></div>';
+            }).join('');
+        }
+
+        async function loadProduct(id) {
+            const res = await fetch(tpl(root.dataset.productTemplate, id), {
+                credentials: 'same-origin',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            });
+            const data = await res.json();
+            if (!res.ok || !data.ok) throw new Error('fail');
+            renderProduct(data.product);
+        }
+
+        searchInput.addEventListener('input', function () {
+            clearTimeout(searchTimer);
+            const q = searchInput.value.trim();
+            if (q.length < 2) {
+                resultsEl.innerHTML = '<div class="sp__empty">' + {{ 'admin.social_posts.search_hint'|trans|json_encode|raw }} + '</div>';
+                return;
+            }
+            searchTimer = setTimeout(async function () {
+                try {
+                    const res = await fetch(root.dataset.searchUrl + '?q=' + encodeURIComponent(q), {
+                        credentials: 'same-origin',
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    });
+                    const data = await res.json();
+                    renderResults(data.items || []);
+                } catch (e) {
+                    setStatus(i18n.error);
+                }
+            }, 250);
+        });
+
+        resultsEl.addEventListener('click', function (e) {
+            const btn = e.target.closest('[data-sp-pick]');
+            if (!btn) return;
+            loadProduct(btn.getAttribute('data-sp-pick')).catch(function () { setStatus(i18n.error); });
+        });
+
+        root.querySelector('[data-sp-generate]').addEventListener('click', async function () {
+            if (!selectedId) return;
+            setStatus(i18n.generating);
+            try {
+                const body = new FormData();
+                body.append('save', '1');
+                const res = await fetch(tpl(root.dataset.generateTemplate, selectedId), {
+                    method: 'POST',
+                    body: body,
+                    credentials: 'same-origin',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                });
+                const data = await res.json();
+                if (!res.ok || !data.ok) throw new Error('fail');
+                renderProduct(data.product);
+                setStatus(data.message || '');
+            } catch (e) {
+                setStatus(i18n.error);
+            }
+        });
+
+        root.querySelector('[data-sp-add-blank]').addEventListener('click', async function () {
+            if (!selectedId) return;
+            setStatus(i18n.saving);
+            try {
+                const res = await fetch(tpl(root.dataset.saveTemplate, selectedId), {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: {{ 'admin.social_posts.blank_placeholder'|trans|json_encode|raw }} }),
+                });
+                const data = await res.json();
+                if (!res.ok || !data.ok) throw new Error('fail');
+                renderProduct(data.product);
+                setStatus(data.message || '');
+            } catch (e) {
+                setStatus(i18n.error);
+            }
+        });
+
+        postsEl.addEventListener('click', async function (e) {
+            const card = e.target.closest('[data-post-id]');
+            if (!card || !selectedId) return;
+            const postId = card.getAttribute('data-post-id');
+            const text = (card.querySelector('[data-sp-text]') || {}).value || '';
+
+            if (e.target.closest('[data-sp-copy-post]')) {
+                try {
+                    await navigator.clipboard.writeText(text);
+                    setStatus(i18n.copied);
+                } catch (err) {
+                    setStatus(i18n.error);
+                }
+                return;
+            }
+
+            if (e.target.closest('[data-sp-save-post]')) {
+                setStatus(i18n.saving);
+                try {
+                    const res = await fetch(tpl(root.dataset.updateTemplate, selectedId, postId), {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ text: text }),
+                    });
+                    const data = await res.json();
+                    if (!res.ok || !data.ok) throw new Error('fail');
+                    renderProduct(data.product);
+                    setStatus(data.message || '');
+                } catch (err) {
+                    setStatus(i18n.error);
+                }
+                return;
+            }
+
+            if (e.target.closest('[data-sp-delete-post]')) {
+                if (!confirm(i18n.deleteConfirm)) return;
+                try {
+                    const res = await fetch(tpl(root.dataset.deleteTemplate, selectedId, postId), {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    });
+                    const data = await res.json();
+                    if (!res.ok || !data.ok) throw new Error('fail');
+                    renderProduct(data.product);
+                    setStatus(data.message || '');
+                } catch (err) {
+                    setStatus(i18n.error);
+                }
+            }
+        });
+    })();
+    </script>
+{% endblock %}

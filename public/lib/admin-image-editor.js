@@ -1917,6 +1917,7 @@
         const body = new FormData();
         body.append('file', file);
         body.append('kind', kind);
+        body.append('saveToLibrary', '1');
         setStatus('…');
         const res = await fetch(cfg.uploadUrl, {
             method: 'POST',
@@ -1928,24 +1929,54 @@
         if (!res.ok || !data.ok) {
             throw new Error('upload failed');
         }
+        if (Array.isArray(data.media_library)) {
+            cfg.mediaLibrary = data.media_library;
+        }
         return data;
+    }
+
+    async function applyBackgroundUrl(url, baseName) {
+        sourceUploadBaseName = baseName || baseNameFromFileName(url);
+        state.bgType = 'image';
+        state.bgImageUrl = url;
+        state.crop = null;
+        bgImage = await loadImage(url + (url.indexOf('?') >= 0 ? '&' : '?') + 't=' + Date.now());
+        ensureCrop();
+        setBgType('image');
+        if (regionSelectMode) {
+            syncRegionExportFields(true);
+        }
+        setStatus('');
+        render();
+    }
+
+    async function addOverlayFromUrl(url, step) {
+        const item = {
+            id: nextId('overlay'),
+            url: url,
+            opacity: 1,
+            imageAspect: null,
+            box: { x: 0.2, y: 0.2 + state.overlays.length * 0.05, w: 0.4, h: 0.3 },
+        };
+        item.box.y = clamp(item.box.y, 0, 0.65);
+        state.overlays.push(item);
+        state.selectedOverlayId = item.id;
+        state.selectedTextId = null;
+        state.selectedLineId = null;
+        state.selectedFrameId = null;
+        await ensureOverlayImages();
+        applyOverlayAspect(item);
+        renderOverlayList();
+        syncOverlayForm();
+        showStep(step || 4);
+        setStatus('');
+        render();
     }
 
     async function uploadBackground(file) {
         try {
             const data = await uploadFile(file, 'bg');
-            sourceUploadBaseName = baseNameFromFileName(file && file.name);
-            state.bgType = 'image';
-            state.bgImageUrl = data.url;
-            state.crop = null;
-            bgImage = await loadImage(data.url + '?t=' + Date.now());
-            ensureCrop();
-            setBgType('image');
-            if (regionSelectMode) {
-                syncRegionExportFields(true);
-            }
-            setStatus('');
-            render();
+            await applyBackgroundUrl(data.url, baseNameFromFileName(file && file.name));
         } catch (e) {
             setStatus(i18n.uploadError || 'Upload failed');
         }
@@ -1954,23 +1985,119 @@
     async function uploadOverlay(file) {
         try {
             const data = await uploadFile(file, 'overlay');
-            const item = {
-                id: nextId('overlay'),
-                url: data.url,
-                opacity: 1,
-                imageAspect: null,
-                box: { x: 0.2, y: 0.2 + state.overlays.length * 0.05, w: 0.4, h: 0.3 },
-            };
-            item.box.y = clamp(item.box.y, 0, 0.65);
-            state.overlays.push(item);
-            state.selectedOverlayId = item.id;
-            state.selectedTextId = null;
-            await ensureOverlayImages();
-            applyOverlayAspect(item);
-            renderOverlayList();
-            syncOverlayForm();
-            showStep(4);
-            setStatus('');
+            await addOverlayFromUrl(data.url);
+        } catch (e) {
+            setStatus(i18n.uploadError || 'Upload failed');
+        }
+    }
+
+    const libraryModal = root.querySelector('[data-ie-library-modal]');
+    const libraryGrid = root.querySelector('[data-ie-library-grid]');
+    const libraryTitleEl = root.querySelector('[data-ie-library-title]');
+    let libraryTarget = null;
+
+    function closeLibraryModal() {
+        if (!libraryModal) {
+            return;
+        }
+        libraryModal.hidden = true;
+        libraryTarget = null;
+    }
+
+    function renderLibraryItems(items, emptyMsg) {
+        if (!libraryGrid) {
+            return;
+        }
+        if (!Array.isArray(items) || items.length === 0) {
+            libraryGrid.innerHTML = '<div class="img-editor__library-empty">' + (emptyMsg || '—') + '</div>';
+            return;
+        }
+        libraryGrid.innerHTML = items
+            .map(function (item) {
+                const name = item.name || item.filename || '';
+                return (
+                    '<button type="button" class="img-editor__library-item" data-library-url="' +
+                    String(item.url || '').replace(/"/g, '&quot;') +
+                    '" data-library-name="' +
+                    String(name).replace(/"/g, '&quot;') +
+                    '">' +
+                    '<img src="' +
+                    String(item.url || '') +
+                    '" alt="">' +
+                    '<span>' +
+                    String(name).replace(/</g, '&lt;') +
+                    '</span></button>'
+                );
+            })
+            .join('');
+    }
+
+    async function openLibraryModal(target) {
+        if (!libraryModal || !libraryGrid) {
+            return;
+        }
+        libraryTarget = target;
+        const isShape = target === 'shape';
+        if (libraryTitleEl) {
+            libraryTitleEl.textContent = isShape
+                ? i18n.shapeLibraryTitle || 'Shape library'
+                : i18n.libraryTitle || 'Image library';
+        }
+        libraryGrid.innerHTML =
+            '<div class="img-editor__library-empty">' + (i18n.libraryLoading || '…') + '</div>';
+        libraryModal.hidden = false;
+
+        const listUrl = isShape ? cfg.shapeLibraryUrl : cfg.mediaLibraryUrl;
+        const cached = isShape ? cfg.shapeLibrary : cfg.mediaLibrary;
+        const emptyMsg = isShape
+            ? i18n.shapeLibraryEmpty || 'Empty'
+            : i18n.libraryEmpty || 'Empty';
+
+        if (Array.isArray(cached) && cached.length) {
+            renderLibraryItems(cached, emptyMsg);
+        }
+
+        if (!listUrl) {
+            renderLibraryItems(cached || [], emptyMsg);
+            return;
+        }
+
+        try {
+            const res = await fetch(listUrl, {
+                credentials: 'same-origin',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            });
+            const data = await res.json();
+            if (res.ok && data.ok && Array.isArray(data.items)) {
+                if (isShape) {
+                    cfg.shapeLibrary = data.items;
+                } else {
+                    cfg.mediaLibrary = data.items;
+                }
+                renderLibraryItems(data.items, emptyMsg);
+            } else if (!Array.isArray(cached) || !cached.length) {
+                renderLibraryItems([], emptyMsg);
+            }
+        } catch (e) {
+            if (!Array.isArray(cached) || !cached.length) {
+                renderLibraryItems([], emptyMsg);
+            }
+        }
+    }
+
+    async function useLibraryItem(url, name) {
+        if (!url || !libraryTarget) {
+            return;
+        }
+        const target = libraryTarget;
+        closeLibraryModal();
+        try {
+            if (target === 'bg') {
+                await applyBackgroundUrl(url, baseNameFromFileName(name || url));
+                showStep(2);
+            } else {
+                await addOverlayFromUrl(url, target === 'shape' ? 5 : 4);
+            }
         } catch (e) {
             setStatus(i18n.uploadError || 'Upload failed');
         }
@@ -2641,6 +2768,40 @@
             uploadOverlay(file);
         }
         e.target.value = '';
+    });
+
+    root.querySelectorAll('[data-ie-open-library]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            openLibraryModal(btn.getAttribute('data-ie-open-library') || 'overlay');
+        });
+    });
+
+    if (libraryModal) {
+        const closeBtn = libraryModal.querySelector('[data-ie-library-close]');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', closeLibraryModal);
+        }
+        libraryModal.addEventListener('click', function (e) {
+            if (e.target === libraryModal) {
+                closeLibraryModal();
+            }
+        });
+    }
+
+    if (libraryGrid) {
+        libraryGrid.addEventListener('click', function (e) {
+            const item = e.target.closest('[data-library-url]');
+            if (!item) {
+                return;
+            }
+            useLibraryItem(item.getAttribute('data-library-url'), item.getAttribute('data-library-name'));
+        });
+    }
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && libraryModal && !libraryModal.hidden) {
+            closeLibraryModal();
+        }
     });
     function refreshSelectedTextBox(fit, fitOpts) {
         const item = selectedText();

@@ -12,7 +12,7 @@
 
         {% for label, messages in app.flashes %}
             {% for message in messages %}
-                <div class="shop-auth-alert shop-auth-alert--success">{{ message }}</div>
+                <div class="shop-auth-alert shop-auth-alert--{{ label == 'error' ? 'error' : 'success' }}">{{ message }}</div>
             {% endfor %}
         {% endfor %}
 
@@ -21,6 +21,17 @@
                 {{ error.messageKey|trans(error.messageData, 'security') }}
             </div>
         {% endif %}
+
+        <a class="shop-auth-facebook" href="{{ path('connect_facebook_start') }}">
+            <svg class="shop-auth-facebook__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path fill="currentColor" d="M22 12.07C22 6.48 17.52 2 11.93 2S1.86 6.48 1.86 12.07c0 5.02 3.66 9.18 8.44 9.93v-7.02H7.9v-2.91h2.4V9.84c0-2.37 1.4-3.68 3.55-3.68 1.03 0 2.1.18 2.1.18v2.32h-1.18c-1.17 0-1.53.73-1.53 1.48v1.78h2.61l-.42 2.91h-2.19V22c4.78-.75 8.44-4.91 8.44-9.93z"/>
+            </svg>
+            {{ 'auth.continue_with_facebook'|trans }}
+        </a>
+
+        <div class="shop-auth-divider" role="separator">
+            <span>{{ 'auth.or_email'|trans }}</span>
+        </div>
 
         <form method="post" class="shop-auth-form">
             <div class="shop-auth-field">

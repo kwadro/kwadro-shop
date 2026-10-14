@@ -1,58 +1,60 @@
 (function () {
     'use strict';
 
-    function findGalleryField(slot) {
-        const name = 'Product[galleryImage' + slot + ']';
-        const input = document.querySelector('[name="' + name + '"]');
-        if (input) {
-            return input.closest('.form-group, .field-image, .ea-form-field, .form-widget') || input.parentElement;
-        }
-        const label = Array.prototype.find.call(document.querySelectorAll('label'), function (el) {
-            return (el.getAttribute('for') || '').indexOf('galleryImage' + slot) !== -1;
-        });
-        return label ? label.closest('.form-group, .field-image, .ea-form-field') : null;
+    function findGalleryItems() {
+        return Array.prototype.slice.call(document.querySelectorAll('[data-gallery-item]'));
     }
 
-    function ensureButton(slot, urlTemplate, labels) {
-        const wrap = findGalleryField(slot);
-        if (!wrap || wrap.querySelector('[data-product-clean-slot="' + slot + '"]')) {
-            return;
-        }
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'btn btn-sm btn-outline-primary mt-2';
-        btn.setAttribute('data-product-clean-slot', String(slot));
-        btn.textContent = labels.generate || 'Generate clean image';
-        wrap.appendChild(btn);
-
-        const status = document.createElement('div');
-        status.className = 'form-text mt-1';
-        status.setAttribute('data-product-clean-status', String(slot));
-        wrap.appendChild(status);
-
-        btn.addEventListener('click', async function () {
-            const url = urlTemplate.replace('__SLOT__', String(slot));
-            status.textContent = labels.processing || 'Processing…';
-            btn.disabled = true;
-            try {
-                const res = await fetch(url, {
-                    method: 'POST',
-                    credentials: 'same-origin',
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
-                });
-                const data = await res.json();
-                if (!res.ok || !data.ok) {
-                    throw new Error(data.error || 'failed');
-                }
-                status.textContent = data.message || '';
-                // Reload so EasyAdmin form picks up cleanImage and won't overwrite it on save.
-                window.setTimeout(function () {
-                    window.location.reload();
-                }, 400);
-            } catch (e) {
-                status.textContent = (e && e.message) || labels.error || 'Failed';
-                btn.disabled = false;
+    function ensureButtons(urlTemplate, labels) {
+        const items = findGalleryItems();
+        items.forEach(function (wrap, index) {
+            const slot = index + 1;
+            let btn = wrap.querySelector('[data-product-clean-slot]');
+            let status = wrap.querySelector('[data-product-clean-status]');
+            if (!btn) {
+                return;
             }
+            btn.hidden = false;
+            if (status) {
+                status.hidden = false;
+            }
+            if (btn.getAttribute('data-bound') === '1') {
+                btn.setAttribute('data-product-clean-slot', String(slot));
+                return;
+            }
+            btn.setAttribute('data-bound', '1');
+            btn.setAttribute('data-product-clean-slot', String(slot));
+            btn.textContent = labels.generate || 'Generate clean image';
+            btn.addEventListener('click', async function () {
+                const currentSlot = btn.getAttribute('data-product-clean-slot') || String(slot);
+                const url = urlTemplate.replace('__SLOT__', currentSlot);
+                if (status) {
+                    status.textContent = labels.processing || 'Processing…';
+                }
+                btn.disabled = true;
+                try {
+                    const res = await fetch(url, {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    });
+                    const data = await res.json();
+                    if (!res.ok || !data.ok) {
+                        throw new Error(data.error || 'failed');
+                    }
+                    if (status) {
+                        status.textContent = data.message || '';
+                    }
+                    window.setTimeout(function () {
+                        window.location.reload();
+                    }, 400);
+                } catch (e) {
+                    if (status) {
+                        status.textContent = (e && e.message) || labels.error || 'Failed';
+                    }
+                    btn.disabled = false;
+                }
+            });
         });
     }
 
@@ -71,8 +73,14 @@
             return;
         }
         const labels = cfg.labels || {};
-        for (let slot = 1; slot <= 5; slot++) {
-            ensureButton(slot, cfg.urlTemplate, labels);
+        ensureButtons(cfg.urlTemplate, labels);
+
+        const collection = document.querySelector('.field-collection');
+        if (collection && window.MutationObserver) {
+            const observer = new MutationObserver(function () {
+                ensureButtons(cfg.urlTemplate, labels);
+            });
+            observer.observe(collection, { childList: true, subtree: true });
         }
     }
 

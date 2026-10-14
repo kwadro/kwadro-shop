@@ -2,6 +2,7 @@
 
 namespace App\Controller\Admin;
 
+use App\Service\Marketing\MarketingAssetLibrary;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,6 +24,7 @@ final class ImageEditorController extends AbstractController
 
     public function __construct(
         private readonly TranslatorInterface $translator,
+        private readonly MarketingAssetLibrary $library,
     ) {
     }
 
@@ -36,8 +38,12 @@ final class ImageEditorController extends AbstractController
             'aspects' => self::ASPECTS,
             'defaults' => $this->getDefaults(),
             'saved_images' => $this->listSavedImages(),
+            'media_library' => $this->library->list(MarketingAssetLibrary::KIND_MEDIA),
+            'shape_library' => $this->library->list(MarketingAssetLibrary::KIND_SHAPE),
             'save_url' => $this->generateUrl('admin_image_editor_save', ['_locale' => $locale]),
             'upload_url' => $this->generateUrl('admin_image_editor_upload', ['_locale' => $locale]),
+            'media_library_url' => $this->generateUrl('admin_media_library_list', ['_locale' => $locale]),
+            'shape_library_url' => $this->generateUrl('admin_shape_library_list', ['_locale' => $locale]),
             'load_url_template' => str_replace(
                 'img-placeholder.jpg',
                 '__FILENAME__',
@@ -79,13 +85,32 @@ final class ImageEditorController extends AbstractController
         $kind = trim((string) $request->request->get('kind', 'bg'));
         $prefix = $kind === 'overlay' ? 'overlay' : 'bg';
         $filename = $prefix.'-'.date('Ymd-His').'-'.bin2hex(random_bytes(3)).'.'.$ext;
+        $originalBase = pathinfo((string) $file->getClientOriginalName(), \PATHINFO_FILENAME) ?: null;
         $file->move($dir, $filename);
+        $path = $dir.'/'.$filename;
+
+        $libraryItem = null;
+        $saveToLibrary = filter_var($request->request->get('saveToLibrary', '1'), \FILTER_VALIDATE_BOOL);
+        if ($saveToLibrary) {
+            try {
+                $libraryItem = $this->library->addFromPath(
+                    MarketingAssetLibrary::KIND_MEDIA,
+                    $path,
+                    $originalBase,
+                    $ext,
+                );
+            } catch (\Throwable) {
+                $libraryItem = null;
+            }
+        }
 
         return new JsonResponse([
             'ok' => true,
             'filename' => $filename,
             'url' => '/uploads/image-editor/uploads/'.$filename,
             'kind' => $prefix,
+            'library' => $libraryItem,
+            'media_library' => $this->library->list(MarketingAssetLibrary::KIND_MEDIA),
         ]);
     }
 

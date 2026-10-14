@@ -3,6 +3,7 @@
 namespace App\Controller\Admin;
 
 use App\Entity\MailboxMessage;
+use App\Service\Mail\Mailbox\MailboxImapSyncService;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
@@ -13,6 +14,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\Field;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -24,6 +26,7 @@ class MailboxMessageCrudController extends AbstractCrudController
         private readonly TranslatorInterface $translator,
         private readonly EntityManagerInterface $entityManager,
         private readonly UrlGeneratorInterface $urlGenerator,
+        private readonly MailboxImapSyncService $mailboxSyncService,
     ) {
     }
 
@@ -84,7 +87,10 @@ class MailboxMessageCrudController extends AbstractCrudController
         yield TextField::new('subject', $this->translator->trans('admin.mailbox_message.subject', [], 'messages'));
         yield BooleanField::new('isSeen', $this->translator->trans('admin.mailbox_message.is_seen', [], 'messages'));
         yield BooleanField::new('hasAttachments', $this->translator->trans('admin.mailbox_message.has_attachments', [], 'messages'))
-            ->hideOnIndex();
+            ->hideOnDetail();
+        yield Field::new('attachments', $this->translator->trans('admin.mailbox_message.attachments', [], 'messages'))
+            ->onlyOnDetail()
+            ->setTemplatePath('admin/field/mailbox_attachments.html.twig');
         yield TextField::new('bodyHtml', $this->translator->trans('admin.mailbox_message.body_html', [], 'messages'))
             ->onlyOnDetail()
             ->renderAsHtml()
@@ -100,9 +106,14 @@ class MailboxMessageCrudController extends AbstractCrudController
             $instance = \is_object($entityDto) && method_exists($entityDto, 'getInstance')
                 ? $entityDto->getInstance()
                 : null;
-            if ($instance instanceof MailboxMessage && !$instance->isSeen()) {
-                $instance->setIsSeen(true);
-                $this->entityManager->flush();
+            if ($instance instanceof MailboxMessage) {
+                if (!$instance->isSeen()) {
+                    $instance->setIsSeen(true);
+                    $this->entityManager->flush();
+                }
+                if ($instance->hasAttachments() && $instance->getAttachments() === []) {
+                    $this->mailboxSyncService->ensureAttachments($instance);
+                }
             }
         }
 

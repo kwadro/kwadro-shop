@@ -16,6 +16,7 @@ final class MailboxImapSyncService
         private readonly MailboxCredentialCipher $cipher,
         private readonly MailboxMessageRepository $messageRepository,
         private readonly EntityManagerInterface $entityManager,
+        private readonly MailboxAttachmentStorage $attachmentStorage,
         private readonly LoggerInterface $logger,
     ) {
     }
@@ -98,7 +99,6 @@ final class MailboxImapSyncService
                     ->setSubject($this->decodeMime((string) ($header->subject ?? '(без теми)')))
                     ->setReceivedAt($this->resolveDate($header))
                     ->setIsSeen(!empty($header->seen))
-                    ->setHasAttachments($this->detectAttachments($mailbox, $uid))
                     ->setFolder('INBOX');
 
                 $structure = @imap_fetchstructure($mailbox, (int) $uid, \FT_UID);
@@ -107,6 +107,10 @@ final class MailboxImapSyncService
                 $message->setBodyHtml($html);
                 $previewSource = $text !== null && $text !== '' ? $text : strip_tags((string) $html);
                 $message->setBodyPreview($previewSource !== '' ? $previewSource : null);
+
+                $attachments = $this->downloadAttachments($mailbox, $uid, $structure, $message);
+                $message->setAttachments($attachments);
+                $message->setHasAttachments($attachments !== [] || $this->detectAttachments($mailbox, $uid, $structure));
 
                 $this->entityManager->persist($message);
                 ++$imported;
@@ -131,6 +135,60 @@ final class MailboxImapSyncService
             ]);
 
             return ['imported' => $imported, 'updated' => $updated, 'error' => $error];
+        } finally {
+            if (\is_resource($mailbox) || $mailbox instanceof \IMAP\Connection) {
+                imap_close($mailbox);
+            }
+        }
+    }
+
+    /**
+     * Download attachments for an already synced message that only has the flag set.
+     *
+     * @return list<array{name: string, stored: string, size: int, mime: string}>
+     */
+    public function ensureAttachments(MailboxMessage $message): array
+    {
+        if ($message->getAttachments() !== []) {
+            return $message->getAttachments();
+        }
+
+        $account = $message->getMailbox();
+        if ($account === null || !\function_exists('imap_open')) {
+            return [];
+        }
+
+        $mailbox = null;
+        try {
+            $password = $this->cipher->decrypt($account->getPasswordEncrypted());
+            $mailbox = @imap_open(
+                $this->buildMailboxPath($account),
+                $account->getUsername(),
+                $password,
+                0,
+                1,
+                ['DISABLE_AUTHENTICATOR' => 'GSSAPI'],
+            );
+            if ($mailbox === false) {
+                return [];
+            }
+
+            $uid = $message->getRemoteUid();
+            $structure = @imap_fetchstructure($mailbox, (int) $uid, \FT_UID);
+            $attachments = $this->downloadAttachments($mailbox, $uid, $structure, $message);
+            if ($attachments !== []) {
+                $message->setAttachments($attachments);
+                $this->entityManager->flush();
+            }
+
+            return $attachments;
+        } catch (\Throwable $e) {
+            $this->logger->warning('Mailbox attachment fetch failed.', [
+                'message_id' => $message->getId(),
+                'error' => $e->getMessage(),
+            ]);
+
+            return [];
         } finally {
             if (\is_resource($mailbox) || $mailbox instanceof \IMAP\Connection) {
                 imap_close($mailbox);
@@ -262,21 +320,120 @@ final class MailboxImapSyncService
         }
     }
 
-    private function detectAttachments($mailbox, string $uid): bool
+    private function detectAttachments($mailbox, string $uid, mixed $structure = null): bool
     {
-        $structure = @imap_fetchstructure($mailbox, (int) $uid, \FT_UID);
-        if ($structure === false || !isset($structure->parts) || !\is_array($structure->parts)) {
+        $structure ??= @imap_fetchstructure($mailbox, (int) $uid, \FT_UID);
+        if ($structure === false || $structure === null) {
             return false;
         }
 
-        foreach ($structure->parts as $part) {
-            $disposition = strtolower((string) ($part->disposition ?? ''));
-            if ($disposition === 'attachment') {
-                return true;
+        return $this->collectAttachmentParts($structure, '') !== [];
+    }
+
+    /**
+     * @param resource|\IMAP\Connection $mailbox
+     *
+     * @return list<array{name: string, stored: string, size: int, mime: string}>
+     */
+    private function downloadAttachments($mailbox, string $uid, mixed $structure, MailboxMessage $message): array
+    {
+        if ($structure === false || $structure === null) {
+            return [];
+        }
+
+        $saved = [];
+        foreach ($this->collectAttachmentParts($structure, '') as $item) {
+            $raw = imap_fetchbody($mailbox, (int) $uid, $item['part'], \FT_UID | \FT_PEEK) ?: '';
+            if ($raw === '') {
+                continue;
+            }
+
+            $binary = match ($item['encoding']) {
+                3 => base64_decode($raw, true) ?: $raw,
+                4 => quoted_printable_decode($raw),
+                default => $raw,
+            };
+            if ($binary === '') {
+                continue;
+            }
+
+            $meta = $this->attachmentStorage->save($message, $item['name'], $binary, $item['mime']);
+            if ($meta !== null) {
+                $saved[] = $meta;
             }
         }
 
-        return false;
+        return $saved;
+    }
+
+    /**
+     * @return list<array{part: string, name: string, mime: string, encoding: int}>
+     */
+    private function collectAttachmentParts(object $part, string $partNo): array
+    {
+        $found = [];
+        if (isset($part->parts) && \is_array($part->parts) && $part->parts !== []) {
+            foreach ($part->parts as $index => $child) {
+                if (!\is_object($child)) {
+                    continue;
+                }
+                $childNo = $partNo === '' ? (string) ($index + 1) : $partNo.'.'.($index + 1);
+                $found = array_merge($found, $this->collectAttachmentParts($child, $childNo));
+            }
+
+            return $found;
+        }
+
+        $filename = $this->partFilename($part);
+        $disposition = strtolower((string) ($part->disposition ?? ''));
+        $type = (int) ($part->type ?? 0); // 0 = text
+        $isAttachment = $disposition === 'attachment'
+            || ($filename !== null && !($type === 0 && $disposition === 'inline'));
+
+        if (!$isAttachment || $filename === null) {
+            return [];
+        }
+
+        $subtype = strtolower((string) ($part->subtype ?? 'octet-stream'));
+        $mimePrimary = match ($type) {
+            0 => 'text',
+            1 => 'multipart',
+            2 => 'message',
+            3 => 'application',
+            4 => 'audio',
+            5 => 'image',
+            6 => 'video',
+            default => 'application',
+        };
+
+        $found[] = [
+            'part' => $partNo !== '' ? $partNo : '1',
+            'name' => $this->decodeMime($filename),
+            'mime' => $mimePrimary.'/'.$subtype,
+            'encoding' => (int) ($part->encoding ?? 0),
+        ];
+
+        return $found;
+    }
+
+    private function partFilename(object $part): ?string
+    {
+        foreach ([$part->dparameters ?? null, $part->parameters ?? null] as $params) {
+            if (!\is_array($params)) {
+                continue;
+            }
+            foreach ($params as $param) {
+                $attr = strtoupper((string) ($param->attribute ?? ''));
+                if (\in_array($attr, ['FILENAME', 'NAME'], true)) {
+                    $value = trim((string) ($param->value ?? ''));
+                    if ($value !== '') {
+                        return $value;
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     /**
