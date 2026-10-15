@@ -104,6 +104,14 @@ class Cart
         return $this->status === CartStatus::Active;
     }
 
+    /** Bump updated_at so admin lists sorted by recency reflect item changes. */
+    public function touch(): static
+    {
+        $this->setUpdatedAt(new \DateTimeImmutable());
+
+        return $this;
+    }
+
     /** @return Collection<int, CartItem> */
     public function getItems(): Collection
     {

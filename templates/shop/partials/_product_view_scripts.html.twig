@@ -242,14 +242,21 @@
 
     const addForm = document.querySelector('[data-add-to-cart]');
     if (addForm) {
+        let addInFlight = false;
+
         addForm.addEventListener('submit', async (event) => {
             event.preventDefault();
+
+            if (addInFlight) {
+                return;
+            }
 
             const submitBtn = addForm.querySelector('.shop-product__buy');
             const mainImage = document.getElementById('product-main-image');
             const defaultLabel = addForm.dataset.defaultLabel || submitBtn.textContent;
             const addedLabel = addForm.dataset.addedLabel || defaultLabel;
 
+            addInFlight = true;
             submitBtn.disabled = true;
 
             try {
@@ -260,6 +267,7 @@
                         Accept: 'application/json',
                         'X-Requested-With': 'XMLHttpRequest',
                     },
+                    credentials: 'same-origin',
                 });
 
                 const data = await response.json();
@@ -288,8 +296,10 @@
                     submitBtn.classList.remove('shop-product__buy--added');
                     submitBtn.textContent = defaultLabel;
                     submitBtn.disabled = false;
+                    addInFlight = false;
                 }, 1800);
             } catch (error) {
+                addInFlight = false;
                 submitBtn.disabled = false;
                 submitBtn.classList.add('shop-product__buy--error');
                 window.setTimeout(() => submitBtn.classList.remove('shop-product__buy--error'), 1200);

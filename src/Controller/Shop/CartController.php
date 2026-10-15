@@ -43,6 +43,9 @@ class CartController extends AbstractController
         }
 
         $offerId = (int) $request->request->get('offer_id');
+        if ($offerId <= 0) {
+            $offerId = (int) ($product['selectedOfferId'] ?? 0);
+        }
         if ($offerId > 0) {
             $product = $this->productCatalog->applyOffer($product, $offerId);
             if (empty($product['inStock']) || empty($product['stockQty'])) {

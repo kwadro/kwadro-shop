@@ -8,8 +8,10 @@ use App\Entity\CartItemStatus;
 use App\Entity\CartStatus;
 use App\Entity\Order;
 use App\Entity\User;
+use App\Repository\CartItemRepository;
 use App\Repository\CartRepository;
 use App\Service\Shipment\ShipmentAddressService;
+use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -18,6 +20,7 @@ class CartStorageService
 {
     public function __construct(
         private readonly CartRepository $cartRepository,
+        private readonly CartItemRepository $cartItemRepository,
         private readonly EntityManagerInterface $entityManager,
         private readonly VisitorIdResolver $visitorIdResolver,
         private readonly Security $security,
@@ -59,23 +62,31 @@ class CartStorageService
         $quantity = max(1, $quantity);
         $product = CartLineKey::enrichProductSnapshot($product);
         $stockQty = max(1, (int) ($product['stockQty'] ?? 1));
-        $cart = $this->getOrCreateCartEntity(true);
-        if ($cart === null) {
-            return;
-        }
 
-        $lineKey = CartLineKey::fromProduct($product);
-        $existingItem = $this->findActiveItemByLineKey($cart, $lineKey);
-        if ($existingItem !== null) {
-            $quantity = min($existingItem->getQuantity() + $quantity, $stockQty);
-            $this->syncCartItemFromProduct($existingItem, $productId, $quantity, $product);
-        } else {
-            $this->createCartItem($cart, $productId, min($quantity, $stockQty), $product);
-            $this->clearCheckoutSessionData($cart);
-        }
+        $this->entityManager->wrapInTransaction(function () use ($productId, $quantity, $product, $stockQty): void {
+            $cart = $this->getOrCreateCartEntity(true);
+            if ($cart === null) {
+                return;
+            }
 
-        $cart->setCartData(null);
-        $this->entityManager->flush();
+            if ($cart->getId() !== null) {
+                $this->entityManager->lock($cart, LockMode::PESSIMISTIC_WRITE);
+                $this->entityManager->refresh($cart);
+            }
+
+            $existingItem = $this->findActiveItemForProduct($cart, $product);
+            if ($existingItem !== null) {
+                $existingItem = $this->consolidateDuplicateActiveItems($cart, $existingItem, $product, $stockQty);
+                $newQuantity = min($existingItem->getQuantity() + $quantity, $stockQty);
+                $this->syncCartItemFromProduct($existingItem, $productId, $newQuantity, $product);
+            } else {
+                $this->createCartItem($cart, $productId, min($quantity, $stockQty), $product);
+                $this->clearCheckoutSessionData($cart);
+            }
+
+            $cart->setCartData(null);
+            $cart->touch();
+        });
     }
 
     public function removeItem(int $cartItemId): bool
@@ -92,6 +103,7 @@ class CartStorageService
 
         $item->setStatus(CartItemStatus::Inactive);
         $cart->setCartData(null);
+        $cart->touch();
         $this->clearCheckoutSessionData($cart);
         $this->entityManager->flush();
 
@@ -120,6 +132,7 @@ class CartStorageService
         $item->setQuantity($quantity);
         $cart->setCartData(null);
         $cart->setOrderData(null);
+        $cart->touch();
         $this->entityManager->flush();
 
         return $quantity;
@@ -149,6 +162,7 @@ class CartStorageService
         if ($removed > 0) {
             $cart->setCartData(null);
             $cart->setOrderData(null);
+            $cart->touch();
             $this->entityManager->flush();
         }
 
@@ -446,25 +460,35 @@ class CartStorageService
     /** @param array<string, mixed> $product */
     private function upsertCartItem(int $productId, int $quantity, array $product, bool $clearCheckout): void
     {
-        $cart = $this->getOrCreateCartEntity(true);
-        if ($cart === null) {
-            return;
-        }
-
         $product = CartLineKey::enrichProductSnapshot($product);
-        $lineKey = CartLineKey::fromProduct($product);
-        $existingItem = $this->findActiveItemByLineKey($cart, $lineKey);
-        if ($existingItem !== null) {
-            $this->syncCartItemFromProduct($existingItem, $productId, $quantity, $product);
-        } else {
-            $this->createCartItem($cart, $productId, $quantity, $product);
-            if ($clearCheckout) {
-                $this->clearCheckoutSessionData($cart);
-            }
-        }
+        $stockQty = max(1, (int) ($product['stockQty'] ?? 1));
+        $quantity = min(max(1, $quantity), $stockQty);
 
-        $cart->setCartData(null);
-        $this->entityManager->flush();
+        $this->entityManager->wrapInTransaction(function () use ($productId, $quantity, $product, $clearCheckout, $stockQty): void {
+            $cart = $this->getOrCreateCartEntity(true);
+            if ($cart === null) {
+                return;
+            }
+
+            if ($cart->getId() !== null) {
+                $this->entityManager->lock($cart, LockMode::PESSIMISTIC_WRITE);
+                $this->entityManager->refresh($cart);
+            }
+
+            $existingItem = $this->findActiveItemForProduct($cart, $product);
+            if ($existingItem !== null) {
+                $existingItem = $this->consolidateDuplicateActiveItems($cart, $existingItem, $product, $stockQty);
+                $this->syncCartItemFromProduct($existingItem, $productId, $quantity, $product);
+            } else {
+                $this->createCartItem($cart, $productId, $quantity, $product);
+                if ($clearCheckout) {
+                    $this->clearCheckoutSessionData($cart);
+                }
+            }
+
+            $cart->setCartData(null);
+            $cart->touch();
+        });
     }
 
     /** @param array<string, mixed> $product */
@@ -536,6 +560,7 @@ class CartStorageService
 
         $cart->setCartData(null);
         $cart->setOrderData(null);
+        $cart->touch();
         $this->entityManager->flush();
     }
 
@@ -550,6 +575,7 @@ class CartStorageService
 
         $cart->setCartData(null);
         $cart->setOrderData(null);
+        $cart->touch();
     }
 
     private function reactivateCart(Cart $cart): void
@@ -561,6 +587,7 @@ class CartStorageService
         }
 
         $cart->setCartData(null);
+        $cart->touch();
     }
 
     private function copyCartContents(Cart $target, Cart $source): void
@@ -609,6 +636,30 @@ class CartStorageService
         $cart->setOrderData(null);
     }
 
+    /** @param array<string, mixed> $product */
+    private function findActiveItemForProduct(Cart $cart, array $product): ?CartItem
+    {
+        $product = CartLineKey::enrichProductSnapshot($product);
+        $meta = $this->extractOfferMeta($product);
+        $lineKey = CartLineKey::fromProduct($product);
+
+        if ($meta['offer_id'] !== null) {
+            $byOffer = $this->cartItemRepository->findActiveByCartAndOffer($cart, $meta['offer_id']);
+            if ($byOffer !== null) {
+                return $byOffer;
+            }
+        }
+
+        if ($meta['supplier_id'] !== null && $meta['sku'] !== '') {
+            $bySku = $this->cartItemRepository->findActiveByCartSupplierSku($cart, $meta['supplier_id'], $meta['sku']);
+            if ($bySku !== null) {
+                return $bySku;
+            }
+        }
+
+        return $this->findActiveItemByLineKey($cart, $lineKey);
+    }
+
     private function findActiveItemByLineKey(Cart $cart, string $lineKey): ?CartItem
     {
         foreach ($cart->getActiveItems() as $item) {
@@ -618,6 +669,50 @@ class CartStorageService
         }
 
         return null;
+    }
+
+    /**
+     * Merges any duplicate active lines for the same offer/line into $keeper and returns it.
+     *
+     * @param array<string, mixed> $product
+     */
+    private function consolidateDuplicateActiveItems(
+        Cart $cart,
+        CartItem $keeper,
+        array $product,
+        int $stockQty,
+    ): CartItem {
+        $meta = $this->extractOfferMeta($product);
+        $duplicates = [];
+
+        if ($meta['offer_id'] !== null) {
+            $duplicates = $this->cartItemRepository->findActiveByCartAndOfferAll($cart, $meta['offer_id']);
+        }
+
+        if ($duplicates === []) {
+            $lineKey = CartLineKey::fromProduct($product);
+            foreach ($cart->getActiveItems() as $item) {
+                if (CartLineKey::fromSnapshot($item->getProductSnapshot()) === $lineKey) {
+                    $duplicates[] = $item;
+                }
+            }
+        }
+
+        if (\count($duplicates) <= 1) {
+            return $keeper;
+        }
+
+        $totalQty = 0;
+        foreach ($duplicates as $item) {
+            $totalQty += $item->getQuantity();
+            if ($item->getId() !== $keeper->getId()) {
+                $item->setStatus(CartItemStatus::Inactive);
+            }
+        }
+
+        $keeper->setQuantity(min(max(1, $totalQty), $stockQty));
+
+        return $keeper;
     }
 
     private function findActiveItemById(Cart $cart, int $cartItemId): ?CartItem
@@ -831,6 +926,8 @@ class CartStorageService
         if ($target->getActiveItems() === [] && \is_array($source->getCartData())) {
             $target->setCartData($source->getCartData());
         }
+
+        $target->touch();
     }
 
     private function getOrCreateCartEntity(bool $createIfMissing): ?Cart

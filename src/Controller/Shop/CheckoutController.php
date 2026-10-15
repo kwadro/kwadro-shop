@@ -80,7 +80,15 @@ class CheckoutController extends AbstractController
             throw new NotFoundHttpException();
         }
 
-        $quantity = min($quantity, (int) $product['stockQty']);
+        $offerId = (int) $request->request->get('offer_id');
+        if ($offerId <= 0) {
+            $offerId = (int) ($product['selectedOfferId'] ?? 0);
+        }
+        if ($offerId > 0) {
+            $product = $this->productCatalog->applyOffer($product, $offerId);
+        }
+
+        $quantity = min($quantity, max(1, (int) ($product['stockQty'] ?? 1)));
 
         $this->cartStorage->setCartData([
             'product_id' => $productId,

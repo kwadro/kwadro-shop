@@ -1252,6 +1252,7 @@ class Product
             'offersCount' => \count($offers),
             'offers' => $offers,
             'selectedOfferId' => $selectedOffer['id'] ?? null,
+            'offerSku' => $selectedOffer['sku'] ?? null,
             'supplier' => $selectedOffer['supplier'] ?? null,
         ];
     }
