@@ -43,6 +43,8 @@ menu.link_request_list_single: Запит
 menu.link_report_visitor_ids: Report Visitor Ids
 menu.link_blocked_ip: Заблоковані IP адреси
 menu.link_blocked_ip_single: Заблокована IP адреса
+menu.link_admin_audit_log: Журнал дій адміна
+menu.link_admin_audit_log_single: Запис журналу адміна
 menu.link_redirect: Редіректи
 menu.link_redirect_single: Редірект
 menu.link_product: Товари
@@ -168,6 +170,21 @@ admin.site.instagram_url: Instagram сторінка
 admin.site.instagram_url_help: Повне посилання на профіль Instagram (наприклад https://www.instagram.com/yourpage/).
 admin.site.ignored_request_ips: Ігнорувати IP для RequestList
 admin.site.ignored_request_ips_help: 'Список IP, які не записуються в таблицю запитів. Кілька значень — з нового рядка, або через кому / пробіл.'
+admin.site.log_admin_actions: Логувати дії адміна
+admin.site.log_admin_actions_help: Якщо увімкнено — зберігаються входи в адмінку та створення / зміна / видалення сутностей (зі списком змінених полів).
+admin.audit_log.created_at: Час
+admin.audit_log.account_name: Акаунт
+admin.audit_log.action_label: Дія
+admin.audit_log.action.login: Вхід
+admin.audit_log.action.create: Створення
+admin.audit_log.action.update: Зміна
+admin.audit_log.action.delete: Видалення
+admin.audit_log.entity_class: Сутність
+admin.audit_log.entity_id: ID
+admin.audit_log.entity_label: Назва
+admin.audit_log.ip: IP
+admin.audit_log.request_path: URL
+admin.audit_log.changes: Змінені поля
 admin.site.courier_delivery_cost: Вартість кур'єрської доставки
 admin.site.courier_delivery_cost_help: Фіксована ціна кур'єра в межах Івано-Франківська, незалежно від кількості товару.
 admin.site.cod_standard_percent: Комісія НП, стандартний %
@@ -912,6 +929,10 @@ admin.mailbox_message.is_seen: Прочитано
 admin.mailbox_message.has_attachments: Вкладення
 admin.mailbox_message.attachments: Файли
 admin.mailbox_message.attachments_pending: Є вкладення, але файли ще не завантажені. Відкрийте лист ще раз або запустіть синхронізацію.
+admin.mailbox_notify.unread_title: У вас є непрочитані повідомлення
+admin.mailbox_notify.unread_body: 'Непрочитаних листів після вашого попереднього входу: %count%'
+admin.mailbox_notify.new_mail_title: Ви отримали лист
+admin.mailbox_notify.new_mail_body: Нове повідомлення в поштовій скриньці
 admin.mailbox_message.preview: Превʼю
 admin.mailbox_message.body_text: Текст
 admin.mailbox_message.body_html: HTML

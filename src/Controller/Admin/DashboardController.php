@@ -55,6 +55,7 @@ use App\Controller\Admin\MailboxMessageCrudController;
 use App\Controller\Admin\BlogArticleCrudController;
 use App\Controller\Admin\BlogCategoryCrudController;
 use App\Controller\Admin\RequestListCrudController;
+use App\Controller\Admin\AdminAuditLogCrudController;
 use App\Controller\Admin\BlockedIpCrudController;
 use App\Controller\Admin\RedirectCrudController;
 // @GENERATE USE FINISH
@@ -214,6 +215,7 @@ class DashboardController extends AbstractDashboardController
             ['_locale' => 'uk'],
         );
         yield MenuItem::linkTo(BlockedIpCrudController::class, $this->translator->trans('menu.link_blocked_ip', [], 'messages'), 'fas fa-ban');
+        yield MenuItem::linkTo(AdminAuditLogCrudController::class, $this->translator->trans('menu.link_admin_audit_log', [], 'messages'), 'fas fa-clipboard-list');
         yield MenuItem::linkTo(RedirectCrudController::class, $this->translator->trans('menu.link_redirect', [], 'messages'), 'fas fa-random');
         // @GENERATE MENU START
 yield MenuItem::section($this->translator->trans('menu.group_setting', [], 'messages'));
@@ -246,6 +248,7 @@ yield MenuItem::linkTo(HomepageSettingCrudController::class,$this->translator->t
             ->addCssFile('lib/admin-html-editor.css')
             ->addJsFile('https://cdn.jsdelivr.net/npm/jodit@4.2.27/es2021/jodit.min.js')
             ->addJsFile('lib/admin-html-editor.js')
+            ->addCssFile('lib/admin-mailbox-notifications.css')
             ->addJsFile('lib/admin-mailbox-notifications.js');
     }
 }

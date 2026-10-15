@@ -1,7 +1,7 @@
 (function () {
     'use strict';
 
-    if (!window.Notification || !document.body) {
+    if (!document.body) {
         return;
     }
 
@@ -9,10 +9,18 @@
         const locale = (window.location.pathname.match(/\/admin\/(uk|en)(?:\/|$)/) || [])[1] || 'uk';
         return '/admin/' + locale + '/mailbox/notifications/poll';
     })();
-    const POLL_MS = 45000;
+    const MAILBOX_URL = (function () {
+        const locale = (window.location.pathname.match(/\/admin\/(uk|en)(?:\/|$)/) || [])[1] || 'uk';
+        return '/admin/' + locale + '/mailbox-message';
+    })();
+    const POLL_MS = 30000;
     let permissionRequested = false;
+    let toastHost = null;
 
     function ensurePermission() {
+        if (!window.Notification) {
+            return Promise.resolve(false);
+        }
         if (Notification.permission === 'granted') {
             return Promise.resolve(true);
         }
@@ -23,20 +31,68 @@
             return Promise.resolve(false);
         }
         permissionRequested = true;
-        return Notification.requestPermission().then((p) => p === 'granted');
+        return Notification.requestPermission().then(function (p) {
+            return p === 'granted';
+        });
     }
 
-    function showNotification(item) {
-        const title = item.subject || 'Новий лист';
-        const body = [item.from, item.mailbox].filter(Boolean).join('\n');
+    function ensureToastHost() {
+        if (toastHost) {
+            return toastHost;
+        }
+        toastHost = document.createElement('div');
+        toastHost.id = 'admin-mailbox-toast-host';
+        toastHost.setAttribute('aria-live', 'polite');
+        document.body.appendChild(toastHost);
+        return toastHost;
+    }
+
+    function showToast(title, body, options) {
+        options = options || {};
+        const host = ensureToastHost();
+        const el = document.createElement('div');
+        el.className = 'admin-mailbox-toast';
+        el.innerHTML =
+            '<div class="admin-mailbox-toast__icon" aria-hidden="true">✉</div>' +
+            '<div class="admin-mailbox-toast__content">' +
+            '<div class="admin-mailbox-toast__title"></div>' +
+            (body ? '<div class="admin-mailbox-toast__body"></div>' : '') +
+            '</div>' +
+            '<button type="button" class="admin-mailbox-toast__close" aria-label="Close">×</button>';
+        el.querySelector('.admin-mailbox-toast__title').textContent = title || '';
+        const bodyEl = el.querySelector('.admin-mailbox-toast__body');
+        if (bodyEl && body) {
+            bodyEl.textContent = body;
+        }
+        const close = function () {
+            el.classList.add('is-leaving');
+            window.setTimeout(function () {
+                if (el.parentNode) {
+                    el.parentNode.removeChild(el);
+                }
+            }, 220);
+        };
+        el.querySelector('.admin-mailbox-toast__close').addEventListener('click', function (e) {
+            e.stopPropagation();
+            close();
+        });
+        el.addEventListener('click', function () {
+            window.location.href = MAILBOX_URL;
+        });
+        host.appendChild(el);
+        window.setTimeout(close, options.ttl || 9000);
+    }
+
+    function showBrowserNotification(title, body, tag) {
         try {
             const n = new Notification(title, {
-                body: body,
-                tag: 'mailbox-' + item.id,
+                body: body || '',
+                tag: tag || 'mailbox',
                 renotify: true,
             });
             n.onclick = function () {
                 window.focus();
+                window.location.href = MAILBOX_URL;
                 n.close();
             };
         } catch (e) {
@@ -44,18 +100,24 @@
         }
     }
 
+    function notify(title, body, tag) {
+        showToast(title, body);
+        ensurePermission().then(function (ok) {
+            if (ok) {
+                showBrowserNotification(title, body, tag);
+            }
+        });
+    }
+
     function updateBadge(unread) {
         let badge = document.getElementById('admin-mailbox-unread-badge');
         if (!badge) {
-            const menu = document.querySelector('.sidebar, .content-wrapper, body');
             badge = document.createElement('div');
             badge.id = 'admin-mailbox-unread-badge';
-            badge.style.cssText = 'position:fixed;bottom:16px;right:16px;z-index:9999;background:#0d6efd;color:#fff;padding:8px 12px;border-radius:20px;font:600 13px/1 sans-serif;box-shadow:0 4px 12px rgba(0,0,0,.2);display:none;cursor:pointer;';
             badge.addEventListener('click', function () {
-                const locale = (window.location.pathname.match(/\/admin\/(uk|en)(?:\/|$)/) || [])[1] || 'uk';
-                window.location.href = '/admin/' + locale + '/mailbox-message';
+                window.location.href = MAILBOX_URL;
             });
-            (menu || document.body).appendChild(badge);
+            document.body.appendChild(badge);
         }
         if (unread > 0) {
             badge.style.display = 'block';
@@ -78,15 +140,22 @@
             })
             .then(function (data) {
                 updateBadge(Number(data.unread) || 0);
-                const items = Array.isArray(data.new) ? data.new : [];
-                if (items.length === 0) {
-                    return;
+
+                if (data.greeting && data.greeting.title) {
+                    notify(
+                        data.greeting.title,
+                        data.greeting.body || '',
+                        'mailbox-greeting'
+                    );
                 }
-                ensurePermission().then(function (ok) {
-                    if (!ok) {
-                        return;
-                    }
-                    items.forEach(showNotification);
+
+                const items = Array.isArray(data.new) ? data.new : [];
+                items.forEach(function (item) {
+                    notify(
+                        item.title || 'New mail',
+                        item.body || item.subject || '',
+                        'mailbox-' + item.id
+                    );
                 });
             })
             .catch(function () {

@@ -49,6 +49,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(nullable: true)]
     private ?string $password = null;
 
+    /** Last successful login that opened the admin panel. */
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $lastAdminLoginAt = null;
+
     private ?string $plainPassword = null;
 
     /** @var Collection<int, ShipmentAddress> */
@@ -174,6 +178,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPassword(?string $password): static
     {
         $this->password = $password;
+
+        return $this;
+    }
+
+    public function getLastAdminLoginAt(): ?\DateTimeImmutable
+    {
+        return $this->lastAdminLoginAt;
+    }
+
+    public function setLastAdminLoginAt(?\DateTimeImmutable $lastAdminLoginAt): static
+    {
+        $this->lastAdminLoginAt = $lastAdminLoginAt;
 
         return $this;
     }

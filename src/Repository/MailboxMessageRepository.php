@@ -74,6 +74,26 @@ class MailboxMessageRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
     }
 
+    /**
+     * Unread messages received after a given moment (previous admin login).
+     * When $since is null, counts all unread (first admin login ever).
+     */
+    public function countUnreadReceivedAfter(?\DateTimeInterface $since): int
+    {
+        $qb = $this->createQueryBuilder('m')
+            ->select('COUNT(m.id)')
+            ->innerJoin('m.mailbox', 'a')
+            ->andWhere('a.isActive = true')
+            ->andWhere('m.isSeen = false');
+
+        if ($since !== null) {
+            $qb->andWhere('m.receivedAt > :since')
+                ->setParameter('since', $since);
+        }
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
+    }
+
     /** @param list<int> $ids */
     public function markNotifiedByIds(array $ids): int
     {

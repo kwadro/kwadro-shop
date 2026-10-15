@@ -82,6 +82,10 @@ class Site
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $ignoredRequestIps = null;
 
+    /** When true, admin CRUD and login actions are written to AdminAuditLog. */
+    #[ORM\Column(options: ['default' => false])]
+    private bool $logAdminActions = false;
+
     #[ORM\ManyToOne(targetEntity: Product::class)]
     #[ORM\JoinColumn(name: 'feature_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
     private ?Product $featuredProduct = null;
@@ -260,6 +264,18 @@ class Site
         }
 
         return \in_array($ip, $this->getIgnoredRequestIpList(), true);
+    }
+
+    public function isLogAdminActions(): bool
+    {
+        return $this->logAdminActions;
+    }
+
+    public function setLogAdminActions(bool $logAdminActions): self
+    {
+        $this->logAdminActions = $logAdminActions;
+
+        return $this;
     }
 
     public function getCourierDeliveryCost(): ?float

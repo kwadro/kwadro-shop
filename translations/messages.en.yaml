@@ -43,6 +43,8 @@ menu.link_request_list_single: Request
 menu.link_report_visitor_ids: Report Visitor Ids
 menu.link_blocked_ip: Blocked IP addresses
 menu.link_blocked_ip_single: Blocked IP address
+menu.link_admin_audit_log: Admin action log
+menu.link_admin_audit_log_single: Admin action log entry
 menu.link_redirect: Redirects
 menu.link_redirect_single: Redirect
 menu.link_product: Products
@@ -168,6 +170,21 @@ admin.site.instagram_url: Instagram page
 admin.site.instagram_url_help: Full URL to your Instagram profile (e.g. https://www.instagram.com/yourpage/).
 admin.site.ignored_request_ips: Ignore IPs for RequestList
 admin.site.ignored_request_ips_help: 'IPs that will not be written to the request log. Multiple values — one per line, or separated by comma / space.'
+admin.site.log_admin_actions: Log admin actions
+admin.site.log_admin_actions_help: When enabled, admin logins and entity create / update / delete are stored (including changed field values).
+admin.audit_log.created_at: Time
+admin.audit_log.account_name: Account
+admin.audit_log.action_label: Action
+admin.audit_log.action.login: Login
+admin.audit_log.action.create: Create
+admin.audit_log.action.update: Update
+admin.audit_log.action.delete: Delete
+admin.audit_log.entity_class: Entity
+admin.audit_log.entity_id: ID
+admin.audit_log.entity_label: Label
+admin.audit_log.ip: IP
+admin.audit_log.request_path: URL
+admin.audit_log.changes: Changed fields
 admin.site.courier_delivery_cost: Courier delivery cost
 admin.site.courier_delivery_cost_help: Fixed courier price within Ivano-Frankivsk, regardless of product quantity.
 admin.site.cod_standard_percent: NP commission, standard %
@@ -912,6 +929,10 @@ admin.mailbox_message.is_seen: Seen
 admin.mailbox_message.has_attachments: Attachments
 admin.mailbox_message.attachments: Files
 admin.mailbox_message.attachments_pending: Attachments exist but files are not downloaded yet. Open the message again or run sync.
+admin.mailbox_notify.unread_title: You have unread messages
+admin.mailbox_notify.unread_body: 'Unread messages since your previous login: %count%'
+admin.mailbox_notify.new_mail_title: You received a message
+admin.mailbox_notify.new_mail_body: New message in the mailbox
 admin.mailbox_message.preview: Preview
 admin.mailbox_message.body_text: Text body
 admin.mailbox_message.body_html: HTML body

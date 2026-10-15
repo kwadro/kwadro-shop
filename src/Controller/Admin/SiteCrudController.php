@@ -15,6 +15,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ImageField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\EmailField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\UrlField;
@@ -55,6 +56,8 @@ class SiteCrudController extends AbstractCrudController
                     'placeholder' => "127.0.0.1\n192.168.0.10",
                 ])
                 ->hideOnIndex(),
+            BooleanField::new('logAdminActions', $this->translator->trans('admin.site.log_admin_actions', [], 'messages'))
+                ->setHelp($this->translator->trans('admin.site.log_admin_actions_help', [], 'messages')),
             AssociationField::new('featuredProduct', $this->translator->trans('admin.site.featured_product', [], 'messages'))
                 ->setRequired(false)
                 ->setHelp($this->translator->trans('admin.site.featured_product_help', [], 'messages')),
