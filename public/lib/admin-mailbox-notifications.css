@@ -1,0 +1,103 @@
+#admin-mailbox-unread-badge {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    z-index: 9999;
+    background: #0d6efd;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font: 600 13px/1 sans-serif;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    display: none;
+    cursor: pointer;
+}
+
+#admin-mailbox-toast-host {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: min(360px, calc(100vw - 32px));
+    pointer-events: none;
+}
+
+.admin-mailbox-toast {
+    pointer-events: auto;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: #111827;
+    color: #f9fafb;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
+    cursor: pointer;
+    animation: admin-mailbox-toast-in 0.22s ease-out;
+}
+
+.admin-mailbox-toast.is-leaving {
+    opacity: 0;
+    transform: translateY(-6px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.admin-mailbox-toast__icon {
+    flex: 0 0 auto;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #2563eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+.admin-mailbox-toast__content {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.admin-mailbox-toast__title {
+    font: 700 14px/1.3 system-ui, sans-serif;
+    margin-bottom: 2px;
+}
+
+.admin-mailbox-toast__body {
+    font: 400 13px/1.4 system-ui, sans-serif;
+    color: #d1d5db;
+    white-space: pre-line;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+}
+
+.admin-mailbox-toast__close {
+    border: 0;
+    background: transparent;
+    color: #9ca3af;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 2px;
+}
+
+.admin-mailbox-toast__close:hover {
+    color: #fff;
+}
+
+@keyframes admin-mailbox-toast-in {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
