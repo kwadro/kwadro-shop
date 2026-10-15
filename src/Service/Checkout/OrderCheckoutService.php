@@ -361,15 +361,9 @@ class OrderCheckoutService
             return $order;
         }
 
-        if ($payment !== null) {
-            $this->markPaymentSuccessful($payment, ['source' => 'success_return']);
-        } elseif ($order->getStatus() === OrderStatus::InProcess) {
-            $order->setStatus(OrderStatus::Paid);
-            $this->confirmOrderItems($order);
-            $this->entityManager->flush();
-            $this->syncCartOrderReference($order, null);
-            $this->cartStorage->deactivateCartForOrder($order);
-        } elseif ($order->getStatus() === OrderStatus::Paid) {
+        // Gateway payments (LiqPay / Monobank) must be confirmed by callback or status API —
+        // never mark paid just because the browser hit the success/result URL.
+        if (in_array($order->getStatus(), [OrderStatus::Paid, OrderStatus::DepositPaid], true)) {
             $this->cartStorage->deactivateCartForOrder($order);
         }
 

@@ -28,16 +28,6 @@
 
         {% include 'shop/partials/_checkout_steps.html.twig' %}
 
-        {% for message in app.flashes('success') %}
-            <div class="shop-checkout__alert shop-checkout__alert--success">{{ message|trans }}</div>
-        {% endfor %}
-        {% for message in app.flashes('error') %}
-            <div class="shop-checkout__alert shop-checkout__alert--error">{{ message|trans }}</div>
-        {% endfor %}
-        {% for message in app.flashes('info') %}
-            <div class="shop-checkout__alert shop-checkout__alert--error">{{ message|trans }}</div>
-        {% endfor %}
-
         {{ include('shop/checkout/_summary.html.twig') }}
 
         {# Step 1: Contact details #}

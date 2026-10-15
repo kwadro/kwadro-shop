@@ -42,6 +42,9 @@
                 {% for message in app.flashes('success') %}
                     <div class="shop-checkout__alert shop-checkout__alert--success">{{ message|trans }}</div>
                 {% endfor %}
+                {% for message in app.flashes('warning') %}
+                    <div class="shop-checkout__alert shop-checkout__alert--warning">{{ message|trans }}</div>
+                {% endfor %}
                 {% for message in app.flashes('error') %}
                     <div class="shop-checkout__alert shop-checkout__alert--error">{{ message|trans }}</div>
                 {% endfor %}

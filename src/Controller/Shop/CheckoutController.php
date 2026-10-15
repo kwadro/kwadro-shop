@@ -10,6 +10,8 @@ use App\Form\Type\CheckoutDeliveryFormType;
 use App\Form\Type\CheckoutPaymentFormType;
 use App\Entity\Order;
 use App\Entity\OrderStatus;
+use App\Entity\Payment;
+use App\Entity\PaymentStatus;
 use App\Entity\ShopDeliveryMethod;
 use App\Entity\ShopPaymentMethod;
 use App\Entity\User;
@@ -20,6 +22,8 @@ use App\Service\Cart\CartSummaryFormatter;
 use App\Service\Cart\VisitorIdResolver;
 use App\Service\Checkout\CartShipmentPlanner;
 use App\Service\Checkout\CheckoutPaymentMethodResolver;
+use App\Service\Checkout\LiqPay\LiqPayCallbackHandler;
+use App\Service\Checkout\Monobank\MonobankInvoiceStatusClient;
 use App\Service\Checkout\Monobank\MonobankWebhookHandler;
 use App\Service\Checkout\OrderCheckoutService;
 use App\Service\Checkout\PaymentCheckoutService;
@@ -35,6 +39,7 @@ use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class CheckoutController extends AbstractController
 {
@@ -47,12 +52,15 @@ class CheckoutController extends AbstractController
         private readonly CartStorageService $cartStorage,
         private readonly OrderCheckoutService $orderCheckoutService,
         private readonly PaymentRepository $paymentRepository,
+        private readonly LiqPayCallbackHandler $liqPayCallbackHandler,
+        private readonly MonobankInvoiceStatusClient $monobankInvoiceStatusClient,
         private readonly UserCityService $userCityService,
         private readonly NovaPoshtaDeliveryQuoteService $deliveryQuoteService,
         private readonly SiteSettingsProvider $siteSettingsProvider,
         private readonly CheckoutPaymentMethodResolver $paymentMethodResolver,
         private readonly CartShipmentPlanner $shipmentPlanner,
         private readonly CartSummaryFormatter $cartSummaryFormatter,
+        private readonly TranslatorInterface $translator,
     ) {
     }
 
@@ -366,10 +374,17 @@ class CheckoutController extends AbstractController
         '/{_locale}/checkout/success',
         name: 'shop_checkout_success',
         requirements: ['_locale' => ShopRoutes::LOCALE_REQUIREMENTS],
-        methods: ['GET'],
+        methods: ['GET', 'POST'],
     )]
-    public function success(Request $request): Response
+    public function success(string $_locale, Request $request): Response
     {
+        $this->applyLiqPayBrowserReturn($request);
+
+        $orderEntity = $this->orderCheckoutService->resolveOrderFromCartSession();
+        if ($orderEntity !== null) {
+            $this->syncPendingGatewayPaymentOnReturn($orderEntity);
+        }
+
         $orderEntity = $this->orderCheckoutService->completeOrderFromCartSession();
 
         if ($orderEntity === null) {
@@ -393,6 +408,21 @@ class CheckoutController extends AbstractController
             }
         }
 
+        $variant = \is_array($order) ? (string) ($order['success_variant'] ?? 'paid') : 'paid';
+        if (in_array($variant, ['payment_pending', 'payment_failed'], true)) {
+            $orderId = \is_array($order) ? (string) ($order['id'] ?? '') : '';
+            $params = ['%order_id%' => $orderId !== '' ? $orderId : '—'];
+            if ($variant === 'payment_failed') {
+                $this->addFlash('error', $this->translator->trans('shop.checkout.success_failed_main', $params));
+                $this->addFlash('error', $this->translator->trans('shop.checkout.success_failed_hint'));
+            } else {
+                $this->addFlash('warning', $this->translator->trans('shop.checkout.success_pending_main', $params));
+                $this->addFlash('warning', $this->translator->trans('shop.checkout.success_pending_hint'));
+            }
+
+            return $this->redirectToRoute('shop_checkout', ['_locale' => $_locale]);
+        }
+
         return $this->render('shop/checkout/success.html.twig', [
             'order' => $order,
         ]);
@@ -406,30 +436,16 @@ class CheckoutController extends AbstractController
     )]
     public function liqpayCallback(Request $request): Response
     {
-        $encodedData = (string) $request->request->get('data', '');
-        if ($encodedData === '') {
-            return new Response('OK', Response::HTTP_OK);
-        }
+        $result = $this->liqPayCallbackHandler->handleEncodedCallback(
+            (string) $request->request->get('data', ''),
+            (string) $request->request->get('signature', ''),
+        );
 
-        $decoded = json_decode(base64_decode($encodedData, true) ?: '', true);
-        if (!\is_array($decoded)) {
-            return new Response('OK', Response::HTTP_OK);
-        }
-
-        $orderNumber = (string) ($decoded['order_id'] ?? '');
-        $payment = $orderNumber !== ''
-            ? $this->paymentRepository->findOneByGatewayReference($orderNumber)
-            : null;
-
-        if ($payment !== null) {
-            if (($decoded['status'] ?? '') === 'success' || ($decoded['status'] ?? '') === 'sandbox') {
-                $this->orderCheckoutService->markPaymentSuccessful($payment, $decoded);
-            } elseif (in_array($decoded['status'] ?? '', ['failure', 'error', 'reversed'], true)) {
-                $this->orderCheckoutService->markPaymentFailed($payment, $decoded);
-            }
-        }
-
-        return new Response('OK', Response::HTTP_OK);
+        return match ($result) {
+            'invalid_signature' => new Response('Invalid signature', Response::HTTP_FORBIDDEN),
+            'invalid_payload' => new Response('Invalid payload', Response::HTTP_BAD_REQUEST),
+            default => new Response('OK', Response::HTTP_OK),
+        };
     }
 
     #[Route(
@@ -811,13 +827,12 @@ class CheckoutController extends AbstractController
         if ($paymentMethod === '' && in_array($orderEntity->getStatus(), [OrderStatus::AwaitingDepositForShipment, OrderStatus::DepositPaid, OrderStatus::InProcess], true)) {
             $paymentMethod = ShopPaymentMethod::OnDelivery;
         }
-        $isAwaitingDeposit = $orderEntity->getStatus() === OrderStatus::AwaitingDepositForShipment;
 
         return [
             'id' => $orderEntity->getOrderNumber(),
             'amount' => $orderEntity->getAmount(),
             'status' => $orderEntity->getStatus()->value,
-            'success_variant' => $isAwaitingDeposit ? 'awaiting_deposit' : 'paid',
+            'success_variant' => $this->resolveSuccessVariant($orderEntity->getStatus(), $payment),
             'do_not_call' => $orderEntity->isDoNotCall(),
             'payment_method' => $paymentMethod,
         ];
@@ -830,16 +845,99 @@ class CheckoutController extends AbstractController
         $paymentMethod = (string) ($sessionOrder['payment_method'] ?? '');
         $status = (string) ($sessionOrder['status'] ?? '');
         $contact = $this->cartStorage->getContactData();
-        $isAwaitingDeposit = $status === OrderStatus::AwaitingDepositForShipment->value;
+        $orderStatus = OrderStatus::tryFrom($status);
+        $isAwaitingDeposit = $orderStatus === OrderStatus::AwaitingDepositForShipment;
+        $isPaid = in_array($orderStatus, [OrderStatus::Paid, OrderStatus::DepositPaid], true);
+        $isGateway = in_array($paymentMethod, [ShopPaymentMethod::Privatbank, ShopPaymentMethod::Monobank], true);
 
         return [
             'id' => (string) ($sessionOrder['order_number'] ?? $sessionOrder['id'] ?? ''),
             'amount' => (float) ($sessionOrder['amount'] ?? 0),
             'status' => $status,
-            'success_variant' => $isAwaitingDeposit ? 'awaiting_deposit' : 'paid',
+            'success_variant' => $isAwaitingDeposit
+                ? 'awaiting_deposit'
+                : ($isPaid ? 'paid' : ($isGateway ? 'payment_pending' : 'paid')),
             'do_not_call' => filter_var($contact['doNotCall'] ?? false, FILTER_VALIDATE_BOOL),
             'payment_method' => $paymentMethod,
         ];
+    }
+
+    private function resolveSuccessVariant(OrderStatus $status, ?Payment $payment): string
+    {
+        if ($status === OrderStatus::AwaitingDepositForShipment) {
+            return 'awaiting_deposit';
+        }
+
+        if (in_array($status, [OrderStatus::Paid, OrderStatus::DepositPaid], true)) {
+            return 'paid';
+        }
+
+        if (
+            $payment !== null
+            && in_array($payment->getMethod(), [ShopPaymentMethod::Privatbank, ShopPaymentMethod::Monobank], true)
+            && $payment->getStatus() !== PaymentStatus::Success
+        ) {
+            return $payment->getStatus() === PaymentStatus::Failed ? 'payment_failed' : 'payment_pending';
+        }
+
+        if ($status === OrderStatus::InProcess) {
+            return 'payment_pending';
+        }
+
+        return 'paid';
+    }
+
+    private function applyLiqPayBrowserReturn(Request $request): void
+    {
+        $encodedData = (string) ($request->request->get('data') ?? $request->query->get('data') ?? '');
+        $signature = (string) ($request->request->get('signature') ?? $request->query->get('signature') ?? '');
+        if ($encodedData === '' || $signature === '') {
+            return;
+        }
+
+        $this->liqPayCallbackHandler->handleEncodedCallback($encodedData, $signature);
+    }
+
+    private function syncPendingGatewayPaymentOnReturn(Order $order): void
+    {
+        $payment = $this->paymentRepository->findLatestPendingGatewayByOrder($order);
+        if ($payment === null) {
+            return;
+        }
+
+        if ($payment->getMethod() === ShopPaymentMethod::Privatbank) {
+            $this->liqPayCallbackHandler->syncPendingPayment($payment);
+
+            return;
+        }
+
+        if ($payment->getMethod() !== ShopPaymentMethod::Monobank || !$this->monobankInvoiceStatusClient->isConfigured()) {
+            return;
+        }
+
+        $invoiceId = $payment->getMonobankInvoiceId();
+        if ($invoiceId === null || $invoiceId === '') {
+            $gatewayResponse = $payment->getGatewayResponse();
+            $invoiceId = \is_array($gatewayResponse) ? (string) ($gatewayResponse['invoiceId'] ?? '') : '';
+        }
+        if ($invoiceId === '') {
+            return;
+        }
+
+        $payload = $this->monobankInvoiceStatusClient->fetchStatus($invoiceId);
+        if ($payload === null) {
+            return;
+        }
+
+        $status = (string) ($payload['status'] ?? '');
+        if ($status === 'success') {
+            if ($payment->getMonobankInvoiceId() === null) {
+                $payment->setMonobankInvoiceId($invoiceId);
+            }
+            $this->orderCheckoutService->markPaymentSuccessful($payment, $payload);
+        } elseif (in_array($status, ['failure', 'expired', 'reversed'], true)) {
+            $this->orderCheckoutService->markPaymentFailed($payment, $payload);
+        }
     }
 
     private function getAccountEmail(): ?string

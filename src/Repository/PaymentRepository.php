@@ -21,7 +21,9 @@ class PaymentRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('p')
             ->andWhere('p.order = :order')
+            ->andWhere('p.status = :status')
             ->setParameter('order', $order)
+            ->setParameter('status', PaymentStatus::Pending)
             ->orderBy('p.id', 'DESC')
             ->setMaxResults(1)
             ->getQuery()
@@ -60,7 +62,13 @@ class PaymentRepository extends ServiceEntityRepository
 
     public function findLatestByOrder(Order $order): ?Payment
     {
-        return $this->findLatestPendingByOrder($order);
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.order = :order')
+            ->setParameter('order', $order)
+            ->orderBy('p.id', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 
     public function findOneByGatewayReference(string $gatewayReference): ?Payment

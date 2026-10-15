@@ -88,6 +88,11 @@ services:
             $liqpayPrivateKey: '%env(default::LIQPAY_PRIVATE_KEY)%'
             $monobankToken: '%env(default::MONOBANK_TOKEN)%'
 
+    App\Service\Checkout\LiqPay\LiqPayClient:
+        arguments:
+            $liqpayPublicKey: '%env(default::LIQPAY_PUBLIC_KEY)%'
+            $liqpayPrivateKey: '%env(default::LIQPAY_PRIVATE_KEY)%'
+
     App\Service\Checkout\Monobank\MonobankInvoiceStatusClient:
         arguments:
             $monobankToken: '%env(default::MONOBANK_TOKEN)%'

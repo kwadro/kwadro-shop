@@ -9,11 +9,18 @@
         <h1 class="shop-page__title">{{ 'shop.checkout.success_title'|trans }}</h1>
 
         {% if order %}
-            <div class="shop-checkout__alert shop-checkout__alert--success shop-checkout__success">
-                {% if order.success_variant == 'awaiting_deposit' %}
+            {% set variant = order.success_variant|default('paid') %}
+            <div class="shop-checkout__alert shop-checkout__success{% if variant == 'payment_failed' %} shop-checkout__alert--error{% elseif variant == 'payment_pending' %} shop-checkout__alert--warning{% else %} shop-checkout__alert--success{% endif %}">
+                {% if variant == 'awaiting_deposit' %}
                     <p>{{ 'shop.checkout.success_deposit_main'|trans({'%order_id%': order.id}) }}</p>
                     <p>{{ 'shop.checkout.success_deposit_payment'|trans }}</p>
                     <p>{{ 'shop.checkout.success_deposit_waybill'|trans }}</p>
+                {% elseif variant == 'payment_pending' %}
+                    <p>{{ 'shop.checkout.success_pending_main'|trans({'%order_id%': order.id}) }}</p>
+                    <p>{{ 'shop.checkout.success_pending_hint'|trans }}</p>
+                {% elseif variant == 'payment_failed' %}
+                    <p>{{ 'shop.checkout.success_failed_main'|trans({'%order_id%': order.id}) }}</p>
+                    <p>{{ 'shop.checkout.success_failed_hint'|trans }}</p>
                 {% else %}
                     <p>{{ 'shop.checkout.success_paid_main'|trans({'%order_id%': order.id}) }}</p>
                     {% if not order.do_not_call %}
