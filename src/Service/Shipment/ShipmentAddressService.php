@@ -25,7 +25,7 @@ class ShipmentAddressService
             $address = ShipmentAddress::fromDeliveryArray($deliveryData);
             $address->setCart($cart);
             $cart->setShipmentAddress($address);
-            $this->entityManager->persist($address);
+            // Cart.shipmentAddress has cascade persist; avoid explicit persist on a managed entity.
 
             return $address;
         }
@@ -47,14 +47,16 @@ class ShipmentAddressService
             return $this->attachDeliveryDataToOrder($order, $legacy);
         }
 
-        $cart->setShipmentAddress(null);
-        $cart->setDeliveryData(null);
-        $address->setCart(null);
-        $address->setOrder($order);
-        $order->setShipmentAddress($address);
-        $order->setDeliveryData($address->toDeliveryArray());
+        // Clone onto the order. Moving the same row triggers Cart orphanRemoval
+        // (delete) + Order cascade persist (insert) → managed+dirty insert error.
+        $orderAddress = $address->cloneAsNew();
+        $orderAddress->setOrder($order);
+        $order->setShipmentAddress($orderAddress);
+        $order->setDeliveryData($orderAddress->toDeliveryArray());
 
-        return $address;
+        $this->clearCartAddress($cart);
+
+        return $orderAddress;
     }
 
     /** @param array<string, mixed> $deliveryData */
@@ -64,11 +66,18 @@ class ShipmentAddressService
             return null;
         }
 
+        $existing = $order->getShipmentAddress();
+        if ($existing !== null) {
+            $existing->applyDeliveryArray($deliveryData);
+            $order->setDeliveryData($existing->toDeliveryArray());
+
+            return $existing;
+        }
+
         $address = ShipmentAddress::fromDeliveryArray($deliveryData);
         $address->setOrder($order);
         $order->setShipmentAddress($address);
         $order->setDeliveryData($address->toDeliveryArray());
-        $this->entityManager->persist($address);
 
         return $address;
     }
@@ -99,31 +108,31 @@ class ShipmentAddressService
             if ($catalogAddress->getLabel() === null || $catalogAddress->getLabel() === '') {
                 $catalogAddress->setLabel($orderAddress->getSummaryLabel());
             }
+
+            return $catalogAddress;
         }
 
-        if ($orderAddress->getUser() === null) {
-            $user->addShipmentAddress($orderAddress);
-        }
+        // Keep order address on the order; store a separate catalog copy on the user.
+        $saved = $orderAddress->cloneAsNew();
+        $saved->setLabel($orderAddress->getSummaryLabel());
+        $user->addShipmentAddress($saved);
 
-        if ($orderAddress->getLabel() === null || $orderAddress->getLabel() === '') {
-            $orderAddress->setLabel($orderAddress->getSummaryLabel());
-        }
-
-        return $orderAddress;
+        return $saved;
     }
 
     public function clearCartAddress(Cart $cart): void
     {
         $address = $cart->getShipmentAddress();
+        $cart->setDeliveryData(null);
         if ($address === null) {
-            $cart->setDeliveryData(null);
-
             return;
         }
 
+        $address->setCart(null);
         $cart->setShipmentAddress(null);
-        $cart->setDeliveryData(null);
-        $this->entityManager->remove($address);
+        if ($this->entityManager->contains($address)) {
+            $this->entityManager->remove($address);
+        }
     }
 
     public function cloneAddressForCart(ShipmentAddress $source, Cart $target): ShipmentAddress
@@ -136,7 +145,6 @@ class ShipmentAddressService
         $clone->setCart($target);
         $target->setShipmentAddress($clone);
         $target->setDeliveryData($clone->toDeliveryArray());
-        $this->entityManager->persist($clone);
 
         return $clone;
     }
