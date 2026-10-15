@@ -68,6 +68,33 @@ final class MailboxAttachmentStorage
         ];
     }
 
+    public function deleteFor(MailboxMessage $message): void
+    {
+        $dir = $this->directoryFor($message);
+        if (!is_dir($dir)) {
+            return;
+        }
+
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::CHILD_FIRST,
+        );
+
+        foreach ($iterator as $fileInfo) {
+            if (!$fileInfo instanceof \SplFileInfo) {
+                continue;
+            }
+            $path = $fileInfo->getPathname();
+            if ($fileInfo->isDir()) {
+                @rmdir($path);
+            } else {
+                @unlink($path);
+            }
+        }
+
+        @rmdir($dir);
+    }
+
     private function sanitizeFilename(string $name): string
     {
         $name = basename(str_replace(["\0", '\\'], '', $name));

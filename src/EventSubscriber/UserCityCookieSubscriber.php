@@ -4,7 +4,9 @@ namespace App\EventSubscriber;
 
 use App\Entity\RequestList;
 use App\Entity\Site;
+use App\Repository\RequestListRepository;
 use App\Repository\SiteRepository;
+use App\Service\Admin\AdminShopNotifyRecorder;
 use App\Service\GeoIp\UserCityService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -27,6 +29,8 @@ class UserCityCookieSubscriber implements EventSubscriberInterface
         private readonly UserCityService $userCityService,
         private readonly EntityManagerInterface $em,
         private readonly SiteRepository $siteRepository,
+        private readonly RequestListRepository $requestListRepository,
+        private readonly AdminShopNotifyRecorder $shopNotifyRecorder,
     ) {
     }
 
@@ -112,6 +116,14 @@ class UserCityCookieSubscriber implements EventSubscriberInterface
 
         $this->em->persist($entry);
         $this->em->flush();
+
+        try {
+            $this->shopNotifyRecorder->recordRequestListMilestone(
+                $this->requestListRepository->countToday(),
+            );
+        } catch (\Throwable) {
+            // ignore milestone toast failures
+        }
 
         if ($pathAfterRedirect !== null) {
             $this->attachSkipFollowUpCookie($response, $pathAfterRedirect);

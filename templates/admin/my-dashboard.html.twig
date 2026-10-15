@@ -1,9 +1,11 @@
-{% extends '@EasyAdmin/layout.html.twig' %}
-{% block body_javascript %}
-    {{ parent() }}
-    {{ encore_entry_script_tags('admin') }}
-    <script>console.log('ADMIN LAYOUT LOADED');</script>
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block content_title %}
+    {{ 'menu.dashboard'|trans({}, 'messages') }}
 {% endblock %}
+
 {% block main %}
-    {# ... #}
-{% endblock main %}
+    <p class="text-muted mb-0">
+        {{ 'admin.dashboard_title'|trans({}, 'messages') }}
+    </p>
+{% endblock %}

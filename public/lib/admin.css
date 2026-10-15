@@ -1,0 +1,7 @@
+/* Custom EasyAdmin overrides (loaded on every admin page). */
+
+/* Keep content readable when long filter bars wrap */
+.ea-filter-widget .form-select,
+.ea-filter-widget .form-control {
+    max-width: 100%;
+}

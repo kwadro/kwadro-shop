@@ -4,6 +4,7 @@ namespace App\Controller\Admin;
 
 use App\Entity\User;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminDashboard;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Asset;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Assets;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
@@ -14,8 +15,6 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 // @GENERATE USE START
 use Symfony\Contracts\Translation\TranslatorInterface;
-use Symfony\UX\Chartjs\Builder\ChartBuilderInterface;
-use Symfony\UX\Chartjs\Model\Chart;
 use App\Controller\Admin\FooterSettingCrudController;
 use App\Controller\Admin\FooterTranslationCrudController;
 use App\Controller\Admin\HeaderSettingCrudController;
@@ -51,6 +50,7 @@ use App\Controller\Admin\EmailParameterCrudController;
 use App\Controller\Admin\EmailSenderCrudController;
 use App\Controller\Admin\OrderEmailCrudController;
 use App\Controller\Admin\MailboxAccountCrudController;
+use App\Controller\Admin\MailboxComposeController;
 use App\Controller\Admin\MailboxMessageCrudController;
 use App\Controller\Admin\BlogArticleCrudController;
 use App\Controller\Admin\BlogCategoryCrudController;
@@ -65,41 +65,13 @@ use App\Controller\Admin\RedirectCrudController;
 class DashboardController extends AbstractDashboardController
 {
     public function __construct(
-        private readonly ChartBuilderInterface $chartBuilder,
         private readonly TranslatorInterface $translator,
     ) {
     }
 
     public function index(): Response
     {
-        $chart = $this->chartBuilder->createChart(Chart::TYPE_LINE);
-        // ...set chart data and options somehow
-
-        return $this->render('admin/my-dashboard.html.twig', [
-            'chart' => $chart
-        ]);
-
-        //return parent::index();
-
-        // Option 1. You can make your dashboard redirect to some common page of your backend
-        //
-        // 1.1) If you have enabled the "pretty URLs" feature:
-        // return $this->redirectToRoute('admin_user_index');
-        //
-        // 1.2) Same example but using the "ugly URLs" that were used in previous EasyAdmin versions:
-        // $adminUrlGenerator = $this->container->get(AdminUrlGenerator::class);
-        // return $this->redirect($adminUrlGenerator->setController(OneOfYourCrudController::class)->generateUrl());
-
-        // Option 2. You can make your dashboard redirect to different pages depending on the user
-        //
-        // if ('jane' === $this->getUser()->getUsername()) {
-        //     return $this->redirectToRoute('...');
-        // }
-
-        // Option 3. You can render some custom template to display a proper dashboard with widgets, etc.
-        // (tip: it's easier if your template extends from @EasyAdmin/page/content.html.twig)
-        //
-        // return $this->render('some/path/my-dashboard.html.twig');
+        return $this->render('admin/my-dashboard.html.twig');
     }
 
     public function configureDashboard(): Dashboard
@@ -191,12 +163,11 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkTo(EmailLogCrudController::class, $this->translator->trans('menu.link_email_log', [], 'messages'), 'fas fa-inbox');
         yield MenuItem::linkTo(MailboxAccountCrudController::class, $this->translator->trans('menu.link_mailbox_account', [], 'messages'), 'fas fa-at');
         yield MenuItem::linkTo(MailboxMessageCrudController::class, $this->translator->trans('menu.link_mailbox_message', [], 'messages'), 'fas fa-envelope-open');
-        yield MenuItem::linkToRoute(
+        yield MenuItem::linkTo(
+            MailboxComposeController::class,
             $this->translator->trans('menu.link_mailbox_compose', [], 'messages'),
             'fas fa-pen',
-            'admin_mailbox_compose',
-            ['_locale' => 'uk'],
-        );
+        )->setAction('compose');
         yield MenuItem::linkToRoute(
             $this->translator->trans('menu.link_email_template_test', [], 'messages'),
             'fas fa-vial',
@@ -239,16 +210,16 @@ yield MenuItem::linkTo(HomepageSettingCrudController::class,$this->translator->t
     public function configureAssets(): Assets
     {
         return Assets::new()
-            ->addCssFile('build/admin-css.css')
-            ->addJsFile('build/admin.js')
+            ->addCssFile('lib/admin.css')
+            ->addJsFile(Asset::new('lib/admin.js')->defer())
             ->addCssFile('https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css')
-            ->addJsFile('https://cdn.jsdelivr.net/npm/flatpickr')
-            ->addJsFile('lib/admin-datepicker.js')
+            ->addJsFile(Asset::new('https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.js')->defer())
+            ->addJsFile(Asset::new('lib/admin-datepicker.js')->defer())
             ->addCssFile('https://cdn.jsdelivr.net/npm/jodit@4.2.27/es2021/jodit.min.css')
             ->addCssFile('lib/admin-html-editor.css')
-            ->addJsFile('https://cdn.jsdelivr.net/npm/jodit@4.2.27/es2021/jodit.min.js')
-            ->addJsFile('lib/admin-html-editor.js')
+            ->addJsFile(Asset::new('https://cdn.jsdelivr.net/npm/jodit@4.2.27/es2021/jodit.min.js')->defer())
+            ->addJsFile(Asset::new('lib/admin-html-editor.js')->defer())
             ->addCssFile('lib/admin-mailbox-notifications.css')
-            ->addJsFile('lib/admin-mailbox-notifications.js');
+            ->addJsFile(Asset::new('lib/admin-mailbox-notifications.js')->defer());
     }
 }

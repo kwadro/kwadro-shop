@@ -312,10 +312,10 @@ class LugiProductImportService
 
     /**
      * Download every <picture> for each offer into:
-     * public/uploads/products/lugi/{first}/{second}/{vendorCode}.jpg
-     * public/uploads/products/lugi/{first}/{second}/{vendorCode}_1.jpg
+     * public/uploads/products/{supplierSlug}/{first}/{second}/{vendorCode}.jpg
+     * public/uploads/products/{supplierSlug}/{first}/{second}/{vendorCode}_1.jpg
      * …
-     * Example: HP-42-91 → …/lugi/H/P/HP-42-91.jpg
+     * Example: HP-42-91 + homeware → …/homeware/H/P/HP-42-91.jpg
      */
     private function downloadOfferImages(string $localPath, $supplierCode): void
     {

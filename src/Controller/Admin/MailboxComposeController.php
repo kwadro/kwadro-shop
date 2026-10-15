@@ -5,16 +5,20 @@ namespace App\Controller\Admin;
 use App\Entity\MailboxAccount;
 use App\Repository\MailboxAccountRepository;
 use App\Service\Mail\Mailbox\MailboxSmtpSendService;
+use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminRoute;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
+/**
+ * Custom admin page — must use #[AdminRoute] so EasyAdmin builds AdminContext (ea).
+ */
 #[IsGranted('ROLE_SUPER_ADMIN')]
+#[AdminRoute('/mailbox', name: 'mailbox')]
 class MailboxComposeController extends AbstractController
 {
     public function __construct(
@@ -25,8 +29,8 @@ class MailboxComposeController extends AbstractController
     ) {
     }
 
-    #[Route('/admin/{_locale}/mailbox/compose', name: 'admin_mailbox_compose', requirements: ['_locale' => 'uk|en'], methods: ['GET', 'POST'])]
-    public function compose(Request $request, string $_locale): Response
+    #[AdminRoute('/compose', name: 'compose', options: ['methods' => ['GET', 'POST']])]
+    public function compose(Request $request): Response
     {
         $accounts = $this->accountRepository->findActive();
         if ($accounts === []) {

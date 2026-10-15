@@ -929,10 +929,25 @@ admin.mailbox_message.is_seen: Seen
 admin.mailbox_message.has_attachments: Attachments
 admin.mailbox_message.attachments: Files
 admin.mailbox_message.attachments_pending: Attachments exist but files are not downloaded yet. Open the message again or run sync.
+admin.mailbox_message.batch_mark_read: Mark as read
+admin.mailbox_message.batch_delete: Delete selected
+admin.mailbox_message.batch_mark_read_success: 'Marked as read: %count%'
+admin.mailbox_message.batch_delete_success: 'Deleted messages: %count%'
 admin.mailbox_notify.unread_title: You have unread messages
 admin.mailbox_notify.unread_body: 'Unread messages since your previous login: %count%'
 admin.mailbox_notify.new_mail_title: You received a message
 admin.mailbox_notify.new_mail_body: New message in the mailbox
+admin.shop_notify.cart_created_title: New cart
+admin.shop_notify.cart_updated_title: Cart updated
+admin.shop_notify.cart_body: 'Cart #%id% · status %status%'
+admin.shop_notify.order_created_title: New order
+admin.shop_notify.order_updated_title: Order updated
+admin.shop_notify.order_body: 'Order %number% · %status% · %amount% UAH'
+admin.shop_notify.payment_created_title: New payment
+admin.shop_notify.payment_updated_title: Payment updated
+admin.shop_notify.payment_body: 'Payment #%id% · order %order% · %status% · %amount% UAH'
+admin.shop_notify.requests_milestone_title: Requests (IP)
+admin.shop_notify.requests_milestone_body: 'You already have %count% requests today'
 admin.mailbox_message.preview: Preview
 admin.mailbox_message.body_text: Text body
 admin.mailbox_message.body_html: HTML body

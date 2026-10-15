@@ -3,6 +3,7 @@
 namespace App\Controller\Admin;
 
 use App\EventSubscriber\LoginSuccessSubscriber;
+use App\Repository\AdminShopNotificationRepository;
 use App\Repository\MailboxMessageRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -16,6 +17,7 @@ final class MailboxNotificationController extends AbstractController
 {
     public function __construct(
         private readonly MailboxMessageRepository $messageRepository,
+        private readonly AdminShopNotificationRepository $shopNotificationRepository,
         private readonly TranslatorInterface $translator,
     ) {
     }
@@ -82,10 +84,30 @@ final class MailboxNotificationController extends AbstractController
             $this->messageRepository->markNotifiedByIds($ids);
         }
 
+        $shopNotifications = $this->shopNotificationRepository->findUnnotified(20);
+        $shopPayload = [];
+        $shopIds = [];
+        foreach ($shopNotifications as $notification) {
+            $shopIds[] = (int) $notification->getId();
+            $shopPayload[] = [
+                'id' => $notification->getId(),
+                'type' => 'shop_'.$notification->getChannel(),
+                'channel' => $notification->getChannel(),
+                'action' => $notification->getAction(),
+                'title' => $notification->getTitle(),
+                'body' => $notification->getBody(),
+                'url' => $notification->getTargetPath(),
+            ];
+        }
+        if ($shopIds !== []) {
+            $this->shopNotificationRepository->markNotifiedByIds($shopIds);
+        }
+
         return $this->json([
             'unread' => $this->messageRepository->countUnread(),
             'greeting' => $greeting,
             'new' => $payload,
+            'shop' => $shopPayload,
         ]);
     }
 }

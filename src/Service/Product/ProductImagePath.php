@@ -11,6 +11,17 @@ final class ProductImagePath
 {
     public const WEB_BASE = '/uploads/products';
 
+    /**
+     * Legacy / alternate supplier folder names that map to the current on-disk directory.
+     * Lugi import historically used "lugi"; files now live under "homeware".
+     *
+     * @var array<string, string>
+     */
+    private const SUPPLIER_DIR_ALIASES = [
+        'lugi' => 'homeware',
+        'homeware-1' => 'homeware',
+    ];
+
     public static function filename(?string $value): string
     {
         $value = trim((string) $value);
@@ -34,8 +45,11 @@ final class ProductImagePath
         $value = mb_strtolower(trim((string) $supplierCode));
         $value = preg_replace('/[^a-z0-9_-]+/', '-', $value) ?? '';
         $value = trim($value, '-_');
+        if ($value === '') {
+            return '';
+        }
 
-        return $value;
+        return self::SUPPLIER_DIR_ALIASES[$value] ?? $value;
     }
 
     public static function shardDir(string $filename): string
@@ -95,6 +109,18 @@ final class ProductImagePath
 
             // Already supplier-scoped: {supplier}/{a}/{b}/{file}
             if (\count($parts) >= 4) {
+                $filename = self::filename($parts[array_key_last($parts)]);
+                $pathSupplier = self::sanitizeSupplierCode($parts[0]);
+                $preferred = self::sanitizeSupplierCode($supplierCode);
+                $supplier = $preferred !== '' ? $preferred : $pathSupplier;
+                if ($filename !== '' && $supplier !== '') {
+                    return self::WEB_BASE.'/'.self::relativePath($filename, $supplier);
+                }
+
+                if ($pathSupplier !== '' && $pathSupplier !== $parts[0]) {
+                    $parts[0] = $pathSupplier;
+                }
+
                 return self::WEB_BASE.'/'.implode('/', $parts);
             }
 
