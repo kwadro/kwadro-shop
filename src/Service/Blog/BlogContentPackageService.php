@@ -29,12 +29,33 @@ final class BlogContentPackageService
     }
 
     /**
+     * @param list<string>|null $slugs When set, only these article slugs (and their categories) are exported
+     *
      * @return array{path: string, categories: int, articles: int, assets: int}
      */
-    public function export(?string $siteCode = null, ?string $localeCode = null, ?string $targetPath = null): array
-    {
-        $categories = $this->loadCategories($siteCode, $localeCode);
-        $articles = $this->loadArticles($siteCode, $localeCode);
+    public function export(
+        ?string $siteCode = null,
+        ?string $localeCode = null,
+        ?string $targetPath = null,
+        ?array $slugs = null,
+    ): array {
+        $articles = $this->loadArticles($siteCode, $localeCode, $slugs);
+        if ($slugs !== null && $slugs !== []) {
+            $categories = [];
+            $seen = [];
+            foreach ($articles as $article) {
+                foreach ($article->getCategories() as $category) {
+                    $id = $category->getId();
+                    if ($id === null || isset($seen[$id])) {
+                        continue;
+                    }
+                    $seen[$id] = true;
+                    $categories[] = $category;
+                }
+            }
+        } else {
+            $categories = $this->loadCategories($siteCode, $localeCode);
+        }
 
         $categoryRows = [];
         foreach ($categories as $category) {
@@ -61,13 +82,15 @@ final class BlogContentPackageService
             }
         }
 
-        // Always include the whole blog uploads tree when present (logos etc.).
-        foreach ($this->listBlogUploadFiles() as $path) {
-            $assetPaths[$path] = true;
-        }
+        if ($slugs === null || $slugs === []) {
+            // Full export: include the whole blog uploads tree (logos etc.).
+            foreach ($this->listBlogUploadFiles() as $path) {
+                $assetPaths[$path] = true;
+            }
 
-        foreach ($this->listOgImageFiles() as $path) {
-            $assetPaths[$path] = true;
+            foreach ($this->listOgImageFiles() as $path) {
+                $assetPaths[$path] = true;
+            }
         }
 
         $manifest = [
@@ -314,8 +337,12 @@ final class BlogContentPackageService
         return $items;
     }
 
-    /** @return list<BlogArticle> */
-    private function loadArticles(?string $siteCode, ?string $localeCode): array
+    /**
+     * @param list<string>|null $slugs
+     *
+     * @return list<BlogArticle>
+     */
+    private function loadArticles(?string $siteCode, ?string $localeCode, ?array $slugs = null): array
     {
         $qb = $this->articleRepository->createQueryBuilder('a')
             ->leftJoin('a.site', 's')->addSelect('s')
@@ -329,6 +356,9 @@ final class BlogContentPackageService
         }
         if ($localeCode !== null && $localeCode !== '') {
             $qb->andWhere('l.code = :localeCode')->setParameter('localeCode', $localeCode);
+        }
+        if ($slugs !== null && $slugs !== []) {
+            $qb->andWhere('a.slug IN (:slugs)')->setParameter('slugs', $slugs);
         }
 
         /** @var list<BlogArticle> $items */

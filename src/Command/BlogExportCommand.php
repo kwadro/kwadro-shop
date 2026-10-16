@@ -27,18 +27,23 @@ final class BlogExportCommand extends Command
         $this
             ->addOption('file', 'f', InputOption::VALUE_REQUIRED, 'Output zip path (default: var/export/blog-package.zip)')
             ->addOption('site', null, InputOption::VALUE_REQUIRED, 'Filter by site code')
-            ->addOption('locale', null, InputOption::VALUE_REQUIRED, 'Filter by locale code (e.g. uk)');
+            ->addOption('locale', null, InputOption::VALUE_REQUIRED, 'Filter by locale code (e.g. uk)')
+            ->addOption('slug', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Export only these article slugs');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
 
+        /** @var list<string> $slugs */
+        $slugs = array_values(array_filter(array_map('strval', (array) $input->getOption('slug'))));
+
         try {
             $result = $this->packageService->export(
                 $input->getOption('site'),
                 $input->getOption('locale'),
                 $input->getOption('file'),
+                $slugs !== [] ? $slugs : null,
             );
         } catch (\Throwable $e) {
             $io->error($e->getMessage());
