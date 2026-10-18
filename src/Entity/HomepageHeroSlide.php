@@ -35,7 +35,8 @@ class HomepageHeroSlide
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $title = null;
 
-    #[ORM\Column(type: 'text', nullable: true)]
+    // DB column lead_text — "lead" is reserved in MySQL.
+    #[ORM\Column(name: 'lead_text', type: 'text', nullable: true)]
     private ?string $lead = null;
 
     #[ORM\Column(length: 255, nullable: true)]
