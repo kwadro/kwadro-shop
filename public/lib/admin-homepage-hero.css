@@ -1,0 +1,107 @@
+.homepage-hero-slide {
+    display: grid;
+    grid-template-columns: minmax(180px, 220px) minmax(0, 1fr);
+    gap: 1rem;
+    align-items: start;
+    padding: .9rem;
+    border: 1px solid #e2e8f0;
+    border-radius: .5rem;
+    background: #fff;
+}
+
+@media (max-width: 900px) {
+    .homepage-hero-slide {
+        grid-template-columns: 1fr;
+    }
+}
+
+.homepage-hero-slide__media {
+    display: grid;
+    gap: .65rem;
+}
+
+.homepage-hero-slide__preview {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    border-radius: .4rem;
+    overflow: hidden;
+    background:
+        linear-gradient(45deg, #e2e8f0 25%, transparent 25%),
+        linear-gradient(-45deg, #e2e8f0 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #e2e8f0 75%),
+        linear-gradient(-45deg, transparent 75%, #e2e8f0 75%);
+    background-size: 12px 12px;
+    background-position: 0 0, 0 6px, 6px -6px, -6px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.homepage-hero-slide__preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.homepage-hero-slide__preview--empty {
+    color: #94a3b8;
+    font-size: .8rem;
+    text-align: center;
+    padding: .75rem;
+}
+
+.homepage-hero-slide__preview [data-homepage-hero-preview-empty] {
+    display: block;
+    padding: .75rem;
+}
+
+.homepage-hero-slide__remove-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem .85rem;
+}
+
+.homepage-hero-slide__remove-row.is-hidden {
+    display: none !important;
+}
+
+.homepage-hero-slide__remove-check {
+    display: none;
+}
+
+.homepage-hero-slide__fields {
+    display: grid;
+    gap: .35rem;
+    min-width: 0;
+}
+
+.homepage-hero-slide__row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .75rem;
+    align-items: start;
+}
+
+.homepage-hero-slide__row--meta {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+}
+
+@media (max-width: 700px) {
+    .homepage-hero-slide__row,
+    .homepage-hero-slide__row--meta {
+        grid-template-columns: 1fr;
+    }
+}
+
+.homepage-hero-slide .form-group,
+.homepage-hero-slide .mb-3 {
+    margin-bottom: .55rem !important;
+}
+
+.field-collection .form-group.field-homepage_hero_slide,
+.field-collection .homepage-hero-slide {
+    margin-bottom: .85rem;
+}

@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Entity\Traits\TimeStampAbleTrait;
 use App\Repository\CategoryRepository;
 use App\Routing\ShopRoutes;
+use App\Service\Category\CategoryOgImagePath;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -237,15 +238,36 @@ class Category
 
     public function getOgImage(): ?string
     {
-        return $this->og_image;
+        if ($this->og_image === null || $this->og_image === '') {
+            return null;
+        }
+
+        // Filename relative to /uploads/images/category for EasyAdmin ImageField.
+        return CategoryOgImagePath::relativePath($this->og_image) ?: $this->og_image;
     }
 
     public function setOgImage(?string $ogImage): static
     {
         $ogImage = $ogImage !== null ? trim($ogImage) : null;
-        $this->og_image = $ogImage !== '' ? $ogImage : null;
+        if ($ogImage === null || $ogImage === '') {
+            $this->og_image = null;
+
+            return $this;
+        }
+
+        $this->og_image = CategoryOgImagePath::relativePath($ogImage) ?: null;
 
         return $this;
+    }
+
+    public function relocateOgImageFile(string $projectDir): void
+    {
+        $relative = $this->getOgImage();
+        if ($relative === null) {
+            return;
+        }
+
+        CategoryOgImagePath::ensureStored($projectDir, $relative);
     }
 
     public function getLevel(): int

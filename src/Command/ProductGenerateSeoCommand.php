@@ -24,7 +24,7 @@ final class ProductGenerateSeoCommand extends Command
     private const BRAND = 'Квадро';
     private const META_TITLE_MAX = 70;
     private const META_DESCRIPTION_MAX = 160;
-    private const DEFAULT_DIR = 'var/export/product-seo';
+    private const DEFAULT_DIR = 'product-og';
 
     public function __construct(
         private readonly ProductRepository $productRepository,
@@ -39,7 +39,8 @@ final class ProductGenerateSeoCommand extends Command
     protected function configure(): void
     {
         $this
-            ->addOption('dir', null, InputOption::VALUE_REQUIRED, 'Export directory', self::DEFAULT_DIR)
+            ->addOption('dir', null, InputOption::VALUE_REQUIRED, 'Export directory (images + product-seo.json)', self::DEFAULT_DIR)
+            ->addOption('images-subdir', null, InputOption::VALUE_REQUIRED, 'Subfolder for images; empty = write images into --dir', '')
             ->addOption('limit', null, InputOption::VALUE_REQUIRED, 'Max products to process (0 = all)', '0')
             ->addOption('force-images', null, InputOption::VALUE_NONE, 'Rebuild OG images even if file already exists');
     }
@@ -48,7 +49,8 @@ final class ProductGenerateSeoCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
         $dir = $this->resolveDir((string) $input->getOption('dir'));
-        $imagesDir = $dir.'/images';
+        $subdir = trim((string) $input->getOption('images-subdir'), '/');
+        $imagesDir = $subdir === '' ? $dir : $dir.'/'.$subdir;
         $jsonPath = $dir.'/product-seo.json';
         $limit = max(0, (int) $input->getOption('limit'));
         $forceImages = (bool) $input->getOption('force-images');
@@ -98,16 +100,6 @@ final class ProductGenerateSeoCommand extends Command
                     continue;
                 }
 
-                $source = $this->resolveFirstGalleryPath($product);
-                if ($source === null) {
-                    if ($product->getGallery() === []) {
-                        ++$skippedInactiveOrEmpty;
-                    } else {
-                        ++$skippedNoImageFile;
-                    }
-                    continue;
-                }
-
                 $ogFilename = ProductOgImageGenerator::ogImageFilename($product->getSku(), $product->getId());
                 if (isset($usedNames[$ogFilename])) {
                     $ogFilename = ProductOgImageGenerator::ogImageFilename(
@@ -118,12 +110,34 @@ final class ProductGenerateSeoCommand extends Command
                 $usedNames[$ogFilename] = true;
 
                 $targetImage = $imagesDir.'/'.$ogFilename;
+                $source = $this->resolveFirstGalleryPath($product);
+                $sourceLabel = null;
+
                 try {
-                    if ($forceImages || !is_file($targetImage)) {
+                    if ($source !== null && ($forceImages || !is_file($targetImage))) {
                         $this->ogImageGenerator->writeContainJpeg($source, $targetImage);
+                        $sourceLabel = basename($source);
+                    } elseif (is_file($targetImage)) {
+                        // Keep previously exported OG when local gallery file is missing.
+                        $sourceLabel = $source !== null ? basename($source) : 'existing-export';
+                    } elseif ($source !== null) {
+                        $this->ogImageGenerator->writeContainJpeg($source, $targetImage);
+                        $sourceLabel = basename($source);
+                    } else {
+                        if ($product->getGallery() === []) {
+                            ++$skippedInactiveOrEmpty;
+                        } else {
+                            ++$skippedNoImageFile;
+                        }
+                        continue;
                     }
                 } catch (\Throwable $e) {
                     $errors[] = sprintf('#%d %s: %s', $product->getId(), $product->getSku(), $e->getMessage());
+                    continue;
+                }
+
+                if (!is_file($targetImage)) {
+                    ++$skippedNoImageFile;
                     continue;
                 }
 
@@ -139,7 +153,7 @@ final class ProductGenerateSeoCommand extends Command
                     'og_description' => $meta['og_description'],
                     'og_type' => 'product',
                     'og_image' => $ogFilename,
-                    'source_image' => basename($source),
+                    'source_image' => $sourceLabel,
                 ];
                 ++$generated;
             }
@@ -156,7 +170,7 @@ final class ProductGenerateSeoCommand extends Command
                 'width' => ProductOgImageGenerator::WIDTH,
                 'height' => ProductOgImageGenerator::HEIGHT,
             ],
-            'images_dir' => 'images',
+            'images_dir' => $subdir === '' ? '.' : $subdir,
             'count' => \count($products),
             'products' => $products,
         ];
@@ -186,7 +200,8 @@ final class ProductGenerateSeoCommand extends Command
             $io->listing(\array_slice($errors, 0, 15));
         }
 
-        $io->note('Apply on live with: php bin/console app:product:apply-seo --dir='.self::DEFAULT_DIR);
+        $applyImages = $subdir === '' ? ' --images-dir='.$dir : '';
+        $io->note('Apply on live with: php bin/console app:product:apply-seo --dir='.$dir.$applyImages);
 
         return $errors === [] ? Command::SUCCESS : Command::FAILURE;
     }

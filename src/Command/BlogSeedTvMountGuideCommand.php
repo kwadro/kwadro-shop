@@ -102,7 +102,7 @@ final class BlogSeedTvMountGuideCommand extends Command
         $this->em->persist($article);
         $this->em->flush();
 
-        $ogPath = $this->projectDir.'/public/uploads/images/'.self::OG_IMAGE;
+        $ogPath = $this->projectDir.'/public/uploads/images/blog/'.self::OG_IMAGE;
         $io->table(
             ['Field', 'Value'],
             [
@@ -123,7 +123,7 @@ final class BlogSeedTvMountGuideCommand extends Command
             ],
         );
         if (!is_file($ogPath)) {
-            $io->warning(sprintf('OG image file missing: public/uploads/images/%s', self::OG_IMAGE));
+            $io->warning(sprintf('OG image file missing: public/uploads/images/blog/%s', self::OG_IMAGE));
         }
         $io->success(sprintf('Article saved: /uk/blog/%s', self::SLUG));
 

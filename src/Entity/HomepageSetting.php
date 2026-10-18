@@ -18,10 +18,13 @@ class HomepageSetting
     public const SOURCE_LATEST = 'latest';
     public const SOURCE_MANUAL = 'manual';
 
+    /** Desktop: show slider when product count is greater than this value. Also used as "latest" fetch size. */
     public const DEFAULT_PRODUCTS_LIMIT = 5;
     public const DEFAULT_ARTICLES_LIMIT = 3;
-    public const MAX_PRODUCTS_LIMIT = 5;
+    public const DEFAULT_CATEGORIES_PER_ROW = 4;
+    public const MAX_PRODUCTS_LIMIT = 48;
     public const MAX_ARTICLES_LIMIT = 12;
+    public const MAX_CATEGORIES_PER_ROW = 12;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -37,6 +40,40 @@ class HomepageSetting
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     #[Assert\NotNull]
     private ?Locale $locale = null;
+
+    #[ORM\Column(options: ['default' => true])]
+    private bool $heroEnabled = true;
+
+    /** @var Collection<int, HomepageHeroSlide> */
+    #[ORM\OneToMany(
+        mappedBy: 'homepageSetting',
+        targetEntity: HomepageHeroSlide::class,
+        cascade: ['persist', 'remove'],
+        orphanRemoval: true,
+    )]
+    #[ORM\OrderBy(['position' => 'ASC', 'id' => 'ASC'])]
+    private Collection $heroSlides;
+
+    #[ORM\Column(options: ['default' => true])]
+    private bool $categoriesEnabled = true;
+
+    #[ORM\Column(length: 20, options: ['default' => self::SOURCE_LATEST])]
+    private string $categoriesSource = self::SOURCE_LATEST;
+
+    /** Desktop columns / slider threshold (slider when count > this value). */
+    #[ORM\Column(options: ['default' => self::DEFAULT_CATEGORIES_PER_ROW])]
+    #[Assert\Range(min: 1, max: self::MAX_CATEGORIES_PER_ROW)]
+    private int $categoriesPerRow = self::DEFAULT_CATEGORIES_PER_ROW;
+
+    /** @var Collection<int, HomepageCategoryItem> */
+    #[ORM\OneToMany(
+        mappedBy: 'homepageSetting',
+        targetEntity: HomepageCategoryItem::class,
+        cascade: ['persist', 'remove'],
+        orphanRemoval: true,
+    )]
+    #[ORM\OrderBy(['position' => 'ASC', 'id' => 'ASC'])]
+    private Collection $categoryItems;
 
     #[ORM\Column(options: ['default' => true])]
     private bool $productsEnabled = true;
@@ -86,6 +123,8 @@ class HomepageSetting
 
     public function __construct()
     {
+        $this->heroSlides = new ArrayCollection();
+        $this->categoryItems = new ArrayCollection();
         $this->products = new ArrayCollection();
         $this->articles = new ArrayCollection();
     }
@@ -115,6 +154,116 @@ class HomepageSetting
     public function setLocale(?Locale $locale): static
     {
         $this->locale = $locale;
+
+        return $this;
+    }
+
+    public function isHeroEnabled(): bool
+    {
+        return $this->heroEnabled;
+    }
+
+    public function setHeroEnabled(bool $heroEnabled): static
+    {
+        $this->heroEnabled = $heroEnabled;
+
+        return $this;
+    }
+
+    /** @return Collection<int, HomepageHeroSlide> */
+    public function getHeroSlides(): Collection
+    {
+        return $this->heroSlides;
+    }
+
+    public function addHeroSlide(HomepageHeroSlide $heroSlide): static
+    {
+        if (!$this->heroSlides->contains($heroSlide)) {
+            $this->heroSlides->add($heroSlide);
+            $heroSlide->setHomepageSetting($this);
+        }
+
+        return $this;
+    }
+
+    public function removeHeroSlide(HomepageHeroSlide $heroSlide): static
+    {
+        if ($this->heroSlides->removeElement($heroSlide) && $heroSlide->getHomepageSetting() === $this) {
+            $heroSlide->setHomepageSetting(null);
+        }
+
+        return $this;
+    }
+
+    public function syncHeroSlideImages(string $projectDir): void
+    {
+        foreach ($this->heroSlides as $slide) {
+            if ($slide instanceof HomepageHeroSlide) {
+                $slide->syncUploadedImage($projectDir);
+            }
+        }
+    }
+
+    public function isCategoriesEnabled(): bool
+    {
+        return $this->categoriesEnabled;
+    }
+
+    public function setCategoriesEnabled(bool $categoriesEnabled): static
+    {
+        $this->categoriesEnabled = $categoriesEnabled;
+
+        return $this;
+    }
+
+    public function getCategoriesSource(): string
+    {
+        return $this->categoriesSource;
+    }
+
+    public function setCategoriesSource(?string $categoriesSource): static
+    {
+        $this->categoriesSource = self::normalizeSource($categoriesSource);
+
+        return $this;
+    }
+
+    public function getCategoriesPerRow(): int
+    {
+        return $this->categoriesPerRow;
+    }
+
+    public function setCategoriesPerRow(?int $categoriesPerRow): static
+    {
+        $this->categoriesPerRow = max(
+            1,
+            min(self::MAX_CATEGORIES_PER_ROW, $categoriesPerRow ?? self::DEFAULT_CATEGORIES_PER_ROW),
+        );
+
+        return $this;
+    }
+
+    /** @return Collection<int, HomepageCategoryItem> */
+    public function getCategoryItems(): Collection
+    {
+        return $this->categoryItems;
+    }
+
+    public function addCategoryItem(HomepageCategoryItem $item): static
+    {
+        if (!$this->categoryItems->contains($item)) {
+            $this->categoryItems->add($item);
+            $item->setHomepageSetting($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCategoryItem(HomepageCategoryItem $item): static
+    {
+        if ($this->categoryItems->removeElement($item) && $item->getHomepageSetting() === $this) {
+            $item->setHomepageSetting(null);
+        }
 
         return $this;
     }

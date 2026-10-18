@@ -64,6 +64,8 @@ menu.link_product_search_setting: Search fields
 menu.link_product_search_setting_single: Product search setting
 menu.link_homepage_setting: Homepage
 menu.link_homepage_setting_single: homepage setting
+menu.link_shop_mega_menu: Mega menu
+menu.link_shop_mega_menu_single: mega menu
 menu.link_blog_article: Blog articles
 menu.link_blog_article_single: Blog article
 menu.link_blog_category: Blog categories
@@ -268,9 +270,65 @@ admin.product_search_setting.field_name: Name
 admin.product_search_setting.field_model: Model
 admin.product_search_setting.field_sku: SKU
 admin.product_search_setting.field_brand: Brand
+admin.shop_mega_menu.fieldset_general: Site and language
+admin.shop_mega_menu.site: Site
+admin.shop_mega_menu.locale: Language
+admin.shop_mega_menu.fieldset_mode: Build mode
+admin.shop_mega_menu.fieldset_mode_help: Auto keeps the current tree-based root categories. Manual shows only the selected categories in the order you set.
+admin.shop_mega_menu.mode: Mode
+admin.shop_mega_menu.mode_auto: Automatic
+admin.shop_mega_menu.mode_manual: Manual
+admin.shop_mega_menu.mode_help: If manual mode is selected but the list is empty, automatic mode is used.
+admin.shop_mega_menu.fieldset_items: Menu items
+admin.shop_mega_menu.fieldset_items_help: Top-level mega menu entries. Subcategories still come from the category tree automatically.
+admin.shop_mega_menu.items: Menu categories
+admin.shop_mega_menu.items_help: Add categories and set their order (lower number appears earlier).
+admin.shop_mega_menu.item_enabled: Show
+admin.shop_mega_menu.item_position: Order
+admin.shop_mega_menu.item_position_help: Lower number appears earlier in the menu.
+admin.shop_mega_menu.item_category: Category
+admin.shop_mega_menu.item_category_placeholder: Choose a category
 admin.homepage_setting.fieldset_general: Site and language
 admin.homepage_setting.site: Site
 admin.homepage_setting.locale: Language
+admin.homepage_setting.fieldset_hero: Hero block (first screen)
+admin.homepage_setting.fieldset_hero_help: Text and buttons for the first homepage block. You can add several sections — if there is more than one, a slider is used on the site.
+admin.homepage_setting.hero_slides: Hero sections
+admin.homepage_setting.hero_slides_help: Add one or more sections. An empty list keeps the default hero from translations. More than one section enables the slider.
+admin.homepage_setting.hero_slide: Hero section
+admin.homepage_setting.hero_slide_enabled: Show section
+admin.homepage_setting.hero_slide_position: Order
+admin.homepage_setting.hero_slide_position_help: Lower number appears earlier in the list / slider.
+admin.homepage_setting.hero_brand: Brand
+admin.homepage_setting.hero_brand_help: Leave empty to use the site header title.
+admin.homepage_setting.hero_title: Title
+admin.homepage_setting.hero_title_help: Leave empty for the default title.
+admin.homepage_setting.hero_lead: Subtitle
+admin.homepage_setting.hero_lead_help: Leave empty for the default text.
+admin.homepage_setting.hero_image: Image
+admin.homepage_setting.hero_image_help: Leave empty for the default hero photo. A new file replaces the current image after save.
+admin.homepage_setting.hero_image_empty: No image
+admin.homepage_setting.hero_image_remove: Remove image
+admin.homepage_setting.hero_image_position: Image position (%)
+admin.homepage_setting.hero_image_position_help: 'Horizontal object-position focus: 0 = left, 50 = center, 70 = default, 100 = right.'
+admin.homepage_setting.hero_primary_cta_label: Primary button label
+admin.homepage_setting.hero_primary_cta_url: Primary button URL
+admin.homepage_setting.hero_secondary_cta_label: Secondary button label
+admin.homepage_setting.hero_secondary_cta_url: Secondary button URL
+admin.homepage_setting.hero_cta_url_help: Full URL or site path (e.g. /en/category/...). Empty primary button links to the catalog.
+admin.homepage_setting.fieldset_categories: Categories block
+admin.homepage_setting.fieldset_categories_help: Categories on the homepage. You can disable the block, show them automatically from the menu, or pick them manually.
+admin.homepage_setting.source_auto: Automatic (from menu)
+admin.homepage_setting.categories_source_help: '"Automatic" uses the same categories as Mega menu (auto or manual list). "Selected manually" is a separate list for the homepage block only.'
+admin.homepage_setting.categories_per_row: Items per row
+admin.homepage_setting.categories_per_row_help: 'Default is 4 (same as the live storefront). On desktop the slider appears when there are more categories than this number. On mobile — when more than 1 is selected.'
+admin.homepage_setting.categories: Category items
+admin.homepage_setting.categories_help: Used when "Selected manually" is chosen. Add categories and their order. If the list is empty, menu categories are shown.
+admin.homepage_setting.category_item_enabled: Show
+admin.homepage_setting.category_item_position: Order
+admin.homepage_setting.category_item_position_help: Lower number appears earlier in the block.
+admin.homepage_setting.category_item_category: Category
+admin.homepage_setting.category_item_category_placeholder: Choose a category
 admin.homepage_setting.fieldset_products: '"New offers" block'
 admin.homepage_setting.fieldset_products_help: Products on the homepage. Only enabled in-stock products are shown.
 admin.homepage_setting.fieldset_articles: '"Interesting articles" block'
@@ -284,9 +342,10 @@ admin.homepage_setting.source: What to show
 admin.homepage_setting.source_latest: Latest automatically
 admin.homepage_setting.source_manual: Selected manually
 admin.homepage_setting.source_help: If "Selected manually" is chosen but the list is empty, the latest items are shown.
-admin.homepage_setting.limit: Count
+admin.homepage_setting.limit: Count (slider threshold)
+admin.homepage_setting.limit_help: 'On desktop the slider appears when there are more products than this number (e.g. 5 → at 6+). On mobile — when there is more than 1 product. For “Latest” this is also how many products to load. For “Selected manually” all selected products are shown with no cap.'
 admin.homepage_setting.products: Selected products
-admin.homepage_setting.products_help: Used when "Selected manually" is chosen.
+admin.homepage_setting.products_help: Used when "Selected manually" is chosen. There is no count cap — all selected products are shown on the site.
 admin.homepage_setting.articles: Selected articles
 admin.homepage_setting.articles_help: Used when "Selected manually" is chosen. Articles from another site or language are not shown.
 admin.product_import_run.import: Import
@@ -463,9 +522,14 @@ admin.request_list.ip: IP
 admin.request_list.path: URL (before redirect)
 admin.request_list.path_after_redirect: URL after redirect
 admin.request_list.user_agent: User-Agent
+admin.request_list.user_agent_status: User-Agent (status)
+admin.request_list.user_agent_empty: Empty
+admin.request_list.user_agent_filled: Filled
 admin.request_list.unique_ips_today: Unique IPs today
 admin.request_list.requests_today: Total requests today
-admin.report_visitor_ids.intro: 'IP request statistics for the last %days% days. Boot — User-Agent contains google.com or bing.com. Unique IPs — distinct IPs that day / in the period. New IPs — addresses seen for the first time in the database.'
+admin.request_list.unique_ips_filtered: Unique IPs in selection
+admin.request_list.requests_filtered: Total requests in selection
+admin.report_visitor_ids.intro: 'IP request statistics for the last %days% days. Bot — User-Agent looks like a crawler (googlebot, bingbot, yandex, ahrefs, gptbot, etc.). Empty UA is not treated as a bot automatically. Unique IPs — distinct IPs that day / in the period. New IPs — addresses seen for the first time in the database.'
 admin.report_visitor_ids.day: Day
 admin.report_visitor_ids.requests: Requests
 admin.report_visitor_ids.google_bot: Boot
@@ -677,6 +741,8 @@ admin.image_editor.next: Next
 admin.image_editor.back: Back
 admin.image_editor.save_background: Save background
 admin.image_editor.save_result: Save result
+admin.image_editor.save_as_new: Save as new result
+admin.image_editor.saved_as_new: Saved as a new separate image.
 admin.image_editor.saved_list: Saved images
 admin.image_editor.saving: Saving…
 admin.image_editor.saved: Image saved.
@@ -724,7 +790,7 @@ admin.background_remover.open: Open
 admin.background_remover.delete: Delete
 
 admin.image_transform.title: Transform image
-admin.image_transform.help: Generates a new image at the target aspect. The full original fits without cropping; bands use the photo edge colour fading to a lighter shade at the outer frame. Ideal for Stories / Reels (9:16).
+admin.image_transform.help: Generates a new image at the target aspect. The full original fits without cropping; you can shift it on X/Y. Bands use the photo edge colour fading to a lighter shade at the outer frame. Ideal for Stories / Reels (9:16).
 admin.image_transform.file: Image file
 admin.image_transform.aspect: Aspect
 admin.image_transform.blur: Edge lightness
@@ -734,10 +800,15 @@ admin.image_transform.rotate_help: Rotates the source image by 90° before trans
 admin.image_transform.rotate_left: Rotate left 90°
 admin.image_transform.rotate_right: Rotate right 90°
 admin.image_transform.rotate_reset: Reset
-admin.image_transform.include_subject: Add subject (smaller)
-admin.image_transform.include_subject_help: On — image is slightly smaller (size slider). Off — image is as large as possible but still fully inside the frame (nothing is cropped).
-admin.image_transform.subject_scale: Subject size
-admin.image_transform.subject_scale_help: How large the sharp image is relative to the frame (proportions kept, text never cropped).
+admin.image_transform.position: Image position
+admin.image_transform.position_x: X
+admin.image_transform.position_y: Y
+admin.image_transform.position_help: Where to place the original inside the frame (proportions kept, nothing cropped).
+admin.image_transform.align_left: Left edge
+admin.image_transform.align_right: Right edge
+admin.image_transform.align_center: Center
+admin.image_transform.align_top: Top edge
+admin.image_transform.align_bottom: Bottom edge
 admin.image_transform.save_to_library: Also save to image library
 admin.image_transform.download_name: Download filename
 admin.image_transform.download_name_help: You can change this before downloading.
@@ -1085,16 +1156,23 @@ shop.add_to_cart: Buy
 
 shop.home.hero_title: Home goods for everyday comfort
 shop.home.hero_lead: Browse trusted categories, current offers, and helpful blog guides.
+shop.home.hero_region: Homepage hero
+shop.home.hero_prev: Previous slide
+shop.home.hero_next: Next slide
 shop.home.cta_buy: Buy
 shop.home.cta_blog: Read the blog
 shop.home.cta_all_products: All products
 shop.home.cta_all_articles: All articles
 shop.home.categories_title: Product categories
 shop.home.categories_lead: Open a section and choose what you want to buy.
+shop.home.categories_prev: Previous categories
+shop.home.categories_next: Next categories
 shop.home.category_products: '%count% products'
 shop.home.category_subcategories: '%count% subcategories'
 shop.home.products_title: New offers
 shop.home.products_lead: Fresh in-stock products — buy online with delivery across Ukraine.
+shop.home.products_prev: Previous products
+shop.home.products_next: Next products
 shop.home.blog_title: Interesting articles
 shop.home.blog_lead: Short guides and tips to help you choose with confidence.
 shop.home.final_title: Ready to choose?

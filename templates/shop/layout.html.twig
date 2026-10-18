@@ -23,6 +23,7 @@
         <meta property="og:type" content="{% block og_type %}{{ setting.seo.og_type }}{% endblock %}"/>
         <meta property="og:url" content="{% block og_url %}{{ absolute_url(path('shop_home')) }}{% endblock %}"/>
         <meta property="og:image" content="{% block og_image %}{{ absolute_url(asset('uploads/images/' ~ setting.seo.og_image)) }}{% endblock %}"/>
+        {% block og_article_meta %}{% endblock %}
         <link rel="canonical" href="{% block canonical_url %}{{ absolute_url(path('shop_home')) }}{% endblock %}"/>
         {% block structured_data %}{% endblock %}
     {% endif %}

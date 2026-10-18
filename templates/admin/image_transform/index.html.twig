@@ -28,6 +28,10 @@
         .img-tf__aspect.is-active { border-color: #0d6efd; box-shadow: 0 0 0 2px rgba(13,110,253,.2); }
         .img-tf__aspect strong { display: block; font-size: .9rem; }
         .img-tf__aspect small { color: #64748b; }
+        .img-tf [data-tf-align-x] .btn.is-active,
+        .img-tf [data-tf-align-y] .btn.is-active {
+            background: #0d6efd; border-color: #0d6efd; color: #fff;
+        }
     </style>
 {% endblock %}
 
@@ -69,17 +73,24 @@
                     <input type="range" class="form-range" min="0" max="40" value="18" data-tf-blur>
                     <p class="text-muted small">{{ 'admin.image_transform.blur_help'|trans }}</p>
 
-                    <div class="form-check mb-2">
-                        <input class="form-check-input" type="checkbox" id="tf-include-subject" data-tf-include-subject checked>
-                        <label class="form-check-label" for="tf-include-subject">{{ 'admin.image_transform.include_subject'|trans }}</label>
+                    <label class="form-label mt-2">{{ 'admin.image_transform.position'|trans }}</label>
+                    <div class="mb-2">
+                        <div class="small text-muted mb-1">{{ 'admin.image_transform.position_x'|trans }}</div>
+                        <div class="btn-group w-100" role="group" data-tf-align-x>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" data-align-x="left">{{ 'admin.image_transform.align_left'|trans }}</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm is-active" data-align-x="center">{{ 'admin.image_transform.align_center'|trans }}</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" data-align-x="right">{{ 'admin.image_transform.align_right'|trans }}</button>
+                        </div>
                     </div>
-                    <p class="text-muted small">{{ 'admin.image_transform.include_subject_help'|trans }}</p>
-
-                    <div data-tf-subject-scale-block>
-                        <label class="form-label">{{ 'admin.image_transform.subject_scale'|trans }} <span data-tf-scale-label>88%</span></label>
-                        <input type="range" class="form-range" min="40" max="100" value="88" data-tf-scale>
-                        <p class="text-muted small">{{ 'admin.image_transform.subject_scale_help'|trans }}</p>
+                    <div class="mb-3">
+                        <div class="small text-muted mb-1">{{ 'admin.image_transform.position_y'|trans }}</div>
+                        <div class="btn-group w-100" role="group" data-tf-align-y>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" data-align-y="top">{{ 'admin.image_transform.align_top'|trans }}</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm is-active" data-align-y="center">{{ 'admin.image_transform.align_center'|trans }}</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" data-align-y="bottom">{{ 'admin.image_transform.align_bottom'|trans }}</button>
+                        </div>
                     </div>
+                    <p class="text-muted small">{{ 'admin.image_transform.position_help'|trans }}</p>
 
                     <div class="form-check mb-3">
                         <input class="form-check-input" type="checkbox" id="tf-save-library" data-tf-save-library checked>
@@ -163,6 +174,8 @@
         };
 
         let aspect = '9:16';
+        let alignX = 'center';
+        let alignY = 'center';
         let rotateDeg = 0;
         let resultFilename = null;
         let objectUrl = null;
@@ -174,11 +187,7 @@
         const downloadBtn = root.querySelector('[data-tf-download]');
         const downloadNameInput = root.querySelector('[data-tf-download-name]');
         const blurInput = root.querySelector('[data-tf-blur]');
-        const scaleInput = root.querySelector('[data-tf-scale]');
         const blurLabel = root.querySelector('[data-tf-blur-label]');
-        const scaleLabel = root.querySelector('[data-tf-scale-label]');
-        const includeSubjectInput = root.querySelector('[data-tf-include-subject]');
-        const subjectScaleBlock = root.querySelector('[data-tf-subject-scale-block]');
         const rotateLabel = root.querySelector('[data-tf-rotate-label]');
         const recentEl = root.querySelector('[data-tf-recent]');
 
@@ -215,28 +224,48 @@
             });
         }
 
+        function aspectSuffix(key) {
+            if (key === '1200x630') return 'og_1200x630';
+            if (key === '16:9') return '16x9';
+            if (key === '4:5') return '4x5';
+            if (key === '1:1') return '1x1';
+            return '9x16';
+        }
+
+        function suggestDownloadName(filename) {
+            const base = (filename || 'image').replace(/\.[^.]+$/, '').replace(/[^\w.\-]+/g, '_') || 'image';
+            return base + '_' + aspectSuffix(aspect) + '.jpg';
+        }
+
         root.querySelectorAll('[data-aspect]').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 root.querySelectorAll('[data-aspect]').forEach(function (b) { b.classList.remove('is-active'); });
                 btn.classList.add('is-active');
                 aspect = btn.getAttribute('data-aspect') || '9:16';
+                if (fileInput.files && fileInput.files[0]) {
+                    downloadNameInput.value = suggestDownloadName(fileInput.files[0].name);
+                }
             });
         });
 
         blurInput.addEventListener('input', function () {
             blurLabel.textContent = blurInput.value;
         });
-        scaleInput.addEventListener('input', function () {
-            scaleLabel.textContent = scaleInput.value + '%';
+
+        root.querySelectorAll('[data-align-x]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                root.querySelectorAll('[data-align-x]').forEach(function (b) { b.classList.remove('is-active'); });
+                btn.classList.add('is-active');
+                alignX = btn.getAttribute('data-align-x') || 'center';
+            });
         });
-        function syncSubjectControls() {
-            if (!subjectScaleBlock || !includeSubjectInput) return;
-            subjectScaleBlock.hidden = !includeSubjectInput.checked;
-        }
-        if (includeSubjectInput) {
-            includeSubjectInput.addEventListener('change', syncSubjectControls);
-            syncSubjectControls();
-        }
+        root.querySelectorAll('[data-align-y]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                root.querySelectorAll('[data-align-y]').forEach(function (b) { b.classList.remove('is-active'); });
+                btn.classList.add('is-active');
+                alignY = btn.getAttribute('data-align-y') || 'center';
+            });
+        });
 
         fileInput.addEventListener('change', function () {
             const file = fileInput.files && fileInput.files[0];
@@ -246,8 +275,7 @@
             beforeEl.innerHTML = '<img src="' + objectUrl + '" alt="">';
             rotateDeg = 0;
             applyBeforeRotate();
-            const base = (file.name || 'image').replace(/\.[^.]+$/, '').replace(/[^\w.\-]+/g, '_') || 'image';
-            downloadNameInput.value = base + '_9x16.jpg';
+            downloadNameInput.value = suggestDownloadName(file.name);
             afterEl.innerHTML = '<div class="img-tf__empty">—</div>';
             downloadBtn.hidden = true;
             resultFilename = null;
@@ -281,8 +309,8 @@
             body.append('file', file);
             body.append('aspect', aspect);
             body.append('blur', blurInput.value);
-            body.append('subjectScale', (parseInt(scaleInput.value, 10) / 100).toFixed(2));
-            body.append('includeSubject', includeSubjectInput && includeSubjectInput.checked ? '1' : '0');
+            body.append('alignX', alignX);
+            body.append('alignY', alignY);
             body.append('rotate', String(rotateDeg));
             body.append('saveToLibrary', root.querySelector('[data-tf-save-library]').checked ? '1' : '0');
             setStatus(i18n.processing);

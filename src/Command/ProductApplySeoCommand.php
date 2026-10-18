@@ -20,7 +20,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 )]
 final class ProductApplySeoCommand extends Command
 {
-    private const DEFAULT_DIR = 'var/export/product-seo';
+    private const DEFAULT_DIR = 'product-og';
 
     public function __construct(
         private readonly ProductRepository $productRepository,
@@ -34,9 +34,9 @@ final class ProductApplySeoCommand extends Command
     protected function configure(): void
     {
         $this
-            ->addOption('dir', null, InputOption::VALUE_REQUIRED, 'Export directory with product-seo.json and images/', self::DEFAULT_DIR)
+            ->addOption('dir', null, InputOption::VALUE_REQUIRED, 'Export directory with product-seo.json', self::DEFAULT_DIR)
             ->addOption('file', null, InputOption::VALUE_REQUIRED, 'Path to product-seo.json (overrides --dir/product-seo.json)')
-            ->addOption('images-dir', null, InputOption::VALUE_REQUIRED, 'Directory with OG images (default: <dir>/images)')
+            ->addOption('images-dir', null, InputOption::VALUE_REQUIRED, 'Directory with OG images (default: --dir, or <dir>/images if present)')
             ->addOption('only-empty', null, InputOption::VALUE_NONE, 'Only fill blank SEO fields / missing og_image')
             ->addOption('skip-images', null, InputOption::VALUE_NONE, 'Update DB only, do not copy image files')
             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Show counts without writing');
@@ -52,9 +52,13 @@ final class ProductApplySeoCommand extends Command
             : $dir.'/product-seo.json';
 
         $imagesDirOpt = $input->getOption('images-dir');
-        $imagesDir = \is_string($imagesDirOpt) && $imagesDirOpt !== ''
-            ? $this->resolvePath($imagesDirOpt)
-            : $dir.'/images';
+        if (\is_string($imagesDirOpt) && $imagesDirOpt !== '') {
+            $imagesDir = $this->resolvePath($imagesDirOpt);
+        } elseif (is_dir($dir.'/images')) {
+            $imagesDir = $dir.'/images';
+        } else {
+            $imagesDir = $dir;
+        }
 
         $onlyEmpty = (bool) $input->getOption('only-empty');
         $skipImages = (bool) $input->getOption('skip-images');

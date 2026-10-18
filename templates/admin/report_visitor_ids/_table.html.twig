@@ -17,10 +17,10 @@
             {% for row in rows %}
                 <tr>
                     <td>{{ row.date }}</td>
-                    <td class="text-end">{{ row.requests }}</td>
-                    <td class="text-end">{{ row.googleBotRequests }}</td>
-                    <td class="text-end">{{ row.uniqueIps }}</td>
-                    <td class="text-end">{{ row.newIps }}</td>
+                    <td class="text-end">{{ row.requests ? row.requests : '--' }}</td>
+                    <td class="text-end">{{ row.googleBotRequests ? row.googleBotRequests : '--' }}</td>
+                    <td class="text-end">{{ row.uniqueIps ? row.uniqueIps : '--' }}</td>
+                    <td class="text-end">{{ row.newIps ? row.newIps : '--' }}</td>
                 </tr>
             {% else %}
                 <tr>
@@ -31,10 +31,10 @@
         <tfoot>
             <tr class="table-secondary fw-semibold">
                 <td>{{ 'admin.report_visitor_ids.total_period'|trans({'%days%': days}) }}</td>
-                <td class="text-end">{{ totals.requests }}</td>
-                <td class="text-end">{{ totals.googleBotRequests }}</td>
-                <td class="text-end">{{ totals.uniqueIps }}</td>
-                <td class="text-end">{{ totals.newIps }}</td>
+                <td class="text-end">{{ totals.requests ? totals.requests : '--' }}</td>
+                <td class="text-end">{{ totals.googleBotRequests ? totals.googleBotRequests : '--' }}</td>
+                <td class="text-end">{{ totals.uniqueIps ? totals.uniqueIps : '--' }}</td>
+                <td class="text-end">{{ totals.newIps ? totals.newIps : '--' }}</td>
             </tr>
         </tfoot>
     </table>

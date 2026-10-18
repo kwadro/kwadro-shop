@@ -2,14 +2,16 @@
 
 namespace App\Twig;
 
-use App\Repository\CategoryRepository;
+use App\Service\Menu\ShopMegaMenuBuilder;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
 
 class CategoryExtension extends AbstractExtension
 {
     public function __construct(
-        private readonly CategoryRepository $categoryRepository,
+        private readonly ShopMegaMenuBuilder $megaMenuBuilder,
+        private readonly RequestStack $requestStack,
     ) {
     }
 
@@ -26,7 +28,11 @@ class CategoryExtension extends AbstractExtension
      */
     public function getCategoryMenu(): array
     {
-        return $this->categoryRepository->buildStorefrontMenuTree();
+        $request = $this->requestStack->getCurrentRequest();
+        $host = $request?->getHost() ?? '';
+        $locale = $request?->getLocale() ?? 'uk';
+
+        return $this->megaMenuBuilder->buildForHost($host, $locale);
     }
 
     /**

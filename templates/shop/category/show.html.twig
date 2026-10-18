@@ -6,8 +6,13 @@
 {% set pageOgTitle = category.ogTitle ?: setting.seo.og_title %}
 {% set pageOgDescription = category.ogDescription ?: setting.seo.og_description %}
 {% set pageOgType = category.ogType ?: setting.seo.og_type %}
-{% set pageOgImageFile = category.ogImage ?: setting.seo.og_image %}
-{% set pageOgImage = pageOgImageFile ? absolute_url(asset('uploads/images/' ~ pageOgImageFile)) : '' %}
+{% if category.ogImage %}
+    {% set pageOgImage = absolute_url(category.ogImage|category_og_image) %}
+{% elseif setting.seo.og_image %}
+    {% set pageOgImage = absolute_url(asset('uploads/images/' ~ setting.seo.og_image)) %}
+{% else %}
+    {% set pageOgImage = '' %}
+{% endif %}
 {% set categoryUrl = path('shop_category', {_locale: app.request.locale, slug: category.slug}) %}
 
 {% block title %}{{ pageTitle }}{% endblock %}

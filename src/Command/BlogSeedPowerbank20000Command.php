@@ -127,7 +127,7 @@ final class BlogSeedPowerbank20000Command extends Command
     private function warnMissingImages(SymfonyStyle $io): void
     {
         $paths = [
-            $this->projectDir.'/public/uploads/images/'.self::OG_IMAGE,
+            $this->projectDir.'/public/uploads/images/blog/'.self::OG_IMAGE,
             $this->projectDir.'/public'.self::IMAGE_DESK,
             $this->projectDir.'/public'.self::IMAGE_CHARGES,
         ];

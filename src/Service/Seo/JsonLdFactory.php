@@ -4,6 +4,7 @@ namespace App\Service\Seo;
 
 use App\Entity\BlogArticle;
 use App\Entity\Category;
+use App\Service\Blog\BlogOgImagePath;
 use App\Service\Product\ProductOgImagePath;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
@@ -161,7 +162,8 @@ final class JsonLdFactory
 
         $image = null;
         if ($article->getOgImage()) {
-            $image = $this->absoluteAsset('uploads/images/'.$article->getOgImage());
+            $web = BlogOgImagePath::webPath($article->getOgImage());
+            $image = $web !== '' ? $this->absoluteAsset(ltrim($web, '/')) : null;
         }
 
         $published = $article->getPublishedAt()?->format(DATE_ATOM);
@@ -261,6 +263,103 @@ final class JsonLdFactory
             $this->breadcrumbList($breadcrumbs),
             $collection,
             $this->organizationNode($organization),
+        ]);
+    }
+
+    /**
+     * Homepage: Organization + WebSite (SearchAction) + WebPage.
+     *
+     * @param array{name?: string, url?: string, logo?: string|null, email?: string|null} $organization
+     * @param array{title?: string, description?: string, ogImage?: string|null} $page
+     * @param list<array{name: string, url: string}> $topCategories
+     *
+     * @return array<string, mixed>
+     */
+    public function homePage(string $locale, array $organization = [], array $page = [], array $topCategories = []): array
+    {
+        $homeUrl = $this->urlGenerator->generate(
+            'shop_home',
+            ['_locale' => $locale],
+            UrlGeneratorInterface::ABSOLUTE_URL,
+        );
+        $searchUrl = $this->urlGenerator->generate(
+            'shop_search',
+            ['_locale' => $locale, 'q' => 'search_term_string'],
+            UrlGeneratorInterface::ABSOLUTE_URL,
+        );
+        // Keep a template URL for SearchAction.
+        $searchTemplate = preg_replace('/search_term_string/', '{search_term_string}', $searchUrl) ?? $searchUrl;
+
+        $org = $this->organizationNode($organization);
+        $name = trim((string) ($page['title'] ?? $organization['name'] ?? ''));
+        $description = $this->plainText((string) ($page['description'] ?? ''));
+        $ogImage = trim((string) ($page['ogImage'] ?? ''));
+
+        $website = $this->filterNull([
+            '@type' => 'WebSite',
+            '@id' => $homeUrl.'#website',
+            'url' => $homeUrl,
+            'name' => $name !== '' ? $name : null,
+            'description' => $description !== '' ? $description : null,
+            'inLanguage' => $locale,
+            'publisher' => $org !== null ? ['@id' => $org['@id'] ?? ($homeUrl.'#organization')] : null,
+            'potentialAction' => [
+                '@type' => 'SearchAction',
+                'target' => [
+                    '@type' => 'EntryPoint',
+                    'urlTemplate' => $searchTemplate,
+                ],
+                'query-input' => 'required name=search_term_string',
+            ],
+        ]);
+
+        $webPage = $this->filterNull([
+            '@type' => 'WebPage',
+            '@id' => $homeUrl.'#webpage',
+            'url' => $homeUrl,
+            'name' => $name !== '' ? $name : null,
+            'description' => $description !== '' ? $description : null,
+            'isPartOf' => ['@id' => $homeUrl.'#website'],
+            'about' => $org !== null ? ['@id' => $org['@id'] ?? ($homeUrl.'#organization')] : null,
+            'primaryImageOfPage' => $ogImage !== '' ? [
+                '@type' => 'ImageObject',
+                'url' => $ogImage,
+            ] : null,
+            'inLanguage' => $locale,
+        ]);
+
+        $itemList = null;
+        if ($topCategories !== []) {
+            $elements = [];
+            $position = 1;
+            foreach ($topCategories as $category) {
+                $catName = trim((string) ($category['name'] ?? ''));
+                $catUrl = trim((string) ($category['url'] ?? ''));
+                if ($catName === '' || $catUrl === '') {
+                    continue;
+                }
+                $elements[] = [
+                    '@type' => 'ListItem',
+                    'position' => $position++,
+                    'name' => $catName,
+                    'url' => $catUrl,
+                ];
+            }
+            if ($elements !== []) {
+                $itemList = [
+                    '@type' => 'ItemList',
+                    '@id' => $homeUrl.'#categories',
+                    'name' => 'Категорії',
+                    'itemListElement' => $elements,
+                ];
+            }
+        }
+
+        return $this->graph([
+            $org,
+            $website,
+            $webPage,
+            $itemList,
         ]);
     }
 

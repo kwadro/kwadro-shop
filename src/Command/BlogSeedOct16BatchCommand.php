@@ -13,16 +13,17 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 /**
- * Seeds 4 SEO blog articles (images + OG): one published today, three scheduled one-per-day.
+ * Seeds / refreshes 4 SEO blog articles with real photos, expanded copy and internal links.
  */
 #[AsCommand(
     name: 'app:blog:seed-oct16-batch',
-    description: 'Seed 4 SEO blog articles with images (1 live today, 3 scheduled)',
+    description: 'Seed/refresh 4 SEO blog articles with real images and internal links',
 )]
 final class BlogSeedOct16BatchCommand extends Command
 {
@@ -49,9 +50,16 @@ final class BlogSeedOct16BatchCommand extends Command
         parent::__construct();
     }
 
+    protected function configure(): void
+    {
+        $this->addOption('force-images', null, InputOption::VALUE_NONE, 'Re-download images even if files exist');
+    }
+
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
+        $forceImages = (bool) $input->getOption('force-images');
+
         $site = $this->siteRepository->find(1);
         $locale = $this->localeRepository->findOneBy(['code' => 'uk']);
         if ($site === null || $locale === null) {
@@ -80,7 +88,7 @@ final class BlogSeedOct16BatchCommand extends Command
         $this->ensureImageDirs();
         $rows = [];
         foreach ($this->definitions() as $data) {
-            $this->generateImages($data);
+            $this->downloadImages($data, $forceImages, $io);
             $article = $this->upsertArticle($site, $locale, $category, $data);
             $rows[] = [
                 $article->getSlug(),
@@ -92,27 +100,13 @@ final class BlogSeedOct16BatchCommand extends Command
         }
 
         $io->table(['Slug', 'Published at', 'Status'], $rows);
-        $io->success('4 blog articles seeded with SEO + images.');
+        $io->success('4 blog articles updated: real photos, expanded text, internal links.');
 
         return Command::SUCCESS;
     }
 
     /**
-     * @param array{
-     *     slug: string,
-     *     title: string,
-     *     meta_title: string,
-     *     meta_description: string,
-     *     og_title: string,
-     *     og_description: string,
-     *     og_image: string,
-     *     content_image: string,
-     *     content_image_alt: string,
-     *     tags: string,
-     *     published_at: string,
-     *     accent: string,
-     *     content: callable(string): string
-     * } $data
+     * @param array<string, mixed> $data
      */
     private function upsertArticle(
         object $site,
@@ -126,7 +120,9 @@ final class BlogSeedOct16BatchCommand extends Command
             'slug' => $data['slug'],
         ]) ?? new BlogArticle();
 
-        $contentImage = '/uploads/blog/'.$data['content_image'];
+        $hero = '/uploads/blog/'.$data['content_image'];
+        $extra = '/uploads/blog/'.$data['content_image_2'];
+
         $article
             ->setSite($site)
             ->setLocale($locale)
@@ -139,7 +135,7 @@ final class BlogSeedOct16BatchCommand extends Command
             ->setOgType('article')
             ->setOgImage($data['og_image'])
             ->setTags($data['tags'])
-            ->setContent(($data['content'])($contentImage, $data['content_image_alt']))
+            ->setContent(($data['content'])($hero, $extra, $data['content_image_alt'], $data['content_image_2_alt']))
             ->setEnabled(true)
             ->setPublishedAt(new \DateTimeImmutable($data['published_at']));
 
@@ -157,23 +153,7 @@ final class BlogSeedOct16BatchCommand extends Command
         return $article;
     }
 
-    /**
-     * @return list<array{
-     *     slug: string,
-     *     title: string,
-     *     meta_title: string,
-     *     meta_description: string,
-     *     og_title: string,
-     *     og_description: string,
-     *     og_image: string,
-     *     content_image: string,
-     *     content_image_alt: string,
-     *     tags: string,
-     *     published_at: string,
-     *     accent: string,
-     *     content: callable(string, string): string
-     * }>
-     */
+    /** @return list<array<string, mixed>> */
     private function definitions(): array
     {
         return [
@@ -181,30 +161,38 @@ final class BlogSeedOct16BatchCommand extends Command
                 'slug' => 'yak-obraty-hdmi-kabel-dlya-televizora',
                 'title' => 'Як обрати HDMI-кабель для телевізора: версії, довжина і 4K/8K',
                 'meta_title' => 'Як обрати HDMI-кабель для ТВ у 2026: HDMI 2.0 vs 2.1, довжина, 4K HDR | Квадро',
-                'meta_description' => 'Практичний гід: різниця HDMI 1.4 / 2.0 / 2.1, яка довжина кабелю потрібна, чи важливий «золотий» роз’єм і як не переплатити за маркетинг.',
+                'meta_description' => 'Практичний гід: різниця HDMI 1.4 / 2.0 / 2.1, яка довжина кабелю потрібна, чи важливий «золотий» роз’єм, eARC для саундбара і як не переплатити.',
                 'og_title' => 'Як обрати HDMI-кабель для телевізора',
-                'og_description' => 'HDMI 2.0 чи 2.1, довжина до 5 м, 4K HDR і eARC — коротко, що реально впливає на картинку і звук.',
+                'og_description' => 'HDMI 2.0 чи 2.1, довжина до 5 м, 4K HDR і eARC — що реально впливає на картинку і звук.',
                 'og_image' => 'og-blog-yak-obraty-hdmi-kabel.jpg',
                 'content_image' => 'blog-yak-obraty-hdmi-kabel.jpg',
-                'content_image_alt' => 'HDMI-кабель підключений до телевізора',
-                'tags' => 'hdmi кабель, hdmi 2.1, hdmi 2.0, кабель для телевізора, 4k hdr, earc, кронштейн тв',
+                'content_image_2' => 'blog-yak-obraty-hdmi-kabel-2.jpg',
+                'content_image_alt' => 'HDMI та інші кабелі для підключення техніки',
+                'content_image_2_alt' => 'Сучасний телевізор у вітальні — джерело 4K-сигналу',
+                'tags' => 'hdmi кабель, hdmi 2.1, hdmi 2.0, кабель для телевізора, 4k hdr, earc',
                 'published_at' => '2026-10-16 09:00:00',
-                'accent' => '#2563eb',
+                'hero_url' => 'https://images.unsplash.com/photo-1625948515291-69613efd103f?auto=format&fit=crop&w=1200&h=675&q=85',
+                'extra_url' => 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&w=1200&h=675&q=85',
+                'og_url' => 'https://images.unsplash.com/photo-1625948515291-69613efd103f?auto=format&fit=crop&w=1200&h=630&q=85',
                 'content' => $this->contentHdmi(...),
             ],
             [
                 'slug' => 'yak-shovaty-kabeli-za-televizorom',
                 'title' => 'Як сховати кабелі за телевізором: акуратний монтаж без штроблення',
-                'meta_title' => 'Як сховати кабелі за ТВ: канал, кабель-канал, бездротові рішення | Квадро',
-                'meta_description' => 'Покрокові ідеї, як прибрати дроти за телевізором на стіні: кабель-канали, стійки, кронштейни з прокладанням і безпечні лайфхаки без штроблення.',
+                'meta_title' => 'Як сховати кабелі за ТВ: канал, кронштейн, розетка за екраном | Квадро',
+                'meta_description' => 'Покрокові ідеї, як прибрати дроти за телевізором на стіні: кабель-канали, кронштейни з прокладанням, розетка за ТВ і безпечні лайфхаки.',
                 'og_title' => 'Як сховати кабелі за телевізором',
-                'og_description' => 'Акуратна стіна без «павутини» дротів: кабель-канали, кронштейн з отворами і правильне планування розеток.',
+                'og_description' => 'Акуратна стіна без «павутини» дротів: кабель-канали, кронштейн і планування розеток.',
                 'og_image' => 'og-blog-yak-shovaty-kabeli-za-tv.jpg',
                 'content_image' => 'blog-yak-shovaty-kabeli-za-tv.jpg',
-                'content_image_alt' => 'Телевізор на стіні з акуратним кабель-менеджментом',
-                'tags' => 'сховати кабелі, кабель канал, монтаж телевізора, кронштейн тв, інтерʼєр, порядок за тв',
+                'content_image_2' => 'blog-yak-shovaty-kabeli-za-tv-2.jpg',
+                'content_image_alt' => 'Телевізор на стіні в сучасній вітальні',
+                'content_image_2_alt' => 'Інтер’єр з ТВ — приклад акуратного монтажу',
+                'tags' => 'сховати кабелі, кабель канал, монтаж телевізора, кронштейн тв, unibracket',
                 'published_at' => '2026-10-17 10:00:00',
-                'accent' => '#0d9488',
+                'hero_url' => 'https://images.unsplash.com/photo-1461151304267-38535e780c79?auto=format&fit=crop&w=1200&h=675&q=85',
+                'extra_url' => 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1200&h=675&q=85',
+                'og_url' => 'https://images.unsplash.com/photo-1461151304267-38535e780c79?auto=format&fit=crop&w=1200&h=630&q=85',
                 'content' => $this->contentCables(...),
             ],
             [
@@ -216,10 +204,14 @@ final class BlogSeedOct16BatchCommand extends Command
                 'og_description' => 'Фільтр захищає від імпульсів, ДБЖ тримає техніку під час блекауту. Коротке порівняння для дому.',
                 'og_image' => 'og-blog-merezhevyy-filtr-chy-dbzh.jpg',
                 'content_image' => 'blog-merezhevyy-filtr-chy-dbzh.jpg',
-                'content_image_alt' => 'Мережевий фільтр і компактний ДБЖ біля телевізора',
-                'tags' => 'мережевий фільтр, дбж, ups, захист техніки, відключення світла, роутер, телевізор',
+                'content_image_2' => 'blog-merezhevyy-filtr-chy-dbzh-2.jpg',
+                'content_image_alt' => 'Електроніка і кабелі живлення — захист техніки вдома',
+                'content_image_2_alt' => 'Робоче місце з технікою, яку варто захистити від стрибків напруги',
+                'tags' => 'мережевий фільтр, дбж, ups, захист техніки, подовжувач, відключення світла',
                 'published_at' => '2026-10-18 10:00:00',
-                'accent' => '#b45309',
+                'hero_url' => 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&h=675&q=85',
+                'extra_url' => 'https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?auto=format&fit=crop&w=1200&h=675&q=85',
+                'og_url' => 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&h=630&q=85',
                 'content' => $this->contentFilterUps(...),
             ],
             [
@@ -231,153 +223,323 @@ final class BlogSeedOct16BatchCommand extends Command
                 'og_description' => 'eARC, оптика чи Bluetooth — який спосіб обрати і як увімкнути звук через саундбар.',
                 'og_image' => 'og-blog-yak-pidklyuchyty-saundbar.jpg',
                 'content_image' => 'blog-yak-pidklyuchyty-saundbar.jpg',
-                'content_image_alt' => 'Саундбар під телевізором на стіні',
-                'tags' => 'саундбар, hdmi earc, оптичний кабель, bluetooth тв, звук телевізора, домашний кінотеатр',
+                'content_image_2' => 'blog-yak-pidklyuchyty-saundbar-2.jpg',
+                'content_image_alt' => 'Акустична система для домашнього кінотеатру',
+                'content_image_2_alt' => 'Колонки — приклад якісного звуку в кімнаті',
+                'tags' => 'саундбар, hdmi earc, оптичний кабель, bluetooth тв, звук телевізора',
                 'published_at' => '2026-10-19 10:00:00',
-                'accent' => '#7c3aed',
+                'hero_url' => 'https://images.unsplash.com/photo-1545454675-3531b543be5d?auto=format&fit=crop&w=1200&h=675&q=85',
+                'extra_url' => 'https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?auto=format&fit=crop&w=1200&h=675&q=85',
+                'og_url' => 'https://images.unsplash.com/photo-1545454675-3531b543be5d?auto=format&fit=crop&w=1200&h=630&q=85',
                 'content' => $this->contentSoundbar(...),
             ],
         ];
     }
 
-    private function contentHdmi(string $image, string $alt): string
+    private function contentHdmi(string $hero, string $extra, string $alt1, string $alt2): string
     {
         return $this->wrapHtml(<<<HTML
 <p class="blog-lead">
     На вигляд усі <strong>HDMI-кабелі</strong> однакові, але від версії стандарту залежить,
     чи побачите ви 4K з HDR на 60/120 Гц, чи спрацює eARC для саундбара.
-    Нижче — без маркетингового шуму: що реально перевірити перед покупкою.
+    Нижче — без маркетингового шуму: що реально перевірити перед покупкою і які сторінки магазину варто відкрити поряд.
 </p>
 <figure class="blog-figure">
-    <img src="{$image}" alt="{$alt}" width="1200" height="675" loading="lazy">
-    <figcaption>Якісний HDMI-кабель — основа стабільної картинки і звуку між ТВ, приставкою і саундбаром</figcaption>
+    <img src="{$hero}" alt="{$alt1}" width="1200" height="675" loading="lazy">
+    <figcaption>Кабелі — «тиха» ланка між ТВ, приставкою і саундбаром; економія тут часто виходить боком</figcaption>
 </figure>
+
+<h2>Навіщо взагалі думати про версію HDMI</h2>
+<p>
+    Сучасний телевізор рідко працює сам: до нього підключають тюнер
+    <a href="/uk/category/tuner-t2">DVB-T2</a>,
+    приставку, ігрову консоль, ПК або саундбар.
+    Якщо кабель «застарий» для потрібного режиму, ви отримаєте не чорний екран, а тихіші симптоми:
+    картинка падає з 4K на Full HD, HDR вимикається, звук через ARC пропадає після сну ТВ.
+</p>
+<p>
+    Перед вибором кабелю варто також розуміти, як саме ви вішаєте телевізор:
+    у гайді
+    <a href="/uk/blog/yak-obraty-kronshteyn-dlya-televizora">як обрати кронштейн для телевізора</a>
+    є чеклист по VESA і відстані від стіни — від цього залежить потрібна довжина HDMI.
+</p>
+
+<figure class="blog-figure">
+    <img src="{$extra}" alt="{$alt2}" width="1200" height="675" loading="lazy">
+    <figcaption>4K HDR виглядає ефектно лише коли і панель, і джерело, і кабель тягнуть потрібну смугу</figcaption>
+</figure>
+
 <h2>HDMI 1.4, 2.0 і 2.1 — коротка різниця</h2>
 <ul class="blog-checklist">
-    <li><strong>HDMI 1.4</strong> — Full HD комфортно; 4K лише з обмеженнями</li>
+    <li><strong>HDMI 1.4</strong> — Full HD комфортно; 4K лише з обмеженнями (часто 30 Гц)</li>
     <li><strong>HDMI 2.0 / 2.0a/b</strong> — 4K@60 Гц, HDR; оптимально для більшості ТВ 2020–2024</li>
-    <li><strong>HDMI 2.1</strong> — 4K@120 Гц, VRR, ALLM; потрібно для ігрових консолей нового покоління і ТВ з HDMI 2.1</li>
+    <li><strong>HDMI 2.1</strong> — 4K@120 Гц, VRR, ALLM; потрібно для нових консолей і ТВ з портами 2.1</li>
 </ul>
 <div class="blog-note">
-    Кабель не «додає» герців сам по собі: і ТВ, і джерело (приставка, ПК, консоль) мають підтримувати потрібний режим.
+    Кабель не «додає» герців сам по собі: і ТВ, і джерело мають підтримувати режим.
+    Дивіться маркування порту на задній панелі — іноді лише 1–2 роз’єми з 4 є HDMI 2.1.
 </div>
+
+<h2>eARC, саундбар і окремий кабель</h2>
+<p>
+    Якщо плануєте зовнішній звук, одразу закладайте кабель під ARC/eARC.
+    У статті
+    <a href="/uk/blog/yak-pidklyuchyty-saundbar-do-televizora">як підключити саундбар до телевізора</a>
+    розібрані HDMI, оптика і Bluetooth.
+    Для eARC беріть сертифікований HDMI 2.0/2.1 — дешеві «no name» на довгих трасах часто дають клацання в звуці.
+</p>
+
 <h2>Яку довжину брати</h2>
 <p>
-    Для відстані <strong>до 3–5 м</strong> вистачає звичайного мідного кабеля HDMI 2.0/2.1.
-    На 10+ м краще активний кабель або оптичний HDMI — інакше можливі артефакти і пропадання сигналу.
+    Для відстані <strong>до 3–5 м</strong> (типовий шлях від тумби / кронштейна до приставки) вистачає звичайного мідного HDMI 2.0/2.1.
+    На 10+ м краще активний або оптичний HDMI — інакше можливі артефакти.
+    Якщо ТВ уже на стіні, спочатку оберіть
+    <a href="/uk/category/kronshteyny">кронштейн</a>
+    і прокладіть шлях кабелю (з урахуванням
+    <a href="/uk/blog/yak-shovaty-kabeli-za-televizorom">схову дротів за телевізором</a>),
+    і лише потім купуйте кабель з запасом 30–50 см.
 </p>
+
 <h2>Чеклист перед покупкою</h2>
 <ol class="blog-steps">
-    <li>Подивіться, які порти є на ТВ (ARC/eARC, HDMI 2.1).</li>
-    <li>Визначте максимальну роздільність джерела (приставка, ПК, консоль).</li>
-    <li>Виміряйте шлях кабелю з урахуванням кронштейна і кабель-каналу.</li>
-    <li>Не женіться за «позлоченими» роз’ємами — важливіша сертифікація і довжина.</li>
+    <li>Подивіться порти на ТВ (ARC/eARC, HDMI 2.1) і на джерелі.</li>
+    <li>Визначте максимальну роздільність і герцовку (4K60 vs 4K120).</li>
+    <li>Виміряйте шлях з урахуванням кронштейна і кабель-каналу.</li>
+    <li>Не женіться за «позлоченими» роз’ємами — важливіша сертифікація і адекватна довжина.</li>
+    <li>Для ефірного ТБ перевірте також
+        <a href="/uk/category/digital-tb">розділ цифрового телебачення</a>
+        і гайд
+        <a href="/uk/blog/cyfrove-telebachennya-t2">що таке Т2 і як підключити</a>.</li>
 </ol>
+
+<p>
+    Більше практичних матеріалів — у категорії блогу
+    <a href="/uk/blog/category/porady">Поради покупцям</a>.
+</p>
 HTML);
     }
 
-    private function contentCables(string $image, string $alt): string
+    private function contentCables(string $hero, string $extra, string $alt1, string $alt2): string
     {
         return $this->wrapHtml(<<<HTML
 <p class="blog-lead">
     Телевізор на стіні виглядає стильно лише тоді, коли за ним немає «павутини» дротів.
-    Ось робочі способи <strong>сховати кабелі</strong> без штроблення і з мінімумом інструментів.
+    Нижче — робочі способи <strong>сховати кабелі</strong> без штроблення, з прив’язкою до кронштейна і розеток.
 </p>
 <figure class="blog-figure">
-    <img src="{$image}" alt="{$alt}" width="1200" height="675" loading="lazy">
-    <figcaption>Акуратний кабель-менеджмент робить монтаж ТВ завершеним</figcaption>
+    <img src="{$hero}" alt="{$alt1}" width="1200" height="675" loading="lazy">
+    <figcaption>Коли екран «висить у повітрі», будь-який видимий дріт одразу псує враження</figcaption>
 </figure>
+
+<h2>Спочатку план: кронштейн, розетка, довжина кабелів</h2>
+<p>
+    Акуратний результат починається не з кабель-каналу, а з розмітки.
+    Оберіть місце підвісу за гайдом
+    <a href="/uk/blog/yak-obraty-kronshteyn-dlya-televizora">як обрати кронштейн для телевізора</a>,
+    перегляньте моделі в каталозі
+    <a href="/uk/category/kronshteyny">Кронштейни</a>
+    (зокрема
+    <a href="/uk/category/unibracket">UniBracket</a>)
+    і закладіть розетку / інтернет якомога ближче до центру екрана.
+</p>
+<p>
+    Популярні варіанти кріплень:
+    <a href="/uk/product/bz02-21-unibracket">BZ02-21</a>,
+    <a href="/uk/product/bz12-22-unibracket">BZ12-22</a> —
+    у багатьох є отвори або жолоби під дроти; прокладайте HDMI і живлення <em>до</em> фінального затягування болтів.
+</p>
+
+<figure class="blog-figure">
+    <img src="{$extra}" alt="{$alt2}" width="1200" height="675" loading="lazy">
+    <figcaption>Інтер’єр «читається» цілісно, коли техніка і дроти не конкурують зі стіною</figcaption>
+</figure>
+
 <h2>1. Кабель-канал під колір стіни</h2>
 <p>
-    Найпростіший і найдешевший варіант: пластиковий канал від ТВ до розетки / тумби.
-    Беріть з запасом по ширині — HDMI + живлення + оптика займають місце.
+    Найпростіший варіант: пластиковий канал від ТВ до тумби чи розетки.
+    Беріть з запасом по ширині — HDMI + живлення + оптика / Ethernet займають місце.
+    Канал можна фарбувати; кутові переходи виглядають акуратніше за «злам» гофрою.
 </p>
-<h2>2. Кронштейн з прокладанням кабелів</h2>
+
+<h2>2. Кронштейн з прокладанням + короткий HDMI</h2>
 <p>
-    Багато кронштейнів мають отвори або жолоби під дроти. Прокладайте кабелі <em>до</em> фінального затягування болтів —
-    так простіше і акуратніше.
+    Не купуйте 10-метровий HDMI «про запас», якщо реально треба 2–3 м:
+    зайва бухта за екраном заважає скласти кронштейн і псує вентиляцію.
+    Про вибір кабелю —
+    <a href="/uk/blog/yak-obraty-hdmi-kabel-dlya-televizora">окремий матеріал про HDMI</a>.
+    Для звуку дивіться
+    <a href="/uk/blog/yak-pidklyuchyty-saundbar-do-televizora">підключення саундбара</a>.
 </p>
-<h2>3. Розетка за телевізором</h2>
+
+<h2>3. Розетка і фільтр за телевізором</h2>
 <p>
-    Ідеальний сценарій — розетка і інтернет саме за екраном. Якщо ремонту ще немає, закладіть це в план:
-    менше видимих дротів і безпечніше для дітей і тварин.
+    Ідеально — розетка саме за панеллю. Якщо розетка нижче, сховайте і подовжувач:
+    у каталозі є
+    <a href="/uk/category/podovzhuvachi-tm-logan-inc">подовжувачі та мережеві фільтри</a>,
+    а порівняння з ДБЖ —
+    у статті
+    <a href="/uk/blog/merezhevyy-filtr-chy-dbzh">мережевий фільтр чи ДБЖ</a>.
 </p>
 <div class="blog-note">
-    Не ховайте кабелі під натяжною стелею без доступу і не перетискайте HDMI гострими краями профілю.
+    Не ховайте кабелі під натяжною стелею без лючка доступу і не перетискайте HDMI гострими краями профілю.
+    Живлення — тільки в сертифіковані подовжувачі, не в «скрутки».
 </div>
+
+<ol class="blog-steps">
+    <li>Розмітьте центр екрана і отвори VESA.</li>
+    <li>Закріпіть кронштейн і протягніть кабелі через жолоби.</li>
+    <li>Зберіть кабель-канал вертикально до розетки.</li>
+    <li>Залиште сервісну петлю 20–30 см, щоб зняти ТВ без обрізання дротів.</li>
+</ol>
+<p>
+    Ще поради з вибору техніки —
+    <a href="/uk/blog/category/porady">у блозі «Поради покупцям»</a>.
+</p>
 HTML);
     }
 
-    private function contentFilterUps(string $image, string $alt): string
+    private function contentFilterUps(string $hero, string $extra, string $alt1, string $alt2): string
     {
         return $this->wrapHtml(<<<HTML
 <p class="blog-lead">
-    Після стрибків напруги і відключень світла питання стоїть так:
-    <strong>мережевий фільтр чи ДБЖ</strong>? Коротко — вони вирішують різні задачі і часто потрібні обидва.
+    Після стрибків напруги і відключень світла питання звучить так:
+    <strong>мережевий фільтр чи ДБЖ</strong>?
+    Вони вирішують різні задачі: фільтр гасить імпульси, ДБЖ дає час пережити блекаут.
+    Часто вдома потрібні обидва — просто на різних лініях.
 </p>
 <figure class="blog-figure">
-    <img src="{$image}" alt="{$alt}" width="1200" height="675" loading="lazy">
-    <figcaption>Фільтр гасить імпульси; ДБЖ дає час коректно вимкнути техніку</figcaption>
+    <img src="{$hero}" alt="{$alt1}" width="1200" height="675" loading="lazy">
+    <figcaption>Кожна розетка з технікою — точка ризику при імпульсі в мережі</figcaption>
 </figure>
-<h2>Мережевий фільтр</h2>
+
+<h2>Мережевий фільтр: від чого захищає</h2>
 <ul class="blog-checklist">
-    <li>Захищає від коротких імпульсів і перешкод у мережі</li>
-    <li>Не тримає живлення, коли світла немає</li>
-    <li>Дешевший і компактніший</li>
+    <li>Короткі імпульси й перешкоди в мережі 220 В</li>
+    <li>Зручне розведення кількох розеток + USB для гаджетів</li>
+    <li>Не дає автономії, коли світла вже немає</li>
 </ul>
-<h2>ДБЖ (UPS)</h2>
+<p>
+    У каталозі зібрані готові варіанти —
+    <a href="/uk/category/podovzhuvachi-tm-logan-inc">подовжувачі та мережеві фільтри</a>,
+    наприклад
+    <a href="/uk/product/homeware-hp-5-15-0">фільтр на 6 розеток з USB/Type-C</a>
+    чи
+    <a href="/uk/product/homeware-hp-5-23-0">компактний F06U на 3 м</a>.
+    Для ТВ і приставки це базовий мінімум захисту.
+</p>
+
+<figure class="blog-figure">
+    <img src="{$extra}" alt="{$alt2}" width="1200" height="675" loading="lazy">
+    <figcaption>Роутер і медіатехніка «лягають» першими під час відключення — саме їх часто садять на ДБЖ</figcaption>
+</figure>
+
+<h2>ДБЖ (UPS): коли без нього погано</h2>
 <ul class="blog-checklist">
-    <li>Дає кілька–десятки хвилин автономії для роутера, ОНТ, приставки</li>
-    <li>Допомагає коректно вимкнути ТВ / ПК під час блекауту</li>
-    <li>Важливі ємність (VA/Вт) і тип хвилі (апроксимована / чиста синусоїда)</li>
+    <li>Кілька–десятки хвилин автономії для роутера, ОНТ, тюнера</li>
+    <li>Коректне вимкнення ТВ / ПК під час блекауту</li>
+    <li>Важливі Вт/ВА і тип хвилі (апроксимована / чиста синусоїда)</li>
 </ul>
+<p>
+    Якщо цікавить еволюція таких рішень —
+    почитайте
+    <a href="/uk/blog/istoriya-dzherel-bezperebiynogo-zhyvlennya">історію джерел безперебійного живлення</a>.
+    Для портативної зарядки гаджетів інший інструмент —
+    <a href="/uk/blog/yak-obraty-powerbank">як обрати повербанк</a>
+    і підбірка
+    <a href="/uk/blog/category/powerbanky">статей про повербанки</a>.
+</p>
+
 <div class="blog-note">
     Для роутера часто вистачає компактного ДБЖ на 300–600 ВА.
-    Для телевізора рахуйте реальне споживання панелі + саундбар.
+    Для телевізора рахуйте реальне споживання панелі + саундбар і не перевантажуйте розетки «гірляндою» трійників.
 </div>
-<h2>Що обрати</h2>
+
+<h2>Що обрати саме вам</h2>
 <ol class="blog-steps">
-    <li>Є лише «клацання» в розетці / індукція від сусідів → почніть з якісного фільтра.</li>
-    <li>Часті відключення світла → ДБЖ для мережі (роутер) обовʼязково.</li>
-    <li>Дорога AV-техніка → фільтр + ДБЖ за потреби, не економте на заземленні.</li>
+    <li>Є лише «клацання» в мережі / індукція → якісний мережевий фільтр на лінію ТВ.</li>
+    <li>Часті відключення світла → ДБЖ на роутер (інтернет) обовʼязково.</li>
+    <li>Дорога AV-система → фільтр на ТВ/саундбар + ДБЖ на мережу; дивіться також
+        <a href="/uk/category/digital-tb">цифрове ТБ</a> і
+        <a href="/uk/blog/cyfrove-telebachennya-t2">гайд з підключення Т2</a>.</li>
+    <li>Кабелі за екраном ховайте акуратно —
+        <a href="/uk/blog/yak-shovaty-kabeli-za-televizorom">поради з кабель-менеджменту</a>.</li>
 </ol>
 HTML);
     }
 
-    private function contentSoundbar(string $image, string $alt): string
+    private function contentSoundbar(string $hero, string $extra, string $alt1, string $alt2): string
     {
         return $this->wrapHtml(<<<HTML
 <p class="blog-lead">
-    Вбудовані динаміки ТВ звучать плоско. <strong>Саундбар</strong> додає обʼєм, але важливо правильно його підключити:
-    HDMI eARC, оптика чи Bluetooth — від цього залежить якість і зручність.
+    Вбудовані динаміки телевізора звучать плоско — тонкий корпус просто не вміщує нормальний НЧ-динамік.
+    <strong>Саундбар</strong> додає обʼєм, але якість залежить від підключення:
+    HDMI eARC, оптика чи Bluetooth. Нижче — що обрати і в якому порядку налаштовувати меню ТВ.
 </p>
 <figure class="blog-figure">
-    <img src="{$image}" alt="{$alt}" width="1200" height="675" loading="lazy">
-    <figcaption>Саундбар під екраном: найкраще працює через HDMI ARC/eARC</figcaption>
+    <img src="{$hero}" alt="{$alt1}" width="1200" height="675" loading="lazy">
+    <figcaption>Зовнішня акустика розкриває саундтреки й діалоги значно краще за динаміки в рамці ТВ</figcaption>
 </figure>
-<h2>HDMI ARC / eARC</h2>
+
+<h2>HDMI ARC / eARC — найкращий варіант</h2>
 <p>
-    Найкращий варіант: один HDMI між портом ARC/eARC на ТВ і відповідним портом на саундбарі.
-    У меню ТВ увімкніть зовнішні динаміки / HDMI ARC і вимкніть динаміки телевізора.
+    Один кабель між портом ARC/eARC на телевізорі і відповідним портом на саундбарі.
+    Потрібен адекватний HDMI — дивіться
+    <a href="/uk/blog/yak-obraty-hdmi-kabel-dlya-televizora">гайд з вибору HDMI-кабеля</a>.
+    У меню ТВ увімкніть зовнішні динаміки / HDMI ARC і вимкніть динаміки панелі.
 </p>
+<p>
+    Якщо ТВ на кронштейні, заздалегідь заложіть довжину кабелю і шлях за стіною:
+    <a href="/uk/blog/yak-obraty-kronshteyn-dlya-televizora">вибір кронштейна</a>,
+    каталог
+    <a href="/uk/category/kronshteyny">кріплень</a>
+    і
+    <a href="/uk/blog/yak-shovaty-kabeli-za-televizorom">як сховати дроти</a>.
+</p>
+
+<figure class="blog-figure">
+    <img src="{$extra}" alt="{$alt2}" width="1200" height="675" loading="lazy">
+    <figcaption>Чим чистіший тракт (кабель + правильний порт), тим менше сюрпризів з lip-sync</figcaption>
+</figure>
+
 <h2>Оптичний кабель (Toslink)</h2>
 <p>
-    Стабільний цифровий звук, але без частини сучасних форматів, які дає eARC.
-    Підходить, якщо на ТВ немає вільного HDMI або ARC зайнятий.
+    Стабільний цифровий звук, але без частини сучасних форматів, які дає eARC (наприклад, частини lossless-доріжок).
+    Підходить, якщо HDMI зайняті тюнером
+    <a href="/uk/category/tuner-t2">DVB-T2</a>,
+    приставкою чи ігровою консоллю.
+    Про ефірне ТБ загалом —
+    <a href="/uk/blog/cyfrove-telebachennya-t2">цифрове телебачення Т2</a>
+    і розділ
+    <a href="/uk/category/digital-tb">Цифрове телебачення</a>.
 </p>
+
 <h2>Bluetooth</h2>
 <p>
-    Зручно, але можливі затримки губ (lip-sync). Для фільмів краще кабель; для музики — нормально.
+    Зручно для музики, для фільмів часто з’являється затримка губ.
+    Якщо лишаєте Bluetooth — шукайте в меню саундбара/ТВ налаштування lip-sync.
 </p>
 <div class="blog-note">
-    Після підключення перевірте: CEC/Anynet+/Bravia Sync інколи конфліктує з пультом — за потреби вимкніть зайве керування.
+    CEC / Anynet+ / Bravia Sync інколи конфліктує з пультом саундбара.
+    Якщо ТВ «сам» вмикає не ті виходи — тимчасово вимкніть зайве HDMI-CEC керування.
 </div>
+
+<h2>Покрокове підключення</h2>
 <ol class="blog-steps">
-    <li>Підключіть кабель і живлення саундбара.</li>
-    <li>Оберіть джерело звуку HDMI ARC / Optical на ТВ.</li>
-    <li>Прогоніть тестовий ролик з діалогами і басом.</li>
-    <li>За потреби підлаштуйте lip-sync у меню саундбара.</li>
+    <li>Поставте саундбар по центру під екраном (або на стійку / полицю).</li>
+    <li>Підключіть HDMI eARC або оптику + живлення.</li>
+    <li>У меню ТВ оберіть вихід звуку HDMI ARC / Optical.</li>
+    <li>Прогоніть трейлер з діалогами і басом; за потреби підкрутіть sync.</li>
+    <li>Живлення саундбара краще вести через
+        <a href="/uk/category/podovzhuvachi-tm-logan-inc">мережевий фільтр</a>
+        — чому не завжди вистачає трійника, читайте в
+        <a href="/uk/blog/merezhevyy-filtr-chy-dbzh">фільтр чи ДБЖ</a>.</li>
 </ol>
+<p>
+    Інші поради з вибору техніки для дому —
+    <a href="/uk/blog/category/porady">у розділі блогу «Поради»</a>
+    та на
+    <a href="/uk/blog">головній блогу</a>.
+</p>
 HTML);
     }
 
@@ -394,133 +556,73 @@ HTML);
 .blog-figure{margin:1.5rem 0;text-align:center}
 .blog-figure img{max-width:100%;height:auto;border-radius:.5rem}
 .blog-figure figcaption{margin-top:.5rem;font-size:.875rem;color:#666}
+.blog-article a{color:#1d4ed8;text-decoration:underline;text-underline-offset:2px}
 </style>
+<div class="blog-article">
 {$body}
+</div>
 HTML;
     }
 
-    /** @param array{og_image: string, content_image: string, og_title: string, accent: string} $data */
-    private function generateImages(array $data): void
+    /** @param array<string, mixed> $data */
+    private function downloadImages(array $data, bool $force, SymfonyStyle $io): void
     {
-        $ogPath = $this->projectDir.'/public/uploads/images/'.$data['og_image'];
-        $contentPath = $this->projectDir.'/public/uploads/blog/'.$data['content_image'];
-        $title = $data['og_title'];
-        $accent = $data['accent'];
+        $map = [
+            $this->projectDir.'/public/uploads/blog/'.$data['content_image'] => $data['hero_url'],
+            $this->projectDir.'/public/uploads/blog/'.$data['content_image_2'] => $data['extra_url'],
+            $this->projectDir.'/public/uploads/images/blog/'.$data['og_image'] => $data['og_url'],
+        ];
 
-        if (!is_file($ogPath)) {
-            $this->renderImage($ogPath, 1200, 630, $title, $accent);
-        }
-        if (!is_file($contentPath)) {
-            $this->renderImage($contentPath, 1200, 675, $title, $accent);
+        foreach ($map as $path => $url) {
+            $exists = is_file($path);
+            $size = $exists ? (int) filesize($path) : 0;
+            // Old gradient+text cards were ~35–50KB; real photos are usually larger.
+            $looksLikePlaceholder = $exists && $size > 0 && $size < 90000;
+            if ($exists && !$force && !$looksLikePlaceholder) {
+                continue;
+            }
+            $this->downloadFile((string) $url, $path, $io);
         }
     }
 
-    private function renderImage(string $path, int $width, int $height, string $title, string $accent): void
+    private function downloadFile(string $url, string $path, SymfonyStyle $io): void
     {
         $dir = \dirname($path);
         if (!is_dir($dir) && !mkdir($dir, 0775, true) && !is_dir($dir)) {
-            throw new \RuntimeException('Cannot create directory: '.$dir);
+            throw new \RuntimeException('Cannot create: '.$dir);
         }
 
-        $hex = ltrim($accent, '#');
-        $tmpCaption = sys_get_temp_dir().'/blog-caption-'.md5($path).'.png';
-        $tmpBg = $path.'.bg.jpg';
-        $captionCmd = sprintf(
-            'convert -background none -fill white -font DejaVu-Sans-Bold -pointsize %d -size %dx caption:%s %s',
-            $width >= 1200 ? 44 : 36,
-            (int) ($width * 0.84),
-            escapeshellarg($title),
-            escapeshellarg($tmpCaption),
-        );
-        $bgCmd = sprintf(
-            'convert -size %dx%d gradient:#%s-#0f172a %s',
-            $width,
-            $height,
-            preg_replace('/[^0-9a-fA-F]/', '', $hex) ?: '2563eb',
-            escapeshellarg($tmpBg),
-        );
-        $composeCmd = sprintf(
-            'convert %s %s -gravity center -compose over -composite -quality 88 %s',
-            escapeshellarg($tmpBg),
-            escapeshellarg($tmpCaption),
-            escapeshellarg($path),
-        );
+        $tmp = $path.'.tmp';
+        $cmd = sprintf('curl -sL --fail --max-time 45 -o %s %s', escapeshellarg($tmp), escapeshellarg($url));
+        exec($cmd, $out, $code);
+        if ($code !== 0 || !is_file($tmp) || filesize($tmp) < 5000) {
+            @unlink($tmp);
+            $io->warning('Failed to download: '.$url);
 
-        exec($captionCmd.' 2>&1', $out1, $code1);
-        exec($bgCmd.' 2>&1', $out2, $code2);
-        exec($composeCmd.' 2>&1', $out3, $code3);
-        @unlink($tmpCaption);
-        @unlink($tmpBg);
+            return;
+        }
 
-        if ($code1 !== 0 || $code2 !== 0 || $code3 !== 0 || !is_file($path)) {
-            $this->renderImageGd($path, $width, $height, $title, $accent);
-        }
-    }
+        $mime = (string) (@mime_content_type($tmp) ?: '');
+        if (!str_contains($mime, 'jpeg') && !str_contains($mime, 'jpg') && !str_contains($mime, 'png') && !str_contains($mime, 'webp')) {
+            // Unsplash sometimes returns HTML error pages
+            $head = (string) file_get_contents($tmp, false, null, 0, 32);
+            if (str_starts_with(ltrim($head), '<')) {
+                @unlink($tmp);
+                $io->warning('Download was not an image: '.$url);
 
-    private function renderImageGd(string $path, int $width, int $height, string $title, string $accent): void
-    {
-        $img = imagecreatetruecolor($width, $height);
-        if ($img === false) {
-            throw new \RuntimeException('GD create failed');
-        }
-        [$r, $g, $b] = sscanf(ltrim($accent, '#'), '%02x%02x%02x') ?: [37, 99, 235];
-        for ($y = 0; $y < $height; ++$y) {
-            $t = $y / max(1, $height - 1);
-            $col = imagecolorallocate(
-                $img,
-                (int) ((1 - $t) * (int) $r + $t * 15),
-                (int) ((1 - $t) * (int) $g + $t * 23),
-                (int) ((1 - $t) * (int) $b + $t * 42),
-            );
-            imageline($img, 0, $y, $width, $y, $col);
-        }
-        $white = imagecolorallocate($img, 255, 255, 255);
-        $fontFile = '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf';
-        $lines = $this->wrapTextGd($title, 28);
-        $size = $width >= 1200 ? 36 : 28;
-        $lineHeight = (int) ($size * 1.35);
-        $totalH = \count($lines) * $lineHeight;
-        $y = (int) (($height - $totalH) / 2) + $size;
-        foreach ($lines as $line) {
-            if (is_file($fontFile)) {
-                $box = imagettfbbox($size, 0, $fontFile, $line);
-                $textWidth = $box !== false ? (int) abs($box[2] - $box[0]) : 0;
-                imagettftext($img, $size, 0, (int) max(24, ($width - $textWidth) / 2), $y, $white, $fontFile, $line);
-            } else {
-                imagestring($img, 5, 40, $y - 20, $line, $white);
-            }
-            $y += $lineHeight;
-        }
-        imagejpeg($img, $path, 88);
-        imagedestroy($img);
-    }
-
-    /** @return list<string> */
-    private function wrapTextGd(string $text, int $width): array
-    {
-        $words = preg_split('/\s+/u', $text) ?: [$text];
-        $lines = [];
-        $current = '';
-        foreach ($words as $word) {
-            $trial = $current === '' ? $word : $current.' '.$word;
-            if (mb_strlen($trial) > $width && $current !== '') {
-                $lines[] = $current;
-                $current = $word;
-            } else {
-                $current = $trial;
+                return;
             }
         }
-        if ($current !== '') {
-            $lines[] = $current;
-        }
 
-        return $lines;
+        rename($tmp, $path);
+        $io->text('Image: '.str_replace($this->projectDir.'/', '', $path));
     }
 
     private function ensureImageDirs(): void
     {
         foreach ([
             $this->projectDir.'/public/uploads/images',
+            $this->projectDir.'/public/uploads/images/blog',
             $this->projectDir.'/public/uploads/blog',
         ] as $dir) {
             if (!is_dir($dir) && !mkdir($dir, 0775, true) && !is_dir($dir)) {

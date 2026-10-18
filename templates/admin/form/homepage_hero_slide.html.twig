@@ -1,0 +1,69 @@
+{% block homepage_hero_slide_widget %}
+    <div class="homepage-hero-slide" data-homepage-hero-slide>
+        <div class="homepage-hero-slide__media">
+            <div
+                class="homepage-hero-slide__preview{% if not form.vars.preview_url %} homepage-hero-slide__preview--empty{% endif %}"
+                data-homepage-hero-preview
+                data-empty-label="{{ 'admin.homepage_setting.hero_image_empty'|trans|e('html_attr') }}"
+            >
+                {% if form.vars.preview_url %}
+                    <img
+                        src="{{ form.vars.preview_url }}"
+                        alt=""
+                        data-homepage-hero-preview-img
+                        style="object-position: {{ form.imagePosition.vars.value|default(70) }}% center;"
+                    >
+                {% else %}
+                    <span data-homepage-hero-preview-empty>{{ 'admin.homepage_setting.hero_image_empty'|trans }}</span>
+                {% endif %}
+            </div>
+            {{ form_row(form.imageFile, {
+                attr: {
+                    'data-homepage-hero-file': '1',
+                    accept: 'image/jpeg,image/png,image/webp,image/gif',
+                }
+            }) }}
+            <div class="homepage-hero-slide__remove-row{% if not form.vars.preview_url %} is-hidden{% endif %}" data-homepage-hero-remove-row>
+                <button
+                    type="button"
+                    class="btn btn-sm btn-outline-danger"
+                    data-homepage-hero-remove-btn
+                >
+                    {{ 'admin.homepage_setting.hero_image_remove'|trans }}
+                </button>
+                <div class="homepage-hero-slide__remove-check">
+                    {{ form_widget(form.removeImage) }}
+                    {{ form_label(form.removeImage) }}
+                </div>
+            </div>
+            {{ form_row(form.imagePosition) }}
+        </div>
+
+        <div class="homepage-hero-slide__fields">
+            <div class="homepage-hero-slide__row homepage-hero-slide__row--meta">
+                {{ form_row(form.enabled) }}
+                {{ form_row(form.position) }}
+            </div>
+            <div class="homepage-hero-slide__row">
+                {{ form_row(form.brand) }}
+                {{ form_row(form.title) }}
+            </div>
+            {{ form_row(form.lead) }}
+            <div class="homepage-hero-slide__row">
+                {{ form_row(form.primaryCtaLabel) }}
+                {{ form_row(form.primaryCtaUrl) }}
+            </div>
+            <div class="homepage-hero-slide__row">
+                {{ form_row(form.secondaryCtaLabel) }}
+                {{ form_row(form.secondaryCtaUrl) }}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block homepage_hero_slide_row %}
+    <div class="form-group field-homepage_hero_slide">
+        {{- block('homepage_hero_slide_widget') -}}
+        {{- form_errors(form) -}}
+    </div>
+{% endblock %}

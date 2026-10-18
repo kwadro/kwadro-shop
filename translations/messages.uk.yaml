@@ -64,6 +64,8 @@ menu.link_product_search_setting: Поля пошуку
 menu.link_product_search_setting_single: Налаштування пошуку товарів
 menu.link_homepage_setting: Головна сторінка
 menu.link_homepage_setting_single: налаштування головної сторінки
+menu.link_shop_mega_menu: Мега меню
+menu.link_shop_mega_menu_single: мега меню
 menu.link_blog_article: Статті блогу
 menu.link_blog_article_single: Стаття блогу
 menu.link_blog_category: Категорії блогу
@@ -268,9 +270,65 @@ admin.product_search_setting.field_name: Назва
 admin.product_search_setting.field_model: Модель
 admin.product_search_setting.field_sku: SKU
 admin.product_search_setting.field_brand: Бренд
+admin.shop_mega_menu.fieldset_general: Сайт і мова
+admin.shop_mega_menu.site: Сайт
+admin.shop_mega_menu.locale: Мова
+admin.shop_mega_menu.fieldset_mode: Режим формування
+admin.shop_mega_menu.fieldset_mode_help: Авто — як зараз (кореневі категорії з дерева). Ручне — лише вибрані категорії у заданому порядку.
+admin.shop_mega_menu.mode: Режим
+admin.shop_mega_menu.mode_auto: Автоформування
+admin.shop_mega_menu.mode_manual: Ручне формування
+admin.shop_mega_menu.mode_help: Якщо вибрано ручний режим, але список порожній — показується автоформування.
+admin.shop_mega_menu.fieldset_items: Пункти меню
+admin.shop_mega_menu.fieldset_items_help: Верхній рівень мегаменю. Підкатегорії підтягуються з дерева категорій автоматично.
+admin.shop_mega_menu.items: Категорії меню
+admin.shop_mega_menu.items_help: Додайте категорії та задайте порядок (менше число — лівіше / вище).
+admin.shop_mega_menu.item_enabled: Показувати
+admin.shop_mega_menu.item_position: Порядок
+admin.shop_mega_menu.item_position_help: Менше число — раніше в меню.
+admin.shop_mega_menu.item_category: Категорія
+admin.shop_mega_menu.item_category_placeholder: Оберіть категорію
 admin.homepage_setting.fieldset_general: Сайт і мова
 admin.homepage_setting.site: Сайт
 admin.homepage_setting.locale: Мова
+admin.homepage_setting.fieldset_hero: Блок hero (перший екран)
+admin.homepage_setting.fieldset_hero_help: Текст і кнопки першого блоку. Можна додати кілька секцій — якщо більше однієї, на сайті працює слайдер.
+admin.homepage_setting.hero_slides: Секції hero
+admin.homepage_setting.hero_slides_help: Додайте одну або кілька секцій. Порожній список — стандартний hero з перекладів. Якщо секцій більше 1 — увімкнеться слайдер.
+admin.homepage_setting.hero_slide: Секція hero
+admin.homepage_setting.hero_slide_enabled: Показувати секцію
+admin.homepage_setting.hero_slide_position: Порядок
+admin.homepage_setting.hero_slide_position_help: Менше число — вище в списку / раніше в слайдері.
+admin.homepage_setting.hero_brand: Бренд
+admin.homepage_setting.hero_brand_help: Залиште порожнім, щоб використати назву з налаштувань сайту.
+admin.homepage_setting.hero_title: Заголовок
+admin.homepage_setting.hero_title_help: Залиште порожнім для стандартного заголовка.
+admin.homepage_setting.hero_lead: Підзаголовок
+admin.homepage_setting.hero_lead_help: Залиште порожнім для стандартного тексту.
+admin.homepage_setting.hero_image: Зображення
+admin.homepage_setting.hero_image_help: Залиште порожнім для стандартного фото hero. Новий файл замінює поточне зображення після збереження.
+admin.homepage_setting.hero_image_empty: Немає зображення
+admin.homepage_setting.hero_image_remove: Видалити зображення
+admin.homepage_setting.hero_image_position: Позиція зображення (%)
+admin.homepage_setting.hero_image_position_help: 'Горизонтальний фокус object-position: 0 = ліворуч, 50 = центр, 70 = за замовчуванням, 100 = праворуч.'
+admin.homepage_setting.hero_primary_cta_label: Основна кнопка — текст
+admin.homepage_setting.hero_primary_cta_url: Основна кнопка — посилання
+admin.homepage_setting.hero_secondary_cta_label: Друга кнопка — текст
+admin.homepage_setting.hero_secondary_cta_url: Друга кнопка — посилання
+admin.homepage_setting.hero_cta_url_help: Повний URL або шлях сайту (напр. /uk/category/...). Порожня основна кнопка веде в каталог.
+admin.homepage_setting.fieldset_categories: Блок «Категорії»
+admin.homepage_setting.fieldset_categories_help: Категорії на головній сторінці. Можна вимкнути блок, показати автоматично з меню або вибрати вручну.
+admin.homepage_setting.source_auto: Автоматично (з меню)
+admin.homepage_setting.categories_source_help: «Автоматично» — ті самі категорії, що в Мега меню (авто або ручний список). «Вибрані вручну» — окремий список лише для блоку на головній.
+admin.homepage_setting.categories_per_row: Кількість в рядку
+admin.homepage_setting.categories_per_row_help: 'За замовчуванням 4 (як на вітрині). На десктопі слайдер з’являється, коли категорій більше цього числа. На мобільному — коли вибрано більше 1.'
+admin.homepage_setting.categories: Пункти категорій
+admin.homepage_setting.categories_help: Використовується, коли вибрано «Вибрані вручну». Додайте категорії та порядок. Якщо список порожній — показуються категорії з меню.
+admin.homepage_setting.category_item_enabled: Показувати
+admin.homepage_setting.category_item_position: Порядок
+admin.homepage_setting.category_item_position_help: Менше число — раніше в блоці.
+admin.homepage_setting.category_item_category: Категорія
+admin.homepage_setting.category_item_category_placeholder: Оберіть категорію
 admin.homepage_setting.fieldset_products: Блок «Нові пропозиції»
 admin.homepage_setting.fieldset_products_help: Товари на головній сторінці. Показуються лише увімкнені товари в наявності.
 admin.homepage_setting.fieldset_articles: Блок «Цікаві статті»
@@ -284,9 +342,10 @@ admin.homepage_setting.source: Що показувати
 admin.homepage_setting.source_latest: Найновіші автоматично
 admin.homepage_setting.source_manual: Вибрані вручну
 admin.homepage_setting.source_help: Якщо вибрано «Вибрані вручну», але список порожній — показуються найновіші.
-admin.homepage_setting.limit: Кількість
+admin.homepage_setting.limit: Кількість (поріг слайдера)
+admin.homepage_setting.limit_help: 'На десктопі слайдер з’являється, коли товарів більше цього числа (напр. 5 → при 6+). На мобільному — коли товарів більше 1. Для «Найновіші» це також скільки товарів підтягнути. Для «Вибрані вручну» показуються всі вибрані товари без обмеження.'
 admin.homepage_setting.products: Вибрані товари
-admin.homepage_setting.products_help: Використовується, коли вибрано «Вибрані вручну».
+admin.homepage_setting.products_help: Використовується, коли вибрано «Вибрані вручну». Кількість не обмежується — усі вибрані товари показуються на сайті.
 admin.homepage_setting.articles: Вибрані статті
 admin.homepage_setting.articles_help: Використовується, коли вибрано «Вибрані вручну». Статті іншого сайту чи мови не показуються.
 admin.product_import_run.import: Імпорт
@@ -463,9 +522,14 @@ admin.request_list.ip: IP
 admin.request_list.path: URL (до редіректу)
 admin.request_list.path_after_redirect: URL після редіректу
 admin.request_list.user_agent: User-Agent
+admin.request_list.user_agent_status: User-Agent (стан)
+admin.request_list.user_agent_empty: Незаповнений
+admin.request_list.user_agent_filled: Заповнений
 admin.request_list.unique_ips_today: Унікальних IP сьогодні
 admin.request_list.requests_today: Всього запитів сьогодні
-admin.report_visitor_ids.intro: 'Статистика запитів IP за останні %days% днів. Boot — User-Agent містить google.com або bing.com. Unique IPs — унікальні IP за день / за період. New IPs — адреси, які вперше з’явилися в базі.'
+admin.request_list.unique_ips_filtered: Унікальних IP у вибірці
+admin.request_list.requests_filtered: Всього запитів у вибірці
+admin.report_visitor_ids.intro: 'Статистика запитів IP за останні %days% днів. Bot — User-Agent схожий на краулер (googlebot, bingbot, yandex, ahrefs, gptbot тощо). Порожній UA не вважається ботом автоматично. Unique IPs — унікальні IP за день / за період. New IPs — адреси, які вперше з’явилися в базі.'
 admin.report_visitor_ids.day: День
 admin.report_visitor_ids.requests: Запити
 admin.report_visitor_ids.google_bot: Boot
@@ -677,6 +741,8 @@ admin.image_editor.next: Далі
 admin.image_editor.back: Назад
 admin.image_editor.save_background: Зберегти фон
 admin.image_editor.save_result: Зберегти результат
+admin.image_editor.save_as_new: Зберегти як новий результат
+admin.image_editor.saved_as_new: Збережено як нову окрему картинку.
 admin.image_editor.saved_list: Збережені картинки
 admin.image_editor.saving: Збереження…
 admin.image_editor.saved: Картинку збережено.
@@ -724,7 +790,7 @@ admin.background_remover.open: Відкрити
 admin.background_remover.delete: Видалити
 
 admin.image_transform.title: Трансформувати картинку
-admin.image_transform.help: Генерує нову картинку потрібного формату. Уся оригінальна вміщується без обрізання; смуги — колір краю фото з градієнтом до світлішого на зовнішньому краї кадру. Зручно для Stories / Reels (9:16).
+admin.image_transform.help: Генерує нову картинку потрібного формату. Уся оригінальна вміщується без обрізання; можна змістити її по X/Y. Смуги — колір краю фото з градієнтом до світлішого на зовнішньому краї кадру. Зручно для Stories / Reels (9:16).
 admin.image_transform.file: Файл картинки
 admin.image_transform.aspect: Формат
 admin.image_transform.blur: Світлість краю
@@ -734,10 +800,15 @@ admin.image_transform.rotate_help: Повертає вихідну картин�
 admin.image_transform.rotate_left: Вліво на 90°
 admin.image_transform.rotate_right: Вправо на 90°
 admin.image_transform.rotate_reset: Скинути
-admin.image_transform.include_subject: Додати об’єкт (зменшений)
-admin.image_transform.include_subject_help: Увімкнено — картинка трохи менша (слайдер розміру). Вимкнено — уся картинка максимально велика, але все одно повністю в кадрі (нічого не обрізається).
-admin.image_transform.subject_scale: Розмір об’єкта
-admin.image_transform.subject_scale_help: Наскільки велика чітка картинка відносно кадру (пропорції зберігаються, написи не обрізаються).
+admin.image_transform.position: Позиція картинки
+admin.image_transform.position_x: X
+admin.image_transform.position_y: Y
+admin.image_transform.position_help: Куди притиснути оригінал у кадрі (пропорції зберігаються, нічого не обрізається).
+admin.image_transform.align_left: Лівий край
+admin.image_transform.align_right: Правий край
+admin.image_transform.align_center: Центр
+admin.image_transform.align_top: Верхній край
+admin.image_transform.align_bottom: Нижній край
 admin.image_transform.save_to_library: Також зберегти в бібліотеку картинок
 admin.image_transform.download_name: Ім’я файлу для завантаження
 admin.image_transform.download_name_help: Можна змінити перед завантаженням.
@@ -1084,16 +1155,23 @@ shop.add_to_cart: Купити
 
 shop.home.hero_title: Товари для дому та комфортного життя
 shop.home.hero_lead: Обирайте перевірені категорії, актуальні пропозиції та корисні поради в блозі.
+shop.home.hero_region: Головний банер
+shop.home.hero_prev: Попередній слайд
+shop.home.hero_next: Наступний слайд
 shop.home.cta_buy: Купити
 shop.home.cta_blog: Читати блог
 shop.home.cta_all_products: Усі товари
 shop.home.cta_all_articles: Усі статті
 shop.home.categories_title: Категорії товарів
 shop.home.categories_lead: Перейдіть у потрібний розділ і оберіть товар для покупки.
+shop.home.categories_prev: Попередні категорії
+shop.home.categories_next: Наступні категорії
 shop.home.category_products: '%count% товарів'
 shop.home.category_subcategories: '%count% підкатегорій'
 shop.home.products_title: Нові пропозиції
 shop.home.products_lead: Свіжі товари в наявності — купуйте онлайн з доставкою по Україні.
+shop.home.products_prev: Попередні товари
+shop.home.products_next: Наступні товари
 shop.home.blog_title: Цікаві статті
 shop.home.blog_lead: Короткі огляди та поради, які допоможуть зробити правильний вибір.
 shop.home.final_title: Готові обрати?

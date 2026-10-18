@@ -124,24 +124,33 @@ class ProductRepository extends ServiceEntityRepository
      */
     public function findHomepageProducts(int $limit = 5, ?array $onlyIds = null): array
     {
-        $limit = max(1, min(24, $limit));
-
         $qb = $this->createQueryBuilder('p')
             ->select('p.id')
             ->andWhere('p.enabled = true')
             ->andWhere('p.in_stock = true')
-            ->andWhere('EXISTS (SELECT 1 FROM App\Entity\ProductOffer o_home WHERE o_home.product = p AND o_home.qty > 0)')
-            ->orderBy('p.id', 'DESC')
-            ->setMaxResults($limit);
+            ->andWhere('EXISTS (SELECT 1 FROM App\Entity\ProductOffer o_home WHERE o_home.product = p AND o_home.qty > 0)');
 
         if ($onlyIds !== null) {
             if ($onlyIds === []) {
                 return [];
             }
+            // Manual selection: return all chosen products (no count cap).
             $qb->andWhere('p.id IN (:onlyIds)')->setParameter('onlyIds', $onlyIds);
+            $found = array_map('intval', $qb->getQuery()->getSingleColumnResult());
+            $foundSet = array_fill_keys($found, true);
+            // Preserve admin selection order.
+            $ids = [];
+            foreach ($onlyIds as $id) {
+                $id = (int) $id;
+                if (isset($foundSet[$id])) {
+                    $ids[] = $id;
+                }
+            }
+        } else {
+            $limit = max(1, min(48, $limit));
+            $qb->orderBy('p.id', 'DESC')->setMaxResults($limit);
+            $ids = $qb->getQuery()->getSingleColumnResult();
         }
-
-        $ids = $qb->getQuery()->getSingleColumnResult();
 
         if ($ids === []) {
             return [];

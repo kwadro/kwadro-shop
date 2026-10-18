@@ -1868,12 +1868,15 @@
         return exportCanvas.toDataURL('image/jpeg', 0.92);
     }
 
-    async function save(kind) {
+    async function save(kind, options) {
+        const opts = options && typeof options === 'object' ? options : {};
+        const asNew = !!opts.asNew;
         setStatus(i18n.saving || 'Saving…');
         try {
             const image = await exportDataUrl();
             const payload = {
                 image: image,
+                asNew: asNew,
                 content: {
                     aspect: state.aspect,
                     width: state.width,
@@ -1890,7 +1893,7 @@
                     saveKind: kind || 'final',
                 },
             };
-            if (currentFilename) {
+            if (!asNew && currentFilename) {
                 payload.filename = currentFilename;
             }
             const res = await fetch(cfg.saveUrl, {
@@ -1907,7 +1910,7 @@
             if (Array.isArray(data.saved_images)) {
                 renderSaved(data.saved_images);
             }
-            setStatus(data.message || i18n.saved || 'Saved');
+            setStatus(data.message || (asNew ? (i18n.savedAsNew || i18n.saved) : i18n.saved) || 'Saved');
         } catch (e) {
             setStatus(i18n.saveError || 'Save failed');
         }
@@ -3030,7 +3033,12 @@
 
     root.querySelectorAll('[data-ie-save]').forEach(function (btn) {
         btn.addEventListener('click', function () {
-            save(btn.getAttribute('data-ie-save'));
+            save(btn.getAttribute('data-ie-save'), { asNew: false });
+        });
+    });
+    root.querySelectorAll('[data-ie-save-as-new]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            save(btn.getAttribute('data-ie-save-as-new') || 'final', { asNew: true });
         });
     });
     textListEl.addEventListener('click', function (e) {

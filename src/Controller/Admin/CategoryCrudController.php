@@ -4,6 +4,7 @@ namespace App\Controller\Admin;
 
 use App\Entity\Category;
 use App\Repository\CategoryRepository;
+use App\Service\Category\CategoryOgImagePath;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
@@ -20,6 +21,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -32,6 +34,8 @@ class CategoryCrudController extends AbstractCrudController
         private readonly CategoryRepository $categoryRepository,
         private readonly AdminUrlGenerator $adminUrlGenerator,
         private readonly RequestStack $requestStack,
+        #[Autowire('%kernel.project_dir%')]
+        private readonly string $projectDir,
     ) {
     }
 
@@ -188,8 +192,8 @@ class CategoryCrudController extends AbstractCrudController
             ->hideOnIndex()
             ->setHelp($this->translator->trans('admin.category.og_type_help', [], 'messages'));
         yield ImageField::new('ogImage', $this->translator->trans('admin.category.og_image', [], 'messages'))
-            ->setBasePath('/uploads/images')
-            ->setUploadDir('public/uploads/images')
+            ->setBasePath(CategoryOgImagePath::WEB_BASE)
+            ->setUploadDir(CategoryOgImagePath::DIR)
             ->setRequired(false)
             ->hideOnIndex();
         yield AssociationField::new('children', $this->translator->trans('admin.category.children', [], 'messages'))
@@ -206,6 +210,7 @@ class CategoryCrudController extends AbstractCrudController
         }
 
         $this->normalizeCategory($entityInstance);
+        $entityInstance->relocateOgImageFile($this->projectDir);
         parent::persistEntity($entityManager, $entityInstance);
     }
 
@@ -223,6 +228,7 @@ class CategoryCrudController extends AbstractCrudController
         }
 
         $this->normalizeCategory($entityInstance);
+        $entityInstance->relocateOgImageFile($this->projectDir);
         parent::updateEntity($entityManager, $entityInstance);
     }
 

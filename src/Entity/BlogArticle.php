@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Entity\Traits\TimeStampAbleTrait;
 use App\Repository\BlogArticleRepository;
 use App\Routing\ShopRoutes;
+use App\Service\Blog\BlogOgImagePath;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -203,15 +204,36 @@ class BlogArticle
 
     public function getOgImage(): ?string
     {
-        return $this->og_image;
+        if ($this->og_image === null || $this->og_image === '') {
+            return null;
+        }
+
+        // Filename relative to /uploads/images/blog for EasyAdmin ImageField.
+        return BlogOgImagePath::relativePath($this->og_image) ?: $this->og_image;
     }
 
     public function setOgImage(?string $ogImage): static
     {
         $ogImage = $ogImage !== null ? trim($ogImage) : null;
-        $this->og_image = $ogImage !== '' ? $ogImage : null;
+        if ($ogImage === null || $ogImage === '') {
+            $this->og_image = null;
+
+            return $this;
+        }
+
+        $this->og_image = BlogOgImagePath::relativePath($ogImage) ?: null;
 
         return $this;
+    }
+
+    public function relocateOgImageFile(string $projectDir): void
+    {
+        $relative = $this->getOgImage();
+        if ($relative === null) {
+            return;
+        }
+
+        BlogOgImagePath::ensureStored($projectDir, $relative);
     }
 
     public function getTags(): ?string

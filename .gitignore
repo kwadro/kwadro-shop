@@ -21,5 +21,7 @@
 /config/secrets/prod/prod.decrypt.private.php
 /public/bundles/
 /var/
+/product-og/
+/og-categories/
 /vendor/
 ###< symfony/framework-bundle ###

@@ -58,6 +58,7 @@ use App\Controller\Admin\RequestListCrudController;
 use App\Controller\Admin\AdminAuditLogCrudController;
 use App\Controller\Admin\BlockedIpCrudController;
 use App\Controller\Admin\RedirectCrudController;
+use App\Controller\Admin\ShopMegaMenuSettingCrudController;
 // @GENERATE USE FINISH
 
 #[AdminDashboard(routePath: '/admin/{_locale}', routeName: 'admin')]
@@ -203,6 +204,7 @@ yield MenuItem::linkTo(SeosettingCrudController::class,$this->translator->trans(
 yield MenuItem::linkTo(SeosettingstranslationCrudController::class,$this->translator->trans('menu.link_seosettingstranslation', [], 'messages'), 'fas fa-list' );
 yield MenuItem::linkTo(SiteCrudController::class,$this->translator->trans('menu.link_site', [], 'messages'), 'fas fa-list' );
 yield MenuItem::linkTo(HomepageSettingCrudController::class,$this->translator->trans('menu.link_homepage_setting', [], 'messages'), 'fas fa-home' );
+yield MenuItem::linkTo(ShopMegaMenuSettingCrudController::class, $this->translator->trans('menu.link_shop_mega_menu', [], 'messages'), 'fas fa-bars');
 // @GENERATE MENU FINISH
     }
 

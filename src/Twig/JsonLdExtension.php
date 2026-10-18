@@ -31,6 +31,7 @@ final class JsonLdExtension extends AbstractExtension
             new TwigFunction('product_category_json_ld', [$this, 'productCategoryJsonLd'], ['is_safe' => ['html']]),
             new TwigFunction('blog_article_json_ld', [$this, 'blogArticleJsonLd'], ['is_safe' => ['html']]),
             new TwigFunction('blog_listing_json_ld', [$this, 'blogListingJsonLd'], ['is_safe' => ['html']]),
+            new TwigFunction('home_json_ld', [$this, 'homeJsonLd'], ['is_safe' => ['html']]),
         ];
     }
 
@@ -127,6 +128,54 @@ final class JsonLdExtension extends AbstractExtension
                 $this->locale(),
                 $breadcrumbs,
                 $this->organization(),
+            ),
+        );
+    }
+
+    /**
+     * @param list<array{name?: string, slug?: string, url?: string}>|null $categories
+     */
+    public function homeJsonLd(?array $categories = null): string
+    {
+        $locale = $this->locale();
+        $request = $this->requestStack->getCurrentRequest();
+        $settings = $request
+            ? $this->siteSettingsProvider->getSettings($request->getHost(), $request->getLocale())
+            : [];
+        $seo = \is_array($settings['seo'] ?? null) ? $settings['seo'] : [];
+        $ogFile = trim((string) ($seo['og_image'] ?? ''));
+        $ogImage = $ogFile !== '' ? $this->absoluteAssetUrl('uploads/images/'.$ogFile) : null;
+
+        $topCategories = [];
+        foreach ($categories ?? [] as $category) {
+            if (!\is_array($category)) {
+                continue;
+            }
+            $name = trim((string) ($category['name'] ?? ''));
+            $url = trim((string) ($category['url'] ?? ''));
+            if ($url === '' && !empty($category['slug'])) {
+                $url = $this->urlGenerator->generate(
+                    'shop_category',
+                    ['_locale' => $locale, 'slug' => (string) $category['slug']],
+                    UrlGeneratorInterface::ABSOLUTE_URL,
+                );
+            }
+            if ($name === '' || $url === '') {
+                continue;
+            }
+            $topCategories[] = ['name' => $name, 'url' => $url];
+        }
+
+        return $this->renderJsonLd(
+            $this->jsonLdFactory->homePage(
+                $locale,
+                $this->organization(),
+                [
+                    'title' => trim((string) ($seo['title'] ?? $seo['meta_title'] ?? $seo['og_title'] ?? '')),
+                    'description' => trim((string) ($seo['meta_description'] ?? $seo['og_description'] ?? '')),
+                    'ogImage' => $ogImage,
+                ],
+                $topCategories,
             ),
         );
     }

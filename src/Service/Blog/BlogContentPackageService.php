@@ -71,7 +71,10 @@ final class BlogContentPackageService
             }
             $ogImage = $article->getOgImage();
             if ($ogImage !== null && $ogImage !== '') {
-                $assetPaths['/uploads/images/'.ltrim($ogImage, '/')] = true;
+                $web = BlogOgImagePath::webPath($ogImage);
+                if ($web !== '') {
+                    $assetPaths[$web] = true;
+                }
             }
         }
 
@@ -85,6 +88,10 @@ final class BlogContentPackageService
         if ($slugs === null || $slugs === []) {
             // Full export: include the whole blog uploads tree (logos etc.).
             foreach ($this->listBlogUploadFiles() as $path) {
+                $assetPaths[$path] = true;
+            }
+
+            foreach ($this->listBlogArticleOgImageFiles() as $path) {
                 $assetPaths[$path] = true;
             }
 
@@ -434,6 +441,12 @@ final class BlogContentPackageService
     private function listBlogUploadFiles(): array
     {
         return $this->listUploadFilesUnder('uploads/blog');
+    }
+
+    /** @return list<string> */
+    private function listBlogArticleOgImageFiles(): array
+    {
+        return $this->listUploadFilesUnder('uploads/images/blog');
     }
 
     /** @return list<string> */

@@ -5,8 +5,13 @@
 {% set pageOgTitle = article.ogTitle ?: pageTitle %}
 {% set pageOgDescription = article.ogDescription ?: pageDescription %}
 {% set pageOgType = article.ogType ?: 'article' %}
-{% set pageOgImageFile = article.ogImage ?: setting.seo.og_image %}
-{% set pageOgImage = pageOgImageFile ? absolute_url(asset('uploads/images/' ~ pageOgImageFile)) : '' %}
+{% if article.ogImage %}
+    {% set pageOgImage = absolute_url(article.ogImage|blog_og_image) %}
+{% elseif setting.seo.og_image %}
+    {% set pageOgImage = absolute_url(asset('uploads/images/' ~ setting.seo.og_image)) %}
+{% else %}
+    {% set pageOgImage = '' %}
+{% endif %}
 
 {% block title %}{{ pageTitle }}{% endblock %}
 {% block meta_title %}{{ pageTitle }}{% endblock %}
@@ -17,6 +22,12 @@
 {% block og_image %}{{ pageOgImage }}{% endblock %}
 {% block og_url %}{{ absolute_url(path('shop_blog_article', {_locale: app.request.locale, slug: article.slug})) }}{% endblock %}
 {% block canonical_url %}{{ absolute_url(path('shop_blog_article', {_locale: app.request.locale, slug: article.slug})) }}{% endblock %}
+
+{% block og_article_meta %}
+    {% if article.publishedAt %}
+        <meta property="article:published_time" content="{{ article.publishedAt|date('c') }}"/>
+    {% endif %}
+{% endblock %}
 
 {% block structured_data %}
     {{ blog_article_json_ld(article) }}

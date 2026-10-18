@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\RequestList;
+use App\Service\Request\BotUserAgentClassifier;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -67,13 +68,13 @@ class RequestListRepository extends ServiceEntityRepository
         $toStr = $to->format('Y-m-d H:i:s');
 
         $conn = $this->getEntityManager()->getConnection();
-        $sql = <<<'SQL'
+        $botCase = $this->buildBotCaseSql('r.user_agent');
+        $sql = <<<SQL
             SELECT DATE(r.created_at) AS day_date,
                    COUNT(r.id) AS requests,
                    SUM(
                        CASE
-                           WHEN LOWER(COALESCE(r.user_agent, '')) LIKE :googlePattern
-                             OR LOWER(COALESCE(r.user_agent, '')) LIKE :bingPattern THEN 1
+                           WHEN {$botCase} THEN 1
                            ELSE 0
                        END
                    ) AS google_bot_requests,
@@ -90,8 +91,7 @@ class RequestListRepository extends ServiceEntityRepository
         $raw = $conn->fetchAllAssociative($sql, [
             'from' => $fromStr,
             'to' => $toStr,
-            'googlePattern' => '%google.com%',
-            'bingPattern' => '%bing.com%',
+            ...$this->botPatternParameters(),
         ]);
 
         $newIpsSql = <<<'SQL'
@@ -198,5 +198,26 @@ class RequestListRepository extends ServiceEntityRepository
                 'newIps' => $periodNewIps,
             ],
         ];
+    }
+
+    private function buildBotCaseSql(string $columnSql): string
+    {
+        $parts = [];
+        foreach (array_keys($this->botPatternParameters()) as $i => $param) {
+            $parts[] = sprintf('LOWER(COALESCE(%s, \'\')) LIKE :%s', $columnSql, $param);
+        }
+
+        return $parts === [] ? '0 = 1' : implode(' OR ', $parts);
+    }
+
+    /** @return array<string, string> */
+    private function botPatternParameters(): array
+    {
+        $params = [];
+        foreach (BotUserAgentClassifier::sqlLikePatterns() as $i => $pattern) {
+            $params['botPattern'.$i] = $pattern;
+        }
+
+        return $params;
     }
 }

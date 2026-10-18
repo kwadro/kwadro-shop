@@ -24,6 +24,7 @@ final class ImageTransformController extends AbstractController
         '4:5' => ['w' => 1080, 'h' => 1350, 'label' => '4:5'],
         '1:1' => ['w' => 1080, 'h' => 1080, 'label' => '1:1'],
         '16:9' => ['w' => 1920, 'h' => 1080, 'label' => '16:9'],
+        '1200x630' => ['w' => 1200, 'h' => 630, 'label' => '1200×630 (OG)'],
     ];
 
     public function __construct(
@@ -75,8 +76,14 @@ final class ImageTransformController extends AbstractController
         }
         $size = self::ASPECTS[$aspect];
         $blur = max(0, min(40, (int) $request->request->get('blur', 18)));
-        $subjectScale = max(0.4, min(1.0, (float) $request->request->get('subjectScale', 0.88)));
-        $includeSubject = filter_var($request->request->get('includeSubject', '1'), \FILTER_VALIDATE_BOOL);
+        $alignX = strtolower(trim((string) $request->request->get('alignX', 'center')));
+        if (!\in_array($alignX, ['left', 'center', 'right'], true)) {
+            $alignX = 'center';
+        }
+        $alignY = strtolower(trim((string) $request->request->get('alignY', 'center')));
+        if (!\in_array($alignY, ['top', 'center', 'bottom'], true)) {
+            $alignY = 'center';
+        }
         $rotate = ((int) $request->request->get('rotate', 0)) % 360;
         if ($rotate < 0) {
             $rotate += 360;
@@ -105,7 +112,7 @@ final class ImageTransformController extends AbstractController
         $resultName = 'tf-'.$stamp.'.jpg';
         $sourcePath = $uploadsDir.'/'.$sourceName;
         $resultPath = $resultsDir.'/'.$resultName;
-        $downloadName = $this->buildDownloadName((string) $file->getClientOriginalName());
+        $downloadName = $this->buildDownloadName((string) $file->getClientOriginalName(), $aspect);
 
         $file->move($uploadsDir, $sourceName);
 
@@ -116,8 +123,8 @@ final class ImageTransformController extends AbstractController
                 'width' => $size['w'],
                 'height' => $size['h'],
                 'blur' => $blur,
-                'subjectScale' => $subjectScale,
-                'includeSubject' => $includeSubject,
+                'alignX' => $alignX,
+                'alignY' => $alignY,
                 'rotate' => $rotate,
             ]);
         } catch (\Throwable $e) {
@@ -150,8 +157,8 @@ final class ImageTransformController extends AbstractController
             'width' => $size['w'],
             'height' => $size['h'],
             'blur' => $blur,
-            'subjectScale' => $subjectScale,
-            'includeSubject' => $includeSubject,
+            'alignX' => $alignX,
+            'alignY' => $alignY,
             'rotate' => $rotate,
             'savedAt' => (new \DateTimeImmutable())->format(\DateTimeInterface::ATOM),
             'source' => $sourceName,
@@ -261,13 +268,20 @@ final class ImageTransformController extends AbstractController
         return $items;
     }
 
-    private function buildDownloadName(string $original): string
+    private function buildDownloadName(string $original, string $aspect): string
     {
         $base = pathinfo($original, \PATHINFO_FILENAME);
         $base = preg_replace('/[^A-Za-z0-9._\-]+/', '_', $base) ?: 'image';
         $base = trim($base, '._-') ?: 'image';
+        $suffix = match ($aspect) {
+            '1200x630' => 'og_1200x630',
+            '16:9' => '16x9',
+            '4:5' => '4x5',
+            '1:1' => '1x1',
+            default => '9x16',
+        };
 
-        return $base.'_9x16.jpg';
+        return $base.'_'.$suffix.'.jpg';
     }
 
     private function getUploadsDir(): string

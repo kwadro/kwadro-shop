@@ -20,6 +20,7 @@ final class ImageEditorController extends AbstractController
         '9:16' => ['w' => 1080, 'h' => 1920, 'label' => '9:16'],
         '16:9' => ['w' => 1920, 'h' => 1080, 'label' => '16:9'],
         '4:3' => ['w' => 1600, 'h' => 1200, 'label' => '4:3'],
+        '1200x630' => ['w' => 1200, 'h' => 630, 'label' => '1200×630 (OG)'],
     ];
 
     public function __construct(
@@ -137,11 +138,14 @@ final class ImageEditorController extends AbstractController
             return new JsonResponse(['ok' => false, 'error' => 'Cannot create save dir'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
-        $requested = isset($payload['filename']) && \is_string($payload['filename']) ? trim($payload['filename']) : '';
+        $asNew = !empty($payload['asNew']);
+        $requested = (!$asNew && isset($payload['filename']) && \is_string($payload['filename']))
+            ? trim($payload['filename'])
+            : '';
         if ($requested !== '' && preg_match('#^img-[A-Za-z0-9._-]+\.(jpg|jpeg|png)$#', $requested) === 1) {
-            $filename = preg_replace('#\.(jpg|jpeg|png)$#i', '.'.$ext, $requested) ?? ('img-'.date('Ymd-His').'.'.$ext);
+            $filename = preg_replace('#\.(jpg|jpeg|png)$#i', '.'.$ext, $requested) ?? ('img-'.date('Ymd-His').'-'.bin2hex(random_bytes(3)).'.'.$ext);
         } else {
-            $filename = 'img-'.date('Ymd-His').'.'.$ext;
+            $filename = 'img-'.date('Ymd-His').'-'.bin2hex(random_bytes(3)).'.'.$ext;
         }
 
         $path = $dir.'/'.$filename;
@@ -161,7 +165,11 @@ final class ImageEditorController extends AbstractController
             'ok' => true,
             'filename' => $filename,
             'url' => '/uploads/image-editor/saved/'.$filename,
-            'message' => $this->translator->trans('admin.image_editor.saved', [], 'messages'),
+            'message' => $this->translator->trans(
+                $asNew ? 'admin.image_editor.saved_as_new' : 'admin.image_editor.saved',
+                [],
+                'messages',
+            ),
             'saved_images' => $this->listSavedImages(),
         ]);
     }

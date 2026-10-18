@@ -26,6 +26,7 @@
             i18n: {
                 saving: {{ 'admin.image_editor.saving'|trans|json_encode|raw }},
                 saved: {{ 'admin.image_editor.saved'|trans|json_encode|raw }},
+                savedAsNew: {{ 'admin.image_editor.saved_as_new'|trans|json_encode|raw }},
                 deleted: {{ 'admin.image_editor.deleted'|trans|json_encode|raw }},
                 saveError: {{ 'admin.image_editor.save_error'|trans|json_encode|raw }},
                 uploadError: {{ 'admin.image_editor.upload_error'|trans|json_encode|raw }},
@@ -171,6 +172,7 @@
                         <div class="d-flex flex-wrap gap-2 mt-3">
                             <button type="button" class="btn btn-outline-secondary" data-ie-prev="1">{{ 'admin.image_editor.back'|trans }}</button>
                             <button type="button" class="btn btn-success" data-ie-save="background">{{ 'admin.image_editor.save_background'|trans }}</button>
+                            <button type="button" class="btn btn-outline-success" data-ie-save-as-new="background">{{ 'admin.image_editor.save_as_new'|trans }}</button>
                             <button type="button" class="btn btn-primary" data-ie-next="3">{{ 'admin.image_editor.next'|trans }}</button>
                         </div>
                     </section>
@@ -246,6 +248,7 @@
                         <div class="d-flex flex-wrap gap-2 mt-3">
                             <button type="button" class="btn btn-outline-secondary" data-ie-prev="2">{{ 'admin.image_editor.back'|trans }}</button>
                             <button type="button" class="btn btn-success" data-ie-save="texts">{{ 'admin.image_editor.save_result'|trans }}</button>
+                            <button type="button" class="btn btn-outline-success" data-ie-save-as-new="texts">{{ 'admin.image_editor.save_as_new'|trans }}</button>
                             <button type="button" class="btn btn-primary" data-ie-next="4">{{ 'admin.image_editor.next'|trans }}</button>
                         </div>
                     </section>
@@ -292,6 +295,7 @@
                         <div class="d-flex flex-wrap gap-2 mt-3">
                             <button type="button" class="btn btn-outline-secondary" data-ie-prev="3">{{ 'admin.image_editor.back'|trans }}</button>
                             <button type="button" class="btn btn-success" data-ie-save="overlays">{{ 'admin.image_editor.save_result'|trans }}</button>
+                            <button type="button" class="btn btn-outline-success" data-ie-save-as-new="overlays">{{ 'admin.image_editor.save_as_new'|trans }}</button>
                             <button type="button" class="btn btn-primary" data-ie-next="5">{{ 'admin.image_editor.next'|trans }}</button>
                         </div>
                     </section>
@@ -394,6 +398,7 @@
                         <div class="d-flex flex-wrap gap-2 mt-3">
                             <button type="button" class="btn btn-outline-secondary" data-ie-prev="4">{{ 'admin.image_editor.back'|trans }}</button>
                             <button type="button" class="btn btn-success" data-ie-save="final">{{ 'admin.image_editor.save_result'|trans }}</button>
+                            <button type="button" class="btn btn-outline-success" data-ie-save-as-new="final">{{ 'admin.image_editor.save_as_new'|trans }}</button>
                         </div>
                     </section>
 

@@ -55,6 +55,82 @@ class CategoryRepository extends ServiceEntityRepository
     }
 
     /**
+     * Enabled categories in depth-first tree order (skipping Default):
+     * level-1, its children, next level-1, …
+     *
+     * @return list<Category>
+     */
+    public function findEnabledInTreeOrder(): array
+    {
+        /** @var list<Category> $all */
+        $all = $this->createQueryBuilder('c')
+            ->leftJoin('c.parent', 'p')->addSelect('p')
+            ->orderBy('c.position', 'ASC')
+            ->addOrderBy('c.name', 'ASC')
+            ->addOrderBy('c.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        /** @var array<int, list<Category>> $childrenByParent */
+        $childrenByParent = [];
+        /** @var list<Category> $enabledNonDefault */
+        $enabledNonDefault = [];
+        foreach ($all as $category) {
+            if (!$category instanceof Category || $category->getId() === null) {
+                continue;
+            }
+            if ($category->isDefault() || !$category->isEnabled()) {
+                // Still index Default so its children can be walked.
+                if ($category->isDefault()) {
+                    $parentId = $category->getParent()?->getId() ?? 0;
+                    $childrenByParent[$parentId][] = $category;
+                }
+                continue;
+            }
+            $enabledNonDefault[] = $category;
+            $parentId = $category->getParent()?->getId() ?? 0;
+            $childrenByParent[$parentId][] = $category;
+        }
+
+        $default = $this->findDefaultItem();
+        $startIds = [];
+        if ($default?->getId() !== null) {
+            $startIds[] = $default->getId();
+        }
+        // Also walk true roots (parent null) in case the tree is not under Default.
+        $startIds[] = 0;
+        $startIds = array_values(array_unique($startIds));
+
+        $ordered = [];
+        $seen = [];
+        $walk = function (int $parentId) use (&$walk, &$ordered, &$seen, $childrenByParent): void {
+            foreach ($childrenByParent[$parentId] ?? [] as $child) {
+                $childId = $child->getId();
+                if ($childId === null || isset($seen[$childId])) {
+                    continue;
+                }
+                $seen[$childId] = true;
+                if (!$child->isDefault() && $child->isEnabled()) {
+                    $ordered[] = $child;
+                }
+                $walk($childId);
+            }
+        };
+        foreach ($startIds as $startId) {
+            $walk($startId);
+        }
+
+        foreach ($enabledNonDefault as $category) {
+            $id = $category->getId();
+            if ($id !== null && !isset($seen[$id])) {
+                $ordered[] = $category;
+            }
+        }
+
+        return $ordered;
+    }
+
+    /**
      * @return array<int, int> categoryId => product count
      */
     public function countProductsGroupedByCategoryId(
@@ -240,10 +316,6 @@ class CategoryRepository extends ServiceEntityRepository
             return [];
         }
 
-        // Match category pages that hide out-of-stock: only enabled + in-stock products count.
-        // A category without its own visible products is hidden, unless it still has a visible child.
-        $directCounts = $this->countStorefrontVisibleProductsGroupedByCategoryId();
-
         /** @var list<Category> $levelOne */
         $levelOne = $this->createQueryBuilder('c')
             ->andWhere('c.parent = :default')
@@ -255,9 +327,45 @@ class CategoryRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
 
+        return $this->buildStorefrontMenuTreeFromRoots($levelOne);
+    }
+
+    /**
+     * Build the header mega-menu from an explicit ordered list of root categories.
+     * Children / grandchildren still come from the category tree (auto).
+     *
+     * @param list<Category> $levelOne
+     * @param bool $forceIncludeRoots When true (admin manual mega menu), keep every
+     *                                 selected root even if it currently has no visible products.
+     *
+     * @return list<array{
+     *   id: int,
+     *   name: string,
+     *   slug: string,
+     *   children: list<array{
+     *     id: int,
+     *     name: string,
+     *     slug: string,
+     *     children: list<array{id: int, name: string, slug: string}>
+     *   }>
+     * }>
+     */
+    public function buildStorefrontMenuTreeFromRoots(array $levelOne, bool $forceIncludeRoots = false): array
+    {
+        $levelOne = array_values(array_filter(
+            $levelOne,
+            static fn ($category): bool => $category instanceof Category
+                && $category->isEnabled()
+                && !$category->isDefault()
+                && $category->getId() !== null,
+        ));
         if ($levelOne === []) {
             return [];
         }
+
+        // Match category pages that hide out-of-stock: only enabled + in-stock products count.
+        // A category without its own visible products is hidden, unless it still has a visible child.
+        $directCounts = $this->countStorefrontVisibleProductsGroupedByCategoryId();
 
         $levelOneIds = array_values(array_filter(array_map(
             static fn (Category $category): ?int => $category->getId(),
@@ -344,7 +452,7 @@ class CategoryRepository extends ServiceEntityRepository
 
             $children = $childrenByParent[$id] ?? [];
             $ownProducts = $directCounts[$id] ?? 0;
-            if ($ownProducts < 1 && $children === []) {
+            if (!$forceIncludeRoots && $ownProducts < 1 && $children === []) {
                 continue;
             }
 

@@ -1,15 +1,18 @@
 {% set articleUrl = path('shop_blog_article', {_locale: app.request.locale, slug: article.slug}) %}
-<article class="shop-blog-card{% if article.ogImage %} shop-blog-card--with-image{% endif %}">
-    {% if article.ogImage %}
-        <a class="shop-blog-card__media" href="{{ articleUrl }}" tabindex="-1" aria-hidden="true">
-            <img
-                src="{{ asset('uploads/images/' ~ article.ogImage) }}"
-                alt=""
-                width="1200"
-                height="630"
-                loading="lazy"
-                decoding="async"
-            >
+{% set homeCard = homeCard|default(false) %}
+<article class="shop-blog-card{% if article.ogImage or homeCard %} shop-blog-card--with-image{% endif %}{% if homeCard %} shop-blog-card--home{% endif %}">
+    {% if article.ogImage or homeCard %}
+        <a class="shop-blog-card__media{% if not article.ogImage %} shop-blog-card__media--empty{% endif %}" href="{{ articleUrl }}" tabindex="-1" aria-hidden="true">
+            {% if article.ogImage %}
+                <img
+                    src="{{ article.ogImage|blog_og_image }}"
+                    alt=""
+                    width="1200"
+                    height="630"
+                    loading="lazy"
+                    decoding="async"
+                >
+            {% endif %}
         </a>
     {% endif %}
     <div class="shop-blog-card__body">

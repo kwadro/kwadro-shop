@@ -7,7 +7,7 @@ namespace App\Service\Image;
  *
  * Background bands use the colour of the source edges, fading to a lighter
  * shade toward the outer frame (no photo fragments).
- * Subject: full source fitted with CONTAIN and centered.
+ * Subject: full source fitted with CONTAIN; position via alignX / alignY.
  */
 final class BlurredBackgroundTransformService
 {
@@ -16,8 +16,8 @@ final class BlurredBackgroundTransformService
      *     width?: int,
      *     height?: int,
      *     blur?: int,
-     *     subjectScale?: float,
-     *     includeSubject?: bool,
+     *     alignX?: string,
+     *     alignY?: string,
      *     rotate?: int,
      *     quality?: int
      * } $options
@@ -27,10 +27,8 @@ final class BlurredBackgroundTransformService
         $width = max(64, (int) ($options['width'] ?? 1080));
         $height = max(64, (int) ($options['height'] ?? 1920));
         $blur = max(0, min(40, (int) ($options['blur'] ?? 18)));
-        $subjectScale = max(0.4, min(1.0, (float) ($options['subjectScale'] ?? 0.88)));
-        $includeSubject = array_key_exists('includeSubject', $options)
-            ? (bool) $options['includeSubject']
-            : true;
+        $alignX = $this->normalizeAlign((string) ($options['alignX'] ?? 'center'), ['left', 'center', 'right'], 'center');
+        $alignY = $this->normalizeAlign((string) ($options['alignY'] ?? 'center'), ['top', 'center', 'bottom'], 'center');
         $rotate = ((int) ($options['rotate'] ?? 0)) % 360;
         if ($rotate < 0) {
             $rotate += 360;
@@ -39,10 +37,6 @@ final class BlurredBackgroundTransformService
             $rotate = 0;
         }
         $quality = max(60, min(95, (int) ($options['quality'] ?? 90)));
-
-        if (!$includeSubject) {
-            $subjectScale = 1.0;
-        }
 
         $src = $this->loadImage($sourcePath);
         if ($rotate !== 0) {
@@ -57,13 +51,19 @@ final class BlurredBackgroundTransformService
             throw new \RuntimeException('Invalid source image.');
         }
 
-        $maxW = (int) round($width * $subjectScale);
-        $maxH = (int) round($height * $subjectScale);
-        $fit = $this->scaleContain($src, $maxW, $maxH);
+        $fit = $this->scaleContain($src, $width, $height);
         $fitW = imagesx($fit);
         $fitH = imagesy($fit);
-        $ox = (int) round(($width - $fitW) / 2);
-        $oy = (int) round(($height - $fitH) / 2);
+        $ox = match ($alignX) {
+            'left' => 0,
+            'right' => max(0, $width - $fitW),
+            default => (int) round(($width - $fitW) / 2),
+        };
+        $oy = match ($alignY) {
+            'top' => 0,
+            'bottom' => max(0, $height - $fitH),
+            default => (int) round(($height - $fitH) / 2),
+        };
 
         $edgeColors = $this->sampleEdgeColors($src);
         // blur slider → how strongly outer edge fades to lighter (0.25…0.75).
@@ -308,6 +308,16 @@ final class BlurredBackgroundTransformService
             'g' => (int) round($c['g'] + (255 - $c['g']) * $amount),
             'b' => (int) round($c['b'] + (255 - $c['b']) * $amount),
         ];
+    }
+
+    /**
+     * @param list<string> $allowed
+     */
+    private function normalizeAlign(string $value, array $allowed, string $default): string
+    {
+        $value = strtolower(trim($value));
+
+        return \in_array($value, $allowed, true) ? $value : $default;
     }
 
     /**

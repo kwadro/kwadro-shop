@@ -5,6 +5,7 @@ namespace App\Controller\Admin;
 use App\Entity\BlogArticle;
 use App\Repository\BlogArticleRepository;
 use App\Service\Blog\BlogFacebookPostFormatter;
+use App\Service\Blog\BlogOgImagePath;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminRoute;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
@@ -34,6 +35,8 @@ class BlogArticleCrudController extends AbstractCrudController
         private readonly AdminUrlGenerator $adminUrlGenerator,
         #[Autowire('%env(DEFAULT_URI)%')]
         private readonly string $defaultUri,
+        #[Autowire('%kernel.project_dir%')]
+        private readonly string $projectDir,
     ) {
     }
 
@@ -123,8 +126,8 @@ class BlogArticleCrudController extends AbstractCrudController
             ->setHelp($this->translator->trans('admin.blog_article.og_type_help', [], 'messages'))
             ->hideOnIndex();
         yield ImageField::new('ogImage', $this->translator->trans('admin.blog_article.og_image', [], 'messages'))
-            ->setBasePath('/uploads/images')
-            ->setUploadDir('public/uploads/images')
+            ->setBasePath(BlogOgImagePath::WEB_BASE)
+            ->setUploadDir(BlogOgImagePath::DIR)
             ->setRequired(false)
             ->hideOnIndex();
 
@@ -158,6 +161,7 @@ class BlogArticleCrudController extends AbstractCrudController
         if ($entityInstance instanceof BlogArticle) {
             $this->ensureUniqueSlug($entityInstance);
             $this->ensureFacebookDraft($entityInstance);
+            $entityInstance->relocateOgImageFile($this->projectDir);
         }
         parent::persistEntity($entityManager, $entityInstance);
     }
@@ -167,6 +171,7 @@ class BlogArticleCrudController extends AbstractCrudController
         if ($entityInstance instanceof BlogArticle) {
             $this->ensureUniqueSlug($entityInstance);
             $this->ensureFacebookDraft($entityInstance);
+            $entityInstance->relocateOgImageFile($this->projectDir);
         }
         parent::updateEntity($entityManager, $entityInstance);
     }

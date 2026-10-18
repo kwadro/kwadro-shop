@@ -17,88 +17,188 @@
 {% block og_url %}{{ absolute_url(path('shop_home', {_locale: app.request.locale})) }}{% endblock %}
 {% block canonical_url %}{{ absolute_url(path('shop_home', {_locale: app.request.locale})) }}{% endblock %}
 
+{% block structured_data %}
+    {{ home_json_ld(categories|default([])) }}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('js/shop-home-slider.js') }}" defer></script>
+{% endblock %}
+
 {% block main %}
     <div class="shop-home">
-        <section class="shop-home-hero">
-            <div class="shop-home-hero__media" aria-hidden="true">
-                <img
-                    class="shop-home-hero__image"
-                    src="{{ asset('images/home/hero-living-room.jpg') }}"
-                    alt=""
-                    width="1152"
-                    height="864"
-                    fetchpriority="high"
-                    decoding="async"
-                >
-            </div>
-            <div class="shop-home-hero__inner">
-                <p class="shop-home-hero__brand">{{ brandName }}</p>
-                <h1 class="shop-home-hero__title">{{ 'shop.home.hero_title'|trans }}</h1>
-                <p class="shop-home-hero__lead">{{ 'shop.home.hero_lead'|trans }}</p>
-                <div class="shop-home-hero__actions">
-                    <a class="shop-home__btn shop-home__btn--primary" href="{{ shopCtaPath }}">
-                        {{ 'shop.home.cta_buy'|trans }}
-                    </a>
-                    {% if articles is not empty %}
-                        <a class="shop-home__btn shop-home__btn--ghost" href="{{ path('shop_blog_index', {_locale: app.request.locale}) }}">
-                            {{ 'shop.home.cta_blog'|trans }}
-                        </a>
-                    {% endif %}
+        {% if heroSlides is not empty %}
+            {% set heroCount = heroSlides|length %}
+            <section
+                class="shop-home-hero"
+                aria-roledescription="{{ heroCount > 1 ? 'carousel' : 'region' }}"
+                aria-label="{{ 'shop.home.hero_region'|trans }}"
+                data-home-slider
+                data-count="{{ heroCount }}"
+                data-slider-min="1"
+                data-item-selector="[data-home-slider-item]"
+            >
+                <button type="button" class="shop-home-slider__nav shop-home-hero__nav" data-home-slider-prev aria-label="{{ 'shop.home.hero_prev'|trans }}" hidden>
+                    <span aria-hidden="true">‹</span>
+                </button>
+                <div class="shop-home-hero__viewport">
+                    <div class="shop-home-hero__track" data-home-slider-track>
+                        {% for slide in heroSlides %}
+                            {% set slideBrand = slide.brand ?: brandName %}
+                            {% set slideTitle = slide.title ?: 'shop.home.hero_title'|trans %}
+                            {% set slideLead = slide.lead ?: 'shop.home.hero_lead'|trans %}
+                            {% set slideImage = slide.image
+                                ? asset('uploads/images/' ~ slide.image)
+                                : asset('images/home/hero-living-room.jpg')
+                            %}
+                            {% set slideImagePosition = slide.imagePosition|default(70) %}
+                            {% set primaryHref = slide.primaryCtaUrl ?: shopCtaPath %}
+                            {% set primaryLabel = slide.primaryCtaLabel ?: 'shop.home.cta_buy'|trans %}
+                            {% set showSecondary = slide.secondaryCtaLabel or slide.secondaryCtaUrl or (slide.isDefault and articles is not empty) %}
+                            {% set secondaryHref = slide.secondaryCtaUrl
+                                ?: (slide.isDefault ? path('shop_blog_index', {_locale: app.request.locale}) : null)
+                            %}
+                            {% set secondaryLabel = slide.secondaryCtaLabel ?: 'shop.home.cta_blog'|trans %}
+                            <div class="shop-home-hero__slide" data-home-slider-item>
+                                <div class="shop-home-hero__media" aria-hidden="true">
+                                    <img
+                                        class="shop-home-hero__image"
+                                        src="{{ slideImage }}"
+                                        alt=""
+                                        width="1152"
+                                        height="864"
+                                        style="--hero-image-position: {{ slideImagePosition }}%;"
+                                        {% if loop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %}
+                                        decoding="async"
+                                    >
+                                </div>
+                                <div class="shop-home-hero__inner">
+                                    {% if slideBrand %}
+                                        <p class="shop-home-hero__brand">{{ slideBrand }}</p>
+                                    {% endif %}
+                                    {% if loop.first %}
+                                        <h1 class="shop-home-hero__title">{{ slideTitle }}</h1>
+                                    {% else %}
+                                        <h2 class="shop-home-hero__title">{{ slideTitle }}</h2>
+                                    {% endif %}
+                                    {% if slideLead %}
+                                        <p class="shop-home-hero__lead">{{ slideLead }}</p>
+                                    {% endif %}
+                                    <div class="shop-home-hero__actions">
+                                        <a class="shop-home__btn shop-home__btn--primary" href="{{ primaryHref }}">
+                                            {{ primaryLabel }}
+                                        </a>
+                                        {% if showSecondary and secondaryHref %}
+                                            <a class="shop-home__btn shop-home__btn--ghost" href="{{ secondaryHref }}">
+                                                {{ secondaryLabel }}
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
                 </div>
-            </div>
-        </section>
+                <button type="button" class="shop-home-slider__nav shop-home-hero__nav" data-home-slider-next aria-label="{{ 'shop.home.hero_next'|trans }}" hidden>
+                    <span aria-hidden="true">›</span>
+                </button>
+            </section>
+        {% endif %}
 
         {% if categories is not empty %}
+            {% set categoriesCount = categories|length %}
+            {% set categoriesCols = categoriesPerRow|default(3) %}
             <section class="shop-home-section" aria-labelledby="shop-home-categories-title">
                 <div class="shop-home-section__head">
                     <h2 id="shop-home-categories-title" class="shop-home-section__title">{{ 'shop.home.categories_title'|trans }}</h2>
                     <p class="shop-home-section__lead">{{ 'shop.home.categories_lead'|trans }}</p>
                 </div>
-                <div class="shop-home-categories">
-                    {% for category in categories %}
-                        <a class="shop-home-category{% if category.ogImage %} shop-home-category--with-image{% endif %}" href="{{ path('shop_category', {_locale: app.request.locale, slug: category.slug}) }}">
-                            {% if category.ogImage %}
-                                <span class="shop-home-category__media">
-                                    <img
-                                        class="shop-home-category__image"
-                                        src="{{ asset('uploads/images/' ~ category.ogImage) }}"
-                                        alt="{{ category.name }}"
-                                        width="1200"
-                                        height="630"
-                                        loading="lazy"
-                                        decoding="async"
-                                    >
-                                </span>
-                            {% endif %}
-                            <span class="shop-home-category__name">{{ category.name }}</span>
-                            {% if category.productCount > 0 %}
-                                <span class="shop-home-category__meta">
-                                    {{ 'shop.home.category_products'|trans({ '%count%': category.productCount }) }}
-                                </span>
-                            {% elseif category.childrenCount > 0 %}
-                                <span class="shop-home-category__meta">
-                                    {{ 'shop.home.category_subcategories'|trans({ '%count%': category.childrenCount }) }}
-                                </span>
-                            {% endif %}
-                            <span class="shop-home-category__cta">{{ 'shop.home.cta_buy'|trans }}</span>
-                        </a>
-                    {% endfor %}
+                <div
+                    class="shop-home-categories"
+                    style="--home-cat-cols: {{ categoriesCols }};"
+                    data-home-slider
+                    data-count="{{ categoriesCount }}"
+                    data-slider-min="{{ categoriesCols }}"
+                    data-item-selector="[data-home-slider-item]"
+                >
+                    <button type="button" class="shop-home-slider__nav" data-home-slider-prev aria-label="{{ 'shop.home.categories_prev'|trans }}" hidden>
+                        <span aria-hidden="true">‹</span>
+                    </button>
+                    <div class="shop-home-categories__viewport">
+                        <div class="shop-home-categories__track" data-home-slider-track>
+                            {% for category in categories %}
+                                <a
+                                    class="shop-home-category{% if category.ogImage %} shop-home-category--with-image{% endif %}"
+                                    href="{{ path('shop_category', {_locale: app.request.locale, slug: category.slug}) }}"
+                                    data-home-slider-item
+                                >
+                                    {% if category.ogImage %}
+                                        <span class="shop-home-category__media">
+                                            <img
+                                                class="shop-home-category__image"
+                                                src="{{ category.ogImage|category_og_image }}"
+                                                alt="{{ category.name }}"
+                                                width="1200"
+                                                height="630"
+                                                loading="lazy"
+                                                decoding="async"
+                                            >
+                                        </span>
+                                    {% endif %}
+                                    <span class="shop-home-category__name">{{ category.name }}</span>
+                                    {% if category.productCount > 0 %}
+                                        <span class="shop-home-category__meta">
+                                            {{ 'shop.home.category_products'|trans({ '%count%': category.productCount }) }}
+                                        </span>
+                                    {% elseif category.childrenCount > 0 %}
+                                        <span class="shop-home-category__meta">
+                                            {{ 'shop.home.category_subcategories'|trans({ '%count%': category.childrenCount }) }}
+                                        </span>
+                                    {% endif %}
+                                    <span class="shop-home-category__cta">{{ 'shop.home.cta_buy'|trans }}</span>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <button type="button" class="shop-home-slider__nav" data-home-slider-next aria-label="{{ 'shop.home.categories_next'|trans }}" hidden>
+                        <span aria-hidden="true">›</span>
+                    </button>
                 </div>
             </section>
         {% endif %}
 
         {% if products is not empty %}
+            {% set productsCount = products|length %}
+            {% set sliderMin = productsSliderMin|default(5) %}
             <section class="shop-home-section" aria-labelledby="shop-home-products-title">
                 <div class="shop-home-section__head">
                     <h2 id="shop-home-products-title" class="shop-home-section__title">{{ homeBlocks.products_title ?: 'shop.home.products_title'|trans }}</h2>
                     <p class="shop-home-section__lead">{{ homeBlocks.products_lead ?: 'shop.home.products_lead'|trans }}</p>
                 </div>
-                <div class="shop-home-products">
-                    {% for product in products %}
-                        <div class="shop-home-product">
-                            {% include 'shop/partials/_product_card.html.twig' with { product: product, showBuyCta: true } %}
+                <div
+                    class="shop-home-products"
+                    style="--home-prod-cols: {{ sliderMin }};"
+                    data-home-slider
+                    data-count="{{ productsCount }}"
+                    data-slider-min="{{ sliderMin }}"
+                    data-item-selector="[data-home-slider-item]"
+                >
+                    <button type="button" class="shop-home-slider__nav" data-home-slider-prev aria-label="{{ 'shop.home.products_prev'|trans }}" hidden>
+                        <span aria-hidden="true">‹</span>
+                    </button>
+                    <div class="shop-home-products__viewport">
+                        <div class="shop-home-products__track" data-home-slider-track>
+                            {% for product in products %}
+                                <div class="shop-home-product" data-home-slider-item>
+                                    {% include 'shop/partials/_product_card.html.twig' with { product: product, showBuyCta: true } %}
+                                </div>
+                            {% endfor %}
                         </div>
-                    {% endfor %}
+                    </div>
+                    <button type="button" class="shop-home-slider__nav" data-home-slider-next aria-label="{{ 'shop.home.products_next'|trans }}" hidden>
+                        <span aria-hidden="true">›</span>
+                    </button>
                 </div>
                 <div class="shop-home-section__footer">
                     <a class="shop-home__btn shop-home__btn--primary" href="{{ shopCtaPath }}">
@@ -116,7 +216,7 @@
                 </div>
                 <div class="shop-home-blog">
                     {% for article in articles %}
-                        {% include 'shop/blog/_article_card.html.twig' with { article: article } %}
+                        {% include 'shop/blog/_article_card.html.twig' with { article: article, homeCard: true } %}
                     {% endfor %}
                 </div>
                 <div class="shop-home-section__footer">
