@@ -62,6 +62,29 @@ menu.link_product_import_run_single: Import run
 menu.group_product_search: Product search
 menu.link_product_search_setting: Search fields
 menu.link_product_search_setting_single: Product search setting
+menu.group_product_feed: Product feed
+menu.link_product_feed_setting: Feed settings
+menu.link_product_feed_setting_single: Product feed setting
+admin.product_feed.help: 'Facebook Catalog feed URL: %url% — add ?token=… when an access token is set. Only in-stock products from categories with Publish to feed = Yes are exported.'
+admin.product_feed.fieldset_general: General
+admin.product_feed.fieldset_catalog: Catalog defaults
+admin.product_feed.site: Site
+admin.product_feed.enabled: Enabled
+admin.product_feed.enabled_help: When off, the public feed URL returns 404.
+admin.product_feed.access_token: Access token
+admin.product_feed.access_token_help: Optional. If set, the feed requires ?token=VALUE. Leave empty for an open URL.
+admin.product_feed.format: Default format
+admin.product_feed.locale_code: Product link locale
+admin.product_feed.locale_code_help: Locale used in product URLs (uk or en).
+admin.product_feed.currency: Currency
+admin.product_feed.currency_help: ISO currency code for Facebook price fields, e.g. UAH.
+admin.product_feed.default_brand: Default brand
+admin.product_feed.default_brand_help: Used when a product has no brand. Facebook requires brand.
+admin.product_feed.item_condition: Condition
+admin.product_feed.default_google_product_category: Default Google product category
+admin.product_feed.default_google_product_category_help: Fallback for google_product_category when the shop category leaves it empty.
+admin.product_feed.default_fb_product_category: Default Facebook product category
+admin.product_feed.default_fb_product_category_help: Fallback for fb_product_category when the shop category leaves it empty.
 menu.link_homepage_setting: Homepage
 menu.link_homepage_setting_single: homepage setting
 menu.link_shop_mega_menu: Mega menu
@@ -416,6 +439,12 @@ admin.category.show_filters: Show filters
 admin.category.show_filters_help: Left attribute filters column on the category page.
 admin.category.show_out_of_stock: Show out of stock products
 admin.category.show_out_of_stock_help: 'When off, the category list shows only products currently in stock.'
+admin.category.publish_to_feed: Publish to feed
+admin.category.publish_to_feed_help: 'When Yes, in-stock products from this category are included in the Facebook product feed. Default is No.'
+admin.category.google_product_category: Google product category
+admin.category.google_product_category_help: 'Facebook Catalog field google_product_category. Taxonomy path or ID, e.g. Electronics > Communications > Telephony > Mobile Phones.'
+admin.category.fb_product_category: Facebook product category
+admin.category.fb_product_category_help: 'Facebook Catalog field fb_product_category from the Facebook product taxonomy.'
 admin.category.meta_title: Meta title
 admin.category.meta_description: Meta description
 admin.category.og_title: OG Title
@@ -1019,6 +1048,8 @@ admin.shop_notify.payment_updated_title: Payment updated
 admin.shop_notify.payment_body: 'Payment #%id% · order %order% · %status% · %amount% UAH'
 admin.shop_notify.requests_milestone_title: Requests (IP)
 admin.shop_notify.requests_milestone_body: 'You already have %count% requests today'
+admin.shop_notify.content_published_title: Article published
+admin.shop_notify.content_published_body: '"%title%" is live (%slug%).'
 admin.mailbox_message.preview: Preview
 admin.mailbox_message.body_text: Text body
 admin.mailbox_message.body_html: HTML body

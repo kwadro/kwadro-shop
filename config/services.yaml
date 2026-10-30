@@ -29,6 +29,17 @@ parameters:
     env(SHOP_DEFAULT_PACKAGE_HEIGHT): '10'
     env(SHOP_DEFAULT_PACKAGE_WIDTH): '10'
     env(SHOP_DEFAULT_PACKAGE_LENGTH): '10'
+    env(AI_CONTENT_DEPLOY_ENABLED): '0'
+    env(AI_CONTENT_DEPLOYER_TASK): 'blog:push'
+    env(AI_CONTENT_DEPLOYER_HOST): 'production'
+    env(AI_CONTENT_API_URL): ''
+    env(AI_CONTENT_API_KEY): ''
+    env(AI_CONTENT_API_MODEL): 'gpt-4o-mini'
+    env(AI_CONTENT_SITE_ID): '1'
+    env(AI_CONTENT_LOCALE): 'uk'
+    env(AI_CONTENT_CATEGORY_SLUG): 'porady'
+    env(AI_CONTENT_NOTIFY_EMAIL): ''
+    env(AI_CONTENT_NOTIFY_FROM): 'noreply@localhost'
     shop_default_city: '%env(SHOP_DEFAULT_CITY)%'
     shop_default_package_weight: '%env(SHOP_DEFAULT_PACKAGE_WEIGHT)%'
     shop_default_package_height: '%env(SHOP_DEFAULT_PACKAGE_HEIGHT)%'
@@ -131,6 +142,39 @@ services:
     App\Service\ProductImport\LugiProductImportService:
         arguments:
             $debugDataHolder: '@?doctrine.debug_data_holder'
+
+    App\AiContentAgent\Service\ContentAgentLogger:
+        arguments:
+            $logFile: '%kernel.logs_dir%/ai-content-agent.log'
+
+    App\AiContentAgent\Service\DeployerTaskRunner:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+            $enabled: '%env(bool:AI_CONTENT_DEPLOY_ENABLED)%'
+            $task: '%env(AI_CONTENT_DEPLOYER_TASK)%'
+            $host: '%env(AI_CONTENT_DEPLOYER_HOST)%'
+            $timeout: 600
+
+    App\AiContentAgent\Service\SeoArticleGenerator:
+        arguments:
+            $apiUrl: '%env(AI_CONTENT_API_URL)%'
+            $apiKey: '%env(AI_CONTENT_API_KEY)%'
+            $model: '%env(AI_CONTENT_API_MODEL)%'
+
+    App\AiContentAgent\Service\ArticlePublisher:
+        arguments:
+            $siteId: '%env(int:AI_CONTENT_SITE_ID)%'
+            $localeCode: '%env(AI_CONTENT_LOCALE)%'
+            $categorySlug: '%env(AI_CONTENT_CATEGORY_SLUG)%'
+
+    App\AiContentAgent\Service\PublicationNotifier:
+        arguments:
+            $notifyEmail: '%env(AI_CONTENT_NOTIFY_EMAIL)%'
+            $fromEmail: '%env(AI_CONTENT_NOTIFY_FROM)%'
+
+    App\AiContentAgent\Service\ContentAgent:
+        arguments:
+            $localeCode: '%env(AI_CONTENT_LOCALE)%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

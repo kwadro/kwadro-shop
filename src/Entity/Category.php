@@ -51,6 +51,18 @@ class Category
     #[ORM\Column(options: ['default' => true])]
     private bool $show_out_of_stock = true;
 
+    /** When true, in-stock products from this category are included in the Facebook product feed. */
+    #[ORM\Column(options: ['default' => false])]
+    private bool $publish_to_feed = false;
+
+    /** Google product taxonomy path or ID for Facebook Catalog (google_product_category). */
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $google_product_category = null;
+
+    /** Facebook product taxonomy path for Facebook Catalog (fb_product_category). */
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $fb_product_category = null;
+
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $meta_title = null;
 
@@ -167,6 +179,44 @@ class Category
     public function setShowOutOfStock(bool $showOutOfStock): static
     {
         $this->show_out_of_stock = $showOutOfStock;
+
+        return $this;
+    }
+
+    public function isPublishToFeed(): bool
+    {
+        return $this->publish_to_feed;
+    }
+
+    public function setPublishToFeed(bool $publishToFeed): static
+    {
+        $this->publish_to_feed = $publishToFeed;
+
+        return $this;
+    }
+
+    public function getGoogleProductCategory(): ?string
+    {
+        return $this->google_product_category;
+    }
+
+    public function setGoogleProductCategory(?string $googleProductCategory): static
+    {
+        $googleProductCategory = $googleProductCategory !== null ? trim($googleProductCategory) : null;
+        $this->google_product_category = $googleProductCategory !== '' ? $googleProductCategory : null;
+
+        return $this;
+    }
+
+    public function getFbProductCategory(): ?string
+    {
+        return $this->fb_product_category;
+    }
+
+    public function setFbProductCategory(?string $fbProductCategory): static
+    {
+        $fbProductCategory = $fbProductCategory !== null ? trim($fbProductCategory) : null;
+        $this->fb_product_category = $fbProductCategory !== '' ? $fbProductCategory : null;
 
         return $this;
     }

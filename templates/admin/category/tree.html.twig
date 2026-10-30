@@ -72,6 +72,18 @@
                             <dd>{{ selected.showOutOfStock ? 'admin.category.enabled_yes'|trans : 'admin.category.enabled_no'|trans }}</dd>
                         </div>
                         <div>
+                            <dt>{{ 'admin.category.publish_to_feed'|trans }}</dt>
+                            <dd>{{ selected.publishToFeed ? 'admin.category.enabled_yes'|trans : 'admin.category.enabled_no'|trans }}</dd>
+                        </div>
+                        <div>
+                            <dt>{{ 'admin.category.google_product_category'|trans }}</dt>
+                            <dd>{{ selected.googleProductCategory ?: '—' }}</dd>
+                        </div>
+                        <div>
+                            <dt>{{ 'admin.category.fb_product_category'|trans }}</dt>
+                            <dd>{{ selected.fbProductCategory ?: '—' }}</dd>
+                        </div>
+                        <div>
                             <dt>{{ 'admin.category.level'|trans }}</dt>
                             <dd>{{ selected.level }}</dd>
                         </div>

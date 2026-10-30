@@ -25,6 +25,12 @@ doctrine:
                 dir: '%kernel.project_dir%/src/Entity'
                 prefix: 'App\Entity'
                 alias: App
+            AiContentAgent:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/AiContentAgent/Entity'
+                prefix: 'App\AiContentAgent\Entity'
+                alias: AiContentAgent
         controller_resolver:
             auto_mapping: false
 

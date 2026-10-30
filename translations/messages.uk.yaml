@@ -62,6 +62,29 @@ menu.link_product_import_run_single: Запуск імпорту
 menu.group_product_search: Пошук товарів
 menu.link_product_search_setting: Поля пошуку
 menu.link_product_search_setting_single: Налаштування пошуку товарів
+menu.group_product_feed: Фід Товарів
+menu.link_product_feed_setting: Налаштування фіду
+menu.link_product_feed_setting_single: Налаштування фіду товарів
+admin.product_feed.help: 'URL фіду Facebook Catalog: %url% — додайте ?token=… якщо задано access token. Експортуються лише товари в наявності з категорій, де «Публікувати в Фід» = Так.'
+admin.product_feed.fieldset_general: Загальні
+admin.product_feed.fieldset_catalog: Значення за замовчуванням
+admin.product_feed.site: Сайт
+admin.product_feed.enabled: Увімкнено
+admin.product_feed.enabled_help: Якщо вимкнено, публічний URL фіду повертає 404.
+admin.product_feed.access_token: Access token
+admin.product_feed.access_token_help: Необовʼязково. Якщо задано, фід вимагає ?token=VALUE. Залиште порожнім для відкритого URL.
+admin.product_feed.format: Формат за замовчуванням
+admin.product_feed.locale_code: Локаль посилань на товари
+admin.product_feed.locale_code_help: Локаль у URL товару (uk або en).
+admin.product_feed.currency: Валюта
+admin.product_feed.currency_help: ISO-код валюти для поля price у Facebook, напр. UAH.
+admin.product_feed.default_brand: Бренд за замовчуванням
+admin.product_feed.default_brand_help: Використовується, якщо в товару немає бренду. Facebook вимагає brand.
+admin.product_feed.item_condition: Стан
+admin.product_feed.default_google_product_category: Google product category за замовчуванням
+admin.product_feed.default_google_product_category_help: Fallback для google_product_category, якщо в категорії поле порожнє.
+admin.product_feed.default_fb_product_category: Facebook product category за замовчуванням
+admin.product_feed.default_fb_product_category_help: Fallback для fb_product_category, якщо в категорії поле порожнє.
 menu.link_homepage_setting: Головна сторінка
 menu.link_homepage_setting_single: налаштування головної сторінки
 menu.link_shop_mega_menu: Мега меню
@@ -416,6 +439,12 @@ admin.category.show_filters: Показувати фільтр
 admin.category.show_filters_help: Ліва колонка фільтрів за атрибутами на сторінці категорії.
 admin.category.show_out_of_stock: Показувати товари не в наявності
 admin.category.show_out_of_stock_help: 'Якщо вимкнено — у списку категорії лише товари, які зараз є в наявності.'
+admin.category.publish_to_feed: Публікувати в Фід
+admin.category.publish_to_feed_help: 'Якщо Так — товари цієї категорії, які є в наявності, потрапляють у Facebook product feed. За замовчуванням Ні.'
+admin.category.google_product_category: Google product category
+admin.category.google_product_category_help: 'Поле Facebook Catalog google_product_category. Шлях або ID таксономії, напр. Electronics > Communications > Telephony > Mobile Phones.'
+admin.category.fb_product_category: Facebook product category
+admin.category.fb_product_category_help: 'Поле Facebook Catalog fb_product_category з таксономії Facebook.'
 admin.category.meta_title: Meta title
 admin.category.meta_description: Meta description
 admin.category.og_title: OG Title
@@ -1019,6 +1048,8 @@ admin.shop_notify.payment_updated_title: Платіж змінено
 admin.shop_notify.payment_body: 'Платіж #%id% · замовлення %order% · %status% · %amount% грн'
 admin.shop_notify.requests_milestone_title: Запити (IP)
 admin.shop_notify.requests_milestone_body: 'У вас вже %count% запитів за сьогодні'
+admin.shop_notify.content_published_title: Article published
+admin.shop_notify.content_published_body: '"%title%" is live (%slug%).'
 admin.mailbox_message.preview: Превʼю
 admin.mailbox_message.body_text: Текст
 admin.mailbox_message.body_html: HTML

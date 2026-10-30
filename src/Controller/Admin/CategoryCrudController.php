@@ -171,6 +171,14 @@ class CategoryCrudController extends AbstractCrudController
             ->setHelp($this->translator->trans('admin.category.show_filters_help', [], 'messages'));
         yield BooleanField::new('showOutOfStock', $this->translator->trans('admin.category.show_out_of_stock', [], 'messages'))
             ->setHelp($this->translator->trans('admin.category.show_out_of_stock_help', [], 'messages'));
+        yield BooleanField::new('publishToFeed', $this->translator->trans('admin.category.publish_to_feed', [], 'messages'))
+            ->setHelp($this->translator->trans('admin.category.publish_to_feed_help', [], 'messages'));
+        yield TextField::new('googleProductCategory', $this->translator->trans('admin.category.google_product_category', [], 'messages'))
+            ->setHelp($this->translator->trans('admin.category.google_product_category_help', [], 'messages'))
+            ->hideOnIndex();
+        yield TextField::new('fbProductCategory', $this->translator->trans('admin.category.fb_product_category', [], 'messages'))
+            ->setHelp($this->translator->trans('admin.category.fb_product_category_help', [], 'messages'))
+            ->hideOnIndex();
         yield AssociationField::new('parent', $this->translator->trans('admin.category.parent', [], 'messages'))
             ->setRequired(false)
             ->setHelp($this->translator->trans('admin.category.parent_help', [], 'messages'));

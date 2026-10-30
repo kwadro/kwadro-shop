@@ -730,4 +730,33 @@ class ProductRepository extends ServiceEntityRepository
             static fn (array $row): bool => \is_string($row['slug'] ?? null) && $row['slug'] !== '',
         ));
     }
+
+    /**
+     * In-stock enabled products that belong to at least one category marked publish_to_feed.
+     *
+     * @return list<Product>
+     */
+    public function findForFacebookFeed(): array
+    {
+        /** @var list<Product> $products */
+        $products = $this->createQueryBuilder('p')
+            ->distinct()
+            ->addSelect('c', 'o', 's')
+            ->innerJoin('p.categories', 'c')
+            ->leftJoin('p.offers', 'o')
+            ->leftJoin('o.supplier', 's')
+            ->andWhere('p.enabled = true')
+            ->andWhere('p.in_stock = true')
+            ->andWhere('c.enabled = true')
+            ->andWhere('c.publish_to_feed = true')
+            ->andWhere('EXISTS (
+                SELECT 1 FROM App\Entity\ProductOffer o_avail
+                WHERE o_avail.product = p AND o_avail.qty > 0
+            )')
+            ->orderBy('p.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        return $products;
+    }
 }

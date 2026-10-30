@@ -19,10 +19,12 @@ class AdminShopNotification
     public const CHANNEL_ORDER = 'order';
     public const CHANNEL_PAYMENT = 'payment';
     public const CHANNEL_REQUESTS = 'requests';
+    public const CHANNEL_CONTENT = 'content';
 
     public const ACTION_CREATED = 'created';
     public const ACTION_UPDATED = 'updated';
     public const ACTION_MILESTONE = 'milestone';
+    public const ACTION_PUBLISHED = 'published';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
