@@ -831,6 +831,8 @@ class CheckoutController extends AbstractController
         return [
             'id' => $orderEntity->getOrderNumber(),
             'amount' => $orderEntity->getAmount(),
+            'total' => $orderEntity->getOrderTotal(),
+            'product_ids' => $this->collectOrderProductIds($orderEntity),
             'status' => $orderEntity->getStatus()->value,
             'success_variant' => $this->resolveSuccessVariant($orderEntity->getStatus(), $payment),
             'do_not_call' => $orderEntity->isDoNotCall(),
@@ -853,6 +855,8 @@ class CheckoutController extends AbstractController
         return [
             'id' => (string) ($sessionOrder['order_number'] ?? $sessionOrder['id'] ?? ''),
             'amount' => (float) ($sessionOrder['amount'] ?? 0),
+            'total' => (float) ($sessionOrder['amount'] ?? 0),
+            'product_ids' => $this->collectSessionProductIds(),
             'status' => $status,
             'success_variant' => $isAwaitingDeposit
                 ? 'awaiting_deposit'
@@ -860,6 +864,59 @@ class CheckoutController extends AbstractController
             'do_not_call' => filter_var($contact['doNotCall'] ?? false, FILTER_VALIDATE_BOOL),
             'payment_method' => $paymentMethod,
         ];
+    }
+
+    /** @return list<string> */
+    private function collectOrderProductIds(Order $order): array
+    {
+        $ids = [];
+        foreach ($order->getItems() as $item) {
+            $productId = $item->getProductId();
+            if ($productId > 0) {
+                $ids[] = (string) $productId;
+            }
+        }
+
+        if ($ids === []) {
+            $ids = $this->collectProductIdsFromCartData($order->getCartData());
+        }
+
+        return array_values(array_unique($ids));
+    }
+
+    /** @return list<string> */
+    private function collectSessionProductIds(): array
+    {
+        $summary = $this->cartStorage->getSummary();
+
+        return $this->collectProductIdsFromCartData($summary);
+    }
+
+    /** @param array<string, mixed> $cart */
+    /** @return list<string> */
+    private function collectProductIdsFromCartData(array $cart): array
+    {
+        $ids = [];
+        $items = $cart['items'] ?? [];
+        if (\is_array($items)) {
+            foreach ($items as $item) {
+                if (!\is_array($item)) {
+                    continue;
+                }
+
+                $productId = (int) ($item['product_id'] ?? $item['product']['id'] ?? 0);
+                if ($productId > 0) {
+                    $ids[] = (string) $productId;
+                }
+            }
+        }
+
+        $productId = (int) ($cart['product_id'] ?? $cart['product']['id'] ?? 0);
+        if ($productId > 0) {
+            $ids[] = (string) $productId;
+        }
+
+        return array_values(array_unique($ids));
     }
 
     private function resolveSuccessVariant(OrderStatus $status, ?Payment $payment): string

@@ -308,6 +308,17 @@
                 }],
             },
         });
+
+        const productId = item.product_id || item.item_id || '';
+        const productPrice = Math.round(value * 100) / 100;
+        if (typeof window.fbq === 'function' && String(productId) !== '' && String(productId) !== '0') {
+            window.fbq('track', 'AddToCart', {
+                content_ids: [String(productId)],
+                content_type: 'product',
+                value: Number(productPrice),
+                currency: 'UAH',
+            });
+        }
     };
 
     window.ShopCart = {

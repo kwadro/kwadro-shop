@@ -38,3 +38,34 @@
         </a>
     </article>
 {% endblock %}
+
+{% block javascripts %}
+    {% if order %}
+        {% set pixel_id = site_settings().tracking.meta_pixel_id|default('') %}
+        {% set productIds = order.product_ids|default([]) %}
+        {% if pixel_id matches '/^[0-9]{5,20}$/' %}
+            <script>
+                (function () {
+                    var key = 'fbq-purchase-' + {{ order.id|default('')|json_encode|raw }};
+                    try {
+                        if (window.sessionStorage.getItem(key)) {
+                            return;
+                        }
+                        window.sessionStorage.setItem(key, '1');
+                    } catch (e) {}
+
+                    if (typeof fbq !== 'function') {
+                        return;
+                    }
+
+                    fbq('track', 'Purchase', {
+                        content_ids: {{ productIds|json_encode|raw }},
+                        content_type: 'product',
+                        value: {{ order.total|default(0) }},
+                        currency: 'UAH'
+                    });
+                })();
+            </script>
+        {% endif %}
+    {% endif %}
+{% endblock %}
