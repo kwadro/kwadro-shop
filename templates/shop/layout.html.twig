@@ -31,6 +31,7 @@
     <link rel="stylesheet" href="{{ asset('css/shop.css') }}">
     {% block stylesheets %}{% endblock %}
     {% include 'shop/partials/_gtm.html.twig' with { placement: 'head', setting: setting } only %}
+    {% include 'shop/partials/_meta_pixel.html.twig' with { setting: setting } only %}
 </head>
 <body class="shop-body">
     {% include 'shop/partials/_gtm.html.twig' with { placement: 'body', setting: setting } only %}

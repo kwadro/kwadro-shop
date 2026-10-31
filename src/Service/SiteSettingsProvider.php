@@ -14,6 +14,7 @@ use App\Repository\MegaMenuSettingRepository;
 use App\Repository\SeoSettingRepository;
 use App\Repository\SiteRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 class SiteSettingsProvider
 {
@@ -25,7 +26,9 @@ class SiteSettingsProvider
         private MegaMenuSettingRepository $menuRepo,
         private LocaleRepository $localeRepo,
         private CategoryRepository $categoryRepository,
-        private EntityManagerInterface $em
+        private EntityManagerInterface $em,
+        #[Autowire('%env(FB_META_PIXEL_ID)%')]
+        private string $metaPixelIdFallback = '',
     ) {
     }
 
@@ -176,6 +179,9 @@ class SiteSettingsProvider
                 'facebook_url' => $site->getFacebookUrl(),
                 'instagram_url' => $site->getInstagramUrl(),
             ],
+            'tracking' => [
+                'meta_pixel_id' => $this->resolveMetaPixelId($site),
+            ],
             'menu_pages' => $menuPages ?: [],
             'menu_url_key' => $menuUrlKey,
             'menu' => $menuSetting ?: [],
@@ -324,6 +330,23 @@ class SiteSettingsProvider
                 . 'NovaPay: %novapay_percent%% від суми + 10 грн = %novapay_amount%. '
                 . '<a href="https://novapay.ua/pisljaplata/" target="_blank" rel="noopener noreferrer">Деталі</a>.',
         ];
+    }
+
+    private function resolveMetaPixelId(Site $site): string
+    {
+        $fromSite = trim((string) $site->getMetaPixelId());
+        if ($fromSite !== '') {
+            return $this->isMetaPixelId($fromSite) ? $fromSite : '';
+        }
+
+        $fromEnv = trim($this->metaPixelIdFallback);
+
+        return $this->isMetaPixelId($fromEnv) ? $fromEnv : '';
+    }
+
+    private function isMetaPixelId(string $id): bool
+    {
+        return preg_match('/^\d{5,20}$/', $id) === 1;
     }
 
     private function resolveSite(string $domain): ?Site

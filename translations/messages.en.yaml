@@ -193,6 +193,8 @@ admin.site.facebook_url: Facebook page
 admin.site.facebook_url_help: Full URL to your Facebook page (e.g. https://www.facebook.com/yourpage).
 admin.site.instagram_url: Instagram page
 admin.site.instagram_url_help: Full URL to your Instagram profile (e.g. https://www.instagram.com/yourpage/).
+admin.site.meta_pixel_id: Meta Pixel ID
+admin.site.meta_pixel_id_help: Numeric ID from Meta Events Manager. If empty, FB_META_PIXEL_ID from the environment file is used.
 admin.site.ignored_request_ips: Ignore IPs for RequestList
 admin.site.ignored_request_ips_help: 'IPs that will not be written to the request log. Multiple values — one per line, or separated by comma / space.'
 admin.site.log_admin_actions: Log admin actions

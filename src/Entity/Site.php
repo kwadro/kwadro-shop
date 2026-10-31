@@ -78,6 +78,12 @@ class Site
     #[Assert\Length(max: 512)]
     private ?string $instagramUrl = null;
 
+    /** Numeric Meta Pixel ID. Empty means use FB_META_PIXEL_ID from the environment. */
+    #[ORM\Column(length: 32, nullable: true)]
+    #[Assert\Length(max: 32)]
+    #[Assert\Regex(pattern: '/^\d{5,20}$/', message: 'Meta Pixel ID must contain digits only.')]
+    private ?string $metaPixelId = null;
+
     /** One IP per line (or comma-separated). These IPs are not written to RequestList. */
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $ignoredRequestIps = null;
@@ -217,6 +223,19 @@ class Site
     {
         $normalized = $instagramUrl !== null ? trim($instagramUrl) : null;
         $this->instagramUrl = $normalized !== '' ? $normalized : null;
+
+        return $this;
+    }
+
+    public function getMetaPixelId(): ?string
+    {
+        return $this->metaPixelId;
+    }
+
+    public function setMetaPixelId(?string $metaPixelId): self
+    {
+        $normalized = $metaPixelId !== null ? trim($metaPixelId) : null;
+        $this->metaPixelId = $normalized !== '' ? $normalized : null;
 
         return $this;
     }
