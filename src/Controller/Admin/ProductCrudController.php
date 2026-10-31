@@ -344,7 +344,6 @@ class ProductCrudController extends AbstractCrudController
     public function persistEntity(EntityManagerInterface $entityManager, $entityInstance): void
     {
         if ($entityInstance instanceof Product) {
-            $entityInstance->rebuildNameFromModelBrand();
             $entityInstance->syncGalleryFromGalleryItems($this->projectDir);
             $entityInstance->relocateGalleryFiles($this->projectDir);
             $entityInstance->relocateCleanImageFile($this->projectDir);
@@ -358,7 +357,6 @@ class ProductCrudController extends AbstractCrudController
     public function updateEntity(EntityManagerInterface $entityManager, $entityInstance): void
     {
         if ($entityInstance instanceof Product) {
-            $entityInstance->rebuildNameFromModelBrand();
             $entityInstance->syncGalleryFromGalleryItems($this->projectDir);
             $entityInstance->relocateGalleryFiles($this->projectDir);
             $entityInstance->relocateCleanImageFile($this->projectDir);
