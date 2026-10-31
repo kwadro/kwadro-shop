@@ -42,7 +42,7 @@
 {% block javascripts %}
     {% if order %}
         {% set pixel_id = site_settings().tracking.meta_pixel_id|default('') %}
-        {% set productIds = order.product_ids|default([]) %}
+        {% set contentIds = order.content_ids|default([]) %}
         {% if pixel_id matches '/^[0-9]{5,20}$/' %}
             <script>
                 (function () {
@@ -59,7 +59,7 @@
                     }
 
                     fbq('track', 'Purchase', {
-                        content_ids: {{ productIds|json_encode|raw }},
+                        content_ids: {{ contentIds|json_encode|raw }},
                         content_type: 'product',
                         value: {{ order.total|default(0) }},
                         currency: 'UAH'

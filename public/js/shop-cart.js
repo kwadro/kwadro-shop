@@ -309,11 +309,11 @@
             },
         });
 
-        const productId = item.product_id || item.item_id || '';
+        const contentId = item.content_id || item.sku || item.item_id || '';
         const productPrice = Math.round(value * 100) / 100;
-        if (typeof window.fbq === 'function' && String(productId) !== '' && String(productId) !== '0') {
+        if (typeof window.fbq === 'function' && String(contentId) !== '' && String(contentId) !== '0') {
             window.fbq('track', 'AddToCart', {
-                content_ids: [String(productId)],
+                content_ids: [String(contentId)],
                 content_type: 'product',
                 value: Number(productPrice),
                 currency: 'UAH',

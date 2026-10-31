@@ -45,10 +45,14 @@
 {% block javascripts %}
     {% include 'shop/partials/_product_view_scripts.html.twig' %}
     {% set pixel_id = setting.tracking.meta_pixel_id|default('') %}
+    {% set contentId = product.sku|default('')|trim %}
+    {% if contentId is empty %}
+        {% set contentId = product.id %}
+    {% endif %}
     {% if pixel_id matches '/^[0-9]{5,20}$/' %}
         <script>
             fbq('track', 'ViewContent', {
-                content_ids: [{{ product.id|json_encode|raw }}],
+                content_ids: [{{ contentId|json_encode|raw }}],
                 content_type: 'product',
                 content_name: {{ product.name|json_encode|raw }},
                 value: {{ product.price|default(0) }},

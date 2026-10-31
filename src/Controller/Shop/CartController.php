@@ -101,8 +101,11 @@ class CartController extends AbstractController
         $price = round((float) ($product['price'] ?? 0), 2);
         $quantity = max(1, $quantity);
 
+        $contentId = $this->resolveCatalogContentId($product);
+
         return [
-            'item_id' => (string) ($product['offerSku'] ?? $product['sku'] ?? $product['id'] ?? ''),
+            'item_id' => $contentId,
+            'content_id' => $contentId,
             'item_name' => (string) ($product['name'] ?? ''),
             'item_category' => (string) ($product['category'] ?? ''),
             'price' => $price,
@@ -112,5 +115,18 @@ class CartController extends AbstractController
             'product_id' => (int) ($product['id'] ?? 0),
             'offer_id' => isset($product['selectedOfferId']) ? (int) $product['selectedOfferId'] : null,
         ];
+    }
+
+    /** @param array<string, mixed> $product */
+    private function resolveCatalogContentId(array $product): string
+    {
+        $sku = trim((string) ($product['sku'] ?? ''));
+        if ($sku !== '') {
+            return $sku;
+        }
+
+        $id = (string) ($product['id'] ?? '');
+
+        return $id !== '' && $id !== '0' ? $id : '';
     }
 }

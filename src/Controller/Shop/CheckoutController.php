@@ -9,6 +9,7 @@ use App\Form\Type\CheckoutContactFormType;
 use App\Form\Type\CheckoutDeliveryFormType;
 use App\Form\Type\CheckoutPaymentFormType;
 use App\Entity\Order;
+use App\Entity\OrderItem;
 use App\Entity\OrderStatus;
 use App\Entity\Payment;
 use App\Entity\PaymentStatus;
@@ -832,7 +833,7 @@ class CheckoutController extends AbstractController
             'id' => $orderEntity->getOrderNumber(),
             'amount' => $orderEntity->getAmount(),
             'total' => $orderEntity->getOrderTotal(),
-            'product_ids' => $this->collectOrderProductIds($orderEntity),
+            'content_ids' => $this->collectOrderCatalogContentIds($orderEntity),
             'status' => $orderEntity->getStatus()->value,
             'success_variant' => $this->resolveSuccessVariant($orderEntity->getStatus(), $payment),
             'do_not_call' => $orderEntity->isDoNotCall(),
@@ -856,7 +857,7 @@ class CheckoutController extends AbstractController
             'id' => (string) ($sessionOrder['order_number'] ?? $sessionOrder['id'] ?? ''),
             'amount' => (float) ($sessionOrder['amount'] ?? 0),
             'total' => (float) ($sessionOrder['amount'] ?? 0),
-            'product_ids' => $this->collectSessionProductIds(),
+            'content_ids' => $this->collectSessionCatalogContentIds(),
             'status' => $status,
             'success_variant' => $isAwaitingDeposit
                 ? 'awaiting_deposit'
@@ -867,34 +868,48 @@ class CheckoutController extends AbstractController
     }
 
     /** @return list<string> */
-    private function collectOrderProductIds(Order $order): array
+    private function collectOrderCatalogContentIds(Order $order): array
     {
         $ids = [];
         foreach ($order->getItems() as $item) {
-            $productId = $item->getProductId();
-            if ($productId > 0) {
-                $ids[] = (string) $productId;
+            $contentId = $this->resolveCatalogContentIdFromOrderItem($item);
+            if ($contentId !== '') {
+                $ids[] = $contentId;
             }
         }
 
         if ($ids === []) {
-            $ids = $this->collectProductIdsFromCartData($order->getCartData());
+            $ids = $this->collectCatalogContentIdsFromCartData($order->getCartData());
         }
 
         return array_values(array_unique($ids));
     }
 
     /** @return list<string> */
-    private function collectSessionProductIds(): array
+    private function collectSessionCatalogContentIds(): array
     {
-        $summary = $this->cartStorage->getSummary();
+        return $this->collectCatalogContentIdsFromCartData($this->cartStorage->getSummary());
+    }
 
-        return $this->collectProductIdsFromCartData($summary);
+    private function resolveCatalogContentIdFromOrderItem(OrderItem $item): string
+    {
+        $snapshot = $item->getProductSnapshot();
+        $sku = trim((string) ($snapshot['sku'] ?? ''));
+        if ($sku === '') {
+            $sku = trim($item->getProductSku());
+        }
+        if ($sku !== '') {
+            return $sku;
+        }
+
+        $productId = $item->getProductId();
+
+        return $productId > 0 ? (string) $productId : '';
     }
 
     /** @param array<string, mixed> $cart */
     /** @return list<string> */
-    private function collectProductIdsFromCartData(array $cart): array
+    private function collectCatalogContentIdsFromCartData(array $cart): array
     {
         $ids = [];
         $items = $cart['items'] ?? [];
@@ -904,19 +919,44 @@ class CheckoutController extends AbstractController
                     continue;
                 }
 
-                $productId = (int) ($item['product_id'] ?? $item['product']['id'] ?? 0);
-                if ($productId > 0) {
-                    $ids[] = (string) $productId;
+                $contentId = $this->resolveCatalogContentIdFromCartLine($item);
+                if ($contentId !== '') {
+                    $ids[] = $contentId;
                 }
             }
         }
 
-        $productId = (int) ($cart['product_id'] ?? $cart['product']['id'] ?? 0);
-        if ($productId > 0) {
-            $ids[] = (string) $productId;
+        $legacy = $this->resolveCatalogContentIdFromCartLine([
+            'sku' => $cart['product']['sku'] ?? null,
+            'product' => $cart['product'] ?? null,
+            'product_id' => $cart['product_id'] ?? null,
+            'snapshot' => $cart['product'] ?? null,
+        ]);
+        if ($legacy !== '') {
+            $ids[] = $legacy;
         }
 
         return array_values(array_unique($ids));
+    }
+
+    /** @param array<string, mixed> $item */
+    private function resolveCatalogContentIdFromCartLine(array $item): string
+    {
+        $product = [];
+        if (\is_array($item['snapshot'] ?? null)) {
+            $product = $item['snapshot'];
+        } elseif (\is_array($item['product'] ?? null)) {
+            $product = $item['product'];
+        }
+
+        $sku = trim((string) ($product['sku'] ?? $item['sku'] ?? ''));
+        if ($sku !== '') {
+            return $sku;
+        }
+
+        $productId = (int) ($item['product_id'] ?? $product['id'] ?? 0);
+
+        return $productId > 0 ? (string) $productId : '';
     }
 
     private function resolveSuccessVariant(OrderStatus $status, ?Payment $payment): string
