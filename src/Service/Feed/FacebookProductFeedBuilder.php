@@ -236,11 +236,39 @@ final class FacebookProductFeedBuilder
         if ($path === '') {
             return '';
         }
-        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
-            return $path;
+        if (!str_starts_with($path, 'http://') && !str_starts_with($path, 'https://')) {
+            $path = rtrim($baseUrl, '/').'/'.ltrim($path, '/');
         }
 
-        return rtrim($baseUrl, '/').'/'.ltrim($path, '/');
+        return $this->encodeAbsoluteUrl($path);
+    }
+
+    /**
+     * Encode path segments so Facebook can fetch image URLs with spaces or parentheses.
+     */
+    private function encodeAbsoluteUrl(string $url): string
+    {
+        $parts = parse_url($url);
+        if ($parts === false || !isset($parts['scheme'], $parts['host'])) {
+            return $url;
+        }
+
+        $path = $parts['path'] ?? '';
+        $encodedPath = implode('/', array_map(
+            static fn (string $segment): string => rawurlencode(rawurldecode($segment)),
+            explode('/', $path),
+        ));
+
+        $result = $parts['scheme'].'://'.$parts['host'];
+        if (isset($parts['port'])) {
+            $result .= ':'.$parts['port'];
+        }
+        $result .= $encodedPath;
+        if (isset($parts['query'])) {
+            $result .= '?'.$parts['query'];
+        }
+
+        return $result;
     }
 
     private function resolveBaseUrl(ProductFeedSetting $setting): string
