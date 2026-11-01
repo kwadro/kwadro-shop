@@ -21,6 +21,15 @@ class AttributeImportService
     /** @var array<string, ProductAttribute> key: "{externalCategoryId}|{paramName}" */
     private array $attributeIndex = [];
 
+    /**
+     * Lugi feed value fixes (Russian / mixed spelling → Ukrainian storefront spelling).
+     *
+     * @var array<string, string>
+     */
+    private const PARAM_VALUE_REPLACEMENTS = [
+        'Фыолетовий' => 'Фіолетовий',
+    ];
+
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly CategoryRepository $categoryRepository,
@@ -139,7 +148,7 @@ class AttributeImportService
         $uniqueParams = [];
         foreach ($params as $param) {
             $name = trim((string) ($param['name'] ?? ''));
-            $raw = trim((string) ($param['value'] ?? ''));
+            $raw = $this->normalizeParamValue(trim((string) ($param['value'] ?? '')));
             if ($name === '' || $raw === '') {
                 continue;
             }
@@ -228,7 +237,7 @@ class AttributeImportService
 
                 foreach ($node->param as $param) {
                     $name = trim((string) $param['name']);
-                    $value = trim((string) $param);
+                    $value = $this->normalizeParamValue(trim((string) $param));
                     if ($name === '' || $value === '') {
                         continue;
                     }
@@ -306,6 +315,11 @@ class AttributeImportService
     private function inferUseInSearch(ProductAttributeDataType $dataType, bool $showInFilter): bool
     {
         return $dataType === ProductAttributeDataType::Varchar && $showInFilter;
+    }
+
+    private function normalizeParamValue(string $value): string
+    {
+        return self::PARAM_VALUE_REPLACEMENTS[$value] ?? $value;
     }
 
     private function findAttributeInGroup(ProductAttributeGroup $group, string $name): ?ProductAttribute
