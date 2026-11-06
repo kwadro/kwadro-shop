@@ -1,0 +1,106 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block head_stylesheets %}
+    {{ parent() }}
+    <style>
+        .mailbox-conversation-dialog {
+            margin-top: 1.5rem;
+            background: #fff;
+            border: 1px solid #e6e6e6;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .mailbox-conversation-dialog__title {
+            padding: 10px 14px;
+            font-weight: 600;
+            border-bottom: 1px solid #e6e6e6;
+            background: #f8f9fa;
+        }
+        .mailbox-conversation-dialog__frame {
+            display: block;
+            width: 100%;
+            height: 70vh;
+            min-height: 420px;
+            border: 0;
+            background: #f6f7f9;
+        }
+    </style>
+{% endblock %}
+
+{% block content_title %}{{ page_title }}{% endblock %}
+
+{% block main %}
+    {% if conversations is not null %}
+        {% if conversations is empty %}
+            <p class="text-muted">{{ 'admin.mailbox_conversation.empty'|trans }}</p>
+        {% else %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>{{ 'admin.mailbox_conversation.last_at'|trans }}</th>
+                            <th>{{ 'admin.mailbox_conversation.subject'|trans }}</th>
+                            <th>{{ 'admin.mailbox_conversation.correspondent'|trans }}</th>
+                            <th>{{ 'admin.mailbox_conversation.link'|trans }}</th>
+                            <th>{{ 'admin.mailbox_conversation.messages'|trans }}</th>
+                            <th>{{ 'admin.mailbox_conversation.id'|trans }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for conversation in conversations %}
+                            <tr>
+                                <td>{{ conversation.lastAt|date('Y-m-d H:i') }}</td>
+                                <td><a href="{{ conversation.url }}">{{ conversation.subject }}</a></td>
+                                <td>{{ conversation.correspondent }}</td>
+                                <td>{{ conversation.linkLabel }}</td>
+                                <td>{{ conversation.messageCount }}</td>
+                                <td><code>{{ conversation.conversationId }}</code></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    {% else %}
+        <p class="mb-3">
+            <a href="{{ back_url }}">{{ 'admin.mailbox_conversation.back'|trans }}</a>
+        </p>
+        <p class="text-muted"><code>{{ conversation_id }}</code></p>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>{{ 'admin.mailbox_conversation.last_at'|trans }}</th>
+                        <th>{{ 'admin.mailbox_conversation.direction'|trans }}</th>
+                        <th>{{ 'admin.mailbox_conversation.correspondent'|trans }}</th>
+                        <th>{{ 'admin.mailbox_conversation.subject'|trans }}</th>
+                        <th>{{ 'admin.mailbox_conversation.link'|trans }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for message in messages %}
+                        <tr>
+                            <td>{{ message.receivedAt|date('Y-m-d H:i') }}</td>
+                            <td>{{ message.direction }}</td>
+                            <td>{{ message.who }}</td>
+                            <td><a href="{{ message.url }}">{{ message.subject }}</a></td>
+                            <td>{{ message.linkLabel }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <section class="mailbox-conversation-dialog">
+            <div class="mailbox-conversation-dialog__title">{{ 'admin.mailbox_conversation.dialog'|trans }}</div>
+            <iframe
+                class="mailbox-conversation-dialog__frame"
+                title="{{ 'admin.mailbox_conversation.dialog'|trans }}"
+                sandbox="allow-same-origin"
+                referrerpolicy="no-referrer"
+                loading="lazy"
+                src="{{ dialog_url }}"
+            ></iframe>
+        </section>
+    {% endif %}
+{% endblock %}

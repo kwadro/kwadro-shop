@@ -1,0 +1,62 @@
+{% set dialog_url = dialog_url|default('') %}
+{% set open_url = open_url|default('') %}
+{% set meta_date = meta_date|default('') %}
+{% set meta_with = meta_with|default('') %}
+{% set meta_count = meta_count|default(0) %}
+{% if field is defined %}
+    {% set dialog_url = field.customOption('dialog_url')|default('') %}
+    {% set open_url = field.customOption('open_url')|default('') %}
+    {% set meta_date = field.customOption('meta_date')|default('') %}
+    {% set meta_with = field.customOption('meta_with')|default('') %}
+    {% set meta_count = field.customOption('meta_count')|default(0) %}
+{% endif %}
+{% if meta_with == '' %}
+    {% set meta_with = '—' %}
+{% endif %}
+
+<section class="order-email-conversation">
+    <div class="order-email-conversation__meta">
+        {{ 'admin.order.email_conversation_meta'|trans({
+            '%date%': meta_date|default('—'),
+            '%with%': meta_with,
+            '%count%': meta_count|default(0),
+        }) }}
+        {% if open_url %}
+            · <a href="{{ open_url }}">{{ 'admin.order.email_conversation_open'|trans }}</a>
+        {% endif %}
+    </div>
+    {% if dialog_url %}
+        <iframe
+            class="order-email-conversation__frame"
+            title="{{ 'admin.mailbox_conversation.dialog'|trans }}"
+            sandbox="allow-same-origin"
+            referrerpolicy="no-referrer"
+            loading="lazy"
+            src="{{ dialog_url }}"
+        ></iframe>
+    {% endif %}
+</section>
+
+<style>
+    .field-group.field-order-email-conversation {
+        display: block;
+    }
+    .field-order-email-conversation .field-label,
+    .field-order-email-conversation .field-value {
+        width: 100%;
+        max-width: none;
+    }
+    .order-email-conversation__meta {
+        margin-bottom: 8px;
+        color: #5f6368;
+        font-size: 13px;
+    }
+    .order-email-conversation__frame {
+        display: block;
+        width: 100%;
+        height: 440px;
+        border: 1px solid #e6e6e6;
+        border-radius: 8px;
+        background: #f6f7f9;
+    }
+</style>

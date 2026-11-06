@@ -1,0 +1,36 @@
+{% extends '@EasyAdmin/crud/index.html.twig' %}
+
+{% block main %}
+    {% set mailbox_index_url = ea_url().unset('filters').unset('page').setAction('index') %}
+    <div class="mailbox-list-filters" data-index-url="{{ mailbox_index_url }}">
+        <label class="mailbox-list-filters__field">
+            {{ 'admin.mailbox_message.mailbox'|trans }}
+            <select data-filter="account" aria-label="{{ 'admin.mailbox_message.mailbox'|trans }}">
+                <option value="">{{ 'admin.mailbox_message.filter_all'|trans }}</option>
+                {% for account in mailboxFilterAccounts|default([]) %}
+                    <option value="{{ account.id }}" {% if mailboxFilterAccount|default('') == account.id ~ '' %}selected{% endif %}>
+                        {{ account.name }} &lt;{{ account.email }}&gt;
+                    </option>
+                {% endfor %}
+            </select>
+        </label>
+
+        <label class="mailbox-list-filters__field">
+            {{ 'admin.mailbox_message.group'|trans }}
+            <select data-filter="group" aria-label="{{ 'admin.mailbox_message.group'|trans }}">
+                <option value="">{{ 'admin.mailbox_message.filter_all'|trans }}</option>
+                {% for group in mailboxFilterGroups|default([]) %}
+                    <option value="{{ group|e('html_attr') }}" {% if mailboxFilterGroup|default('') == group %}selected{% endif %}>
+                        {{ group }}
+                    </option>
+                {% endfor %}
+            </select>
+        </label>
+
+        <a class="btn btn-secondary" href="{{ mailbox_index_url }}">
+            {{ 'admin.mailbox_message.filter_reset'|trans }}
+        </a>
+    </div>
+
+    {{ parent() }}
+{% endblock %}

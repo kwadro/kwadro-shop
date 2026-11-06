@@ -1,0 +1,12 @@
+{% set compose_url = compose_url|default('') %}
+{% if field is defined %}
+    {% set compose_url = field.customOption('compose_url')|default('') %}
+{% endif %}
+{% if compose_url %}
+    <p class="mb-3">
+        <a class="btn btn-primary btn-sm" href="{{ compose_url }}">
+            <i class="fa fa-pen" aria-hidden="true"></i>
+            {{ 'admin.order.email_compose'|trans }}
+        </a>
+    </p>
+{% endif %}
