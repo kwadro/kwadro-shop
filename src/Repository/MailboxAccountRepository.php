@@ -26,4 +26,23 @@ class MailboxAccountRepository extends ServiceEntityRepository
 
         return $items;
     }
+
+    public function findOneActiveByEmail(string $email): ?MailboxAccount
+    {
+        $email = strtolower(trim($email));
+        if ($email === '') {
+            return null;
+        }
+
+        /** @var MailboxAccount|null $account */
+        $account = $this->createQueryBuilder('m')
+            ->andWhere('LOWER(m.email) = :email')
+            ->andWhere('m.isActive = true')
+            ->setParameter('email', $email)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        return $account;
+    }
 }

@@ -9,11 +9,13 @@ use App\Entity\OrderEmailEvent;
 use App\Entity\Payment;
 use App\Entity\User;
 use App\Repository\OrderEmailRepository;
+use App\Service\Mail\Mailbox\MailboxOutboundMessageRecorder;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
+use Symfony\Component\Mime\Header\IdentificationHeader;
 
 class OrderEmailMailer
 {
@@ -24,6 +26,7 @@ class OrderEmailMailer
         private readonly OrderEmailTemplateRenderer $templateRenderer,
         private readonly EmailBrandingContextProvider $brandingContextProvider,
         private readonly EmailLogService $emailLogService,
+        private readonly MailboxOutboundMessageRecorder $mailboxOutboundMessageRecorder,
         private readonly MailerInterface $mailer,
         private readonly LoggerInterface $logger,
     ) {
@@ -179,6 +182,18 @@ class OrderEmailMailer
                 $orderEmail,
                 $storedContext,
             );
+            if ($order instanceof Order) {
+                $this->mailboxOutboundMessageRecorder->recordForOrder(
+                    $senderEmail,
+                    $senderName,
+                    $recipient,
+                    $rendered['subject'],
+                    $rendered['body'],
+                    $rendered['isHtml'],
+                    $order->getOrderNumber(),
+                    $this->extractMessageId($message),
+                );
+            }
             $this->logger->info('Configured email sent.', [
                 'event' => $code,
                 'recipient' => $recipient,
@@ -207,6 +222,25 @@ class OrderEmailMailer
                 ...$logContext,
             ]);
         }
+    }
+
+    private function extractMessageId(Email $message): ?string
+    {
+        $header = $message->getHeaders()->get('Message-ID');
+        if ($header instanceof IdentificationHeader) {
+            $ids = $header->getIds();
+            if ($ids !== []) {
+                return '<'.$ids[0].'>';
+            }
+        }
+
+        if ($header !== null) {
+            $body = trim($header->getBodyAsString());
+
+            return $body !== '' ? $body : null;
+        }
+
+        return null;
     }
 
     private function resolveAdminCopyAddress(
