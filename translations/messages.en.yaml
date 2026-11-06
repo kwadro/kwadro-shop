@@ -35,6 +35,9 @@ menu.link_mailbox_account_single: Mailbox account
 menu.link_mailbox_message: Inbox messages
 menu.link_mailbox_message_single: Inbox message
 menu.link_mailbox_compose: Compose email
+menu.link_mailbox_sent_message: Sent messages
+menu.link_mailbox_sent_message_single: Sent message
+menu.link_mailbox_conversation: Email conversations
 menu.users: Users
 menu.link_user: Users
 menu.link_user_single: User
@@ -130,6 +133,13 @@ admin.payment.method.privatbank: PrivatBank (LiqPay)
 admin.payment.method.monobank: Monobank
 admin.order.payments: Payments
 admin.order.payments_empty: No payments
+admin.order.emails: Emails
+admin.order.emails_empty: No emails
+admin.order.email_compose: Write email
+admin.order.email_compose_subject: 'Order %number%'
+admin.order.email_conversation_untitled: Email
+admin.order.email_conversation_meta: '%date% · %with% · %count%'
+admin.order.email_conversation_open: Open conversation
 admin.order.payment_link: 'Payment #%id%'
 admin.cart.items: Cart items
 admin.cart.status.active: Active
@@ -1024,8 +1034,39 @@ admin.mailbox_account.allowed_from_emails_help: 'Format: email|Group name. *|Gro
 
 admin.mailbox_message.mailbox: Mailbox
 admin.mailbox_message.group: Group
+admin.mailbox_message.filter_all: All
+admin.mailbox_message.filter_reset: Reset filters
 admin.mailbox_message.received_at: Received
+admin.mailbox_message.sent_at: Sent
 admin.mailbox_message.from: From
+admin.mailbox_message.to: To
+admin.mailbox_message.parent: Parent
+admin.mailbox_message.link: Link
+admin.mailbox_message.link_order: 'Order %ref%'
+admin.mailbox_message.link_user: 'User #%ref%'
+admin.mailbox_message.conversation: Conversation
+admin.mailbox_conversation.title: Email conversations
+admin.mailbox_conversation.detail_title: Conversation
+admin.mailbox_conversation.dialog: Dialog
+admin.mailbox_conversation.empty: No email conversations yet.
+admin.mailbox_conversation.last_at: Last message
+admin.mailbox_conversation.subject: Subject
+admin.mailbox_conversation.correspondent: With
+admin.mailbox_conversation.link: Link
+admin.mailbox_conversation.messages: Messages
+admin.mailbox_conversation.id: Conversation ID
+admin.mailbox_conversation.direction: Direction
+admin.mailbox_conversation.direction_in: Inbox
+admin.mailbox_conversation.direction_out: Sent
+admin.mailbox_conversation.back: Back to conversations
+admin.mailbox_compose.link: Link
+admin.mailbox_compose.link_none: None
+admin.mailbox_compose.link_order: Order
+admin.mailbox_compose.link_user: User
+admin.mailbox_compose.link_ref_placeholder: Order number or user ID
+admin.mailbox_compose.link_incomplete: Choose a link type and a number, or leave both empty.
+admin.mailbox_compose.link_order_not_found: 'Order %ref% was not found.'
+admin.mailbox_compose.link_user_not_found: 'User #%ref% was not found.'
 admin.mailbox_message.subject: Subject
 admin.mailbox_message.is_seen: Seen
 admin.mailbox_message.has_attachments: Attachments

@@ -230,6 +230,12 @@ class Order
         return $this->delivery_data;
     }
 
+    /** Pretty JSON for EasyAdmin detail (avoids ArrayField/TextareaField array crashes). */
+    public function getDeliveryDataJson(): string
+    {
+        return json_encode($this->delivery_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) ?: '{}';
+    }
+
     /** @param array<string, mixed> $deliveryData */
     public function setDeliveryData(array $deliveryData): static
     {
@@ -258,6 +264,12 @@ class Order
     public function getCartData(): array
     {
         return $this->cart_data;
+    }
+
+    /** Pretty JSON for EasyAdmin detail (avoids ArrayField/TextareaField array crashes). */
+    public function getCartDataJson(): string
+    {
+        return json_encode($this->cart_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) ?: '{}';
     }
 
     /** @param array<string, mixed> $cartData */

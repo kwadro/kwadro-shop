@@ -53,6 +53,8 @@ use App\Controller\Admin\OrderEmailCrudController;
 use App\Controller\Admin\MailboxAccountCrudController;
 use App\Controller\Admin\MailboxComposeController;
 use App\Controller\Admin\MailboxMessageCrudController;
+use App\Controller\Admin\MailboxSentMessageCrudController;
+use App\Controller\Admin\MailboxConversationController;
 use App\AiContentAgent\Controller\Admin\ContentAgentLogCrudController;
 use App\AiContentAgent\Controller\Admin\ContentSourceCrudController;
 use App\AiContentAgent\Controller\Admin\ContentTopicCrudController;
@@ -176,6 +178,12 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkTo(EmailLogCrudController::class, $this->translator->trans('menu.link_email_log', [], 'messages'), 'fas fa-inbox');
         yield MenuItem::linkTo(MailboxAccountCrudController::class, $this->translator->trans('menu.link_mailbox_account', [], 'messages'), 'fas fa-at');
         yield MenuItem::linkTo(MailboxMessageCrudController::class, $this->translator->trans('menu.link_mailbox_message', [], 'messages'), 'fas fa-envelope-open');
+        yield MenuItem::linkTo(MailboxSentMessageCrudController::class, $this->translator->trans('menu.link_mailbox_sent_message', [], 'messages'), 'fas fa-paper-plane');
+        yield MenuItem::linkTo(
+            MailboxConversationController::class,
+            $this->translator->trans('menu.link_mailbox_conversation', [], 'messages'),
+            'fas fa-comments',
+        )->setAction('index');
         yield MenuItem::linkTo(
             MailboxComposeController::class,
             $this->translator->trans('menu.link_mailbox_compose', [], 'messages'),

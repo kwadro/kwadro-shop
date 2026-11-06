@@ -40,6 +40,47 @@
     </div>
 {% endblock %}
 
+{% block order_emails_empty_row %}
+    <div class="col-12">
+        {{ form_widget(form) }}
+    </div>
+{% endblock %}
+
+{% block order_emails_empty_widget %}
+    {% include 'admin/field/order_emails_empty.html.twig' with {
+        compose_url: form.vars.attr['data-compose-url']|default(''),
+    } only %}
+{% endblock %}
+
+{% block order_email_compose_row %}
+    <div class="col-12 mb-3">
+        {{ form_widget(form) }}
+    </div>
+{% endblock %}
+
+{% block order_email_compose_widget %}
+    {% include 'admin/field/order_email_compose.html.twig' with {
+        compose_url: form.vars.attr['data-compose-url']|default(''),
+    } only %}
+{% endblock %}
+
+{% block order_email_conversation_row %}
+    <div class="col-12 mb-4 field-order-email-conversation">
+        {{ form_label(form) }}
+        {{ form_widget(form) }}
+    </div>
+{% endblock %}
+
+{% block order_email_conversation_widget %}
+    {% include 'admin/field/order_email_conversation.html.twig' with {
+        dialog_url: form.vars.attr['data-dialog-url']|default(''),
+        open_url: form.vars.attr['data-open-url']|default(''),
+        meta_date: form.vars.attr['data-meta-date']|default(''),
+        meta_with: form.vars.attr['data-meta-with']|default(''),
+        meta_count: form.vars.attr['data-meta-count']|default(0),
+    } only %}
+{% endblock %}
+
 {% block ea_fileupload_widget %}
     {{ parent() }}
     <span class="download-path d-none">{{ download_path }}</span>

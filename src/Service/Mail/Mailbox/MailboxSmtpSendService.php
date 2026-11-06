@@ -22,6 +22,8 @@ final class MailboxSmtpSendService
      * @param list<string>|string $to
      * @param list<string>        $cc
      * @param list<string>        $bcc
+     *
+     * @return string Message-ID stored on the sent message, including angle brackets
      */
     public function send(
         MailboxAccount $account,
@@ -31,7 +33,8 @@ final class MailboxSmtpSendService
         bool $html = false,
         array $cc = [],
         array $bcc = [],
-    ): void {
+        ?string $inReplyTo = null,
+    ): string {
         $password = $this->cipher->decrypt($account->getPasswordEncrypted());
         $encryption = match ($account->getSmtpEncryption()) {
             'ssl' => 'smtps',
@@ -79,7 +82,46 @@ final class MailboxSmtpSendService
             $message->text($body);
         }
 
+        $messageId = $this->createMessageId($account);
+        $message->getHeaders()->addIdHeader('Message-ID', $messageId);
+        $replyToId = $this->unwrapMessageId($inReplyTo);
+        if ($replyToId !== null) {
+            $message->getHeaders()->addIdHeader('In-Reply-To', $replyToId);
+            $message->getHeaders()->addIdHeader('References', $replyToId);
+        }
+
         $mailer->send($message);
+
+        return '<'.$messageId.'>';
+    }
+
+    private function createMessageId(MailboxAccount $account): string
+    {
+        $domain = 'localhost';
+        $email = strtolower(trim($account->getEmail()));
+        $at = strrpos($email, '@');
+        if ($at !== false) {
+            $host = preg_replace('/[^a-z0-9.-]/', '', substr($email, $at + 1)) ?? '';
+            if ($host !== '') {
+                $domain = $host;
+            }
+        }
+
+        return bin2hex(random_bytes(16)).'@'.$domain;
+    }
+
+    private function unwrapMessageId(?string $messageId): ?string
+    {
+        if ($messageId === null) {
+            return null;
+        }
+
+        $value = trim($messageId, " \t\r\n<>");
+        if ($value === '' || !str_contains($value, '@')) {
+            return null;
+        }
+
+        return $value;
     }
 
     /**

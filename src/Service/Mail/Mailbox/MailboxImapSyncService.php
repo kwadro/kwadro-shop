@@ -79,6 +79,7 @@ final class MailboxImapSyncService
                 }
 
                 $overview = imap_fetch_overview($mailbox, $uid, \FT_UID);
+
                 $header = $overview[0] ?? null;
                 if ($header === null) {
                     continue;
@@ -99,7 +100,14 @@ final class MailboxImapSyncService
                     ->setSubject($this->decodeMime((string) ($header->subject ?? '(без теми)')))
                     ->setReceivedAt($this->resolveDate($header))
                     ->setIsSeen(!empty($header->seen))
-                    ->setFolder('INBOX');
+                    ->setFolder(MailboxMessage::FOLDER_INBOX);
+
+                $parent = $this->resolveParent($mailbox, $uid, $header);
+                $message->setParent($parent);
+                if ($parent instanceof MailboxMessage) {
+                    $this->messageRepository->shareConversation($message, $parent);
+                    $this->messageRepository->inheritLinkIfEmpty($message, $parent);
+                }
 
                 $structure = @imap_fetchstructure($mailbox, (int) $uid, \FT_UID);
                 [$text, $html] = $this->extractBodies($mailbox, $uid, $structure);
@@ -138,6 +146,72 @@ final class MailboxImapSyncService
         } finally {
             $this->closeMailbox($mailbox);
         }
+    }
+
+    /**
+     * Link an incoming message to the local message it replies to, when we have that Message-ID.
+     *
+     * @param resource|\IMAP\Connection $mailbox
+     */
+    private function resolveParent($mailbox, string $uid, object $header): ?MailboxMessage
+    {
+        $candidates = [];
+        foreach (['in_reply_to', 'inreplyto', 'references'] as $property) {
+            if (isset($header->{$property}) && \is_string($header->{$property}) && trim($header->{$property}) !== '') {
+                $candidates = array_merge($candidates, $this->extractMessageIds($header->{$property}));
+            }
+        }
+
+        if ($candidates === []) {
+            $raw = @imap_fetchheader($mailbox, (int) $uid, \FT_UID) ?: '';
+            foreach (['In-Reply-To', 'References'] as $name) {
+                $value = $this->headerValue($raw, $name);
+                if ($value !== null) {
+                    $candidates = array_merge($candidates, $this->extractMessageIds($value));
+                }
+            }
+        }
+
+        $seen = [];
+        foreach ($candidates as $messageId) {
+            $key = strtolower(trim($messageId, " \t\r\n<>"));
+            if ($key === '' || isset($seen[$key])) {
+                continue;
+            }
+            $seen[$key] = true;
+            $parent = $this->messageRepository->findOneByMessageId($messageId);
+            if ($parent instanceof MailboxMessage) {
+                return $parent;
+            }
+        }
+
+        return null;
+    }
+
+    /** @return list<string> */
+    private function extractMessageIds(string $raw): array
+    {
+        if (preg_match_all('/<[^<>\s]+>/', $raw, $matches) > 0) {
+            return $matches[0];
+        }
+
+        $trimmed = trim($raw);
+
+        return $trimmed !== '' ? [$trimmed] : [];
+    }
+
+    private function headerValue(string $rawHeaders, string $name): ?string
+    {
+        $rawHeaders = str_replace("\r\n", "\n", $rawHeaders);
+        $pattern = '/^'.preg_quote($name, '/').':[ \t]*(.+(?:\n[ \t].+)*)/im';
+        if (!preg_match($pattern, $rawHeaders, $matches)) {
+            return null;
+        }
+
+        $value = preg_replace('/\n[ \t]+/', ' ', $matches[1]) ?? $matches[1];
+        $value = trim($value);
+
+        return $value !== '' ? $value : null;
     }
 
     /**

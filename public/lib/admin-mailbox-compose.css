@@ -70,6 +70,17 @@
     grid-template-columns: 56px 1fr;
 }
 
+.gmail-compose__row--link {
+    grid-template-columns: 110px 160px 1fr;
+}
+
+.gmail-compose__link-locked {
+    grid-column: 2 / -1;
+    font-size: 14px;
+    color: #202124;
+    padding: 8px 0;
+}
+
 .gmail-compose__row label {
     margin: 0;
     font-size: 13px;

@@ -25,6 +25,10 @@
         {% endif %}
 
         <form method="post" class="gmail-compose__form" id="gmail-compose-form" novalidate>
+            <input type="hidden" name="parent_id" value="{{ form.parent_id|default(0) }}">
+            <input type="hidden" name="return_order" value="{{ form.return_order|default(0) }}">
+            <input type="hidden" name="return_action" value="{{ form.return_action|default('edit') }}">
+            <input type="hidden" name="link_locked" value="{{ form.link_locked|default(false) ? '1' : '0' }}">
             <div class="gmail-compose__row gmail-compose__row--from">
                 <label for="mailbox_id">{{ 'admin.mailbox_compose.from'|trans }}</label>
                 <select name="mailbox_id" id="mailbox_id" required>
@@ -58,6 +62,27 @@
                 <label for="compose-subject">{{ 'admin.mailbox_compose.subject'|trans }}</label>
                 <input type="text" name="subject" id="compose-subject" value="{{ form.subject }}" required autocomplete="off">
             </div>
+
+            {% if form.link_locked|default(false) %}
+                <input type="hidden" name="link_type" value="{{ form.link_type }}">
+                <input type="hidden" name="link_ref" value="{{ form.link_ref }}">
+                <div class="gmail-compose__row gmail-compose__row--link">
+                    <label>{{ 'admin.mailbox_compose.link'|trans }}</label>
+                    <div class="gmail-compose__link-locked">
+                        {{ 'admin.mailbox_compose.link_order'|trans }} #{{ form.link_ref }}
+                    </div>
+                </div>
+            {% else %}
+                <div class="gmail-compose__row gmail-compose__row--link">
+                    <label for="compose-link-type">{{ 'admin.mailbox_compose.link'|trans }}</label>
+                    <select name="link_type" id="compose-link-type">
+                        <option value="" {% if form.link_type|default('') == '' %}selected{% endif %}>{{ 'admin.mailbox_compose.link_none'|trans }}</option>
+                        <option value="order" {% if form.link_type|default('') == 'order' %}selected{% endif %}>{{ 'admin.mailbox_compose.link_order'|trans }}</option>
+                        <option value="user" {% if form.link_type|default('') == 'user' %}selected{% endif %}>{{ 'admin.mailbox_compose.link_user'|trans }}</option>
+                    </select>
+                    <input type="text" name="link_ref" id="compose-link-ref" value="{{ form.link_ref|default('') }}" placeholder="{{ 'admin.mailbox_compose.link_ref_placeholder'|trans }}" autocomplete="off">
+                </div>
+            {% endif %}
 
             <div class="gmail-compose__body-wrap">
                 <textarea name="body" id="compose-body" class="gmail-compose__body" rows="14" placeholder="{{ 'admin.mailbox_compose.body_placeholder'|trans }}">{{ form.body }}</textarea>

@@ -12,10 +12,20 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\UniqueConstraint(name: 'uniq_mailbox_remote_uid', columns: ['mailbox_id', 'remote_uid'])]
 #[ORM\Index(name: 'idx_mailbox_message_received', columns: ['received_at'])]
 #[ORM\Index(name: 'idx_mailbox_message_notified', columns: ['is_notified', 'is_seen'])]
+#[ORM\Index(name: 'idx_mailbox_message_parent', columns: ['parent_id'])]
+#[ORM\Index(name: 'idx_mailbox_message_conversation', columns: ['conversation_id'])]
 #[ORM\HasLifecycleCallbacks]
 class MailboxMessage
 {
     use TimeStampAbleTrait;
+
+    public const FOLDER_INBOX = 'INBOX';
+
+    public const FOLDER_SENT = 'SENT';
+
+    public const LINK_ORDER = 'order';
+
+    public const LINK_USER = 'user';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -81,7 +91,23 @@ class MailboxMessage
     private array $attachments = [];
 
     #[ORM\Column(length: 64, options: ['default' => 'INBOX'])]
-    private string $folder = 'INBOX';
+    private string $folder = self::FOLDER_INBOX;
+
+    /** Message this one replies to (inbox or sent). */
+    #[ORM\ManyToOne(targetEntity: self::class)]
+    #[ORM\JoinColumn(name: 'parent_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+    private ?self $parent = null;
+
+    /** Optional binding: order number or user id. */
+    #[ORM\Column(length: 16, nullable: true)]
+    private ?string $linkType = null;
+
+    #[ORM\Column(length: 64, nullable: true)]
+    private ?string $linkRef = null;
+
+    /** Shared id for a reply thread. Null until the message is part of a reply pair. */
+    #[ORM\Column(length: 36, nullable: true)]
+    private ?string $conversationId = null;
 
     public function __construct()
     {
@@ -320,7 +346,67 @@ class MailboxMessage
 
     public function setFolder(string $folder): static
     {
-        $this->folder = trim($folder) !== '' ? trim($folder) : 'INBOX';
+        $this->folder = trim($folder) !== '' ? trim($folder) : self::FOLDER_INBOX;
+
+        return $this;
+    }
+
+    public function getParent(): ?self
+    {
+        return $this->parent;
+    }
+
+    public function setParent(?self $parent): static
+    {
+        $this->parent = $parent;
+
+        return $this;
+    }
+
+    public function getReplyToAddress(): string
+    {
+        if ($this->folder === self::FOLDER_SENT) {
+            return trim((string) $this->toAddresses);
+        }
+
+        return $this->fromAddress;
+    }
+
+    public function getLinkType(): ?string
+    {
+        return $this->linkType;
+    }
+
+    public function setLinkType(?string $linkType): static
+    {
+        $normalized = $linkType !== null ? trim($linkType) : null;
+        $this->linkType = $normalized !== '' ? $normalized : null;
+
+        return $this;
+    }
+
+    public function getLinkRef(): ?string
+    {
+        return $this->linkRef;
+    }
+
+    public function setLinkRef(?string $linkRef): static
+    {
+        $normalized = $linkRef !== null ? trim($linkRef) : null;
+        $this->linkRef = $normalized !== '' ? mb_substr($normalized, 0, 64) : null;
+
+        return $this;
+    }
+
+    public function getConversationId(): ?string
+    {
+        return $this->conversationId;
+    }
+
+    public function setConversationId(?string $conversationId): static
+    {
+        $normalized = $conversationId !== null ? trim($conversationId) : null;
+        $this->conversationId = $normalized !== '' ? $normalized : null;
 
         return $this;
     }

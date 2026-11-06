@@ -35,6 +35,9 @@ menu.link_mailbox_account_single: Поштовий акаунт
 menu.link_mailbox_message: Вхідні листи
 menu.link_mailbox_message_single: Вхідний лист
 menu.link_mailbox_compose: Написати лист
+menu.link_mailbox_sent_message: Відправлені листи
+menu.link_mailbox_sent_message_single: Відправлений лист
+menu.link_mailbox_conversation: Розмови email
 menu.users: Користувачі
 menu.link_user: Користувачі
 menu.link_user_single: Користувач
@@ -130,6 +133,13 @@ admin.payment.method.privatbank: PrivatBank (LiqPay)
 admin.payment.method.monobank: Monobank
 admin.order.payments: Оплати
 admin.order.payments_empty: Немає оплат
+admin.order.emails: Листи
+admin.order.emails_empty: Немає листів
+admin.order.email_compose: Написати лист
+admin.order.email_compose_subject: 'Замовлення %number%'
+admin.order.email_conversation_untitled: Лист
+admin.order.email_conversation_meta: '%date% · %with% · %count%'
+admin.order.email_conversation_open: Відкрити розмову
 admin.order.payment_link: 'Оплата #%id%'
 admin.cart.items: Товари в кошику
 admin.cart.status.active: Активний
@@ -1024,8 +1034,39 @@ admin.mailbox_account.allowed_from_emails_help: 'Формат: email|Назва 
 
 admin.mailbox_message.mailbox: Акаунт
 admin.mailbox_message.group: Група
+admin.mailbox_message.filter_all: Усі
+admin.mailbox_message.filter_reset: Скинути фільтр
 admin.mailbox_message.received_at: Отримано
+admin.mailbox_message.sent_at: Надіслано
 admin.mailbox_message.from: Від
+admin.mailbox_message.to: Кому
+admin.mailbox_message.parent: Батьківський лист
+admin.mailbox_message.link: Привʼязка
+admin.mailbox_message.link_order: 'Замовлення %ref%'
+admin.mailbox_message.link_user: 'Користувач #%ref%'
+admin.mailbox_message.conversation: Розмова
+admin.mailbox_conversation.title: Розмови email
+admin.mailbox_conversation.detail_title: Розмова
+admin.mailbox_conversation.dialog: Діалог
+admin.mailbox_conversation.empty: Розмов ще немає.
+admin.mailbox_conversation.last_at: Останній лист
+admin.mailbox_conversation.subject: Тема
+admin.mailbox_conversation.correspondent: З ким
+admin.mailbox_conversation.link: Привʼязка
+admin.mailbox_conversation.messages: Листи
+admin.mailbox_conversation.id: ID розмови
+admin.mailbox_conversation.direction: Напрям
+admin.mailbox_conversation.direction_in: Вхідний
+admin.mailbox_conversation.direction_out: Вихідний
+admin.mailbox_conversation.back: До списку розмов
+admin.mailbox_compose.link: Привʼязка
+admin.mailbox_compose.link_none: Немає
+admin.mailbox_compose.link_order: Замовлення
+admin.mailbox_compose.link_user: Користувач
+admin.mailbox_compose.link_ref_placeholder: Номер замовлення або ID користувача
+admin.mailbox_compose.link_incomplete: Вкажіть тип привʼязки і номер, або залиште обидва поля порожніми.
+admin.mailbox_compose.link_order_not_found: 'Замовлення %ref% не знайдено.'
+admin.mailbox_compose.link_user_not_found: 'Користувача #%ref% не знайдено.'
 admin.mailbox_message.subject: Тема
 admin.mailbox_message.is_seen: Прочитано
 admin.mailbox_message.has_attachments: Вкладення
