@@ -25,7 +25,7 @@
                 {% for phone in phoneLinks %}
                     <li><a href="tel:{{ phone.tel|e('html_attr') }}">{{ phone.display }}</a></li>
                 {% endfor %}
-                <li>info@kvadro.if.ua</li>
+                <li><a href="mailto:info@kvadro.if.ua">info@kvadro.if.ua</a></li>
                 <li class="shop-footer__work-hours">{{ (setting.header.work_hours|default('shop.work_hours'|trans))|raw }}</li>
             </ul>
         </div>
