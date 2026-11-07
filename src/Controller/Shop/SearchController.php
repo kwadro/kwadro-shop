@@ -24,7 +24,7 @@ class SearchController extends AbstractController
     )]
     public function search(string $_locale, Request $request): Response
     {
-        $listing = $this->productListing->list([], $request, true);
+        $listing = $this->productListing->list([], $request, false);
 
         return $this->render('shop/search/index.html.twig', $listing);
     }

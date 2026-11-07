@@ -53,7 +53,7 @@ class ProductListingService
         $filterAttributes = $showFilters && $allowedFacets === null
             ? $this->productAttributeRepository->findFilterableForCategory($category)
             : [];
-        $filters = $this->parseFilters($request, $filterAttributes);
+        $filters = $showFilters ? $this->parseFilters($request, $filterAttributes) : [];
         if ($allowedFacets !== null) {
             $filters = array_intersect_key($filters, array_flip($allowedFacets));
         }
