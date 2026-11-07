@@ -21,14 +21,8 @@ class AttributeImportService
     /** @var array<string, ProductAttribute> key: "{externalCategoryId}|{paramName}" */
     private array $attributeIndex = [];
 
-    /**
-     * Lugi feed value fixes (Russian / mixed spelling → Ukrainian storefront spelling).
-     *
-     * @var array<string, string>
-     */
-    private const PARAM_VALUE_REPLACEMENTS = [
-        'Фыолетовий' => 'Фіолетовий',
-    ];
+    /** @var array<string, string> Exact feed value => storefront value, from the import settings. */
+    private array $paramValueReplacements = [];
 
     public function __construct(
         private readonly EntityManagerInterface $em,
@@ -37,6 +31,23 @@ class AttributeImportService
         private readonly ProductAttributeRepository $attributeRepository,
         private readonly GeneratorSlugService $generatorSlugService,
     ) {
+    }
+
+    /**
+     * @param array<string, string> $replacements
+     */
+    public function setParamValueReplacements(array $replacements): void
+    {
+        $map = [];
+        foreach ($replacements as $from => $to) {
+            $from = trim((string) $from);
+            $to = trim((string) $to);
+            if ($from === '' || $to === '') {
+                continue;
+            }
+            $map[$from] = $to;
+        }
+        $this->paramValueReplacements = $map;
     }
 
     /**
@@ -319,7 +330,7 @@ class AttributeImportService
 
     private function normalizeParamValue(string $value): string
     {
-        return self::PARAM_VALUE_REPLACEMENTS[$value] ?? $value;
+        return $this->paramValueReplacements[$value] ?? $value;
     }
 
     private function findAttributeInGroup(ProductAttributeGroup $group, string $name): ?ProductAttribute

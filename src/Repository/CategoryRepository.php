@@ -3,14 +3,17 @@
 namespace App\Repository;
 
 use App\Entity\Category;
+use App\Service\Menu\MenuCategoryDisplayRules;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /** @extends ServiceEntityRepository<Category> */
 class CategoryRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
-    {
+    public function __construct(
+        ManagerRegistry $registry,
+        private readonly ProductImportRepository $productImportRepository,
+    ) {
         parent::__construct($registry, Category::class);
     }
 
@@ -359,6 +362,13 @@ class CategoryRepository extends ServiceEntityRepository
                 && !$category->isDefault()
                 && $category->getId() !== null,
         ));
+        $rules = MenuCategoryDisplayRules::fromImports(
+            $this->productImportRepository->findBy(['active' => true], ['id' => 'ASC']),
+        );
+        $levelOne = array_values(array_filter(
+            $levelOne,
+            static fn (Category $category): bool => $rules->isShownInMenu((int) $category->getId()),
+        ));
         if ($levelOne === []) {
             return [];
         }
@@ -399,12 +409,14 @@ class CategoryRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
 
-        /** @var array<int, list<array{id: int, name: string, slug: string}>> $grandchildrenByParent */
+        [$levelTwoNodes, $levelThreeNodes] = $this->arrangeMenuNodes($levelOneIds, $levelTwo, $levelThree, $rules);
+
+        /** @var array<int, list<array{id: int, name: string, slug: string, og_image: ?string}>> $grandchildrenByParent */
         $grandchildrenByParent = [];
-        foreach ($levelThree as $grandchild) {
-            $parentId = $grandchild->getParent()?->getId();
-            $grandchildId = $grandchild->getId();
-            if ($parentId === null || $grandchildId === null) {
+        foreach ($levelThreeNodes as $grandchild) {
+            $parentId = $grandchild['parent_id'];
+            $grandchildId = $grandchild['category']->getId();
+            if ($grandchildId === null) {
                 continue;
             }
             // Leaf/child: must have enabled products in this category itself.
@@ -412,19 +424,15 @@ class CategoryRepository extends ServiceEntityRepository
                 continue;
             }
 
-            $grandchildrenByParent[$parentId][] = [
-                'id' => $grandchildId,
-                'name' => $grandchild->getName(),
-                'slug' => $grandchild->getSlug(),
-            ];
+            $grandchildrenByParent[$parentId][] = $this->menuNode($grandchild['category']);
         }
 
-        /** @var array<int, list<array{id: int, name: string, slug: string, children: list}>> $childrenByParent */
+        /** @var array<int, list<array{id: int, name: string, slug: string, og_image: ?string, children: list}>> $childrenByParent */
         $childrenByParent = [];
-        foreach ($levelTwo as $child) {
-            $parentId = $child->getParent()?->getId();
-            $childId = $child->getId();
-            if ($parentId === null || $childId === null) {
+        foreach ($levelTwoNodes as $child) {
+            $parentId = $child['parent_id'];
+            $childId = $child['category']->getId();
+            if ($childId === null) {
                 continue;
             }
 
@@ -435,12 +443,7 @@ class CategoryRepository extends ServiceEntityRepository
                 continue;
             }
 
-            $childrenByParent[$parentId][] = [
-                'id' => $childId,
-                'name' => $child->getName(),
-                'slug' => $child->getSlug(),
-                'children' => $grandchildren,
-            ];
+            $childrenByParent[$parentId][] = $this->menuNode($child['category'], $grandchildren);
         }
 
         $menu = [];
@@ -466,6 +469,211 @@ class CategoryRepository extends ServiceEntityRepository
         }
 
         return $menu;
+    }
+
+    /**
+     * Place categories in the menu using display rules, without changing stored parents.
+     * Pinned categories (top list) come first among siblings; everyone else keeps import position.
+     *
+     * @param list<int> $levelOneIds
+     * @param list<Category> $levelTwo
+     * @param list<Category> $levelThree
+     *
+     * @return array{
+     *   0: list<array{parent_id: int, category: Category}>,
+     *   1: list<array{parent_id: int, category: Category}>
+     * }
+     */
+    private function arrangeMenuNodes(array $levelOneIds, array $levelTwo, array $levelThree, MenuCategoryDisplayRules $rules): array
+    {
+        /** @var array<int, Category> $catalog */
+        $catalog = [];
+        foreach ([...$levelTwo, ...$levelThree] as $category) {
+            $id = $category->getId();
+            if ($id !== null) {
+                $catalog[$id] = $category;
+            }
+        }
+
+        $missingIds = array_values(array_diff(array_keys($rules->displayParentByCategoryId), array_keys($catalog)));
+        if ($missingIds !== []) {
+            foreach ($this->findBy(['id' => $missingIds]) as $category) {
+                if (!$category instanceof Category || !$category->isEnabled() || $category->isDefault()) {
+                    continue;
+                }
+                $id = $category->getId();
+                if ($id !== null) {
+                    $catalog[$id] = $category;
+                }
+            }
+        }
+
+        $levelOneSet = array_fill_keys($levelOneIds, true);
+        $displayParentOf = function (int $id) use ($catalog, $rules, $levelOneSet): ?int {
+            $category = $catalog[$id] ?? null;
+            if (!$category instanceof Category) {
+                return null;
+            }
+            $mapped = $rules->displayParentByCategoryId[$id] ?? null;
+            if (\is_int($mapped) && $mapped !== $id && (isset($levelOneSet[$mapped]) || isset($catalog[$mapped]))) {
+                return $mapped;
+            }
+
+            return $category->getParent()?->getId();
+        };
+
+        /** @var list<array{parent_id: int, category: Category}> $second */
+        $second = [];
+        /** @var array<int, true> $secondIds */
+        $secondIds = [];
+        foreach ($catalog as $id => $category) {
+            if (!$rules->isShownInMenu($id)) {
+                continue;
+            }
+            $parentId = $displayParentOf($id);
+            if ($parentId === null || !isset($levelOneSet[$parentId])) {
+                continue;
+            }
+            $second[] = ['parent_id' => $parentId, 'category' => $category];
+            $secondIds[$id] = true;
+        }
+
+        /** @var list<array{parent_id: int, category: Category}> $third */
+        $third = [];
+        foreach ($catalog as $id => $category) {
+            if (isset($secondIds[$id]) || !$rules->isShownInMenu($id)) {
+                continue;
+            }
+            $parentId = $displayParentOf($id);
+            if ($parentId === null || !isset($secondIds[$parentId])) {
+                continue;
+            }
+            $third[] = ['parent_id' => $parentId, 'category' => $category];
+        }
+
+        $sort = function (array $nodes) use ($rules): array {
+            /** @var array<int, list<array{parent_id: int, category: Category}>> $grouped */
+            $grouped = [];
+            foreach ($nodes as $node) {
+                $grouped[$node['parent_id']][] = $node;
+            }
+            $sorted = [];
+            foreach ($grouped as $group) {
+                usort($group, function (array $a, array $b) use ($rules): int {
+                    return $this->compareMenuSiblings($a['category'], $b['category'], $rules);
+                });
+                array_push($sorted, ...$group);
+            }
+
+            return $sorted;
+        };
+
+        return [$sort($second), $sort($third)];
+    }
+
+    private function compareMenuSiblings(Category $a, Category $b, MenuCategoryDisplayRules $rules): int
+    {
+        $rank = array_flip($rules->topCategoryIds);
+        $aId = $a->getId();
+        $bId = $b->getId();
+        $aRank = $aId !== null && isset($rank[$aId]) ? $rank[$aId] : null;
+        $bRank = $bId !== null && isset($rank[$bId]) ? $rank[$bId] : null;
+        if ($aRank !== null || $bRank !== null) {
+            if ($aRank === null) {
+                return 1;
+            }
+            if ($bRank === null) {
+                return -1;
+            }
+            if ($aRank !== $bRank) {
+                return $aRank <=> $bRank;
+            }
+        }
+
+        $byPosition = $a->getPosition() <=> $b->getPosition();
+        if ($byPosition !== 0) {
+            return $byPosition;
+        }
+
+        return strcmp($a->getName(), $b->getName());
+    }
+
+    /**
+     * @param list<array{id: int, name: string, slug: string, og_image: ?string}> $children
+     *
+     * @return array{id: int, name: string, slug: string, og_image: ?string, children: list}
+     */
+    private function menuNode(Category $category, array $children = []): array
+    {
+        return [
+            'id' => (int) $category->getId(),
+            'name' => $category->getName(),
+            'slug' => $category->getSlug(),
+            'og_image' => $category->getOgImage(),
+            'children' => $children,
+        ];
+    }
+
+    /**
+     * Enabled child categories as shown in the storefront, including menu-only moves.
+     * The category parent stored by import is not changed.
+     *
+     * @return list<Category>
+     */
+    public function findStorefrontDisplayChildren(Category $parent): array
+    {
+        $parentId = $parent->getId();
+        if ($parentId === null) {
+            return [];
+        }
+
+        $rules = MenuCategoryDisplayRules::fromImports(
+            $this->productImportRepository->findBy(['active' => true], ['id' => 'ASC']),
+        );
+
+        /** @var array<int, Category> $children */
+        $children = [];
+        foreach ($parent->getChildren() as $child) {
+            if (!$child->isEnabled() || $child->isDefault()) {
+                continue;
+            }
+            $childId = $child->getId();
+            if ($childId === null || !$rules->isShownInMenu($childId)) {
+                continue;
+            }
+            $displayParent = $rules->displayParentByCategoryId[$childId] ?? $parentId;
+            if ($displayParent !== $parentId) {
+                continue;
+            }
+            $children[$childId] = $child;
+        }
+
+        $incomingIds = [];
+        foreach ($rules->displayParentByCategoryId as $categoryId => $displayParentId) {
+            if ($displayParentId === $parentId && !isset($children[$categoryId])) {
+                $incomingIds[] = $categoryId;
+            }
+        }
+        if ($incomingIds !== []) {
+            foreach ($this->findBy(['id' => $incomingIds]) as $category) {
+                if (!$category instanceof Category || !$category->isEnabled() || $category->isDefault()) {
+                    continue;
+                }
+                $incomingId = $category->getId();
+                if ($incomingId === null || !$rules->isShownInMenu($incomingId)) {
+                    continue;
+                }
+                $id = $category->getId();
+                if ($id !== null) {
+                    $children[$id] = $category;
+                }
+            }
+        }
+
+        $list = array_values($children);
+        usort($list, fn (Category $a, Category $b): int => $this->compareMenuSiblings($a, $b, $rules));
+
+        return $list;
     }
 
     public function findOneBySlug(string $slug): ?Category

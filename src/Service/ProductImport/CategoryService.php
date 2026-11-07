@@ -89,6 +89,7 @@ readonly class CategoryService
         ?int $baseCategoryId = null,
         bool $status = false,
         int $position = 1,
+        array $nameReplacements = [],
     ): void {
         if (!$this->em->isOpen()) {
             throw new \RuntimeException(
@@ -100,8 +101,9 @@ readonly class CategoryService
         $rawParentId = isset($node['parentId']) ? (int)$node['parentId'] : null;
         $parentExternalId = $rawParentId !== null ? $this->fixErrorId($rawParentId) : null;
 
-        $categoryName = trim((string)$node);
-        $baseSlug = $this->generatorSlugService->transferCategoryNameToSlug($categoryName);
+        $feedName = trim((string) $node);
+        $categoryName = $nameReplacements[$feedName] ?? $feedName;
+        $baseSlug = $this->generatorSlugService->transferCategoryNameToSlug($feedName);
 
         $category = $this->categoryRepository->findOneBy(['external_id' => $externalId]);
         if ($category === null) {

@@ -262,8 +262,9 @@ class MailboxComposeController extends AbstractController
 
         if ($parent instanceof MailboxMessage) {
             $this->messageRepository->shareConversation($message, $parent);
+            $this->messageRepository->inheritLinkIfEmpty($message, $parent);
         } else {
-            $this->messageRepository->startConversation($message);
+            $this->messageRepository->continueOrStartConversation($message);
         }
 
         $this->entityManager->persist($message);

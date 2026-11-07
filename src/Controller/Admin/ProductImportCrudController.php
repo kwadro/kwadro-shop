@@ -5,7 +5,13 @@ namespace App\Controller\Admin;
 use App\Entity\Category;
 use App\Entity\ProductImport;
 use App\Entity\ProductImportMode;
+use App\Form\Admin\ProductImportCategoryNameReplacementType;
+use App\Form\Admin\ProductImportMenuCategoryMoveType;
+use App\Form\Admin\ProductImportMenuCategoryVisibilityType;
+use App\Form\Admin\ProductImportMenuTopCategoryType;
+use App\Form\Admin\ProductImportParamValueReplacementType;
 use App\Repository\CategoryRepository;
+use App\Repository\ProductImportRepository;
 use App\Service\ProductImport\LugiProductImportService;
 use App\Service\ProductImport\SivitekProductImportService;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminRoute;
@@ -16,6 +22,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
@@ -35,6 +42,7 @@ class ProductImportCrudController extends AbstractCrudController
         private readonly LugiProductImportService $lugiProductImportService,
         private readonly AdminUrlGenerator $adminUrlGenerator,
         private readonly CategoryRepository $categoryRepository,
+        private readonly ProductImportRepository $productImportRepository,
     ) {
     }
 
@@ -117,18 +125,80 @@ class ProductImportCrudController extends AbstractCrudController
             ->setHelp($this->translator->trans('admin.product_import.disable_categories_after_import_help', [], 'messages'))
             ->renderAsNativeWidget()
             ->onlyWhenUpdating();
-        yield TextareaField::new('disabledCategorySlugsText', $this->translator->trans('admin.product_import.disabled_category_slugs', [], 'messages'))
+        yield ChoiceField::new('disabledCategorySlugs', $this->translator->trans('admin.product_import.disabled_category_slugs', [], 'messages'))
             ->setHelp($this->translator->trans('admin.product_import.disabled_category_slugs_help', [], 'messages'))
-            ->setNumOfRows(8)
-            ->setFormTypeOption('attr', [
-                'data-ea-keep-as-is' => '1',
-                'class' => 'form-control',
-            ])
+            ->setChoices($this->buildCategorySlugChoices())
+            ->allowMultipleChoices()
+            ->autocomplete()
             ->onlyWhenUpdating();
         yield NumberField::new('markupPercent', $this->translator->trans('admin.product_import.markup_percent', [], 'messages'))
             ->setHelp($this->translator->trans('admin.product_import.markup_percent_help', [], 'messages'))
             ->setNumDecimals(2)
             ->setFormTypeOption('attr', ['min' => 0, 'step' => '0.01'])
+            ->onlyWhenUpdating();
+        yield CollectionField::new('paramValueReplacements', $this->translator->trans('admin.product_import.param_value_replacements', [], 'messages'))
+            ->setEntryType(ProductImportParamValueReplacementType::class)
+            ->setEntryIsComplex()
+            ->renderExpanded()
+            ->allowAdd()
+            ->allowDelete()
+            ->setFormTypeOptions([
+                'by_reference' => false,
+                'entry_options' => ['label' => false],
+            ])
+            ->setHelp($this->translator->trans('admin.product_import.param_value_replacements_help', [], 'messages'))
+            ->onlyWhenUpdating();
+        yield CollectionField::new('categoryNameReplacements', $this->translator->trans('admin.product_import.category_name_replacements', [], 'messages'))
+            ->setEntryType(ProductImportCategoryNameReplacementType::class)
+            ->setEntryIsComplex()
+            ->renderExpanded()
+            ->allowAdd()
+            ->allowDelete()
+            ->setFormTypeOptions([
+                'by_reference' => false,
+                'entry_options' => ['label' => false],
+            ])
+            ->setHelp($this->translator->trans('admin.product_import.category_name_replacements_help', [], 'messages'))
+            ->onlyWhenUpdating();
+
+        yield FormField::addFieldset($this->translator->trans('admin.product_import.menu_display', [], 'messages'))
+            ->setHelp($this->translator->trans('admin.product_import.menu_display_help', [], 'messages'))
+            ->onlyWhenUpdating();
+        yield CollectionField::new('menuTopCategories', $this->translator->trans('admin.product_import.menu_top_categories', [], 'messages'))
+            ->setEntryType(ProductImportMenuTopCategoryType::class)
+            ->setEntryIsComplex()
+            ->renderExpanded()
+            ->allowAdd()
+            ->allowDelete()
+            ->setFormTypeOptions([
+                'by_reference' => false,
+                'entry_options' => ['label' => false],
+            ])
+            ->setHelp($this->translator->trans('admin.product_import.menu_top_categories_help', [], 'messages'))
+            ->onlyWhenUpdating();
+        yield CollectionField::new('menuCategoryVisibility', $this->translator->trans('admin.product_import.menu_category_visibility', [], 'messages'))
+            ->setEntryType(ProductImportMenuCategoryVisibilityType::class)
+            ->setEntryIsComplex()
+            ->renderExpanded()
+            ->allowAdd()
+            ->allowDelete()
+            ->setFormTypeOptions([
+                'by_reference' => false,
+                'entry_options' => ['label' => false],
+            ])
+            ->setHelp($this->translator->trans('admin.product_import.menu_category_visibility_help', [], 'messages'))
+            ->onlyWhenUpdating();
+        yield CollectionField::new('menuCategoryMoves', $this->translator->trans('admin.product_import.menu_category_moves', [], 'messages'))
+            ->setEntryType(ProductImportMenuCategoryMoveType::class)
+            ->setEntryIsComplex()
+            ->renderExpanded()
+            ->allowAdd()
+            ->allowDelete()
+            ->setFormTypeOptions([
+                'by_reference' => false,
+                'entry_options' => ['label' => false],
+            ])
+            ->setHelp($this->translator->trans('admin.product_import.menu_category_moves_help', [], 'messages'))
             ->onlyWhenUpdating();
         yield DateTimeField::new('lastRunAt', $this->translator->trans('admin.product_import.last_run_at', [], 'messages'))
             ->onlyOnIndex();
@@ -158,6 +228,51 @@ class ProductImportCrudController extends AbstractCrudController
         }
 
         return $choices;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function buildCategorySlugChoices(): array
+    {
+        $choices = [];
+        foreach ($this->categoryRepository->findAllOrdered() as $category) {
+            if (!$category instanceof Category || $category->isDefault()) {
+                continue;
+            }
+            $slug = trim($category->getSlug());
+            if ($slug === '') {
+                continue;
+            }
+            $choices[$this->categoryChoiceLabel($category)] = $slug;
+        }
+
+        foreach ($this->productImportRepository->findAll() as $import) {
+            foreach ($import->getDisabledCategorySlugs() as $slug) {
+                if (!\in_array($slug, $choices, true)) {
+                    $choices[$slug] = $slug;
+                }
+            }
+        }
+
+        return $choices;
+    }
+
+    private function categoryChoiceLabel(Category $category): string
+    {
+        $depth = max(0, $category->getLevel() - 1);
+        $parent = $category->getParent();
+        $parentName = $parent instanceof Category && !$parent->isDefault()
+            ? $parent->getName().' / '
+            : '';
+
+        return sprintf(
+            '%s%s%s [%s]',
+            str_repeat('— ', $depth),
+            $parentName,
+            $category->getName(),
+            $category->getSlug(),
+        );
     }
 
     #[AdminRoute('/{entityId:import.id}/run', name: 'run')]

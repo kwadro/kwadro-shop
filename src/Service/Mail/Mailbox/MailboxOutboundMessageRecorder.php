@@ -104,7 +104,7 @@ final class MailboxOutboundMessageRecorder
             $message->setBodyText($body);
         }
 
-        $this->messageRepository->startConversation($message);
+        $this->messageRepository->continueOrStartConversation($message);
         $this->entityManager->persist($message);
         $this->entityManager->flush();
 

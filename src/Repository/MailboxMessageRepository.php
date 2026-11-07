@@ -167,6 +167,39 @@ class MailboxMessageRepository extends ServiceEntityRepository
         $message->setConversationId($this->newConversationId());
     }
 
+    /**
+     * Keep mail between the same two addresses in one conversation.
+     * A later message with the same sender and recipient continues the latest thread.
+     * A reply that names any message in that thread is attached by the caller via shareConversation().
+     */
+    public function continueOrStartConversation(MailboxMessage $message): void
+    {
+        if ($message->getConversationId() !== null && $message->getConversationId() !== '') {
+            return;
+        }
+
+        $mailbox = $message->getMailbox();
+        $correspondent = $mailbox instanceof MailboxAccount
+            ? $this->otherPartyEmail($message, $mailbox)
+            : null;
+        $existing = $mailbox instanceof MailboxAccount && $correspondent !== null
+            ? $this->findLatestMessageBetween($mailbox, $correspondent)
+            : null;
+
+        $conversationId = $existing?->getConversationId();
+        if ($existing instanceof MailboxMessage && $conversationId !== null && $conversationId !== '') {
+            $message->setConversationId($conversationId);
+            if ($message->getParent() === null) {
+                $message->setParent($existing);
+            }
+            $this->inheritLinkIfEmpty($message, $existing);
+
+            return;
+        }
+
+        $this->startConversation($message);
+    }
+
     public function inheritLinkIfEmpty(MailboxMessage $target, MailboxMessage $source): void
     {
         $this->copyLinkIfEmpty($target, $source);
@@ -368,6 +401,102 @@ class MailboxMessageRepository extends ServiceEntityRepository
         $target
             ->setLinkType($source->getLinkType())
             ->setLinkRef($source->getLinkRef());
+    }
+
+    private function findLatestMessageBetween(MailboxAccount $mailbox, string $correspondent): ?MailboxMessage
+    {
+        $shop = $this->normalizeEmail($mailbox->getEmail());
+        $other = $this->normalizeEmail($correspondent);
+        if ($shop === '' || $other === '' || $shop === $other) {
+            return null;
+        }
+
+        /** @var list<MailboxMessage> $messages */
+        $messages = $this->createQueryBuilder('m')
+            ->andWhere('m.mailbox = :mailbox')
+            ->andWhere('m.conversationId IS NOT NULL')
+            ->andWhere('m.conversationId != :empty')
+            ->andWhere('LOWER(m.fromAddress) IN (:parties)')
+            ->setParameter('mailbox', $mailbox)
+            ->setParameter('empty', '')
+            ->setParameter('parties', [$shop, $other])
+            ->orderBy('m.receivedAt', 'DESC')
+            ->setMaxResults(40)
+            ->getQuery()
+            ->getResult();
+
+        foreach ($messages as $message) {
+            if ($this->messageInvolvesPair($message, $shop, $other)) {
+                return $message;
+            }
+        }
+
+        return null;
+    }
+
+    private function otherPartyEmail(MailboxMessage $message, MailboxAccount $mailbox): ?string
+    {
+        $shop = $this->normalizeEmail($mailbox->getEmail());
+        $from = $this->normalizeEmail($message->getFromAddress());
+        if ($from !== '' && $from !== $shop) {
+            return $from;
+        }
+
+        foreach ($this->extractEmails((string) $message->getToAddresses()) as $email) {
+            if ($email !== $shop) {
+                return $email;
+            }
+        }
+
+        return null;
+    }
+
+    private function messageInvolvesPair(MailboxMessage $message, string $shop, string $other): bool
+    {
+        $from = $this->normalizeEmail($message->getFromAddress());
+        $recipients = $this->extractEmails((string) $message->getToAddresses());
+        $parties = $recipients;
+        if ($from !== '') {
+            $parties[] = $from;
+        }
+        if ($from !== '' && $from !== $shop) {
+            $parties[] = $shop;
+        }
+
+        $parties = array_values(array_unique($parties));
+
+        return \in_array($shop, $parties, true) && \in_array($other, $parties, true);
+    }
+
+    /** @return list<string> */
+    private function extractEmails(string $value): array
+    {
+        if ($value === '') {
+            return [];
+        }
+
+        preg_match_all('/[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}/i', $value, $matches);
+        $emails = [];
+        foreach ($matches[0] as $email) {
+            $email = $this->normalizeEmail($email);
+            if ($email !== '') {
+                $emails[] = $email;
+            }
+        }
+
+        return array_values(array_unique($emails));
+    }
+
+    private function normalizeEmail(string $value): string
+    {
+        $value = trim($value);
+        if (preg_match('/<([^<>@\s]+@[^<>@\s]+)>/', $value, $matches) === 1) {
+            $value = $matches[1];
+        } elseif (preg_match('/[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}/i', $value, $matches) === 1) {
+            $value = $matches[0];
+        }
+
+        return strtolower(trim($value));
     }
 
     private function newConversationId(): string

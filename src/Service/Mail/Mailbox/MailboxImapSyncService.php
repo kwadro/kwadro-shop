@@ -107,6 +107,8 @@ final class MailboxImapSyncService
                 if ($parent instanceof MailboxMessage) {
                     $this->messageRepository->shareConversation($message, $parent);
                     $this->messageRepository->inheritLinkIfEmpty($message, $parent);
+                } else {
+                    $this->messageRepository->continueOrStartConversation($message);
                 }
 
                 $structure = @imap_fetchstructure($mailbox, (int) $uid, \FT_UID);
@@ -173,6 +175,7 @@ final class MailboxImapSyncService
         }
 
         $seen = [];
+        $matched = [];
         foreach ($candidates as $messageId) {
             $key = strtolower(trim($messageId, " \t\r\n<>"));
             if ($key === '' || isset($seen[$key])) {
@@ -181,11 +184,18 @@ final class MailboxImapSyncService
             $seen[$key] = true;
             $parent = $this->messageRepository->findOneByMessageId($messageId);
             if ($parent instanceof MailboxMessage) {
+                $matched[] = $parent;
+            }
+        }
+
+        foreach ($matched as $parent) {
+            $conversationId = $parent->getConversationId();
+            if ($conversationId !== null && $conversationId !== '') {
                 return $parent;
             }
         }
 
-        return null;
+        return $matched[0] ?? null;
     }
 
     /** @return list<string> */

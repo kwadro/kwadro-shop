@@ -38,10 +38,7 @@ class CategoryController extends AbstractController
         // Show a child only when that category itself has storefront-visible products.
         $directCounts = $this->categoryRepository->countStorefrontVisibleProductsGroupedByCategoryId();
         $children = [];
-        foreach ($category->getChildren() as $child) {
-            if (!$child->isEnabled()) {
-                continue;
-            }
+        foreach ($this->categoryRepository->findStorefrontDisplayChildren($category) as $child) {
             $childId = $child->getId();
             if ($childId === null || ($directCounts[$childId] ?? 0) < 1) {
                 continue;

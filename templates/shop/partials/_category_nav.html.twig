@@ -72,7 +72,7 @@
                                         class="shop-category-nav__submenu-link{% if childIsActive %} is-active{% endif %}"
                                         {% if childIsActive and currentSlug == child.slug %}aria-current="page"{% endif %}
                                     >
-                                        <span>{{ child.name }}</span>
+                                        {{ child.name }}
                                         {% if childHasChildren %}
                                             <span class="shop-category-nav__submenu-caret" aria-hidden="true"></span>
                                         {% endif %}

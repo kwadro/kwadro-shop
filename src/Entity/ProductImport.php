@@ -56,6 +56,47 @@ class ProductImport
     #[ORM\Column(type: 'decimal', precision: 8, scale: 2, options: ['default' => '0'])]
     private string $markup_percent = '0';
 
+    /**
+     * Menu-only pin list. Does not change the position written by the import file.
+     *
+     * @var list<array{category_id: int, position: int}>
+     */
+    #[ORM\Column(type: 'json')]
+    private array $menu_top_categories = [];
+
+    /**
+     * Menu-only parent overrides. The category row itself keeps the import parent.
+     *
+     * @var list<array{category_id: int, parent_id: int}>
+     */
+    #[ORM\Column(type: 'json')]
+    private array $menu_category_moves = [];
+
+    /**
+     * Menu-only visibility. Does not enable or disable the category itself.
+     *
+     * @var list<array{category_id: int, show: bool}>
+     */
+    #[ORM\Column(type: 'json')]
+    private array $menu_category_visibility = [];
+
+    /**
+     * Exact attribute value replacements applied during import.
+     *
+     * @var list<array{from: string, to: string}>
+     */
+    #[ORM\Column(type: 'json')]
+    private array $param_value_replacements = [];
+
+    /**
+     * Exact category name replacements applied during import.
+     * The category URL is left as imported.
+     *
+     * @var list<array{from: string, to: string}>
+     */
+    #[ORM\Column(type: 'json')]
+    private array $category_name_replacements = [];
+
     #[ORM\Column(options: ['default' => true])]
     private bool $active = true;
 
@@ -201,11 +242,11 @@ class ProductImport
         return $this->disabled_category_slugs;
     }
 
-    /** @param list<string>|array<int|string, mixed> $disabledCategorySlugs */
-    public function setDisabledCategorySlugs(array $disabledCategorySlugs): static
+    /** @param list<string>|array<int|string, mixed>|null $disabledCategorySlugs */
+    public function setDisabledCategorySlugs(?array $disabledCategorySlugs): static
     {
         $normalized = [];
-        foreach ($disabledCategorySlugs as $slug) {
+        foreach ($disabledCategorySlugs ?? [] as $slug) {
             $slug = trim((string) $slug);
             if ($slug === '') {
                 continue;
@@ -244,6 +285,212 @@ class ProductImport
         $this->markup_percent = number_format($value, 2, '.', '');
 
         return $this;
+    }
+
+    /**
+     * @return list<array{category_id: int, position: int}>
+     */
+    public function getMenuTopCategories(): array
+    {
+        return $this->menu_top_categories;
+    }
+
+    /**
+     * @param list<array<string, mixed>>|array<int, mixed> $rows
+     */
+    public function setMenuTopCategories(array $rows): static
+    {
+        $normalized = [];
+        $seen = [];
+        foreach ($rows as $row) {
+            if (!\is_array($row)) {
+                continue;
+            }
+            $categoryId = (int) ($row['category_id'] ?? 0);
+            if ($categoryId < 1 || isset($seen[$categoryId])) {
+                continue;
+            }
+            $seen[$categoryId] = true;
+            $position = (int) ($row['position'] ?? 0);
+            if ($position < 0) {
+                $position = 0;
+            }
+            $normalized[] = [
+                'category_id' => $categoryId,
+                'position' => $position,
+            ];
+        }
+
+        usort($normalized, static function (array $a, array $b): int {
+            return $a['position'] <=> $b['position'] ?: $a['category_id'] <=> $b['category_id'];
+        });
+        $this->menu_top_categories = $normalized;
+
+        return $this;
+    }
+
+    /**
+     * @return list<array{category_id: int, parent_id: int}>
+     */
+    public function getMenuCategoryMoves(): array
+    {
+        return $this->menu_category_moves;
+    }
+
+    /**
+     * @param list<array<string, mixed>>|array<int, mixed> $rows
+     */
+    public function setMenuCategoryMoves(array $rows): static
+    {
+        $normalized = [];
+        $seen = [];
+        foreach ($rows as $row) {
+            if (!\is_array($row)) {
+                continue;
+            }
+            $categoryId = (int) ($row['category_id'] ?? 0);
+            $parentId = (int) ($row['parent_id'] ?? 0);
+            if ($categoryId < 1 || $parentId < 1 || $categoryId === $parentId || isset($seen[$categoryId])) {
+                continue;
+            }
+            $seen[$categoryId] = true;
+            $normalized[] = [
+                'category_id' => $categoryId,
+                'parent_id' => $parentId,
+            ];
+        }
+        $this->menu_category_moves = $normalized;
+
+        return $this;
+    }
+
+    /**
+     * @return list<array{category_id: int, show: bool}>
+     */
+    public function getMenuCategoryVisibility(): array
+    {
+        return $this->menu_category_visibility;
+    }
+
+    /**
+     * @param list<array<string, mixed>>|array<int, mixed> $rows
+     */
+    public function setMenuCategoryVisibility(array $rows): static
+    {
+        $normalized = [];
+        foreach ($rows as $row) {
+            if (!\is_array($row)) {
+                continue;
+            }
+            $categoryId = (int) ($row['category_id'] ?? 0);
+            if ($categoryId < 1) {
+                continue;
+            }
+            $show = filter_var($row['show'] ?? true, FILTER_VALIDATE_BOOLEAN);
+            $normalized[$categoryId] = [
+                'category_id' => $categoryId,
+                'show' => $show,
+            ];
+        }
+        $this->menu_category_visibility = array_values($normalized);
+
+        return $this;
+    }
+
+    /**
+     * @return list<array{from: string, to: string}>
+     */
+    public function getParamValueReplacements(): array
+    {
+        return $this->param_value_replacements;
+    }
+
+    /**
+     * @param list<array<string, mixed>>|array<int, mixed> $rows
+     */
+    public function setParamValueReplacements(array $rows): static
+    {
+        $normalized = [];
+        $seen = [];
+        foreach ($rows as $row) {
+            if (!\is_array($row)) {
+                continue;
+            }
+            $from = trim((string) ($row['from'] ?? ''));
+            $to = trim((string) ($row['to'] ?? ''));
+            if ($from === '' || $to === '' || isset($seen[$from])) {
+                continue;
+            }
+            $seen[$from] = true;
+            $normalized[] = [
+                'from' => $from,
+                'to' => $to,
+            ];
+        }
+        $this->param_value_replacements = $normalized;
+
+        return $this;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function getParamValueReplacementMap(): array
+    {
+        $map = [];
+        foreach ($this->param_value_replacements as $row) {
+            $map[$row['from']] = $row['to'];
+        }
+
+        return $map;
+    }
+
+    /**
+     * @return list<array{from: string, to: string}>
+     */
+    public function getCategoryNameReplacements(): array
+    {
+        return $this->category_name_replacements;
+    }
+
+    /**
+     * @param list<array<string, mixed>>|array<int, mixed> $rows
+     */
+    public function setCategoryNameReplacements(array $rows): static
+    {
+        $normalized = [];
+        $seen = [];
+        foreach ($rows as $row) {
+            if (!\is_array($row)) {
+                continue;
+            }
+            $from = trim((string) ($row['from'] ?? ''));
+            $to = trim((string) ($row['to'] ?? ''));
+            if ($from === '' || $to === '' || isset($seen[$from])) {
+                continue;
+            }
+            $seen[$from] = true;
+            $normalized[] = [
+                'from' => $from,
+                'to' => $to,
+            ];
+        }
+        $this->category_name_replacements = $normalized;
+
+        return $this;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function getCategoryNameReplacementMap(): array
+    {
+        $map = [];
+        foreach ($this->category_name_replacements as $row) {
+            $map[$row['from']] = $row['to'];
+        }
+
+        return $map;
     }
 
     public function isActive(): bool

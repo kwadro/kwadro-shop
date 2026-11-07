@@ -1,3 +1,53 @@
+/* e-Ukraine, the official typeface of the digital state of Ukraine.
+   Source: https://thedigital.gov.ua/fonts — CC BY 4.0. */
+@font-face {
+    font-family: "e-Ukraine";
+    src: url("../fonts/e-ukraine/e-Ukraine-Light.woff2") format("woff2");
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "e-Ukraine";
+    src: url("../fonts/e-ukraine/e-Ukraine-Regular.woff2") format("woff2");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "e-Ukraine";
+    src: url("../fonts/e-ukraine/e-Ukraine-Medium.woff2") format("woff2");
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "e-Ukraine";
+    src: url("../fonts/e-ukraine/e-Ukraine-Medium.woff2") format("woff2");
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "e-Ukraine";
+    src: url("../fonts/e-ukraine/e-Ukraine-Bold.woff2") format("woff2");
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "e-Ukraine";
+    src: url("../fonts/e-ukraine/e-Ukraine-Bold.woff2") format("woff2");
+    font-weight: 800;
+    font-style: normal;
+    font-display: swap;
+}
+
 :root {
     --shop-green: #4caf3a;
     --shop-green-dark: #3d9430;
@@ -27,10 +77,17 @@ body.shop-body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    font-family: "e-Ukraine", "Segoe UI", system-ui, -apple-system, sans-serif;
     color: var(--shop-text);
     background: var(--shop-bg);
     line-height: 1.5;
+}
+
+body.shop-body button,
+body.shop-body input,
+body.shop-body select,
+body.shop-body textarea {
+    font-family: inherit;
 }
 
 a {
@@ -206,7 +263,7 @@ a {
     gap: .4rem;
     padding: .85rem 1rem;
     color: var(--shop-text);
-    font-weight: 600;
+    font-weight: 700;
     font-size: .95rem;
     white-space: nowrap;
     transition: color .15s ease, background .15s ease;
@@ -240,7 +297,7 @@ a {
     position: absolute;
     top: 100%;
     left: 0;
-    min-width: 260px;
+    min-width: 300px;
     margin: 0;
     padding: .4rem 0;
     background: var(--shop-white);
@@ -279,10 +336,11 @@ a {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: .75rem;
+    gap: .45rem;
     padding: .55rem 1rem;
     color: var(--shop-text);
     font-size: .92rem;
+    font-weight: 700;
     white-space: nowrap;
 }
 
@@ -356,6 +414,7 @@ a {
     padding: .45rem .35rem;
     color: var(--shop-text);
     font-size: .92rem;
+    font-weight: 700;
     white-space: normal;
     border-radius: 6px;
 }

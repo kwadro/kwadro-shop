@@ -285,9 +285,33 @@ admin.product_import.default_category_help: 'Категорія за замов�
 admin.product_import.disable_categories_after_import: Статус категорій після імпорту
 admin.product_import.disable_categories_after_import_help: 'Yes — після імпорту вимкнути вказані категорії та всі товари в них. No — не змінювати статус категорій і товарів.'
 admin.product_import.disabled_category_slugs: Які категорії вимкнути
-admin.product_import.disabled_category_slugs_help: 'Один slug категорії на рядок. Якщо вище обрано Yes — ці категорії і товари в них будуть вимкнені після імпорту.'
+admin.product_import.disabled_category_slugs_help: 'Оберіть категорії зі списку. Поле пошуку фільтрує список. Якщо вище обрано Yes — ці категорії і товари в них будуть вимкнені після імпорту.'
 admin.product_import.markup_percent: Націнка
 admin.product_import.markup_percent_help: 'Націнка у відсотках для розрахунку ціни, наприклад 30 = +30%.'
+admin.product_import.param_value_replacements: Заміна значень атрибутів
+admin.product_import.param_value_replacements_help: 'Точна заміна значення з фіду на значення у магазині. Наприклад «Фыолетовий» → «Фіолетовий».'
+admin.product_import.param_value_from: Значення у фіді
+admin.product_import.param_value_to: Значення в магазині
+admin.product_import.category_name_replacements: Заміна назв категорій
+admin.product_import.category_name_replacements_help: 'Точна заміна назви категорії з фіду на назву в магазині. Адреса категорії не змінюється.'
+admin.product_import.category_name_from: Назва у фіді
+admin.product_import.category_name_to: Назва в магазині
+admin.product_import.menu_display: Відображення категорій у меню
+admin.product_import.menu_display_help: 'Лише для меню магазину. Батько і позиція в картці категорії лишаються такими, як у файлі імпорту.'
+admin.product_import.menu_top_categories: Топ-категорії
+admin.product_import.menu_top_categories_help: 'Ці підкатегорії показуються першими серед сусідів у меню. Менше число — вище. Решта лишається в порядку позиції з файлу імпорту.'
+admin.product_import.menu_top_category: Категорія
+admin.product_import.menu_top_position: Порядок
+admin.product_import.menu_top_position_help: '0 — найвище.'
+admin.product_import.menu_category_placeholder: Оберіть категорію
+admin.product_import.menu_category_visibility: Показувати категорію в меню
+admin.product_import.menu_category_visibility_help: 'Так — категорія лишається в меню. Ні — прибрати лише з меню магазину. Сторінка категорії і дані імпорту не змінюються. Категорії, яких немає в списку, показуються як раніше.'
+admin.product_import.menu_show_in_menu: Показувати в меню
+admin.product_import.menu_category_moves: Перенесення категорій
+admin.product_import.menu_category_moves_help: 'Показувати категорію в меню як підкатегорію іншого розділу. Запис категорії в базі не змінюється.'
+admin.product_import.menu_move_category: Категорія
+admin.product_import.menu_move_parent: Показувати в
+admin.product_import.menu_move_parent_placeholder: Оберіть розділ
 admin.product_import.yes: 'Yes'
 admin.product_import.no: 'No'
 admin.product_import.active: Активний

@@ -23,7 +23,7 @@
 
     function syncDisabledSlugsVisibility() {
         const inputs = document.querySelectorAll('[name="ProductImport[disableCategoriesAfterImport]"]');
-        const slugsRow = findFieldRow('disabledCategorySlugsText');
+        const slugsRow = findFieldRow('disabledCategorySlugs');
         if (!inputs.length || !slugsRow) {
             return;
         }

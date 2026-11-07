@@ -285,9 +285,33 @@ admin.product_import.default_category_help: 'Fallback category for imported prod
 admin.product_import.disable_categories_after_import: Category status after import
 admin.product_import.disable_categories_after_import_help: 'Yes — after import disable the listed categories and all products in them. No — leave categories and products unchanged.'
 admin.product_import.disabled_category_slugs: Categories to disable
-admin.product_import.disabled_category_slugs_help: 'One category slug per line. When Yes is selected above, those categories and their products are disabled after import.'
+admin.product_import.disabled_category_slugs_help: 'Pick categories from the list. The search box filters it. When Yes is selected above, those categories and their products are disabled after import.'
 admin.product_import.markup_percent: Markup
 admin.product_import.markup_percent_help: 'Markup in percent for price calculation, e.g. 30 = +30%.'
+admin.product_import.param_value_replacements: Attribute value replacements
+admin.product_import.param_value_replacements_help: 'Exact replacement of a feed value with the storefront value. For example “Фыолетовий” → “Фіолетовий”.'
+admin.product_import.param_value_from: Value in the feed
+admin.product_import.param_value_to: Value in the store
+admin.product_import.category_name_replacements: Category name replacements
+admin.product_import.category_name_replacements_help: 'Exact replacement of a feed category name with the storefront name. The category URL stays unchanged.'
+admin.product_import.category_name_from: Name in the feed
+admin.product_import.category_name_to: Name in the store
+admin.product_import.menu_display: Category menu display
+admin.product_import.menu_display_help: 'Storefront menu only. The category record keeps the parent and position from the import file.'
+admin.product_import.menu_top_categories: Top categories
+admin.product_import.menu_top_categories_help: 'These subcategories are shown first among their siblings in the menu. A lower number is higher. The rest keep the import-file position.'
+admin.product_import.menu_top_category: Category
+admin.product_import.menu_top_position: Order
+admin.product_import.menu_top_position_help: '0 is first.'
+admin.product_import.menu_category_placeholder: Choose a category
+admin.product_import.menu_category_visibility: Show category in the menu
+admin.product_import.menu_category_visibility_help: 'Yes keeps the category in the menu. No removes it from the storefront menu only. The category page and the imported category data stay unchanged. Categories that are not listed stay visible.'
+admin.product_import.menu_show_in_menu: Show in menu
+admin.product_import.menu_category_moves: Category moves
+admin.product_import.menu_category_moves_help: 'Show a category in the menu as a subcategory of another section. The category record in the database is not changed.'
+admin.product_import.menu_move_category: Category
+admin.product_import.menu_move_parent: Show inside
+admin.product_import.menu_move_parent_placeholder: Choose a section
 admin.product_import.yes: 'Yes'
 admin.product_import.no: 'No'
 admin.product_import.active: Active

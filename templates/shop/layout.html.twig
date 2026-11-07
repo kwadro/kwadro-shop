@@ -28,6 +28,7 @@
         {% block structured_data %}{% endblock %}
     {% endif %}
     <link rel="icon" type="image/x-icon" href="{{ absolute_url(asset('uploads/images/' ~ setting.header.favicon)) }}"/>
+    <link rel="preload" href="{{ asset('fonts/e-ukraine/e-Ukraine-Regular.woff2') }}" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="{{ asset('css/shop.css') }}">
     {% block stylesheets %}{% endblock %}
     {% include 'shop/partials/_gtm.html.twig' with { placement: 'head', setting: setting } only %}

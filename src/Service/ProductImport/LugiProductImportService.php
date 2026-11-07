@@ -108,6 +108,7 @@ class LugiProductImportService
             $reader = new \XMLReader();
             $reader->open($localPath);
             $position = 1;
+            $categoryNameReplacements = $import->getCategoryNameReplacementMap();
             while ($reader->read()) {
                 if ($reader->nodeType !== \XMLReader::ELEMENT || $reader->localName !== 'category') {
                     continue;
@@ -122,9 +123,12 @@ class LugiProductImportService
                     $baseCategoryId,
                     true,
                     $position,
+                    $categoryNameReplacements,
                 );
                 ++$position;
             }
+
+            $this->attributeImportService->setParamValueReplacements($import->getParamValueReplacementMap());
 
             // Build attribute groups from distinct <param> sets per feed category.
             $attributeStats = $this->attributeImportService->syncGroupsFromFeed($localPath, $dryRun);
