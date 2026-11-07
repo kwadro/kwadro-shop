@@ -4,6 +4,7 @@ namespace App\Twig;
 
 use App\Entity\BlogArticle;
 use App\Entity\Category;
+use App\Repository\CategoryRepository;
 use App\Service\Seo\JsonLdFactory;
 use App\Service\SiteSettingsProvider;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -20,6 +21,7 @@ final class JsonLdExtension extends AbstractExtension
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly TranslatorInterface $translator,
         private readonly SiteSettingsProvider $siteSettingsProvider,
+        private readonly CategoryRepository $categoryRepository,
     ) {
     }
 
@@ -252,8 +254,10 @@ final class JsonLdExtension extends AbstractExtension
             'url' => $this->urlGenerator->generate('shop_home', ['_locale' => $locale], UrlGeneratorInterface::ABSOLUTE_URL),
         ]];
 
-        $parent = $category->getParent();
-        if ($parent !== null && !$parent->isDefault() && $parent->isEnabled()) {
+        foreach ($this->categoryRepository->findStorefrontBreadcrumbAncestors($category) as $parent) {
+            if ($parent->isDefault() || !$parent->isEnabled()) {
+                continue;
+            }
             $crumbs[] = [
                 'name' => $parent->getName(),
                 'url' => $this->urlGenerator->generate(

@@ -54,6 +54,10 @@ menu.link_product: Товари
 menu.link_product_single: Товар
 menu.link_category: Категорії
 menu.link_category_single: Категорія
+menu.link_product_attribute_group: Групи атрибутів
+menu.link_product_attribute_group_single: Група атрибутів
+menu.link_product_attribute: Атрибути
+menu.link_product_attribute_single: Атрибут
 menu.link_supplier: Постачальники
 menu.link_supplier_single: Постачальник
 menu.link_product_offer: Цінові пропозиції
@@ -283,15 +287,35 @@ admin.product_import.settings_panel: Налаштування імпорту
 admin.product_import.default_category: Дефолтна категорія
 admin.product_import.default_category_help: 'Категорія за замовчуванням для імпортованих товарів. У базу зберігається external_id (не внутрішній id). У списку лише категорії з external_id.'
 admin.product_import.disable_categories_after_import: Статус категорій після імпорту
-admin.product_import.disable_categories_after_import_help: 'Yes — після імпорту вимкнути вказані категорії та всі товари в них. No — не змінювати статус категорій і товарів.'
+admin.product_import.disable_categories_after_import_help: 'Yes — після імпорту вимкнути вказані категорії та всі товари в них. No — на наступному імпорті повернути категорії і товари, які вимикав цей список.'
 admin.product_import.disabled_category_slugs: Які категорії вимкнути
-admin.product_import.disabled_category_slugs_help: 'Оберіть категорії зі списку. Поле пошуку фільтрує список. Якщо вище обрано Yes — ці категорії і товари в них будуть вимкнені після імпорту.'
+admin.product_import.disabled_category_slugs_help: 'Оберіть категорії зі списку. Якщо вище обрано Yes — ці категорії і товари в них будуть вимкнені після імпорту. Коли категорію прибирають зі списку, наступний імпорт знову її вмикає разом із товарами. SKU зі списку вимкнених лишаються вимкненими.'
+admin.product_attribute.group: Група
+admin.product_attribute.name: Назва
+admin.product_attribute.slug: Slug
+admin.product_attribute.show_in_filter: Показувати у фільтрі
+admin.product_attribute.show_in_filter_help: 'Так — атрибут є у фільтрі на сторінці категорії. Ні — приховати. Наступний імпорт не змінює це значення.'
+admin.product_attribute.data_type: Тип
+admin.product_attribute.position: Порядок
+admin.product_attribute_group.name: Назва
+admin.product_attribute_group.slug: Slug
+admin.product_attribute_group.category: Категорія
+admin.product_attribute_group.external_category_id: External ID категорії
+admin.product_attribute_group.position: Порядок
 admin.product_import.markup_percent: Націнка
 admin.product_import.markup_percent_help: 'Націнка у відсотках для розрахунку ціни, наприклад 30 = +30%.'
 admin.product_import.param_value_replacements: Заміна значень атрибутів
-admin.product_import.param_value_replacements_help: 'Точна заміна значення з фіду на значення у магазині. Наприклад «Фыолетовий» → «Фіолетовий».'
+admin.product_import.param_value_replacements_help: 'Точна заміна значення з фіду на значення у магазині. Категорія і атрибут не обов’язкові. Після вибору категорії список атрибутів показує лише атрибути цієї категорії. Порожній атрибут означає всі атрибути вибраної категорії.'
 admin.product_import.param_value_from: Значення у фіді
 admin.product_import.param_value_to: Значення в магазині
+admin.product_import.param_value_category: Категорія
+admin.product_import.param_value_category_all: Усі категорії
+admin.product_import.param_value_attribute: Атрибут
+admin.product_import.param_value_attribute_all: Усі атрибути
+admin.product_import.param_name_replacements: Заміна назв атрибутів
+admin.product_import.param_name_replacements_help: 'Точна заміна назви атрибута з фіду на назву в магазині. Діє для всіх категорій. Адреса атрибута не змінюється.'
+admin.product_import.param_name_from: Назва у фіді
+admin.product_import.param_name_to: Назва в магазині
 admin.product_import.category_name_replacements: Заміна назв категорій
 admin.product_import.category_name_replacements_help: 'Точна заміна назви категорії з фіду на назву в магазині. Адреса категорії не змінюється.'
 admin.product_import.category_name_from: Назва у фіді
@@ -308,7 +332,7 @@ admin.product_import.menu_category_visibility: Показувати катего
 admin.product_import.menu_category_visibility_help: 'Так — категорія лишається в меню. Ні — прибрати лише з меню магазину. Сторінка категорії і дані імпорту не змінюються. Категорії, яких немає в списку, показуються як раніше.'
 admin.product_import.menu_show_in_menu: Показувати в меню
 admin.product_import.menu_category_moves: Перенесення категорій
-admin.product_import.menu_category_moves_help: 'Показувати категорію в меню як підкатегорію іншого розділу. Запис категорії в базі не змінюється.'
+admin.product_import.menu_category_moves_help: 'Показувати категорію як підкатегорію іншого розділу в меню, у хлібних крихтах і в списку підкатегорій. Лише для категорій з каталогу імпорту. Запис категорії в базі не змінюється.'
 admin.product_import.menu_move_category: Категорія
 admin.product_import.menu_move_parent: Показувати в
 admin.product_import.menu_move_parent_placeholder: Оберіть розділ
@@ -319,6 +343,9 @@ admin.product_import.last_run_at: Останній запуск
 admin.product_import.last_result: Останній результат
 admin.product_import.run: Запустити
 admin.product_import.run_ok: Імпорт завершено
+admin.product_import.run_started: 'Імпорт запущено у фоні. Сайт лишається доступним. Оновіть цю сторінку пізніше, щоб побачити результат.'
+admin.product_import.run_already_running: Цей імпорт уже виконується
+admin.product_import.run_start_failed: Не вдалося запустити імпорт
 admin.product_import.run_missing: Імпорт не знайдено
 admin.product_import.run_inactive: Імпорт неактивний
 admin.product_import.run_unsupported: Невідомий тип імпорту

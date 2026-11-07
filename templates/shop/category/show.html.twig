@@ -33,11 +33,12 @@
     <article class="shop-page shop-category-page">
         <nav class="shop-category-page__breadcrumb" aria-label="breadcrumb">
             <a href="{{ path('shop_home', {_locale: app.request.locale}) }}">{{ 'shop.category.home'|trans }}</a>
-            {% set parentCategory = category.parent %}
-            {% if parentCategory and not parentCategory.default %}
-                <span aria-hidden="true">/</span>
-                <a href="{{ path('shop_category', {_locale: app.request.locale, slug: parentCategory.slug}) }}">{{ parentCategory.name }}</a>
-            {% endif %}
+            {% for parentCategory in breadcrumbAncestors|default([]) %}
+                {% if parentCategory and not parentCategory.default %}
+                    <span aria-hidden="true">/</span>
+                    <a href="{{ path('shop_category', {_locale: app.request.locale, slug: parentCategory.slug}) }}">{{ parentCategory.name }}</a>
+                {% endif %}
+            {% endfor %}
             <span aria-hidden="true">/</span>
             <span>{{ category.name }}</span>
         </nav>

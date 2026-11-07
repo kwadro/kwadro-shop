@@ -54,6 +54,10 @@ menu.link_product: Products
 menu.link_product_single: Product
 menu.link_category: Categories
 menu.link_category_single: Category
+menu.link_product_attribute_group: Attribute groups
+menu.link_product_attribute_group_single: Attribute group
+menu.link_product_attribute: Attributes
+menu.link_product_attribute_single: Attribute
 menu.link_supplier: Suppliers
 menu.link_supplier_single: Supplier
 menu.link_product_offer: Product offers
@@ -283,15 +287,35 @@ admin.product_import.settings_panel: Import settings
 admin.product_import.default_category: Default category
 admin.product_import.default_category_help: 'Fallback category for imported products. Stored as category external_id (not internal id). Only categories with external_id are listed.'
 admin.product_import.disable_categories_after_import: Category status after import
-admin.product_import.disable_categories_after_import_help: 'Yes — after import disable the listed categories and all products in them. No — leave categories and products unchanged.'
+admin.product_import.disable_categories_after_import_help: 'Yes — after import disable the listed categories and all products in them. No — the next import turns back on the categories and products this list had disabled.'
 admin.product_import.disabled_category_slugs: Categories to disable
-admin.product_import.disabled_category_slugs_help: 'Pick categories from the list. The search box filters it. When Yes is selected above, those categories and their products are disabled after import.'
+admin.product_import.disabled_category_slugs_help: 'Pick categories from the list. When Yes is selected above, those categories and their products are disabled after import. Removing a category turns it and its products back on at the next import. SKUs from the disabled list stay off.'
+admin.product_attribute.group: Group
+admin.product_attribute.name: Name
+admin.product_attribute.slug: Slug
+admin.product_attribute.show_in_filter: Show in filter
+admin.product_attribute.show_in_filter_help: 'Yes shows the attribute in the category page filter. No hides it. The next import does not change this value.'
+admin.product_attribute.data_type: Type
+admin.product_attribute.position: Position
+admin.product_attribute_group.name: Name
+admin.product_attribute_group.slug: Slug
+admin.product_attribute_group.category: Category
+admin.product_attribute_group.external_category_id: Category external ID
+admin.product_attribute_group.position: Position
 admin.product_import.markup_percent: Markup
 admin.product_import.markup_percent_help: 'Markup in percent for price calculation, e.g. 30 = +30%.'
 admin.product_import.param_value_replacements: Attribute value replacements
-admin.product_import.param_value_replacements_help: 'Exact replacement of a feed value with the storefront value. For example “Фыолетовий” → “Фіолетовий”.'
+admin.product_import.param_value_replacements_help: 'Exact replacement of a feed value with the storefront value. Category and attribute are optional. After a category is selected, the attribute list shows only attributes of that category. An empty attribute means every attribute of the selected category.'
 admin.product_import.param_value_from: Value in the feed
 admin.product_import.param_value_to: Value in the store
+admin.product_import.param_value_category: Category
+admin.product_import.param_value_category_all: All categories
+admin.product_import.param_value_attribute: Attribute
+admin.product_import.param_value_attribute_all: All attributes
+admin.product_import.param_name_replacements: Attribute name replacements
+admin.product_import.param_name_replacements_help: 'Exact replacement of a feed attribute name with the storefront name. It applies to every category. The attribute URL stays unchanged.'
+admin.product_import.param_name_from: Name in the feed
+admin.product_import.param_name_to: Name in the store
 admin.product_import.category_name_replacements: Category name replacements
 admin.product_import.category_name_replacements_help: 'Exact replacement of a feed category name with the storefront name. The category URL stays unchanged.'
 admin.product_import.category_name_from: Name in the feed
@@ -308,7 +332,7 @@ admin.product_import.menu_category_visibility: Show category in the menu
 admin.product_import.menu_category_visibility_help: 'Yes keeps the category in the menu. No removes it from the storefront menu only. The category page and the imported category data stay unchanged. Categories that are not listed stay visible.'
 admin.product_import.menu_show_in_menu: Show in menu
 admin.product_import.menu_category_moves: Category moves
-admin.product_import.menu_category_moves_help: 'Show a category in the menu as a subcategory of another section. The category record in the database is not changed.'
+admin.product_import.menu_category_moves_help: 'Show a category under another section in the menu, breadcrumbs, and the subcategory list. This applies only to categories inside an import catalog. The category record in the database is not changed.'
 admin.product_import.menu_move_category: Category
 admin.product_import.menu_move_parent: Show inside
 admin.product_import.menu_move_parent_placeholder: Choose a section
@@ -319,6 +343,9 @@ admin.product_import.last_run_at: Last run
 admin.product_import.last_result: Last result
 admin.product_import.run: Run
 admin.product_import.run_ok: Import finished
+admin.product_import.run_started: 'Import started in the background. The shop stays available. Refresh this page later to see the result.'
+admin.product_import.run_already_running: This import is already running
+admin.product_import.run_start_failed: Could not start the import
 admin.product_import.run_missing: Import not found
 admin.product_import.run_inactive: Import is inactive
 admin.product_import.run_unsupported: Unsupported import type

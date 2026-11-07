@@ -128,7 +128,8 @@ class LugiProductImportService
                 ++$position;
             }
 
-            $this->attributeImportService->setParamValueReplacements($import->getParamValueReplacementMap());
+            $this->attributeImportService->setParamValueReplacements($import->getParamValueReplacements());
+            $this->attributeImportService->setParamNameReplacements($import->getParamNameReplacementMap());
 
             // Build attribute groups from distinct <param> sets per feed category.
             $attributeStats = $this->attributeImportService->syncGroupsFromFeed($localPath, $dryRun);
@@ -201,10 +202,11 @@ class LugiProductImportService
             }
 
             [$import, $run] = $this->reloadImportRun($import, $run, $importId, $runId);
-            $disabledCategories = $this->categoryService->disableConfiguredAfterImport($import, $dryRun);
+            $seenForRestore = $import->getMode() === ProductImportMode::DeleteAddUpdate ? $seenSkus : null;
+            $disabledCategories = $this->categoryService->disableConfiguredAfterImport($import, $dryRun, $seenForRestore);
 
             $summary = sprintf(
-                'Created: %d, updated: %d, disabled: %d, deleted/deactivated: %d, attr groups: %d, attributes: %d, categories off: %d, products off by category: %d (mode: %s)',
+                'Created: %d, updated: %d, disabled: %d, deleted/deactivated: %d, attr groups: %d, attributes: %d, categories off: %d, products off by category: %d, categories on: %d, products on by category: %d (mode: %s)',
                 $result['created'],
                 $result['updated'],
                 $result['disabled'],
@@ -213,6 +215,8 @@ class LugiProductImportService
                 $attributeStats['attributes'],
                 $disabledCategories['categories'],
                 $disabledCategories['products'],
+                $disabledCategories['categories_on'],
+                $disabledCategories['products_on'],
                 $import->getMode()->label(),
             );
 

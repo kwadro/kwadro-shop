@@ -40,7 +40,11 @@ class CategoryController extends AbstractController
         $children = [];
         foreach ($this->categoryRepository->findStorefrontDisplayChildren($category) as $child) {
             $childId = $child->getId();
-            if ($childId === null || ($directCounts[$childId] ?? 0) < 1) {
+            if ($childId === null) {
+                continue;
+            }
+            $movedHere = $child->getParent()?->getId() !== $category->getId();
+            if (!$movedHere && ($directCounts[$childId] ?? 0) < 1) {
                 continue;
             }
             $children[] = [
@@ -59,6 +63,7 @@ class CategoryController extends AbstractController
         return $this->render('shop/category/show.html.twig', [
             'category' => $category,
             'children' => $children,
+            'breadcrumbAncestors' => $this->categoryRepository->findStorefrontBreadcrumbAncestors($category),
             ...$listing,
         ]);
     }

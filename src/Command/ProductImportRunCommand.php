@@ -6,6 +6,7 @@ use App\Entity\ProductImport;
 use App\Entity\ProductImportRunStatus;
 use App\Repository\ProductImportRepository;
 use App\Service\ProductImport\LugiProductImportService;
+use App\Service\ProductImport\ProductImportRunLock;
 use App\Service\ProductImport\SivitekProductImportService;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -25,6 +26,7 @@ final class ProductImportRunCommand extends Command
         private readonly ProductImportRepository $productImportRepository,
         private readonly SivitekProductImportService $sivitekProductImportService,
         private readonly LugiProductImportService $lugiProductImportService,
+        private readonly ProductImportRunLock $runLock,
     ) {
         parent::__construct();
     }
@@ -34,15 +36,21 @@ final class ProductImportRunCommand extends Command
         $this
             ->addOption('code', null, InputOption::VALUE_REQUIRED, 'Import code', ProductImport::CODE_SIVITEK)
             ->addOption('id', null, InputOption::VALUE_REQUIRED, 'Import entity id')
-            ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Parse and report without writing');
+            ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Parse and report without writing')
+            ->addOption('no-images', null, InputOption::VALUE_NONE, 'Skip feed image download and image assignment');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         @ini_set('memory_limit', '512M');
+        // Stay behind web requests when the shop and the import share one server.
+        if (\function_exists('proc_nice')) {
+            @proc_nice(10);
+        }
 
         $io = new SymfonyStyle($input, $output);
         $dryRun = (bool) $input->getOption('dry-run');
+        $withImages = !(bool) $input->getOption('no-images');
         $id = $input->getOption('id');
 
         if ($id !== null && $id !== '') {
@@ -63,23 +71,39 @@ final class ProductImportRunCommand extends Command
             return Command::FAILURE;
         }
 
-        $io->title(sprintf('Running import: %s (%s)', $import->getName(), $import->getCode()));
-
-        $run = match ($import->getCode()) {
-            ProductImport::CODE_SIVITEK => $this->sivitekProductImportService->run($import, $dryRun),
-            ProductImport::CODE_LUGI => $this->lugiProductImportService->run($import, $dryRun, true),
-            default => throw new \RuntimeException(sprintf('Unsupported import code: %s', $import->getCode())),
-        };
-
-        if ($run->getStatus() === ProductImportRunStatus::Failed) {
-            $io->error($run->getErrorMessage() ?? $run->getResult() ?? 'Import failed.');
+        $importId = (int) $import->getId();
+        $lock = $this->runLock->acquire($importId);
+        if ($lock === null) {
+            $io->error('This import is already running.');
 
             return Command::FAILURE;
         }
 
-        $io->success(($dryRun ? '[dry-run] ' : '').($run->getResult() ?? 'Done.'));
+        try {
+            $io->title(sprintf('Running import: %s (%s)', $import->getName(), $import->getCode()));
 
-        return $this->assignImportImages((string) $import->getCode(), $dryRun, $output, $io);
+            $run = match ($import->getCode()) {
+                ProductImport::CODE_SIVITEK => $this->sivitekProductImportService->run($import, $dryRun),
+                ProductImport::CODE_LUGI => $this->lugiProductImportService->run($import, $dryRun, $withImages),
+                default => throw new \RuntimeException(sprintf('Unsupported import code: %s', $import->getCode())),
+            };
+
+            if ($run->getStatus() === ProductImportRunStatus::Failed) {
+                $io->error($run->getErrorMessage() ?? $run->getResult() ?? 'Import failed.');
+
+                return Command::FAILURE;
+            }
+
+            $io->success(($dryRun ? '[dry-run] ' : '').($run->getResult() ?? 'Done.'));
+
+            if (!$withImages) {
+                return Command::SUCCESS;
+            }
+
+            return $this->assignImportImages((string) $import->getCode(), $dryRun, $output, $io);
+        } finally {
+            $this->runLock->release($lock);
+        }
     }
 
     private function assignImportImages(string $importCode, bool $dryRun, OutputInterface $output, SymfonyStyle $io): int

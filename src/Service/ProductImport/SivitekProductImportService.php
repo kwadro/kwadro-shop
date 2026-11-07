@@ -134,16 +134,19 @@ final class SivitekProductImportService
                 ++$disabled;
             }
 
-            $disabledCategories = $this->categoryService->disableConfiguredAfterImport($import, $dryRun);
+            $seenForRestore = $import->getMode() === ProductImportMode::DeleteAddUpdate ? $seenSkus : null;
+            $disabledCategories = $this->categoryService->disableConfiguredAfterImport($import, $dryRun, $seenForRestore);
 
             $summary = sprintf(
-                'Created: %d, updated: %d, disabled: %d, deleted/deactivated: %d, categories off: %d, products off by category: %d (mode: %s)',
+                'Created: %d, updated: %d, disabled: %d, deleted/deactivated: %d, categories off: %d, products off by category: %d, categories on: %d, products on by category: %d (mode: %s)',
                 $created,
                 $updated,
                 $disabled,
                 $deleted,
                 $disabledCategories['categories'],
                 $disabledCategories['products'],
+                $disabledCategories['categories_on'],
+                $disabledCategories['products_on'],
                 $import->getMode()->label(),
             );
 

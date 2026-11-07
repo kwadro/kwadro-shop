@@ -410,6 +410,15 @@ class CategoryRepository extends ServiceEntityRepository
             ->getResult();
 
         [$levelTwoNodes, $levelThreeNodes] = $this->arrangeMenuNodes($levelOneIds, $levelTwo, $levelThree, $rules);
+        $importRootIds = $this->activeImportRootIds();
+        $keepMovedWithoutProducts = function (Category $category) use ($rules, $importRootIds): bool {
+            $id = $category->getId();
+            if ($id === null || !isset($rules->displayParentByCategoryId[$id])) {
+                return false;
+            }
+
+            return $this->belongsToImportRoot($category, $importRootIds);
+        };
 
         /** @var array<int, list<array{id: int, name: string, slug: string, og_image: ?string}>> $grandchildrenByParent */
         $grandchildrenByParent = [];
@@ -419,8 +428,8 @@ class CategoryRepository extends ServiceEntityRepository
             if ($grandchildId === null) {
                 continue;
             }
-            // Leaf/child: must have enabled products in this category itself.
-            if (($directCounts[$grandchildId] ?? 0) < 1) {
+            // A moved import category stays in the list even when it has no products in stock.
+            if (($directCounts[$grandchildId] ?? 0) < 1 && !$keepMovedWithoutProducts($grandchild['category'])) {
                 continue;
             }
 
@@ -439,7 +448,8 @@ class CategoryRepository extends ServiceEntityRepository
             $grandchildren = $grandchildrenByParent[$childId] ?? [];
             $ownProducts = $directCounts[$childId] ?? 0;
             // Hide when this category has no products and no non-empty children.
-            if ($ownProducts < 1 && $grandchildren === []) {
+            // A category moved by an import stays visible.
+            if ($ownProducts < 1 && $grandchildren === [] && !$keepMovedWithoutProducts($child['category'])) {
                 continue;
             }
 
@@ -615,7 +625,67 @@ class CategoryRepository extends ServiceEntityRepository
     }
 
     /**
-     * Enabled child categories as shown in the storefront, including menu-only moves.
+     * Parent shown in breadcrumbs. Import moves apply only when the category
+     * sits inside an active import catalog. The stored parent is not changed.
+     */
+    public function findStorefrontDisplayParent(Category $category): ?Category
+    {
+        $stored = $category->getParent();
+        $stored = $stored instanceof Category && !$stored->isDefault() ? $stored : null;
+        $categoryId = $category->getId();
+        if ($categoryId === null || !$this->belongsToActiveImport($category)) {
+            return $stored;
+        }
+
+        $rules = MenuCategoryDisplayRules::fromImports(
+            $this->productImportRepository->findBy(['active' => true], ['id' => 'ASC']),
+        );
+        $mappedId = $rules->displayParentByCategoryId[$categoryId] ?? null;
+        if (!\is_int($mappedId) || $mappedId < 1 || $mappedId === $categoryId) {
+            return $stored;
+        }
+
+        $display = $this->find($mappedId);
+        if (!$display instanceof Category || !$display->isEnabled() || $display->isDefault()) {
+            return $stored;
+        }
+
+        return $display;
+    }
+
+    /**
+     * Breadcrumb ancestors from the catalog root down to the immediate display parent.
+     * Import moves replace the stored parent only inside an import catalog.
+     *
+     * @return list<Category>
+     */
+    public function findStorefrontBreadcrumbAncestors(Category $category): array
+    {
+        $ancestors = [];
+        $categoryId = $category->getId();
+        $seen = $categoryId !== null ? [$categoryId => true] : [];
+        $node = $category;
+
+        for ($depth = 0; $depth < 20; ++$depth) {
+            $parent = $this->findStorefrontDisplayParent($node);
+            if (!$parent instanceof Category) {
+                break;
+            }
+            $parentId = $parent->getId();
+            if ($parentId === null || isset($seen[$parentId])) {
+                break;
+            }
+            $seen[$parentId] = true;
+            $ancestors[] = $parent;
+            $node = $parent;
+        }
+
+        return array_reverse($ancestors);
+    }
+
+    /**
+     * Enabled child categories as shown on the category page, including import moves.
+     * A move is applied only when the child belongs to an active import catalog.
      * The category parent stored by import is not changed.
      *
      * @return list<Category>
@@ -630,6 +700,7 @@ class CategoryRepository extends ServiceEntityRepository
         $rules = MenuCategoryDisplayRules::fromImports(
             $this->productImportRepository->findBy(['active' => true], ['id' => 'ASC']),
         );
+        $importRootIds = $this->activeImportRootIds();
 
         /** @var array<int, Category> $children */
         $children = [];
@@ -641,7 +712,10 @@ class CategoryRepository extends ServiceEntityRepository
             if ($childId === null || !$rules->isShownInMenu($childId)) {
                 continue;
             }
-            $displayParent = $rules->displayParentByCategoryId[$childId] ?? $parentId;
+            $displayParent = $parentId;
+            if ($this->belongsToImportRoot($child, $importRootIds)) {
+                $displayParent = $rules->displayParentByCategoryId[$childId] ?? $parentId;
+            }
             if ($displayParent !== $parentId) {
                 continue;
             }
@@ -660,7 +734,7 @@ class CategoryRepository extends ServiceEntityRepository
                     continue;
                 }
                 $incomingId = $category->getId();
-                if ($incomingId === null || !$rules->isShownInMenu($incomingId)) {
+                if ($incomingId === null || !$rules->isShownInMenu($incomingId) || !$this->belongsToImportRoot($category, $importRootIds)) {
                     continue;
                 }
                 $id = $category->getId();
@@ -674,6 +748,75 @@ class CategoryRepository extends ServiceEntityRepository
         usort($list, fn (Category $a, Category $b): int => $this->compareMenuSiblings($a, $b, $rules));
 
         return $list;
+    }
+
+    /**
+     * Category ids that are the catalog root of an active import
+     * (matched by the import default external id).
+     *
+     * @return array<int, true>
+     */
+    private function activeImportRootIds(): array
+    {
+        $externalIds = [];
+        foreach ($this->productImportRepository->findBy(['active' => true], ['id' => 'ASC']) as $import) {
+            $externalId = $import->getDefaultCategoryExternalId();
+            if ($externalId !== null && $externalId > 0) {
+                $externalIds[] = $externalId;
+            }
+        }
+        if ($externalIds === []) {
+            return [];
+        }
+
+        /** @var list<Category> $roots */
+        $roots = $this->createQueryBuilder('c')
+            ->andWhere('c.external_id IN (:externalIds)')
+            ->setParameter('externalIds', array_values(array_unique($externalIds)))
+            ->getQuery()
+            ->getResult();
+
+        $ids = [];
+        foreach ($roots as $root) {
+            $id = $root->getId();
+            if ($id !== null) {
+                $ids[$id] = true;
+            }
+        }
+
+        return $ids;
+    }
+
+    private function belongsToActiveImport(Category $category): bool
+    {
+        return $this->belongsToImportRoot($category, $this->activeImportRootIds());
+    }
+
+    /**
+     * @param array<int, true> $importRootIds
+     */
+    private function belongsToImportRoot(Category $category, array $importRootIds): bool
+    {
+        $seen = [];
+        $node = $category;
+        while (true) {
+            $id = $node->getId();
+            if ($id === null || isset($seen[$id])) {
+                return false;
+            }
+            $seen[$id] = true;
+            if (isset($importRootIds[$id])) {
+                return true;
+            }
+            if ($node->isDefault()) {
+                return false;
+            }
+            $parent = $node->getParent();
+            if (!$parent instanceof Category) {
+                return false;
+            }
+            $node = $parent;
+        }
     }
 
     public function findOneBySlug(string $slug): ?Category

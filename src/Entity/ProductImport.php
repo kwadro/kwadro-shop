@@ -52,6 +52,15 @@ class ProductImport
     #[ORM\Column(type: 'json')]
     private array $disabled_category_slugs = [];
 
+    /**
+     * Slugs whose categories and products were turned off by the last import.
+     * Used to turn them back on when a slug leaves the disable list.
+     *
+     * @var list<string>
+     */
+    #[ORM\Column(type: 'json')]
+    private array $applied_disabled_category_slugs = [];
+
     /** Markup percent applied to imported prices (e.g. 30 = +30%). */
     #[ORM\Column(type: 'decimal', precision: 8, scale: 2, options: ['default' => '0'])]
     private string $markup_percent = '0';
@@ -82,11 +91,22 @@ class ProductImport
 
     /**
      * Exact attribute value replacements applied during import.
+     * category_id null means every attribute group.
+     * attribute_id null means every attribute in that scope.
+     *
+     * @var list<array{from: string, to: string, category_id: int|null, attribute_id: int|null}>
+     */
+    #[ORM\Column(type: 'json')]
+    private array $param_value_replacements = [];
+
+    /**
+     * Exact attribute name replacements applied during import.
+     * Always global. The attribute slug stays based on the feed name.
      *
      * @var list<array{from: string, to: string}>
      */
     #[ORM\Column(type: 'json')]
-    private array $param_value_replacements = [];
+    private array $param_name_replacements = [];
 
     /**
      * Exact category name replacements applied during import.
@@ -258,6 +278,28 @@ class ProductImport
         return $this;
     }
 
+    /** @return list<string> */
+    public function getAppliedDisabledCategorySlugs(): array
+    {
+        return $this->applied_disabled_category_slugs;
+    }
+
+    /** @param list<string>|array<int|string, mixed>|null $slugs */
+    public function setAppliedDisabledCategorySlugs(?array $slugs): static
+    {
+        $normalized = [];
+        foreach ($slugs ?? [] as $slug) {
+            $slug = trim((string) $slug);
+            if ($slug === '') {
+                continue;
+            }
+            $normalized[] = $slug;
+        }
+        $this->applied_disabled_category_slugs = array_values(array_unique($normalized));
+
+        return $this;
+    }
+
     public function getDisabledCategorySlugsText(): string
     {
         return implode("\n", $this->disabled_category_slugs);
@@ -398,7 +440,7 @@ class ProductImport
     }
 
     /**
-     * @return list<array{from: string, to: string}>
+     * @return list<array{from: string, to: string, category_id: int|null, attribute_id: int|null}>
      */
     public function getParamValueReplacements(): array
     {
@@ -418,6 +460,48 @@ class ProductImport
             }
             $from = trim((string) ($row['from'] ?? ''));
             $to = trim((string) ($row['to'] ?? ''));
+            $categoryId = (int) ($row['category_id'] ?? 0);
+            $categoryId = $categoryId > 0 ? $categoryId : null;
+            $attributeId = (int) ($row['attribute_id'] ?? 0);
+            $attributeId = $attributeId > 0 ? $attributeId : null;
+            $key = $from."\0".($categoryId ?? 0)."\0".($attributeId ?? 0);
+            if ($from === '' || $to === '' || isset($seen[$key])) {
+                continue;
+            }
+            $seen[$key] = true;
+            $normalized[] = [
+                'from' => $from,
+                'to' => $to,
+                'category_id' => $categoryId,
+                'attribute_id' => $attributeId,
+            ];
+        }
+        $this->param_value_replacements = $normalized;
+
+        return $this;
+    }
+
+    /**
+     * @return list<array{from: string, to: string}>
+     */
+    public function getParamNameReplacements(): array
+    {
+        return $this->param_name_replacements;
+    }
+
+    /**
+     * @param list<array<string, mixed>>|array<int, mixed> $rows
+     */
+    public function setParamNameReplacements(array $rows): static
+    {
+        $normalized = [];
+        $seen = [];
+        foreach ($rows as $row) {
+            if (!\is_array($row)) {
+                continue;
+            }
+            $from = trim((string) ($row['from'] ?? ''));
+            $to = trim((string) ($row['to'] ?? ''));
             if ($from === '' || $to === '' || isset($seen[$from])) {
                 continue;
             }
@@ -427,7 +511,7 @@ class ProductImport
                 'to' => $to,
             ];
         }
-        $this->param_value_replacements = $normalized;
+        $this->param_name_replacements = $normalized;
 
         return $this;
     }
@@ -435,10 +519,10 @@ class ProductImport
     /**
      * @return array<string, string>
      */
-    public function getParamValueReplacementMap(): array
+    public function getParamNameReplacementMap(): array
     {
         $map = [];
-        foreach ($this->param_value_replacements as $row) {
+        foreach ($this->param_name_replacements as $row) {
             $map[$row['from']] = $row['to'];
         }
 

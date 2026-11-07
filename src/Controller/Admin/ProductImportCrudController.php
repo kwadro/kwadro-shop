@@ -9,11 +9,11 @@ use App\Form\Admin\ProductImportCategoryNameReplacementType;
 use App\Form\Admin\ProductImportMenuCategoryMoveType;
 use App\Form\Admin\ProductImportMenuCategoryVisibilityType;
 use App\Form\Admin\ProductImportMenuTopCategoryType;
+use App\Form\Admin\ProductImportParamNameReplacementType;
 use App\Form\Admin\ProductImportParamValueReplacementType;
 use App\Repository\CategoryRepository;
 use App\Repository\ProductImportRepository;
-use App\Service\ProductImport\LugiProductImportService;
-use App\Service\ProductImport\SivitekProductImportService;
+use App\Service\ProductImport\ProductImportProcessLauncher;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminRoute;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
@@ -38,8 +38,7 @@ class ProductImportCrudController extends AbstractCrudController
 {
     public function __construct(
         private readonly TranslatorInterface $translator,
-        private readonly SivitekProductImportService $sivitekProductImportService,
-        private readonly LugiProductImportService $lugiProductImportService,
+        private readonly ProductImportProcessLauncher $importProcessLauncher,
         private readonly AdminUrlGenerator $adminUrlGenerator,
         private readonly CategoryRepository $categoryRepository,
         private readonly ProductImportRepository $productImportRepository,
@@ -147,6 +146,18 @@ class ProductImportCrudController extends AbstractCrudController
                 'entry_options' => ['label' => false],
             ])
             ->setHelp($this->translator->trans('admin.product_import.param_value_replacements_help', [], 'messages'))
+            ->onlyWhenUpdating();
+        yield CollectionField::new('paramNameReplacements', $this->translator->trans('admin.product_import.param_name_replacements', [], 'messages'))
+            ->setEntryType(ProductImportParamNameReplacementType::class)
+            ->setEntryIsComplex()
+            ->renderExpanded()
+            ->allowAdd()
+            ->allowDelete()
+            ->setFormTypeOptions([
+                'by_reference' => false,
+                'entry_options' => ['label' => false],
+            ])
+            ->setHelp($this->translator->trans('admin.product_import.param_name_replacements_help', [], 'messages'))
             ->onlyWhenUpdating();
         yield CollectionField::new('categoryNameReplacements', $this->translator->trans('admin.product_import.category_name_replacements', [], 'messages'))
             ->setEntryType(ProductImportCategoryNameReplacementType::class)
@@ -289,21 +300,25 @@ class ProductImportCrudController extends AbstractCrudController
             );
         }
 
-        set_time_limit(0);
-
-        $run = match ($import->getCode()) {
-            ProductImport::CODE_SIVITEK => $this->sivitekProductImportService->run($import, false),
-            ProductImport::CODE_LUGI => $this->lugiProductImportService->run($import, false),
-            default => null,
-        };
-
-        if ($run === null) {
+        if (!\in_array($import->getCode(), [ProductImport::CODE_SIVITEK, ProductImport::CODE_LUGI], true)) {
             $this->addFlash('danger', $this->translator->trans('admin.product_import.run_unsupported', [], 'messages'));
-        } elseif ($run->getStatus()->value === 'failed') {
-            $this->addFlash('danger', $run->getErrorMessage() ?? $run->getResult() ?? 'Import failed');
-        } else {
-            $this->addFlash('success', $run->getResult() ?? $this->translator->trans('admin.product_import.run_ok', [], 'messages'));
+
+            return $this->redirect(
+                $this->adminUrlGenerator
+                    ->setController(self::class)
+                    ->setAction(Action::DETAIL)
+                    ->setEntityId($import->getId())
+                    ->generateUrl()
+            );
         }
+
+        $started = $this->importProcessLauncher->start((int) $import->getId());
+        $message = match ($started) {
+            'busy' => 'admin.product_import.run_already_running',
+            'failed' => 'admin.product_import.run_start_failed',
+            default => 'admin.product_import.run_started',
+        };
+        $this->addFlash($started === 'started' ? 'success' : 'danger', $this->translator->trans($message, [], 'messages'));
 
         return $this->redirect(
             $this->adminUrlGenerator

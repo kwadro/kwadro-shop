@@ -32,6 +32,8 @@ use App\Controller\Admin\CartItemCrudController;
 use App\Controller\Admin\OrderCrudController;
 use App\Controller\Admin\OrderItemCrudController;
 use App\Controller\Admin\PaymentCrudController;
+use App\Controller\Admin\ProductAttributeCrudController;
+use App\Controller\Admin\ProductAttributeGroupCrudController;
 use App\Controller\Admin\ProductCrudController;
 use App\Controller\Admin\CategoryCrudController;
 use App\Controller\Admin\ProductOfferCrudController;
@@ -103,6 +105,8 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::section($this->translator->trans('menu.group_catalog', [], 'messages'));
         yield MenuItem::linkTo(ProductCrudController::class, $this->translator->trans('menu.link_product', [], 'messages'), 'fas fa-box');
         yield MenuItem::linkTo(CategoryCrudController::class, $this->translator->trans('menu.link_category', [], 'messages'), 'fas fa-folder');
+        yield MenuItem::linkTo(ProductAttributeGroupCrudController::class, $this->translator->trans('menu.link_product_attribute_group', [], 'messages'), 'fas fa-layer-group');
+        yield MenuItem::linkTo(ProductAttributeCrudController::class, $this->translator->trans('menu.link_product_attribute', [], 'messages'), 'fas fa-sliders-h');
         yield MenuItem::linkTo(SupplierCrudController::class, $this->translator->trans('menu.link_supplier', [], 'messages'), 'fas fa-truck');
         yield MenuItem::linkTo(ProductOfferCrudController::class, $this->translator->trans('menu.link_product_offer', [], 'messages'), 'fas fa-tags');
         yield MenuItem::linkTo(ProductImportCrudController::class, $this->translator->trans('menu.link_product_import', [], 'messages'), 'fas fa-file-import');

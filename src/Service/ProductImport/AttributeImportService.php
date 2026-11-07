@@ -21,8 +21,22 @@ class AttributeImportService
     /** @var array<string, ProductAttribute> key: "{externalCategoryId}|{paramName}" */
     private array $attributeIndex = [];
 
-    /** @var array<string, string> Exact feed value => storefront value, from the import settings. */
-    private array $paramValueReplacements = [];
+    /**
+     * Key "{categoryId}|{attributeId}|{feed value}" => storefront value.
+     * Zero category or attribute id means the rule is not limited on that axis.
+     *
+     * @var array<string, string>
+     */
+    private array $paramValueReplacementRules = [];
+
+    /** @var array<string, int>|null key: "{externalCategoryId}|{attributeName}" */
+    private ?array $attributeIdByKey = null;
+
+    /** @var array<string, string> Feed attribute name => storefront name. Always global. */
+    private array $paramNameReplacements = [];
+
+    /** @var array<int, int>|null Feed external category id => store category id of its attribute group. */
+    private ?array $categoryIdByExternalId = null;
 
     public function __construct(
         private readonly EntityManagerInterface $em,
@@ -34,9 +48,33 @@ class AttributeImportService
     }
 
     /**
-     * @param array<string, string> $replacements
+     * @param list<array{from?: string, to?: string, category_id?: int|null, attribute_id?: int|null}> $rows
      */
-    public function setParamValueReplacements(array $replacements): void
+    public function setParamValueReplacements(array $rows): void
+    {
+        $rules = [];
+        foreach ($rows as $row) {
+            if (!\is_array($row)) {
+                continue;
+            }
+            $from = trim((string) ($row['from'] ?? ''));
+            $to = trim((string) ($row['to'] ?? ''));
+            if ($from === '' || $to === '') {
+                continue;
+            }
+            $categoryId = (int) ($row['category_id'] ?? 0);
+            $attributeId = (int) ($row['attribute_id'] ?? 0);
+            $rules[$this->replacementKey($categoryId > 0 ? $categoryId : 0, $attributeId > 0 ? $attributeId : 0, $from)] = $to;
+        }
+        $this->paramValueReplacementRules = $rules;
+        $this->categoryIdByExternalId = null;
+        $this->attributeIdByKey = null;
+    }
+
+    /**
+     * @param array<string, string> $replacements Feed attribute name => storefront name.
+     */
+    public function setParamNameReplacements(array $replacements): void
     {
         $map = [];
         foreach ($replacements as $from => $to) {
@@ -47,7 +85,7 @@ class AttributeImportService
             }
             $map[$from] = $to;
         }
-        $this->paramValueReplacements = $map;
+        $this->paramNameReplacements = $map;
     }
 
     /**
@@ -81,27 +119,34 @@ class AttributeImportService
             ++$groupsCreatedOrUpdated;
 
             $attrPosition = 1;
-            foreach ($info['params'] as $paramName => $stats) {
-                $attribute = $this->findAttributeInGroup($group, $paramName);
+            foreach ($info['params'] as $storeName => $stats) {
+                $feedName = (string) ($stats['feed_name'] ?? $storeName);
+                $attribute = $this->findAttributeInGroup($group, $feedName);
+                if ($attribute === null && $storeName !== $feedName) {
+                    $attribute = $this->findAttributeInGroup($group, $storeName);
+                }
+                $isNew = $attribute === null;
                 if ($attribute === null) {
-                    $attribute = (new ProductAttribute())->setName($paramName);
+                    $attribute = (new ProductAttribute())->setName($storeName);
                     $group->addAttribute($attribute);
                     $this->em->persist($attribute);
                 }
 
                 $dataType = $this->inferDataType($stats);
-                $showInFilter = $this->inferShowInFilter($stats, $dataType);
-                $useInSearch = $this->inferUseInSearch($dataType, $showInFilter);
-
                 $attribute
-                    ->setName($paramName)
+                    ->setName($storeName)
                     ->setDataType($dataType)
-                    ->setShowInFilter($showInFilter)
-                    ->setUseInSearch($useInSearch)
                     ->setPosition($attrPosition);
+                // Keep a manual "show in filter" choice. Only new attributes get the inferred value.
+                if ($isNew) {
+                    $showInFilter = $this->inferShowInFilter($stats, $dataType);
+                    $attribute
+                        ->setShowInFilter($showInFilter)
+                        ->setUseInSearch($this->inferUseInSearch($dataType, $showInFilter));
+                }
                 $this->assignUniqueAttributeSlug(
                     $attribute,
-                    $this->generatorSlugService->transferCategoryNameToSlug($paramName),
+                    $this->generatorSlugService->transferCategoryNameToSlug($feedName),
                 );
                 ++$attributesCreatedOrUpdated;
                 ++$attrPosition;
@@ -144,6 +189,7 @@ class AttributeImportService
             }
             $this->attributeIndex[$externalId.'|'.$attribute->getName()] = $attribute;
         }
+        $this->attributeIdByKey = null;
     }
 
     /**
@@ -158,8 +204,8 @@ class AttributeImportService
         // One offer may repeat the same <param name> — keep the last value.
         $uniqueParams = [];
         foreach ($params as $param) {
-            $name = trim((string) ($param['name'] ?? ''));
-            $raw = $this->normalizeParamValue(trim((string) ($param['value'] ?? '')));
+            $name = $this->normalizeParamName(trim((string) ($param['name'] ?? '')));
+            $raw = $this->normalizeParamValue(trim((string) ($param['value'] ?? '')), $externalCategoryId, $name);
             if ($name === '' || $raw === '') {
                 continue;
             }
@@ -211,7 +257,7 @@ class AttributeImportService
     }
 
     /**
-     * @return array<int, array{params: array<string, array{count: int, int: int, decimal: int, long: int, uniques: array<string, true>}>}>
+     * @return array<int, array{params: array<string, array{count: int, int: int, decimal: int, long: int, uniques: array<string, true>, feed_name: string}>}>
      */
     private function analyzeFeed(string $localPath): array
     {
@@ -247,8 +293,9 @@ class AttributeImportService
                 }
 
                 foreach ($node->param as $param) {
-                    $name = trim((string) $param['name']);
-                    $value = $this->normalizeParamValue(trim((string) $param));
+                    $feedName = trim((string) $param['name']);
+                    $name = $this->normalizeParamName($feedName);
+                    $value = $this->normalizeParamValue(trim((string) $param), $categoryId, $name);
                     if ($name === '' || $value === '') {
                         continue;
                     }
@@ -259,6 +306,7 @@ class AttributeImportService
                             'decimal' => 0,
                             'long' => 0,
                             'uniques' => [],
+                            'feed_name' => $feedName,
                         ];
                     }
                     $stats = &$byCategory[$categoryId]['params'][$name];
@@ -285,7 +333,7 @@ class AttributeImportService
     }
 
     /**
-     * @param array{count: int, int: int, decimal: int, long: int, uniques: array<string, true>} $stats
+     * @param array{count: int, int: int, decimal: int, long: int, uniques: array<string, true>, feed_name?: string} $stats
      */
     private function inferDataType(array $stats): ProductAttributeDataType
     {
@@ -304,7 +352,7 @@ class AttributeImportService
     }
 
     /**
-     * @param array{count: int, int: int, decimal: int, long: int, uniques: array<string, true>} $stats
+     * @param array{count: int, int: int, decimal: int, long: int, uniques: array<string, true>, feed_name?: string} $stats
      */
     private function inferShowInFilter(array $stats, ProductAttributeDataType $dataType): bool
     {
@@ -328,9 +376,144 @@ class AttributeImportService
         return $dataType === ProductAttributeDataType::Varchar && $showInFilter;
     }
 
-    private function normalizeParamValue(string $value): string
+    private function normalizeParamName(string $name): string
     {
-        return $this->paramValueReplacements[$value] ?? $value;
+        if ($name === '') {
+            return $name;
+        }
+
+        return $this->paramNameReplacements[$name] ?? $name;
+    }
+
+    private function normalizeParamValue(string $value, int $externalCategoryId, string $attributeName): string
+    {
+        if ($value === '' || $this->paramValueReplacementRules === []) {
+            return $value;
+        }
+
+        $categoryId = $this->categoryIdForExternal($externalCategoryId) ?? 0;
+        $attributeId = $attributeName !== '' ? ($this->attributeIdFor($externalCategoryId, $attributeName) ?? 0) : 0;
+        foreach ($this->replacementCandidates($categoryId, $attributeId, $value) as $key) {
+            if (isset($this->paramValueReplacementRules[$key])) {
+                return $this->paramValueReplacementRules[$key];
+            }
+        }
+
+        return $value;
+    }
+
+    private function replacementKey(int $categoryId, int $attributeId, string $value): string
+    {
+        return $categoryId.'|'.$attributeId.'|'.$value;
+    }
+
+    /**
+     * More specific rules win: category and attribute, then attribute, then category, then global.
+     *
+     * @return list<string>
+     */
+    private function replacementCandidates(int $categoryId, int $attributeId, string $value): array
+    {
+        $keys = [];
+        if ($categoryId > 0 && $attributeId > 0) {
+            $keys[] = $this->replacementKey($categoryId, $attributeId, $value);
+        }
+        if ($attributeId > 0) {
+            $keys[] = $this->replacementKey(0, $attributeId, $value);
+        }
+        if ($categoryId > 0) {
+            $keys[] = $this->replacementKey($categoryId, 0, $value);
+        }
+        $keys[] = $this->replacementKey(0, 0, $value);
+
+        return $keys;
+    }
+
+    private function attributeIdFor(int $externalCategoryId, string $name): ?int
+    {
+        $key = $externalCategoryId.'|'.$name;
+        $indexed = $this->attributeIndex[$key] ?? null;
+        if ($indexed instanceof ProductAttribute && $indexed->getId() !== null) {
+            return $indexed->getId();
+        }
+        if ($this->attributeIdByKey === null) {
+            $this->attributeIdByKey = $this->loadAttributeIds();
+        }
+
+        return $this->attributeIdByKey[$key] ?? null;
+    }
+
+    /**
+     * @return array<string, int>
+     */
+    private function loadAttributeIds(): array
+    {
+        $rows = $this->attributeRepository->createQueryBuilder('a')
+            ->select('a.id AS id, a.name AS name, g.external_category_id AS external_id')
+            ->innerJoin('a.group', 'g')
+            ->andWhere('g.external_category_id IS NOT NULL')
+            ->getQuery()
+            ->getArrayResult();
+
+        $map = [];
+        foreach ($rows as $row) {
+            $externalId = (int) ($row['external_id'] ?? 0);
+            $id = (int) ($row['id'] ?? 0);
+            $name = (string) ($row['name'] ?? '');
+            if ($externalId < 1 || $id < 1 || $name === '') {
+                continue;
+            }
+            $map[$externalId.'|'.$name] = $id;
+        }
+
+        return $map;
+    }
+
+    private function categoryIdForExternal(int $externalCategoryId): ?int
+    {
+        if ($this->categoryIdByExternalId === null) {
+            $this->categoryIdByExternalId = $this->loadCategoryIdByExternalId();
+        }
+
+        return $this->categoryIdByExternalId[$externalCategoryId] ?? null;
+    }
+
+    /**
+     * The attribute group linked to a store category wins. A feed category that
+     * does not have a group yet falls back to the store category with the same external id.
+     *
+     * @return array<int, int>
+     */
+    private function loadCategoryIdByExternalId(): array
+    {
+        $map = [];
+        $groups = $this->groupRepository->createQueryBuilder('g')
+            ->select('g.external_category_id AS external_id, IDENTITY(g.category) AS category_id')
+            ->andWhere('g.external_category_id IS NOT NULL')
+            ->getQuery()
+            ->getArrayResult();
+        foreach ($groups as $row) {
+            $externalId = (int) ($row['external_id'] ?? 0);
+            $categoryId = (int) ($row['category_id'] ?? 0);
+            if ($externalId > 0 && $categoryId > 0) {
+                $map[$externalId] = $categoryId;
+            }
+        }
+
+        $categories = $this->categoryRepository->createQueryBuilder('c')
+            ->select('c.id AS id, c.external_id AS external_id')
+            ->andWhere('c.external_id IS NOT NULL')
+            ->getQuery()
+            ->getArrayResult();
+        foreach ($categories as $row) {
+            $externalId = (int) ($row['external_id'] ?? 0);
+            $categoryId = (int) ($row['id'] ?? 0);
+            if ($externalId > 0 && $categoryId > 0 && !isset($map[$externalId])) {
+                $map[$externalId] = $categoryId;
+            }
+        }
+
+        return $map;
     }
 
     private function findAttributeInGroup(ProductAttributeGroup $group, string $name): ?ProductAttribute
