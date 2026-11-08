@@ -58,17 +58,7 @@ final class ProductImportProcessLauncher
 
     private function phpCliBinary(): string
     {
-        $binary = PHP_BINARY;
-        if (!str_contains($binary, 'fpm') && is_executable($binary)) {
-            return $binary;
-        }
-
-        foreach ([PHP_BINDIR.'/php', '/usr/bin/php'] as $candidate) {
-            if (is_file($candidate) && is_executable($candidate)) {
-                return $candidate;
-            }
-        }
-
-        return 'php';
+        /** Specific for  hosting provider */
+        return '/usr/local/php82/bin/php';
     }
 }

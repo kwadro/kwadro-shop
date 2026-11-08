@@ -60,9 +60,8 @@ class LugiProductImportService
             $this->em->flush();
         }
         try {
-//            $feedUrl = $import->getFilePath();
-//            $localPath = $this->downloadFeed($feedUrl);
-            $localPath = '/home/igor/home/symfony3/var/import/lugi-20261108-165831.yml';
+            $feedUrl = $import->getFilePath();
+            $localPath = $this->downloadFeed($feedUrl);
 
             $reader = new \XMLReader();
             $reader->open($localPath);
