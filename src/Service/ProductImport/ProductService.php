@@ -133,8 +133,9 @@ readonly class ProductService
 
         $this->generatorSlugService->assignUniqueSlug($product, $baseSlug);
         $parentCategory = $category->getParent();
-        if ($parentCategory !== null) {
+        while ($parentCategory !== null){
             $product->addCategory($parentCategory);
+            $parentCategory = $parentCategory->getParent();
         }
         $this->ensureUniqueProductSlug($product);
 
