@@ -17,6 +17,7 @@ final class ProductImportProcessLauncher
     }
 
     /**
+     * @param int $importId
      * @return 'started'|'busy'|'failed'
      */
     public function start(int $importId): string
