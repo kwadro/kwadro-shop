@@ -79,28 +79,42 @@ final class ProductImportRunCommand extends Command
             return Command::FAILURE;
         }
 
+        $startedAt = microtime(true);
+
         try {
             $io->title(sprintf('Running import: %s (%s)', $import->getName(), $import->getCode()));
 
+            $importStartedAt = microtime(true);
             $run = match ($import->getCode()) {
                 ProductImport::CODE_SIVITEK => $this->sivitekProductImportService->run($import, $dryRun),
                 ProductImport::CODE_LUGI => $this->lugiProductImportService->run($import, $dryRun, $withImages),
                 default => throw new \RuntimeException(sprintf('Unsupported import code: %s', $import->getCode())),
             };
+            $importElapsed = microtime(true) - $importStartedAt;
 
             if ($run->getStatus() === ProductImportRunStatus::Failed) {
                 $io->error($run->getErrorMessage() ?? $run->getResult() ?? 'Import failed.');
+                $io->writeln(sprintf('Import phase: <info>%s</info>', $this->formatElapsed($importElapsed)));
+                $io->writeln(sprintf('Total time: <info>%s</info>', $this->formatElapsed(microtime(true) - $startedAt)));
 
                 return Command::FAILURE;
             }
 
             $io->success(($dryRun ? '[dry-run] ' : '').($run->getResult() ?? 'Done.'));
+            $io->writeln(sprintf('Import phase: <info>%s</info>', $this->formatElapsed($importElapsed)));
 
             if (!$withImages) {
+                $io->writeln(sprintf('Total time: <info>%s</info>', $this->formatElapsed(microtime(true) - $startedAt)));
+
                 return Command::SUCCESS;
             }
 
-            return $this->assignImportImages((string) $import->getCode(), $dryRun, $output, $io);
+            $imagesStartedAt = microtime(true);
+            $exitCode = $this->assignImportImages((string) $import->getCode(), $dryRun, $output, $io);
+            $io->writeln(sprintf('Images phase: <info>%s</info>', $this->formatElapsed(microtime(true) - $imagesStartedAt)));
+            $io->writeln(sprintf('Total time: <info>%s</info>', $this->formatElapsed(microtime(true) - $startedAt)));
+
+            return $exitCode;
         } finally {
             $this->runLock->release($lock);
         }
@@ -129,5 +143,24 @@ final class ProductImportRunCommand extends Command
         }
 
         return $exitCode;
+    }
+
+    private function formatElapsed(float $seconds): string
+    {
+        if ($seconds < 60) {
+            return sprintf('%.1fs', $seconds);
+        }
+
+        $minutes = (int) floor($seconds / 60);
+        $remain = $seconds - ($minutes * 60);
+
+        if ($minutes < 60) {
+            return sprintf('%dm %.1fs', $minutes, $remain);
+        }
+
+        $hours = (int) floor($minutes / 60);
+        $minutes %= 60;
+
+        return sprintf('%dh %dm %.1fs', $hours, $minutes, $remain);
     }
 }

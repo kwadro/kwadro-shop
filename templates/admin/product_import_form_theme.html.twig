@@ -1,0 +1,135 @@
+{# Nested CollectionType entries are not EasyAdmin fields; keep EA collection JS working. #}
+{% block collection_row %}
+    {% set ea_field = form.vars.ea_vars.field|default(null) %}
+    {% if prototype is defined and not prototype.rendered %}
+        {% set row_attr = row_attr|merge({'data-prototype': form_row(prototype)}) %}
+    {% endif %}
+
+    {% set maxKey = 0 %}
+    {% for key in form.children|keys %}
+        {% if key matches '/^\\d+$/' %}
+            {% set intKey = key|number_format(0, '', '', '') %}
+            {% if intKey > maxKey %}
+                {% set maxKey = intKey %}
+            {% endif %}
+        {% endif %}
+    {% endfor %}
+
+    {% set nested_kind = attr['data-param-value-nested-collection']|default('') %}
+    {% set add_label = 'action.add_new_item'|trans({}, 'EasyAdminBundle') %}
+    {% if nested_kind == 'attributes' %}
+        {% set add_label = 'admin.product_import.param_value_add_attribute'|trans %}
+    {% elseif nested_kind == 'replacements' %}
+        {% set add_label = 'admin.product_import.param_value_add_replacement'|trans %}
+    {% elseif ea_field and ea_field.property == 'paramValueReplacementGroups' %}
+        {% set add_label = 'admin.product_import.param_value_add_rule'|trans %}
+    {% endif %}
+
+    {% set row_attr = row_attr|merge({
+        'data-ea-collection-field': 'true',
+        'data-entry-is-complex': ea_field and (ea_field.customOptions.get('entryIsComplex') ?? false) ? 'true' : 'false',
+        'data-allow-add': allow_add ? 'true' : 'false',
+        'data-allow-delete': allow_delete ? 'true' : 'false',
+        'data-num-items': form.children is empty ? 0 : maxKey + 1,
+        'data-form-type-name-placeholder': prototype is defined ? prototype.vars.name : '',
+        'data-param-value-add-label': add_label,
+    }) %}
+
+    {{ block('form_row') }}
+{% endblock %}
+
+{% block collection_widget %}
+    {% set ea_field = form.vars.ea_vars.field|default(null) %}
+    {% set isEmptyCollection = value is null or (value is iterable and value is empty) %}
+    {% set is_array_field = ea_field and ea_field.fieldFqcn == 'EasyCorp\\Bundle\\EasyAdminBundle\\Field\\ArrayField' %}
+    {% set nested_kind = attr['data-param-value-nested-collection']|default('') %}
+    {% set use_accordion = ea_field is not null and not is_array_field %}
+
+    <div class="ea-form-collection-items{% if nested_kind %} param-value-nested-{{ nested_kind }}{% endif %}">
+        {% if isEmptyCollection %}
+            {{ block('empty_collection') }}
+        {% elseif is_array_field %}
+            {{ block('form_widget') }}
+        {% elseif use_accordion %}
+            <div class="accordion">
+                {{ block('form_widget') }}
+            </div>
+        {% else %}
+            {# Keep EasyAdmin collection JS insertion selectors working for nested lists. #}
+            <div class="accordion">
+                <div class="form-widget-compound">
+                    <div data-empty-collection class="param-value-nested-list">
+                        {{ block('form_widget') }}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    {% if isEmptyCollection or form.vars.prototype is defined %}
+        {% set attr = attr|merge({'data-empty-collection': block('empty_collection')}) %}
+    {% endif %}
+
+    {% if allow_add|default(false) and not disabled %}
+        {% set add_label = 'action.add_new_item'|trans({}, 'EasyAdminBundle') %}
+        {% if nested_kind == 'attributes' %}
+            {% set add_label = 'admin.product_import.param_value_add_attribute'|trans %}
+        {% elseif nested_kind == 'replacements' %}
+            {% set add_label = 'admin.product_import.param_value_add_replacement'|trans %}
+        {% elseif ea_field and ea_field.property == 'paramValueReplacementGroups' %}
+            {% set add_label = 'admin.product_import.param_value_add_rule'|trans %}
+        {% endif %}
+        <button type="button" class="btn btn-link field-collection-add-button">
+            <twig:ea:Icon name="internal:plus" class="pr-1" />
+            {{ add_label }}
+        </button>
+    {% endif %}
+{% endblock %}
+
+{% block collection_entry_row %}
+    {% set parent_form = form_parent(form) %}
+    {% set ea_field = parent_form.vars.ea_vars.field|default(null) %}
+    {% set is_array_field = ea_field and ea_field.fieldFqcn == 'EasyCorp\\Bundle\\EasyAdminBundle\\Field\\ArrayField' %}
+    {% set is_complex = ea_field and (ea_field.customOptions.get('entryIsComplex') ?? false) %}
+    {% set to_string_method = ea_field ? (ea_field.customOptions.get('entryToStringMethod') ?? null) : null %}
+    {% set allows_deleting_items = parent_form.vars.allow_delete|default(false) %}
+    {% set render_expanded = not form.vars.valid or (ea_field and (ea_field.customOptions.get('renderExpanded') ?? false)) %}
+    {% set nested_kind = parent_form.vars.attr['data-param-value-nested-collection']|default('') %}
+    {% set delete_item_button %}
+        <button type="button" class="btn btn-link btn-link-danger field-collection-delete-button"
+                title="{{ 'action.remove_item'|trans({}, 'EasyAdminBundle') }}">
+            <twig:ea:Icon name="internal:delete" />
+        </button>
+    {% endset %}
+
+    <div class="field-collection-item {{ is_complex ? 'field-collection-item-complex' }} {{ not form.vars.valid ? 'is-invalid' }}{% if nested_kind %} param-value-nested-item param-value-nested-item--{{ nested_kind }}{% endif %}">
+        {% if is_array_field or nested_kind != '' %}
+            <div class="param-value-nested-item__body">
+                {{ form_widget(form) }}
+                {% if allows_deleting_items and not disabled %}
+                    {{ delete_item_button }}
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button {{ render_expanded ? '' : 'collapsed' }}" type="button" data-bs-toggle="collapse" data-bs-target="#{{ id }}-contents">
+                        <twig:ea:Icon name="internal:chevron-right" class="form-collection-item-collapse-marker" />
+                        <span class="param-value-group-title">{{ value|ea_as_string(to_string_method) }}</span>
+                    </button>
+
+                    {% if allows_deleting_items and not disabled %}
+                        {{ delete_item_button }}
+                    {% endif %}
+                </h2>
+                <div id="{{ id }}-contents" class="accordion-collapse collapse {{ render_expanded ? 'show' }}">
+                    <div class="accordion-body">
+                        <div class="row">
+                            {{ form_widget(form) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

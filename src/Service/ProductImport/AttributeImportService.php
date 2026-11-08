@@ -18,8 +18,12 @@ use Doctrine\ORM\EntityManagerInterface;
  */
 class AttributeImportService
 {
-    /** @var array<string, ProductAttribute> key: "{externalCategoryId}|{paramName}" */
-    private array $attributeIndex = [];
+    /**
+     * Lightweight index: survives EntityManager::clear() without a full reload.
+     *
+     * @var array<string, array{id: int, dataType: ProductAttributeDataType}>
+     */
+    private array $attributeMeta = [];
 
     /**
      * Key "{categoryId}|{attributeId}|{feed value}" => storefront value.
@@ -100,36 +104,60 @@ class AttributeImportService
         $attributesCreatedOrUpdated = 0;
         $position = 1;
 
+        $categoriesByExternalId = $this->loadCategoriesByExternalId();
+        $groupsByExternalId = $this->loadGroupsWithAttributesByExternalId();
+        $usedGroupSlugs = $this->loadUsedGroupSlugs();
+        $usedAttributeSlugsByGroup = $this->loadUsedAttributeSlugsByGroupId();
+
         foreach ($analysis as $externalCategoryId => $info) {
-            $category = $this->categoryRepository->findOneBy(['external_id' => $externalCategoryId]);
+            $category = $categoriesByExternalId[$externalCategoryId] ?? null;
             $groupName = $category?->getName() ?: sprintf('Category %d', $externalCategoryId);
-            $group = $this->groupRepository->findOneByExternalCategoryId($externalCategoryId);
+            $group = $groupsByExternalId[$externalCategoryId] ?? null;
             if ($group === null) {
                 $group = (new ProductAttributeGroup())
                     ->setExternalCategoryId($externalCategoryId)
                     ->setPosition($position);
                 $this->em->persist($group);
+                $groupsByExternalId[$externalCategoryId] = $group;
             }
 
             $group
                 ->setName($groupName)
                 ->setCategory($category)
                 ->setPosition($position);
-            $this->assignUniqueGroupSlug($group, $this->generatorSlugService->transferCategoryNameToSlug($groupName));
+            $this->assignUniqueGroupSlugCached(
+                $group,
+                $this->generatorSlugService->transferCategoryNameToSlug($groupName),
+                $usedGroupSlugs,
+            );
             ++$groupsCreatedOrUpdated;
+
+            /** @var array<string, ProductAttribute> $attrsByName */
+            $attrsByName = [];
+            foreach ($group->getAttributes() as $existingAttr) {
+                $attrsByName[$existingAttr->getName()] = $existingAttr;
+            }
+
+            $groupId = $group->getId();
+            if ($groupId !== null) {
+                if (!isset($usedAttributeSlugsByGroup[$groupId])) {
+                    $usedAttributeSlugsByGroup[$groupId] = [];
+                }
+                $attrSlugBucket = &$usedAttributeSlugsByGroup[$groupId];
+            } else {
+                $attrSlugBucket = [];
+            }
 
             $attrPosition = 1;
             foreach ($info['params'] as $storeName => $stats) {
                 $feedName = (string) ($stats['feed_name'] ?? $storeName);
-                $attribute = $this->findAttributeInGroup($group, $feedName);
-                if ($attribute === null && $storeName !== $feedName) {
-                    $attribute = $this->findAttributeInGroup($group, $storeName);
-                }
+                $attribute = $attrsByName[$feedName] ?? $attrsByName[$storeName] ?? null;
                 $isNew = $attribute === null;
                 if ($attribute === null) {
                     $attribute = (new ProductAttribute())->setName($storeName);
                     $group->addAttribute($attribute);
                     $this->em->persist($attribute);
+                    $attrsByName[$storeName] = $attribute;
                 }
 
                 $dataType = $this->inferDataType($stats);
@@ -144,17 +172,34 @@ class AttributeImportService
                         ->setShowInFilter($showInFilter)
                         ->setUseInSearch($this->inferUseInSearch($dataType, $showInFilter));
                 }
-                $this->assignUniqueAttributeSlug(
+                $this->assignUniqueAttributeSlugCached(
                     $attribute,
                     $this->generatorSlugService->transferCategoryNameToSlug($feedName),
+                    $attrSlugBucket,
                 );
                 ++$attributesCreatedOrUpdated;
                 ++$attrPosition;
             }
+            unset($attrSlugBucket);
 
             ++$position;
             if (!$dryRun && ($position % 25) === 0) {
                 $this->em->flush();
+                // New groups get ids after flush — keep slug bucket keys aligned.
+                foreach ($groupsByExternalId as $syncedGroup) {
+                    $syncedGroupId = $syncedGroup->getId();
+                    if ($syncedGroupId === null || isset($usedAttributeSlugsByGroup[$syncedGroupId])) {
+                        continue;
+                    }
+                    $bucket = [];
+                    foreach ($syncedGroup->getAttributes() as $syncedAttr) {
+                        $slug = $syncedAttr->getSlug();
+                        if ($slug !== '') {
+                            $bucket[$slug] = true;
+                        }
+                    }
+                    $usedAttributeSlugsByGroup[$syncedGroupId] = $bucket;
+                }
             }
         }
 
@@ -170,26 +215,39 @@ class AttributeImportService
         ];
     }
 
+    /**
+     * Rebuild the lightweight attribute meta index from the database.
+     * Safe to call after syncGroupsFromFeed; not required after EntityManager::clear().
+     */
     public function rebuildAttributeIndex(): void
     {
-        $this->attributeIndex = [];
-        $attributes = $this->attributeRepository->createQueryBuilder('a')
+        $rows = $this->attributeRepository->createQueryBuilder('a')
+            ->select('a.id AS id, a.name AS name, a.data_type AS data_type, g.external_category_id AS external_id')
             ->innerJoin('a.group', 'g')
-            ->addSelect('g')
+            ->andWhere('g.external_category_id IS NOT NULL')
             ->getQuery()
-            ->getResult();
+            ->getArrayResult();
 
-        foreach ($attributes as $attribute) {
-            if (!$attribute instanceof ProductAttribute) {
+        $this->attributeMeta = [];
+        $attributeIds = [];
+        foreach ($rows as $row) {
+            $externalId = (int) ($row['external_id'] ?? 0);
+            $id = (int) ($row['id'] ?? 0);
+            $name = (string) ($row['name'] ?? '');
+            if ($externalId < 1 || $id < 1 || $name === '') {
                 continue;
             }
-            $externalId = $attribute->getGroup()?->getExternalCategoryId();
-            if ($externalId === null) {
-                continue;
+            $dataType = $row['data_type'] ?? ProductAttributeDataType::Varchar;
+            if (!$dataType instanceof ProductAttributeDataType) {
+                $dataType = ProductAttributeDataType::tryFrom((string) $dataType) ?? ProductAttributeDataType::Varchar;
             }
-            $this->attributeIndex[$externalId.'|'.$attribute->getName()] = $attribute;
+            $this->attributeMeta[$externalId.'|'.$name] = [
+                'id' => $id,
+                'dataType' => $dataType,
+            ];
+            $attributeIds[$externalId.'|'.$name] = $id;
         }
-        $this->attributeIdByKey = null;
+        $this->attributeIdByKey = $attributeIds;
     }
 
     /**
@@ -197,7 +255,7 @@ class AttributeImportService
      */
     public function syncProductValues(Product $product, int $externalCategoryId, array $params): void
     {
-        if ($this->attributeIndex === []) {
+        if ($this->attributeMeta === []) {
             $this->rebuildAttributeIndex();
         }
 
@@ -214,7 +272,7 @@ class AttributeImportService
 
         /** @var array<int, ProductAttributeValue> $existingByAttrId */
         $existingByAttrId = [];
-        // Lazy-load once via the association (no extra findBy per product).
+        // Prefer already-eager-loaded association (no extra findBy per product).
         foreach ($product->getAttributeValues() as $value) {
             $attrId = $value->getAttribute()?->getId();
             if ($attrId === null) {
@@ -230,22 +288,21 @@ class AttributeImportService
 
         $seenAttrIds = [];
         foreach ($uniqueParams as $name => $raw) {
-            $attribute = $this->attributeIndex[$externalCategoryId.'|'.$name] ?? null;
-            if (!$attribute instanceof ProductAttribute) {
+            $meta = $this->attributeMeta[$externalCategoryId.'|'.$name] ?? null;
+            if ($meta === null) {
                 continue;
             }
-            $attrId = $attribute->getId();
-            if ($attrId === null) {
-                continue;
-            }
+            $attrId = $meta['id'];
 
             $value = $existingByAttrId[$attrId] ?? null;
             if ($value === null) {
+                /** @var ProductAttribute $attribute */
+                $attribute = $this->em->getReference(ProductAttribute::class, $attrId);
                 $value = (new ProductAttributeValue())->setAttribute($attribute);
                 $product->addAttributeValue($value);
                 $existingByAttrId[$attrId] = $value;
             }
-            $value->setFromRaw($raw, $attribute->getDataType());
+            $value->setFromRaw($raw, $meta['dataType']);
             $seenAttrIds[$attrId] = true;
         }
 
@@ -294,8 +351,9 @@ class AttributeImportService
 
                 foreach ($node->param as $param) {
                     $feedName = trim((string) $param['name']);
+                    // Name replacements only — value replacements are applied later per product.
                     $name = $this->normalizeParamName($feedName);
-                    $value = $this->normalizeParamValue(trim((string) $param), $categoryId, $name);
+                    $value = trim((string) $param);
                     if ($name === '' || $value === '') {
                         continue;
                     }
@@ -432,9 +490,9 @@ class AttributeImportService
     private function attributeIdFor(int $externalCategoryId, string $name): ?int
     {
         $key = $externalCategoryId.'|'.$name;
-        $indexed = $this->attributeIndex[$key] ?? null;
-        if ($indexed instanceof ProductAttribute && $indexed->getId() !== null) {
-            return $indexed->getId();
+        $meta = $this->attributeMeta[$key] ?? null;
+        if ($meta !== null) {
+            return $meta['id'];
         }
         if ($this->attributeIdByKey === null) {
             $this->attributeIdByKey = $this->loadAttributeIds();
@@ -516,67 +574,144 @@ class AttributeImportService
         return $map;
     }
 
-    private function findAttributeInGroup(ProductAttributeGroup $group, string $name): ?ProductAttribute
+    /**
+     * @return array<int, \App\Entity\Category>
+     */
+    private function loadCategoriesByExternalId(): array
     {
-        foreach ($group->getAttributes() as $attribute) {
-            if ($attribute->getName() === $name) {
-                return $attribute;
+        $rows = $this->categoryRepository->createQueryBuilder('c')
+            ->andWhere('c.external_id IS NOT NULL')
+            ->getQuery()
+            ->getResult();
+
+        $map = [];
+        foreach ($rows as $category) {
+            $externalId = $category->getExternalId();
+            if ($externalId === null) {
+                continue;
+            }
+            $map[(int) $externalId] = $category;
+        }
+
+        return $map;
+    }
+
+    /**
+     * @return array<int, ProductAttributeGroup>
+     */
+    private function loadGroupsWithAttributesByExternalId(): array
+    {
+        $groups = $this->groupRepository->createQueryBuilder('g')
+            ->leftJoin('g.attributes', 'a')
+            ->addSelect('a')
+            ->andWhere('g.external_category_id IS NOT NULL')
+            ->getQuery()
+            ->getResult();
+
+        $map = [];
+        foreach ($groups as $group) {
+            if (!$group instanceof ProductAttributeGroup) {
+                continue;
+            }
+            $externalId = $group->getExternalCategoryId();
+            if ($externalId === null) {
+                continue;
+            }
+            $map[(int) $externalId] = $group;
+        }
+
+        return $map;
+    }
+
+    /**
+     * @return array<string, true>
+     */
+    private function loadUsedGroupSlugs(): array
+    {
+        $rows = $this->groupRepository->createQueryBuilder('g')
+            ->select('g.slug AS slug')
+            ->getQuery()
+            ->getArrayResult();
+
+        $used = [];
+        foreach ($rows as $row) {
+            $slug = (string) ($row['slug'] ?? '');
+            if ($slug !== '') {
+                $used[$slug] = true;
             }
         }
 
-        if ($group->getId() === null) {
-            return null;
-        }
-
-        return $this->attributeRepository->findOneBy([
-            'group' => $group,
-            'name' => $name,
-        ]);
+        return $used;
     }
 
-    private function assignUniqueGroupSlug(ProductAttributeGroup $group, string $baseSlug): void
+    /**
+     * @return array<int, array<string, true>>
+     */
+    private function loadUsedAttributeSlugsByGroupId(): array
     {
+        $rows = $this->attributeRepository->createQueryBuilder('a')
+            ->select('IDENTITY(a.group) AS group_id, a.slug AS slug')
+            ->getQuery()
+            ->getArrayResult();
+
+        $used = [];
+        foreach ($rows as $row) {
+            $groupId = (int) ($row['group_id'] ?? 0);
+            $slug = (string) ($row['slug'] ?? '');
+            if ($groupId < 1 || $slug === '') {
+                continue;
+            }
+            $used[$groupId][$slug] = true;
+        }
+
+        return $used;
+    }
+
+    /**
+     * @param array<string, true> $usedGroupSlugs
+     */
+    private function assignUniqueGroupSlugCached(
+        ProductAttributeGroup $group,
+        string $baseSlug,
+        array &$usedGroupSlugs,
+    ): void {
         $slug = $baseSlug !== '' ? $baseSlug : 'attr-group';
+        $current = $group->getSlug();
+        if ($current !== '') {
+            unset($usedGroupSlugs[$current]);
+        }
+
         $candidate = $slug;
         $i = 2;
-        while ($this->groupRepository->slugExists($candidate, $group->getId())) {
+        while (isset($usedGroupSlugs[$candidate])) {
             $candidate = $slug.'-'.$i;
             ++$i;
         }
+        $usedGroupSlugs[$candidate] = true;
         $group->setSlug($candidate);
     }
 
-    private function assignUniqueAttributeSlug(ProductAttribute $attribute, string $baseSlug): void
-    {
-        $group = $attribute->getGroup();
-        $groupId = $group?->getId();
+    /**
+     * @param array<string, true> $usedAttributeSlugs
+     */
+    private function assignUniqueAttributeSlugCached(
+        ProductAttribute $attribute,
+        string $baseSlug,
+        array &$usedAttributeSlugs,
+    ): void {
         $slug = $baseSlug !== '' ? $baseSlug : 'attr';
-        if ($groupId === null) {
-            // New group not flushed yet — ensure uniqueness inside the collection.
-            $candidate = $slug;
-            $i = 2;
-            $existing = [];
-            foreach ($group?->getAttributes() ?? [] as $sibling) {
-                if ($sibling === $attribute) {
-                    continue;
-                }
-                $existing[$sibling->getSlug()] = true;
-            }
-            while (isset($existing[$candidate])) {
-                $candidate = $slug.'-'.$i;
-                ++$i;
-            }
-            $attribute->setSlug($candidate);
-
-            return;
+        $current = $attribute->getSlug();
+        if ($current !== '') {
+            unset($usedAttributeSlugs[$current]);
         }
 
         $candidate = $slug;
         $i = 2;
-        while ($this->attributeRepository->slugExistsInGroup($groupId, $candidate, $attribute->getId())) {
+        while (isset($usedAttributeSlugs[$candidate])) {
             $candidate = $slug.'-'.$i;
             ++$i;
         }
+        $usedAttributeSlugs[$candidate] = true;
         $attribute->setSlug($candidate);
     }
 }

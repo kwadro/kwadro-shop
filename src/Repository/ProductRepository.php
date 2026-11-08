@@ -114,6 +114,32 @@ class ProductRepository extends ServiceEntityRepository
     }
 
     /**
+     * Product lookup for import: eager-load offers, categories and attribute values
+     * to avoid N+1 queries inside the offer loop.
+     */
+    public function findOneBySkuForImport(string $sku): ?Product
+    {
+        $sku = trim($sku);
+        if ($sku === '') {
+            return null;
+        }
+
+        return $this->createQueryBuilder('p')
+            ->leftJoin('p.offers', 'o')
+            ->addSelect('o')
+            ->leftJoin('p.categories', 'c')
+            ->addSelect('c')
+            ->leftJoin('p.attributeValues', 'av')
+            ->addSelect('av')
+            ->leftJoin('av.attribute', 'attr')
+            ->addSelect('attr')
+            ->andWhere('p.sku = :sku')
+            ->setParameter('sku', $sku)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /**
      * Newest in-stock products for the homepage showcase.
      *
      * When $onlyIds is given, only those products are considered (manual selection).

@@ -24,7 +24,9 @@ final class EmptyUserAgentFilter implements FilterInterface
     public const CHOICE_FILLED = NullFilter::CHOICE_VALUE_NOT_NULL;
 
     /**
+     * @param string $propertyName
      * @param TranslatableInterface|string|false|null $label
+     * @return EmptyUserAgentFilter
      */
     public static function new(
         string $propertyName = 'userAgentEmpty',

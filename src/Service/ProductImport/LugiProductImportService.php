@@ -60,8 +60,9 @@ class LugiProductImportService
             $this->em->flush();
         }
         try {
-            $feedUrl = $import->getFilePath();
-            $localPath = $this->downloadFeed($feedUrl);
+//            $feedUrl = $import->getFilePath();
+//            $localPath = $this->downloadFeed($feedUrl);
+            $localPath = '/home/igor/home/symfony3/var/import/lugi-20261108-165831.yml';
 
             $reader = new \XMLReader();
             $reader->open($localPath);
@@ -97,6 +98,7 @@ class LugiProductImportService
                 }
             }
             $reader->close();
+            $categoryNameReplacements = $import->getCategoryNameReplacementMap();
 
             if ($catalogDate === $lastRunDate) {
                 throw new \RuntimeException('Import this price  is  run  as another process.');
@@ -108,7 +110,7 @@ class LugiProductImportService
             $reader = new \XMLReader();
             $reader->open($localPath);
             $position = 1;
-            $categoryNameReplacements = $import->getCategoryNameReplacementMap();
+
             while ($reader->read()) {
                 if ($reader->nodeType !== \XMLReader::ELEMENT || $reader->localName !== 'category') {
                     continue;
@@ -133,10 +135,12 @@ class LugiProductImportService
 
             // Build attribute groups from distinct <param> sets per feed category.
             $attributeStats = $this->attributeImportService->syncGroupsFromFeed($localPath, $dryRun);
+
             if (!$dryRun) {
                 // Groups/attrs flushed — re-attach category/supplier for product loop.
                 [$baseCategory, $supplier] = $this->reloadManagedRefs($baseCategoryId, $supplierId);
             }
+
 
             // load product map
             $reader = new \XMLReader();
@@ -150,6 +154,8 @@ class LugiProductImportService
             ];
             $disabledSkuMap = array_fill_keys(array_map('mb_strtolower', $import->getDisabledSkus()), true);
             $count = 0;
+            $this->productService->setMenuCategoryMoves($import->getMenuCategoryMoves());
+
             while ($reader->read()) {
                 if ($reader->nodeType !== \XMLReader::ELEMENT || $reader->localName !== 'offer') {
                     continue;
@@ -172,6 +178,7 @@ class LugiProductImportService
                 $sku = mb_strtolower($productData['sku']);
                 $productData['force_disabled'] = isset($disabledSkuMap[$sku]);
                 $seenSkus[$sku] = true;
+
                 $result = $this->productService->update(
                     $this->em,
                     $productData,
@@ -186,9 +193,10 @@ class LugiProductImportService
                     $this->em->clear();
                     $this->releaseImportMemory();
                     $count = 0;
-                    // clear() detaches category/supplier/attrs — re-load managed instances for the next batch.
+                    // clear() detaches category/supplier — re-load managed instances for the next batch.
+                    // Attribute meta index keeps ids/data types in memory (no full reload).
                     [$baseCategory, $supplier] = $this->reloadManagedRefs($baseCategoryId, $supplierId);
-                    $this->attributeImportService->rebuildAttributeIndex();
+                    $this->productService->clearRuntimeCaches();
                 }
             }
             $deleted = 0;
@@ -203,7 +211,11 @@ class LugiProductImportService
 
             [$import, $run] = $this->reloadImportRun($import, $run, $importId, $runId);
             $seenForRestore = $import->getMode() === ProductImportMode::DeleteAddUpdate ? $seenSkus : null;
-            $disabledCategories = $this->categoryService->disableConfiguredAfterImport($import, $dryRun, $seenForRestore);
+            $disabledCategories = $this->categoryService->disableConfiguredAfterImport(
+                $import,
+                $dryRun,
+                $seenForRestore
+            );
 
             $summary = sprintf(
                 'Created: %d, updated: %d, disabled: %d, deleted/deactivated: %d, attr groups: %d, attributes: %d, categories off: %d, products off by category: %d, categories on: %d, products on by category: %d (mode: %s)',

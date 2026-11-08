@@ -12,15 +12,33 @@ use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
 use SimpleXMLElement;
 
-readonly class ProductService
+ class ProductService
 {
+    private ?array $menuCategoryMoves;
+
+    /** @var array<int, Category|null> */
+    private array $categoryByExternalId = [];
+
+    /** @var array<int, Category|null> */
+    private array $categoryById = [];
+
     public function __construct(
-        private EntityManagerInterface $em,
-        private ProductRepository $productRepository,
-        private CategoryRepository $categoryRepository,
-        private GeneratorSlugService $generatorSlugService,
-        private AttributeImportService $attributeImportService,
+        private readonly EntityManagerInterface $em,
+        private readonly ProductRepository $productRepository,
+        private readonly CategoryRepository $categoryRepository,
+        private readonly GeneratorSlugService $generatorSlugService,
+        private readonly AttributeImportService $attributeImportService,
     ) {
+        $this->menuCategoryMoves = null;
+    }
+
+    /**
+     * Drop category caches after EntityManager::clear().
+     */
+    public function clearRuntimeCaches(): void
+    {
+        $this->categoryByExternalId = [];
+        $this->categoryById = [];
     }
 
     public function loadProductDataByNode(
@@ -35,8 +53,8 @@ readonly class ProductService
         $params = [];
         if (isset($node->param)) {
             foreach ($node->param as $param) {
-                $name = trim((string) $param['name']);
-                $value = trim((string) $param);
+                $name = trim((string)$param['name']);
+                $value = trim((string)$param);
                 if ($name === '' || $value === '') {
                     continue;
                 }
@@ -78,7 +96,7 @@ readonly class ProductService
         }
         $sku = trim($productData['sku']);
         try {
-            $existing = $this->productRepository->findOneBy(['sku' => $sku]);
+            $existing = $this->productRepository->findOneBySkuForImport($sku);
 
             if ($existing === null) {
                 $product = $this->createProduct($productData, $supplier, $baseCategory);
@@ -107,8 +125,7 @@ readonly class ProductService
     private function createProduct($productData, $supplier, $baseCategory): Product
     {
         $inStock = $productData['stock_qty'] > 0;
-        $category = $this->categoryRepository->findOneBy(['external_id' => $productData['category_id']]);
-        $baseSlug = $this->generatorSlugService->transferSkuAndIdToSlug($productData['sku'],$productData['id']);
+        $baseSlug = $this->generatorSlugService->transferSkuAndIdToSlug($productData['sku'], $productData['id']);
 
         $product = (new Product())
             ->setModel($productData['model'] ?? null)
@@ -124,19 +141,16 @@ readonly class ProductService
             ->setBadge($inStock ? null : 'Очікується')
             ->setOgType('product')
             ->setEnabled(!$productData['force_disabled'])
-            ->addCategory($baseCategory)
-            ->addCategory($category);
+            ->addCategory($baseCategory);
 
         if (($productData['weight'] ?? null) !== null) {
             $product->setWeight($productData['weight']);
         }
 
         $this->generatorSlugService->assignUniqueSlug($product, $baseSlug);
-        $parentCategory = $category->getParent();
-        while ($parentCategory !== null){
-            $product->addCategory($parentCategory);
-            $parentCategory = $parentCategory->getParent();
-        }
+
+        $this->updateProductCategory($product,$productData['category_id']);
+
         $this->ensureUniqueProductSlug($product);
 
         if ($productData['price'] !== null && $productData['price'] > 0) {
@@ -145,7 +159,7 @@ readonly class ProductService
 
         $this->attributeImportService->syncProductValues(
             $product,
-            (int) $productData['category_id'],
+            (int)$productData['category_id'],
             $productData['params'] ?? [],
         );
 
@@ -156,7 +170,7 @@ readonly class ProductService
     {
         $inStock = $productData['stock_qty'] > 0;
         $product
-            ->setDescription($this->toHtmlDescription((string) ($productData['description'] ?? '')))
+            ->setDescription($this->toHtmlDescription((string)($productData['description'] ?? '')))
             ->setInStock($inStock)
             ->setStockQty($inStock ? max(1, $productData['stock_qty']) : 0)
             ->setBadge($inStock ? null : 'Очікується');
@@ -172,14 +186,79 @@ readonly class ProductService
         if ($productData['price'] !== null && $productData['price'] > 0) {
             $this->upsertOffer($product, $productData, $supplier);
         }
+        $this->updateProductCategory($product,$productData['category_id']);
 
         $this->attributeImportService->syncProductValues(
             $product,
-            (int) $productData['category_id'],
+            (int)$productData['category_id'],
             $productData['params'] ?? [],
         );
     }
+    public function updateProductCategory(Product $product, $categoryId): void
+    {
+        $category = $this->resolveCategoryByExternalId((int) $categoryId);
+        if ($category === null) {
+            return;
+        }
 
+        $categoryMoves = array_filter(
+            $this->getMenuCategoryMoves() ?? [],
+            static fn ($categoryMove): bool => (int) ($categoryMove['category_id'] ?? 0) === (int) $category->getId(),
+        );
+        $categoryIds = [$category];
+        if ($categoryMoves) {
+            $parentId = (int) (current($categoryMoves)['parent_id'] ?? 0);
+            $parentCategory = $parentId > 0 ? $this->resolveCategoryById($parentId) : null;
+        } else {
+            $parentCategory = $category->getParent();
+        }
+        while ($parentCategory !== null) {
+            $categoryIds[] = $parentCategory;
+            $parentCategory = $parentCategory->getParent();
+        }
+        foreach ($categoryIds as $addCategory) {
+            $product->addCategory($addCategory);
+        }
+    }
+
+    private function resolveCategoryByExternalId(int $externalId): ?Category
+    {
+        if ($externalId < 1) {
+            return null;
+        }
+        if (array_key_exists($externalId, $this->categoryByExternalId)) {
+            $cached = $this->categoryByExternalId[$externalId];
+            if ($cached === null || $this->em->contains($cached)) {
+                return $cached;
+            }
+        }
+
+        $category = $this->categoryRepository->findOneBy(['external_id' => $externalId]);
+        $this->categoryByExternalId[$externalId] = $category;
+        if ($category !== null && $category->getId() !== null) {
+            $this->categoryById[(int) $category->getId()] = $category;
+        }
+
+        return $category;
+    }
+
+    private function resolveCategoryById(int $id): ?Category
+    {
+        if ($id < 1) {
+            return null;
+        }
+        if (array_key_exists($id, $this->categoryById)) {
+            $cached = $this->categoryById[$id];
+            if ($cached === null || $this->em->contains($cached)) {
+                return $cached;
+            }
+        }
+
+        $category = $this->categoryRepository->find($id);
+        $this->categoryById[$id] = $category;
+
+        return $category;
+    }
     /**
      * Convert feed description text into HTML while preserving/restoring line breaks.
      * Lugi YML often flattens paragraphs to 2–3 spaces inside CDATA.
@@ -219,8 +298,8 @@ readonly class ProductService
             'Матеріали',
             'Опис',
         ];
-        $headerPattern = implode('|', array_map(static fn (string $h): string => preg_quote($h, '/'), $headers));
-        $text = preg_replace('/\s+('.$headerPattern.')(?:\s*[:：]\s*|\s+)/u', "\n\n$1\n", $text) ?? $text;
+        $headerPattern = implode('|', array_map(static fn(string $h): string => preg_quote($h, '/'), $headers));
+        $text = preg_replace('/\s+(' . $headerPattern . ')(?:\s*[:：]\s*|\s+)/u', "\n\n$1\n", $text) ?? $text;
 
         // Characteristic rows: "Тип: …. Матеріал: …." → one per line.
         $text = preg_replace('/\.\s+(?=[\p{L}][^.\n]{0,40}:)/u', ".\n", $text) ?? $text;
@@ -243,14 +322,14 @@ readonly class ProductService
             }
 
             $lines = preg_split("/\n/u", $block) ?: [];
-            $lines = array_values(array_filter(array_map('trim', $lines), static fn (string $l): bool => $l !== ''));
+            $lines = array_values(array_filter(array_map('trim', $lines), static fn(string $l): bool => $l !== ''));
             if ($lines === []) {
                 continue;
             }
 
             // First line alone matching a section header → emphasize it.
             $first = $lines[0];
-            $isHeader = preg_match('/^('.$headerPattern.')$/u', $first) === 1;
+            $isHeader = preg_match('/^(' . $headerPattern . ')$/u', $first) === 1;
             if ($isHeader && \count($lines) > 1) {
                 $bodyText = implode("\n", array_slice($lines, 1));
                 // Feature-like short sentences under a section → one per line.
@@ -260,17 +339,21 @@ readonly class ProductService
                 $escapedHeader = htmlspecialchars($first, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
                 $escapedBody = htmlspecialchars($bodyText, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
                 $escapedBody = nl2br($escapedBody, false);
-                $html[] = '<p><strong>'.$escapedHeader.'</strong><br>'.$escapedBody.'</p>';
+                $html[] = '<p><strong>' . $escapedHeader . '</strong><br>' . $escapedBody . '</p>';
                 continue;
             }
 
             if ($isHeader) {
-                $html[] = '<p><strong>'.htmlspecialchars($first, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8').'</strong></p>';
+                $html[] = '<p><strong>' . htmlspecialchars(
+                        $first,
+                        ENT_QUOTES | ENT_SUBSTITUTE,
+                        'UTF-8'
+                    ) . '</strong></p>';
                 continue;
             }
 
             $escaped = htmlspecialchars(implode("\n", $lines), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-            $html[] = '<p>'.nl2br($escaped, false).'</p>';
+            $html[] = '<p>' . nl2br($escaped, false) . '</p>';
         }
 
         return $html === [] ? null : implode('', $html);
@@ -374,5 +457,16 @@ readonly class ProductService
         }
 
         return $count;
+    }
+
+    public function setMenuCategoryMoves(array $menuCategoryMoves): static
+    {
+        $this->menuCategoryMoves = $menuCategoryMoves;
+        return $this;
+    }
+
+    public function getMenuCategoryMoves(): ?array
+    {
+        return $this->menuCategoryMoves;
     }
 }

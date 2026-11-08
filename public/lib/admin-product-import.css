@@ -1,0 +1,33 @@
+.param-value-nested-attributes,
+.param-value-nested-replacements {
+    margin-top: 0.75rem;
+}
+
+.param-value-nested-item--attributes,
+.param-value-nested-item--replacements {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
+    background: #fafafa;
+}
+
+.param-value-nested-item--replacements {
+    background: #fff;
+}
+
+.param-value-nested-item__body {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.75rem;
+    align-items: start;
+}
+
+.param-value-nested-item__body > .form-widget-compound,
+.param-value-nested-item__body > div:first-child {
+    min-width: 0;
+}
+
+.param-value-group-title {
+    font-weight: 600;
+}

@@ -304,14 +304,22 @@ admin.product_attribute_group.external_category_id: External ID категорі
 admin.product_attribute_group.position: Порядок
 admin.product_import.markup_percent: Націнка
 admin.product_import.markup_percent_help: 'Націнка у відсотках для розрахунку ціни, наприклад 30 = +30%.'
+admin.product_import.tab_general: Налаштування
 admin.product_import.param_value_replacements: Заміна значень атрибутів
-admin.product_import.param_value_replacements_help: 'Точна заміна значення з фіду на значення у магазині. Категорія і атрибут не обов’язкові. Після вибору категорії список атрибутів показує лише атрибути цієї категорії. Порожній атрибут означає всі атрибути вибраної категорії.'
+admin.product_import.param_value_replacements_help: 'Точна заміна значення з фіду на значення у магазині. Оберіть один або кілька атрибутів (з будь-яких груп), потім додайте заміни from/to. Порожній список атрибутів означає, що заміни діють для всіх атрибутів.'
 admin.product_import.param_value_from: Значення у фіді
 admin.product_import.param_value_to: Значення в магазині
 admin.product_import.param_value_category: Категорія
 admin.product_import.param_value_category_all: Усі категорії
-admin.product_import.param_value_attribute: Атрибут
+admin.product_import.param_value_attribute: Атрибути
 admin.product_import.param_value_attribute_all: Усі атрибути
+admin.product_import.param_value_attributes: Атрибути
+admin.product_import.param_value_replacements_list: Заміни
+admin.product_import.param_value_add_category: Додати правило
+admin.product_import.param_value_add_rule: Додати правило
+admin.product_import.param_value_add_attribute: Додати атрибут
+admin.product_import.param_value_add_replacement: Додати ще заміну
+admin.product_import.param_value_group_untitled: Атрибути
 admin.product_import.param_name_replacements: Заміна назв атрибутів
 admin.product_import.param_name_replacements_help: 'Точна заміна назви атрибута з фіду на назву в магазині. Діє для всіх категорій. Адреса атрибута не змінюється.'
 admin.product_import.param_name_from: Назва у фіді

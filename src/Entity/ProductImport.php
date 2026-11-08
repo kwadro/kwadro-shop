@@ -448,6 +448,130 @@ class ProductImport
     }
 
     /**
+     * Admin form model: attribute multi-select + replacement pairs.
+     * Stored flat in {@see $param_value_replacements}; import logic is unchanged.
+     *
+     * @return list<array{
+     *     attribute_ids: list<int>,
+     *     replacements: list<array{from: string, to: string}>,
+     *     category_id: int|null
+     * }>
+     */
+    public function getParamValueReplacementGroups(): array
+    {
+        /** @var array<string, array{attribute_ids: list<int>, replacements: list<array{from: string, to: string}>, category_id: int|null}> $byAttribute */
+        $byAttribute = [];
+        foreach ($this->param_value_replacements as $row) {
+            if (!\is_array($row)) {
+                continue;
+            }
+            $from = trim((string) ($row['from'] ?? ''));
+            $to = trim((string) ($row['to'] ?? ''));
+            if ($from === '' || $to === '') {
+                continue;
+            }
+            $categoryId = (int) ($row['category_id'] ?? 0);
+            $categoryId = $categoryId > 0 ? $categoryId : null;
+            $attributeId = (int) ($row['attribute_id'] ?? 0);
+            $attributeId = $attributeId > 0 ? $attributeId : null;
+            // Legacy "whole category" rows stay keyed by category; attribute multi-select is empty.
+            $key = $attributeId !== null ? 'a:'.$attributeId : 'c:'.($categoryId ?? 0);
+            if (!isset($byAttribute[$key])) {
+                $byAttribute[$key] = [
+                    'attribute_ids' => $attributeId !== null ? [$attributeId] : [],
+                    'replacements' => [],
+                    'category_id' => $attributeId === null ? $categoryId : null,
+                ];
+            }
+            $byAttribute[$key]['replacements'][] = [
+                'from' => $from,
+                'to' => $to,
+            ];
+        }
+
+        // Merge attribute-specific blocks that share the same replacement list into one multi-select.
+        // Never merge "all attributes" / legacy category-wide rows with attribute-scoped ones.
+        $merged = [];
+        foreach ($byAttribute as $block) {
+            $isGlobal = $block['attribute_ids'] === [];
+            $signature = ($isGlobal ? 'g:' : 'a:')
+                .$this->paramValueReplacementSignature($block['replacements'], $block['category_id']);
+            if (!isset($merged[$signature])) {
+                $merged[$signature] = $block;
+                continue;
+            }
+            if ($isGlobal) {
+                continue;
+            }
+            $merged[$signature]['attribute_ids'] = array_values(array_unique(array_merge(
+                $merged[$signature]['attribute_ids'],
+                $block['attribute_ids'],
+            )));
+        }
+
+        return array_values($merged);
+    }
+
+    /**
+     * @param list<array<string, mixed>>|array<int, mixed> $groups
+     */
+    public function setParamValueReplacementGroups(array $groups): static
+    {
+        $flat = [];
+        foreach ($groups as $group) {
+            if (!\is_array($group)) {
+                continue;
+            }
+            $categoryId = (int) ($group['category_id'] ?? 0);
+            $categoryId = $categoryId > 0 ? $categoryId : null;
+            $attributeIds = [];
+            foreach ($group['attribute_ids'] ?? [] as $rawId) {
+                $id = (int) $rawId;
+                if ($id > 0) {
+                    $attributeIds[$id] = $id;
+                }
+            }
+            $attributeIds = array_values($attributeIds);
+            $replacements = $group['replacements'] ?? [];
+            if (!\is_array($replacements)) {
+                continue;
+            }
+
+            $targets = $attributeIds !== [] ? $attributeIds : [null];
+            foreach ($targets as $attributeId) {
+                foreach ($replacements as $pair) {
+                    if (!\is_array($pair)) {
+                        continue;
+                    }
+                    $flat[] = [
+                        'from' => $pair['from'] ?? '',
+                        'to' => $pair['to'] ?? '',
+                        // Category-wide legacy rules keep category_id only when no attributes are chosen.
+                        'category_id' => $attributeId === null ? $categoryId : null,
+                        'attribute_id' => $attributeId,
+                    ];
+                }
+            }
+        }
+
+        return $this->setParamValueReplacements($flat);
+    }
+
+    /**
+     * @param list<array{from: string, to: string}> $replacements
+     */
+    private function paramValueReplacementSignature(array $replacements, ?int $categoryId): string
+    {
+        $normalized = [];
+        foreach ($replacements as $pair) {
+            $normalized[] = trim($pair['from'])."\0".trim($pair['to']);
+        }
+        sort($normalized);
+
+        return ($categoryId ?? 0)."\n".implode("\n", $normalized);
+    }
+
+    /**
      * @param list<array<string, mixed>>|array<int, mixed> $rows
      */
     public function setParamValueReplacements(array $rows): static

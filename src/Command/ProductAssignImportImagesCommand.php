@@ -159,14 +159,6 @@ final class ProductAssignImportImagesCommand extends Command
                 $product->relocateGalleryFiles($this->projectDir);
             }
             ++$updated;
-            $io->text(
-                sprintf(
-                    '  ✓ %s → %s (%d images)',
-                    $imageKey,
-                    ProductImagePath::relativePath($gallery[0]['full'], $productSupplier),
-                    \count($gallery),
-                )
-            );
         }
 
         if (!$dryRun) {

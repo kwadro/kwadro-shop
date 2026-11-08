@@ -10,8 +10,9 @@ use App\Form\Admin\ProductImportMenuCategoryMoveType;
 use App\Form\Admin\ProductImportMenuCategoryVisibilityType;
 use App\Form\Admin\ProductImportMenuTopCategoryType;
 use App\Form\Admin\ProductImportParamNameReplacementType;
-use App\Form\Admin\ProductImportParamValueReplacementType;
+use App\Form\Admin\ProductImportParamValueReplacementGroupType;
 use App\Repository\CategoryRepository;
+use App\Repository\ProductAttributeRepository;
 use App\Repository\ProductImportRepository;
 use App\Service\ProductImport\ProductImportProcessLauncher;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminRoute;
@@ -41,6 +42,7 @@ class ProductImportCrudController extends AbstractCrudController
         private readonly ProductImportProcessLauncher $importProcessLauncher,
         private readonly AdminUrlGenerator $adminUrlGenerator,
         private readonly CategoryRepository $categoryRepository,
+        private readonly ProductAttributeRepository $productAttributeRepository,
         private readonly ProductImportRepository $productImportRepository,
     ) {
     }
@@ -56,12 +58,18 @@ class ProductImportCrudController extends AbstractCrudController
             ->setEntityLabelInSingular($this->translator->trans('menu.link_product_import_single', [], 'messages'))
             ->setEntityLabelInPlural($this->translator->trans('menu.link_product_import', [], 'messages'))
             ->setDefaultSort(['name' => 'ASC'])
-            ->setSearchFields(['name', 'code', 'file_path']);
+            ->setSearchFields(['name', 'code', 'file_path'])
+            ->setFormThemes([
+                '@EasyAdmin/crud/form_theme.html.twig',
+                'admin/product_import_form_theme.html.twig',
+            ]);
     }
 
     public function configureAssets(Assets $assets): Assets
     {
-        return $assets->addJsFile('js/admin-product-import.js');
+        return $assets
+            ->addCssFile('lib/admin-product-import.css')
+            ->addJsFile('js/admin-product-import.v4.js');
     }
 
     public function configureActions(Actions $actions): Actions
@@ -83,6 +91,15 @@ class ProductImportCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
+        $isEdit = $pageName === Crud::PAGE_EDIT;
+
+        if ($isEdit) {
+            yield FormField::addTab(
+                $this->translator->trans('admin.product_import.tab_general', [], 'messages'),
+                'fa fa-cog',
+            );
+        }
+
         yield IdField::new('id')->hideOnForm();
         yield TextField::new('name', $this->translator->trans('admin.product_import.name', [], 'messages'));
         yield TextField::new('code', $this->translator->trans('admin.product_import.code', [], 'messages'))
@@ -116,60 +133,10 @@ class ProductImportCrudController extends AbstractCrudController
             ->autocomplete()
             ->setRequired(false)
             ->onlyWhenUpdating();
-        yield ChoiceField::new('disableCategoriesAfterImport', $this->translator->trans('admin.product_import.disable_categories_after_import', [], 'messages'))
-            ->setChoices([
-                $this->translator->trans('admin.product_import.yes', [], 'messages') => true,
-                $this->translator->trans('admin.product_import.no', [], 'messages') => false,
-            ])
-            ->setHelp($this->translator->trans('admin.product_import.disable_categories_after_import_help', [], 'messages'))
-            ->renderAsNativeWidget()
-            ->onlyWhenUpdating();
-        yield ChoiceField::new('disabledCategorySlugs', $this->translator->trans('admin.product_import.disabled_category_slugs', [], 'messages'))
-            ->setHelp($this->translator->trans('admin.product_import.disabled_category_slugs_help', [], 'messages'))
-            ->setChoices($this->buildCategorySlugChoices())
-            ->allowMultipleChoices()
-            ->autocomplete()
-            ->onlyWhenUpdating();
         yield NumberField::new('markupPercent', $this->translator->trans('admin.product_import.markup_percent', [], 'messages'))
             ->setHelp($this->translator->trans('admin.product_import.markup_percent_help', [], 'messages'))
             ->setNumDecimals(2)
             ->setFormTypeOption('attr', ['min' => 0, 'step' => '0.01'])
-            ->onlyWhenUpdating();
-        yield CollectionField::new('paramValueReplacements', $this->translator->trans('admin.product_import.param_value_replacements', [], 'messages'))
-            ->setEntryType(ProductImportParamValueReplacementType::class)
-            ->setEntryIsComplex()
-            ->renderExpanded()
-            ->allowAdd()
-            ->allowDelete()
-            ->setFormTypeOptions([
-                'by_reference' => false,
-                'entry_options' => ['label' => false],
-            ])
-            ->setHelp($this->translator->trans('admin.product_import.param_value_replacements_help', [], 'messages'))
-            ->onlyWhenUpdating();
-        yield CollectionField::new('paramNameReplacements', $this->translator->trans('admin.product_import.param_name_replacements', [], 'messages'))
-            ->setEntryType(ProductImportParamNameReplacementType::class)
-            ->setEntryIsComplex()
-            ->renderExpanded()
-            ->allowAdd()
-            ->allowDelete()
-            ->setFormTypeOptions([
-                'by_reference' => false,
-                'entry_options' => ['label' => false],
-            ])
-            ->setHelp($this->translator->trans('admin.product_import.param_name_replacements_help', [], 'messages'))
-            ->onlyWhenUpdating();
-        yield CollectionField::new('categoryNameReplacements', $this->translator->trans('admin.product_import.category_name_replacements', [], 'messages'))
-            ->setEntryType(ProductImportCategoryNameReplacementType::class)
-            ->setEntryIsComplex()
-            ->renderExpanded()
-            ->allowAdd()
-            ->allowDelete()
-            ->setFormTypeOptions([
-                'by_reference' => false,
-                'entry_options' => ['label' => false],
-            ])
-            ->setHelp($this->translator->trans('admin.product_import.category_name_replacements_help', [], 'messages'))
             ->onlyWhenUpdating();
 
         yield FormField::addFieldset($this->translator->trans('admin.product_import.menu_display', [], 'messages'))
@@ -211,6 +178,83 @@ class ProductImportCrudController extends AbstractCrudController
             ])
             ->setHelp($this->translator->trans('admin.product_import.menu_category_moves_help', [], 'messages'))
             ->onlyWhenUpdating();
+
+        if ($isEdit) {
+            yield FormField::addTab(
+                $this->translator->trans('admin.product_import.disabled_category_slugs', [], 'messages'),
+                'fa fa-ban',
+            );
+            yield ChoiceField::new('disableCategoriesAfterImport', $this->translator->trans('admin.product_import.disable_categories_after_import', [], 'messages'))
+                ->setChoices([
+                    $this->translator->trans('admin.product_import.yes', [], 'messages') => true,
+                    $this->translator->trans('admin.product_import.no', [], 'messages') => false,
+                ])
+                ->setHelp($this->translator->trans('admin.product_import.disable_categories_after_import_help', [], 'messages'))
+                ->renderAsNativeWidget()
+                ->onlyWhenUpdating();
+            yield ChoiceField::new('disabledCategorySlugs', $this->translator->trans('admin.product_import.disabled_category_slugs', [], 'messages'))
+                ->setHelp($this->translator->trans('admin.product_import.disabled_category_slugs_help', [], 'messages'))
+                ->setChoices($this->buildCategorySlugChoices())
+                ->allowMultipleChoices()
+                ->autocomplete()
+                ->onlyWhenUpdating();
+
+            yield FormField::addTab(
+                $this->translator->trans('admin.product_import.param_name_replacements', [], 'messages'),
+                'fa fa-font',
+            );
+            yield CollectionField::new('paramNameReplacements', $this->translator->trans('admin.product_import.param_name_replacements', [], 'messages'))
+                ->setEntryType(ProductImportParamNameReplacementType::class)
+                ->setEntryIsComplex()
+                ->renderExpanded()
+                ->allowAdd()
+                ->allowDelete()
+                ->setFormTypeOptions([
+                    'by_reference' => false,
+                    'entry_options' => ['label' => false],
+                ])
+                ->setHelp($this->translator->trans('admin.product_import.param_name_replacements_help', [], 'messages'))
+                ->onlyWhenUpdating();
+
+            yield FormField::addTab(
+                $this->translator->trans('admin.product_import.category_name_replacements', [], 'messages'),
+                'fa fa-folder',
+            );
+            yield CollectionField::new('categoryNameReplacements', $this->translator->trans('admin.product_import.category_name_replacements', [], 'messages'))
+                ->setEntryType(ProductImportCategoryNameReplacementType::class)
+                ->setEntryIsComplex()
+                ->renderExpanded()
+                ->allowAdd()
+                ->allowDelete()
+                ->setFormTypeOptions([
+                    'by_reference' => false,
+                    'entry_options' => ['label' => false],
+                ])
+                ->setHelp($this->translator->trans('admin.product_import.category_name_replacements_help', [], 'messages'))
+                ->onlyWhenUpdating();
+
+            yield FormField::addTab(
+                $this->translator->trans('admin.product_import.param_value_replacements', [], 'messages'),
+                'fa fa-exchange-alt',
+            );
+            yield CollectionField::new(
+                'paramValueReplacementGroups',
+                $this->translator->trans('admin.product_import.param_value_replacements', [], 'messages'),
+            )
+                ->setEntryType(ProductImportParamValueReplacementGroupType::class)
+                ->setEntryIsComplex()
+                ->setEntryToStringMethod($this->paramValueGroupTitle(...))
+                ->renderExpanded()
+                ->allowAdd()
+                ->allowDelete()
+                ->setFormTypeOptions([
+                    'by_reference' => false,
+                    'entry_options' => ['label' => false],
+                ])
+                ->setHelp($this->translator->trans('admin.product_import.param_value_replacements_help', [], 'messages'))
+                ->onlyWhenUpdating();
+        }
+
         yield DateTimeField::new('lastRunAt', $this->translator->trans('admin.product_import.last_run_at', [], 'messages'))
             ->onlyOnIndex();
         yield TextareaField::new('lastResult', $this->translator->trans('admin.product_import.last_result', [], 'messages'))
@@ -221,6 +265,43 @@ class ProductImportCrudController extends AbstractCrudController
         yield TextareaField::new('lastResult', $this->translator->trans('admin.product_import.last_result', [], 'messages'))
             ->onlyOnDetail()
             ->setNumOfRows(4);
+    }
+
+    /**
+     * Accordion title for an attribute-value replacement block.
+     *
+     * @param array<string, mixed>|mixed $value
+     */
+    private function paramValueGroupTitle(mixed $value): string
+    {
+        $fallback = $this->translator->trans('admin.product_import.param_value_attribute_all', [], 'messages');
+        if (!\is_array($value)) {
+            return $fallback;
+        }
+
+        $attributeIds = [];
+        foreach ($value['attribute_ids'] ?? [] as $rawId) {
+            $id = (int) $rawId;
+            if ($id > 0) {
+                $attributeIds[] = $id;
+            }
+        }
+        if ($attributeIds === []) {
+            return $fallback;
+        }
+
+        foreach ($attributeIds as $attributeId) {
+            $attribute = $this->productAttributeRepository->find($attributeId);
+            if ($attribute === null) {
+                continue;
+            }
+            $name = trim((string) $attribute->getName());
+            if ($name !== '') {
+                return $name;
+            }
+        }
+
+        return $fallback;
     }
 
     /**
