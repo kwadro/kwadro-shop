@@ -1,0 +1,22 @@
+{% set google = site_settings().google|default({}) %}
+{% set reviewUrl = google.review_url|default('') %}
+{% if google.review_enabled|default(false) and reviewUrl %}
+    <section class="shop-google-review{{ modifier|default('') ? ' shop-google-review--' ~ modifier : '' }}" aria-labelledby="{{ heading_id|default('shop-google-review-title') }}">
+        <div class="shop-google-review__inner">
+            <h2 id="{{ heading_id|default('shop-google-review-title') }}" class="shop-google-review__title">
+                {{ title|default('shop.google.review_title'|trans) }}
+            </h2>
+            <p class="shop-google-review__lead">
+                {{ lead|default('shop.google.review_lead'|trans) }}
+            </p>
+            <a
+                class="shop-home__btn shop-home__btn--primary shop-google-review__btn"
+                href="{{ reviewUrl }}"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                {{ cta|default('shop.google.review_cta'|trans) }}
+            </a>
+        </div>
+    </section>
+{% endif %}
