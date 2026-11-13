@@ -71,7 +71,7 @@ class Order
     private string $currency = 'UAH';
 
     #[ORM\Column(length: 5)]
-    private string $locale = 'uk';
+    private string $locale = 'ua';
 
     /** @var Collection<int, Payment> */
     #[ORM\OneToMany(targetEntity: Payment::class, mappedBy: 'order', cascade: ['persist'], orphanRemoval: true)]

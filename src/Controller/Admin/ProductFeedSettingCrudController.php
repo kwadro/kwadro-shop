@@ -93,8 +93,16 @@ class ProductFeedSettingCrudController extends AbstractCrudController
             ['_format' => 'csv'],
             UrlGeneratorInterface::ABSOLUTE_URL,
         );
+        $googleUrl = $this->urlGenerator->generate(
+            'shop_google_merchant_product_feed',
+            [],
+            UrlGeneratorInterface::ABSOLUTE_URL,
+        );
 
-        return $this->t('admin.product_feed.help', ['%url%' => $url]);
+        return $this->t('admin.product_feed.help', [
+            '%url%' => $url,
+            '%google_url%' => $googleUrl,
+        ]);
     }
 
     /** @param array<string, string> $parameters */

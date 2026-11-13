@@ -6,6 +6,7 @@ use App\Routing\ShopRoutes;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
@@ -19,10 +20,92 @@ class LocaleRedirectController extends AbstractController
     ) {
     }
 
-    #[Route('/', name: 'shop_root_redirect')]
-    public function redirectRoot(): RedirectResponse
+    #[Route(
+        '/ua',
+        name: 'shop_default_locale_home_redirect',
+        priority: 40,
+    )]
+    #[Route(
+        '/ua/',
+        name: 'shop_default_locale_home_redirect_slash',
+        priority: 40,
+    )]
+    public function redirectDefaultLocaleHome(Request $request): RedirectResponse
     {
-        return $this->redirectToRoute('shop_home', ['_locale' => $this->defaultLocale]);
+        $target = '/';
+        $query = $request->getQueryString();
+        if ($query !== null && $query !== '') {
+            $target .= '?'.$query;
+        }
+
+        return $this->redirect($target, Response::HTTP_MOVED_PERMANENTLY);
+    }
+
+    #[Route(
+        '/'.ShopRoutes::LEGACY_LOCALE_PREFIX.'/{path}',
+        name: 'shop_legacy_uk_locale_redirect',
+        requirements: ['path' => '.*'],
+        priority: 40,
+    )]
+    public function redirectLegacyUkPrefix(string $path, Request $request): RedirectResponse
+    {
+        return $this->redirectLegacyUkPath($path, $request->getQueryString());
+    }
+
+    #[Route(
+        '/'.ShopRoutes::LEGACY_LOCALE_PREFIX,
+        name: 'shop_legacy_uk_locale_redirect_root',
+        priority: 40,
+    )]
+    public function redirectLegacyUkRoot(Request $request): RedirectResponse
+    {
+        return $this->redirectLegacyUkPath('', $request->getQueryString());
+    }
+
+    #[Route(
+        '/admin/'.ShopRoutes::LEGACY_LOCALE_PREFIX.'/{path}',
+        name: 'admin_legacy_uk_locale_redirect',
+        requirements: ['path' => '.*'],
+        priority: 40,
+    )]
+    public function redirectLegacyAdminUkPrefix(string $path, Request $request): RedirectResponse
+    {
+        $suffix = trim($path, '/');
+        $target = '/admin/ua'.($suffix !== '' ? '/'.$suffix : '');
+        $query = $request->getQueryString();
+        if ($query !== null && $query !== '') {
+            $target .= '?'.$query;
+        }
+
+        return $this->redirect($target, Response::HTTP_MOVED_PERMANENTLY);
+    }
+
+    #[Route(
+        '/admin/'.ShopRoutes::LEGACY_LOCALE_PREFIX,
+        name: 'admin_legacy_uk_locale_redirect_root',
+        priority: 40,
+    )]
+    public function redirectLegacyAdminUkRoot(Request $request): RedirectResponse
+    {
+        $target = '/admin/ua';
+        $query = $request->getQueryString();
+        if ($query !== null && $query !== '') {
+            $target .= '?'.$query;
+        }
+
+        return $this->redirect($target, Response::HTTP_MOVED_PERMANENTLY);
+    }
+
+    private function redirectLegacyUkPath(string $path, ?string $query): RedirectResponse
+    {
+        $suffix = trim($path, '/');
+        // Default-locale home is unprefixed (/); other pages keep /ua/...
+        $target = $suffix === '' ? '/' : '/ua/'.$suffix;
+        if ($query !== null && $query !== '') {
+            $target .= '?'.$query;
+        }
+
+        return $this->redirect($target, Response::HTTP_MOVED_PERMANENTLY);
     }
 
     #[Route('/login', name: 'app_login_root_redirect')]
@@ -64,10 +147,10 @@ class LocaleRedirectController extends AbstractController
         $content = implode("\n", [
             'User-agent: *',
             'Disallow: /admser',
-            'Disallow: /uk/admser',
+            'Disallow: /ua/admser',
             'Disallow: /en/admser',
             'Disallow: /checkout',
-            'Disallow: /uk/checkout',
+            'Disallow: /ua/checkout',
             'Disallow: /en/checkout',
             '',
             'Sitemap: '.$urlGenerator->generate('shop_sitemap', [], UrlGeneratorInterface::ABSOLUTE_URL),

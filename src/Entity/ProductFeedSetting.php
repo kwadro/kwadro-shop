@@ -44,8 +44,8 @@ class ProductFeedSetting
     #[ORM\Column(length: 8, options: ['default' => self::FORMAT_CSV])]
     private string $format = self::FORMAT_CSV;
 
-    #[ORM\Column(length: 8, options: ['default' => 'uk'])]
-    private string $localeCode = 'uk';
+    #[ORM\Column(length: 8, options: ['default' => 'ua'])]
+    private string $localeCode = 'ua';
 
     #[ORM\Column(length: 3, options: ['default' => 'UAH'])]
     private string $currency = 'UAH';
@@ -129,7 +129,7 @@ class ProductFeedSetting
     public function setLocaleCode(string $localeCode): static
     {
         $localeCode = strtolower(trim($localeCode));
-        $this->localeCode = $localeCode !== '' ? $localeCode : 'uk';
+        $this->localeCode = $localeCode !== '' ? $localeCode : 'ua';
 
         return $this;
     }

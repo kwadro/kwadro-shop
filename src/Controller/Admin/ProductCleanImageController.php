@@ -14,7 +14,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-#[Route('/admin/{_locale}/product/{id}/clean-image', name: 'admin_product_clean_image', requirements: ['_locale' => 'uk|en', 'id' => '\d+'])]
+#[Route('/admin/{_locale}/product/{id}/clean-image', name: 'admin_product_clean_image', requirements: ['_locale' => 'ua|en', 'id' => '\d+'])]
 #[IsGranted('ROLE_SUPER_ADMIN')]
 final class ProductCleanImageController extends AbstractController
 {

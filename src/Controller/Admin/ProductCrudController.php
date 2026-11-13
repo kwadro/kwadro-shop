@@ -288,7 +288,7 @@ class ProductCrudController extends AbstractCrudController
 
         $product = $this->getContext()?->getEntity()?->getInstance();
         $productId = $product instanceof Product ? $product->getId() : null;
-        $locale = (string) ($this->requestStack->getCurrentRequest()?->attributes->get('_locale') ?? 'uk');
+        $locale = (string) ($this->requestStack->getCurrentRequest()?->attributes->get('_locale') ?? 'ua');
 
         if ($productId !== null) {
             $urlTemplate = $this->generateUrl('admin_product_clean_image_generate', [

@@ -79,7 +79,12 @@ final class FullPageCachePolicy
 
     public function isCacheableRoute(Request $request): bool
     {
-        return \in_array((string) $request->attributes->get('_route'), self::CACHEABLE_ROUTES, true);
+        $route = (string) $request->attributes->get('_route');
+        // Localized routes (e.g. shop_home.ua) expose the logical name as _canonical_route.
+        $canonical = (string) $request->attributes->get('_canonical_route', '');
+
+        return \in_array($route, self::CACHEABLE_ROUTES, true)
+            || ($canonical !== '' && \in_array($canonical, self::CACHEABLE_ROUTES, true));
     }
 
     /** Requests that may change the cart: the "cart has items" cookie is refreshed on them. */

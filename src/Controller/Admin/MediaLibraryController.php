@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[Route('/admin/{_locale}/media-library', name: 'admin_media_library', requirements: ['_locale' => 'uk|en'])]
+#[Route('/admin/{_locale}/media-library', name: 'admin_media_library', requirements: ['_locale' => 'ua|en'])]
 #[IsGranted('ROLE_SUPER_ADMIN')]
 final class MediaLibraryController extends AbstractMarketingLibraryController
 {

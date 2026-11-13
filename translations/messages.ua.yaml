@@ -72,7 +72,7 @@ menu.link_product_search_setting_single: Налаштування пошуку �
 menu.group_product_feed: Фід Товарів
 menu.link_product_feed_setting: Налаштування фіду
 menu.link_product_feed_setting_single: Налаштування фіду товарів
-admin.product_feed.help: 'URL фіду Facebook Catalog: %url% — додайте ?token=… якщо задано access token. Експортуються лише товари в наявності з категорій, де «Публікувати в Фід» = Так.'
+admin.product_feed.help: 'Facebook Catalog: %url% — Google Merchant: %google_url% — додайте ?token=… якщо задано access token. Експортуються лише товари в наявності з категорій, де «Публікувати в Фід» = Так.'
 admin.product_feed.fieldset_general: Загальні
 admin.product_feed.fieldset_catalog: Значення за замовчуванням
 admin.product_feed.site: Сайт
@@ -82,7 +82,7 @@ admin.product_feed.access_token: Access token
 admin.product_feed.access_token_help: Необовʼязково. Якщо задано, фід вимагає ?token=VALUE. Залиште порожнім для відкритого URL.
 admin.product_feed.format: Формат за замовчуванням
 admin.product_feed.locale_code: Локаль посилань на товари
-admin.product_feed.locale_code_help: Локаль у URL товару (uk або en).
+admin.product_feed.locale_code_help: Локаль у URL товару (ua або en).
 admin.product_feed.currency: Валюта
 admin.product_feed.currency_help: ISO-код валюти для поля price у Facebook, напр. UAH.
 admin.product_feed.default_brand: Бренд за замовчуванням
@@ -409,7 +409,7 @@ admin.homepage_setting.hero_primary_cta_label: Основна кнопка — �
 admin.homepage_setting.hero_primary_cta_url: Основна кнопка — посилання
 admin.homepage_setting.hero_secondary_cta_label: Друга кнопка — текст
 admin.homepage_setting.hero_secondary_cta_url: Друга кнопка — посилання
-admin.homepage_setting.hero_cta_url_help: Повний URL або шлях сайту (напр. /uk/category/...). Порожня основна кнопка веде в каталог.
+admin.homepage_setting.hero_cta_url_help: Повний URL або шлях сайту (напр. /ua/category/...). Порожня основна кнопка веде в каталог.
 admin.homepage_setting.fieldset_categories: Блок «Категорії»
 admin.homepage_setting.fieldset_categories_help: Категорії на головній сторінці. Можна вимкнути блок, показати автоматично з меню або вибрати вручну.
 admin.homepage_setting.source_auto: Автоматично (з меню)
@@ -655,7 +655,7 @@ admin.redirect.type.custom: custom
 admin.redirect.from_path: З URL (path)
 admin.redirect.from_path_help: Шлях старого сайту, наприклад /efirne-tb.html
 admin.redirect.to_path: Куди редіректити
-admin.redirect.to_path_help: Новий path (/uk/...) або повний URL. Порожньо — редірект ще не активний.
+admin.redirect.to_path_help: Новий path (/ua/...) або повний URL. Порожньо — редірект ще не активний.
 admin.redirect.status_code: HTTP код
 admin.redirect.enabled: Активно
 admin.redirect.from_path_unique: Такий from path уже існує.

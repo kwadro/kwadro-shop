@@ -44,7 +44,7 @@ final class BlogSeedTvInternetCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
         $site = $this->siteRepository->find(1);
-        $locale = $this->localeRepository->findOneBy(['code' => 'uk']);
+        $locale = $this->localeRepository->findOneBy(['code' => 'ua']);
         if ($site === null || $locale === null) {
             $io->error('Site #1 or locale uk not found.');
 
@@ -106,7 +106,7 @@ final class BlogSeedTvInternetCommand extends Command
         $this->em->persist($article);
         $this->em->flush();
 
-        $io->success(sprintf('Article seeded: /uk/blog/%s', self::SLUG));
+        $io->success(sprintf('Article seeded: /ua/blog/%s', self::SLUG));
 
         return Command::SUCCESS;
     }
@@ -155,7 +155,7 @@ final class BlogSeedTvInternetCommand extends Command
 </p>
 <p>
     В умовах нестабільного зв’язку чи блекаутів окреме значення має
-    <a href="/uk/blog/cyfrove-telebachennya-t2">цифрове ефірне ТБ (DVB-T2)</a>:
+    <a href="/ua/blog/cyfrove-telebachennya-t2">цифрове ефірне ТБ (DVB-T2)</a>:
     сигнал іде з наземних веж, а не залежить від домашнього інтернету.
 </p>
 
@@ -176,13 +176,13 @@ final class BlogSeedTvInternetCommand extends Command
 <p>
     Оптимальна схема сьогодні — не «або ТБ, або інтернет», а комбінація.
     Великий екран для вечірнього перегляду, смартфон для кліпів і новин у дорозі,
-    а <a href="/uk/category/tuner-t2">тюнер Т2</a> з антеною — як стабільний запасний канал,
+    а <a href="/ua/category/tuner-t2">тюнер Т2</a> з антеною — як стабільний запасний канал,
     коли мережа «лягає».
 </p>
 <div class="blog-note">
     Якщо цікавить практичний бік: дивіться наш гайд
-    <a href="/uk/blog/cyfrove-telebachennya-t2">як підключити цифрове телебачення Т2</a>
-    і <a href="/uk/blog/kanaly-t2-spysok-i-zhanry">список каналів Т2</a>.
+    <a href="/ua/blog/cyfrove-telebachennya-t2">як підключити цифрове телебачення Т2</a>
+    і <a href="/ua/blog/kanaly-t2-spysok-i-zhanry">список каналів Т2</a>.
 </div>
 
 <h2>Довіра як перевага ефіру</h2>

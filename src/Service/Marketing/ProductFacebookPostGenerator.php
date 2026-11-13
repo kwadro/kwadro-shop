@@ -18,7 +18,7 @@ final class ProductFacebookPostGenerator
     ) {
     }
 
-    public function generate(Product $product, string $locale = 'uk'): string
+    public function generate(Product $product, string $locale = 'ua'): string
     {
         $name = trim($product->getName());
         $price = $product->getLowestPrice();

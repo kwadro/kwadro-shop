@@ -14,7 +14,7 @@ class MailboxMessageHtmlController extends AbstractController
     #[Route(
         '/admin/{_locale}/mailbox-message/{id}/html',
         name: 'admin_mailbox_message_html',
-        requirements: ['_locale' => 'uk|en', 'id' => '\d+'],
+        requirements: ['_locale' => 'ua|en', 'id' => '\d+'],
         methods: ['GET'],
     )]
     public function __invoke(MailboxMessage $message): Response

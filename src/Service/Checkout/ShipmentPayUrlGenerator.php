@@ -27,7 +27,7 @@ final class ShipmentPayUrlGenerator
             return '';
         }
 
-        $locale = $order->getLocale() !== '' ? $order->getLocale() : 'uk';
+        $locale = $order->getLocale() !== '' ? $order->getLocale() : 'ua';
         $this->applySiteRoutingContext();
 
         return $this->urlGenerator->generate('shop_order_shipment_pay', [
@@ -43,7 +43,7 @@ final class ShipmentPayUrlGenerator
             return '';
         }
 
-        $locale = $order->getLocale() !== '' ? $order->getLocale() : 'uk';
+        $locale = $order->getLocale() !== '' ? $order->getLocale() : 'ua';
         $this->applySiteRoutingContext();
 
         return $this->urlGenerator->generate('shop_order_shipment_pay', [

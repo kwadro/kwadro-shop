@@ -10,7 +10,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-#[Route('/admin/{_locale}/report-visitor-ids', name: 'admin_report_visitor_ids', requirements: ['_locale' => 'uk|en'])]
+#[Route('/admin/{_locale}/report-visitor-ids', name: 'admin_report_visitor_ids', requirements: ['_locale' => 'ua|en'])]
 #[IsGranted('ROLE_SUPER_ADMIN')]
 final class ReportVisitorIdsController extends AbstractController
 {
@@ -38,7 +38,7 @@ final class ReportVisitorIdsController extends AbstractController
             'days' => $days,
             'periods' => self::ALLOWED_PERIODS,
             'table_url' => $this->generateUrl('admin_report_visitor_ids_table', [
-                '_locale' => $request->attributes->get('_locale', 'uk'),
+                '_locale' => $request->attributes->get('_locale', 'ua'),
             ]),
         ]);
     }

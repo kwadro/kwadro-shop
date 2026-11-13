@@ -45,7 +45,7 @@ final class BlogSeedTvMountGuideCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
         $site = $this->siteRepository->find(1);
-        $locale = $this->localeRepository->findOneBy(['code' => 'uk']);
+        $locale = $this->localeRepository->findOneBy(['code' => 'ua']);
         if ($site === null || $locale === null) {
             $io->error('Site #1 or locale uk not found.');
 
@@ -119,13 +119,13 @@ final class BlogSeedTvMountGuideCommand extends Command
                 ['tags', (string) $article->getTags()],
                 ['category', $category->getSlug()],
                 ['facebook_draft', $article->getFacebookDraft() !== null ? 'yes' : 'no'],
-                ['url', sprintf('/uk/blog/%s', self::SLUG)],
+                ['url', sprintf('/ua/blog/%s', self::SLUG)],
             ],
         );
         if (!is_file($ogPath)) {
             $io->warning(sprintf('OG image file missing: public/uploads/images/blog/%s', self::OG_IMAGE));
         }
-        $io->success(sprintf('Article saved: /uk/blog/%s', self::SLUG));
+        $io->success(sprintf('Article saved: /ua/blog/%s', self::SLUG));
 
         return Command::SUCCESS;
     }
@@ -322,19 +322,19 @@ final class BlogSeedTvMountGuideCommand extends Command
 <h2>Приклади з каталогу Квадро</h2>
 <p>
     Для середніх діагоналей зручні компактні моделі на кшталт
-    <a href="/uk/product/bz12-22-unibracket">UniBracket BZ12-22</a>:
+    <a href="/ua/product/bz12-22-unibracket">UniBracket BZ12-22</a>:
     поширені VESA, нахил і адекватне навантаження для домашнього використання.
     Якщо потрібен інший формат — дивіться весь розділ
-    <a href="/uk/category/kronshteyny">кронштейни для телевізорів</a>
-    і лінійку <a href="/uk/category/unibracket">UniBracket</a>.
+    <a href="/ua/category/kronshteyny">кронштейни для телевізорів</a>
+    і лінійку <a href="/ua/category/unibracket">UniBracket</a>.
 </p>
 
 <div class="blog-note">
     Не впевнені з вибором? Напишіть нам діагональ, вагу і VESA вашого телевізора —
     підкажемо 1–2 моделі під вашу стіну і сценарій перегляду.
     Також корисно прочитати наші матеріали про
-    <a href="/uk/blog/cyfrove-telebachennya-t2">цифрове телебачення Т2</a>
-    і <a href="/uk/blog/yak-obraty-antenu-dlya-tunera-t2">вибір антени</a>,
+    <a href="/ua/blog/cyfrove-telebachennya-t2">цифрове телебачення Т2</a>
+    і <a href="/ua/blog/yak-obraty-antenu-dlya-tunera-t2">вибір антени</a>,
     якщо збираєте домашню ТВ-систему з нуля.
 </div>
 HTML;

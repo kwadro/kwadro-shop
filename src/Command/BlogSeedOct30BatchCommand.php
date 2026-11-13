@@ -60,7 +60,7 @@ final class BlogSeedOct30BatchCommand extends Command
         $forceImages = (bool) $input->getOption('force-images');
 
         $site = $this->siteRepository->find(1);
-        $locale = $this->localeRepository->findOneBy(['code' => 'uk']);
+        $locale = $this->localeRepository->findOneBy(['code' => 'ua']);
         if ($site === null || $locale === null) {
             $io->error('Site #1 or locale uk not found.');
 
@@ -330,21 +330,21 @@ final class BlogSeedOct30BatchCommand extends Command
     Практичне правило: центр екрана приблизно на висоті очей у положенні сидячи, зазвичай 90–110 см від підлоги.
     Якщо вішаєте вище, беріть кронштейн із нахилом, щоб не задирати голову.
     Як підібрати кріплення —
-    <a href="/uk/blog/yak-obraty-kronshteyn-dlya-televizora">гайд з вибору кронштейна</a>,
+    <a href="/ua/blog/yak-obraty-kronshteyn-dlya-televizora">гайд з вибору кронштейна</a>,
     моделі є в розділі
-    <a href="/uk/category/kronshteyny">Кронштейни</a>.
+    <a href="/ua/category/kronshteyny">Кронштейни</a>.
 </p>
 
 <h2>Що ще перевірити до покупки</h2>
 <ul class="blog-checklist">
     <li><strong>Стіна.</strong> Гіпсокартон без закладних погано тримає 65″ і важче. Для цегли й бетону запас міцності більший.</li>
-    <li><strong>Розетки.</strong> Краще спланувати живлення за екраном, ніж тягнути подовжувач через всю стіну. Як прибрати дроти — у матеріалі <a href="/uk/blog/yak-shovaty-kabeli-za-televizorom">як сховати кабелі за телевізором</a>.</li>
-    <li><strong>Джерела картинки.</strong> Приставка, тюнер <a href="/uk/category/tuner-t2">T2</a> і саундбар сідають на HDMI. Який кабель брати для 4K — <a href="/uk/blog/yak-obraty-hdmi-kabel-dlya-televizora">окремий гід</a>.</li>
-    <li><strong>Ефір без інтернету.</strong> Великий екран не замінює антену. Базовий сценарій описаний у статті <a href="/uk/blog/cyfrove-telebachennya-t2">цифрове телебачення Т2</a>.</li>
+    <li><strong>Розетки.</strong> Краще спланувати живлення за екраном, ніж тягнути подовжувач через всю стіну. Як прибрати дроти — у матеріалі <a href="/ua/blog/yak-shovaty-kabeli-za-televizorom">як сховати кабелі за телевізором</a>.</li>
+    <li><strong>Джерела картинки.</strong> Приставка, тюнер <a href="/ua/category/tuner-t2">T2</a> і саундбар сідають на HDMI. Який кабель брати для 4K — <a href="/ua/blog/yak-obraty-hdmi-kabel-dlya-televizora">окремий гід</a>.</li>
+    <li><strong>Ефір без інтернету.</strong> Великий екран не замінює антену. Базовий сценарій описаний у статті <a href="/ua/blog/cyfrove-telebachennya-t2">цифрове телебачення Т2</a>.</li>
 </ul>
 <p>
     Інші розбори перед покупкою —
-    <a href="/uk/blog/category/porady">у розділі «Поради покупцям»</a>.
+    <a href="/ua/blog/category/porady">у розділі «Поради покупцям»</a>.
 </p>
 HTML);
     }
@@ -419,7 +419,7 @@ HTML);
     або телевізор стоїть через несучу стіну.
     Звичайного кабелю категорії 5e вистачає для домашнього стрімінгу на дистанції в межах квартири.
     Прокласти його можна разом з рештою дротів —
-    дивіться <a href="/uk/blog/yak-shovaty-kabeli-za-televizorom">як сховати кабелі за телевізором</a>.
+    дивіться <a href="/ua/blog/yak-shovaty-kabeli-za-televizorom">як сховати кабелі за телевізором</a>.
 </p>
 <div class="blog-note">
     Якщо на телевізорі немає LAN-порту, не ліпіть «перший-ліпший» перехідник з ринку без перевірки живлення.
@@ -432,14 +432,14 @@ HTML);
     <li>Поставте роутер вище (полиця, а не підлога) і приберіть його від мікрохвильовки.</li>
     <li>Для 4K спробуйте 5 ГГц. Якщо сигнал слабкий — тягніть кабель.</li>
     <li>Оновіть прошивку ТВ: частина «лагів» — це старий застосунок, а не інтернет.</li>
-    <li>Живлення роутера під час відключень тримайте через <a href="/uk/blog/merezhevyy-filtr-chy-dbzh">ДБЖ, а не лише мережевий фільтр</a>. Фільтр не дає хвилин роботи без світла.</li>
+    <li>Живлення роутера під час відключень тримайте через <a href="/ua/blog/merezhevyy-filtr-chy-dbzh">ДБЖ, а не лише мережевий фільтр</a>. Фільтр не дає хвилин роботи без світла.</li>
 </ol>
 <p>
     Ефірні канали від інтернету не залежать. Як зібрати Т2 вдома —
-    у статті <a href="/uk/blog/cyfrove-telebachennya-t2">цифрове телебачення Т2</a>
-    і розділі <a href="/uk/category/digital-tb">Цифрове телебачення</a>.
+    у статті <a href="/ua/blog/cyfrove-telebachennya-t2">цифрове телебачення Т2</a>
+    і розділі <a href="/ua/category/digital-tb">Цифрове телебачення</a>.
     Звук виносьте на саундбар за гідом
-    <a href="/uk/blog/yak-pidklyuchyty-saundbar-do-televizora">як підключити саундбар</a>.
+    <a href="/ua/blog/yak-pidklyuchyty-saundbar-do-televizora">як підключити саундбар</a>.
 </p>
 HTML);
     }
@@ -451,7 +451,7 @@ HTML);
     Під час відключення світла повербанк рятує зв’язок і невелике світло.
     Він не замінює генератор і не витягне холодильник.
     Нижче — що реально підключати, як прикинути години роботи і де вже потрібен
-    <a href="/uk/blog/merezhevyy-filtr-chy-dbzh">ДБЖ</a>.
+    <a href="/ua/blog/merezhevyy-filtr-chy-dbzh">ДБЖ</a>.
 </p>
 <figure class="blog-figure">
     <img src="{$hero}" alt="{$alt1}" width="1400" height="788" loading="lazy">
@@ -460,7 +460,7 @@ HTML);
 
 <h2>Що можна</h2>
 <ul class="blog-checklist">
-    <li><strong>Телефон і планшет.</strong> Головний сенс банку. Скільки циклів дає модель на 20000 mAh — у розрахунку <a href="/uk/blog/skilky-raziv-powerbank-20000-zaryadyt-telefon">скільки разів 20000 mAh зарядить телефон</a>.</li>
+    <li><strong>Телефон і планшет.</strong> Головний сенс банку. Скільки циклів дає модель на 20000 mAh — у розрахунку <a href="/ua/blog/skilky-raziv-powerbank-20000-zaryadyt-telefon">скільки разів 20000 mAh зарядить телефон</a>.</li>
     <li><strong>Навушники, годинник, ліхтарик з USB.</strong> Їдять мало, один банк тримає їх багато вечорів.</li>
     <li><strong>USB-лампа на 3–5 Вт.</strong> М’яке світло на кілька годин. Звичайна кімнатна люстра на 220 В до USB не підключається.</li>
     <li><strong>Роутер — лише якщо збігається живлення.</strong> Багато домашніх роутерів хочуть 12 В по круглому роз’єму. Звичайний USB-кабель їх не ввімкне. Потрібен банк із DC-виходом потрібної напруги або окремий ДБЖ. Дивіться наклейку на блоці живлення роутера, а не «приблизно підійде».</li>
@@ -511,8 +511,8 @@ HTML);
     Ноутбук від банку заряджається тільки якщо є USB-C Power Delivery і вистачає ват
     (часто 45–65 Вт і більше). Дешевий банк «лише на телефон» ноутбук може лише підтримувати у сні або не побачити зовсім.
     Як обрати ємність і порти — у статті
-    <a href="/uk/blog/yak-obraty-powerbank">як обрати повербанк</a>,
-    моделі зібрані в розділі <a href="/uk/category/poverbanky">Повербанки</a>.
+    <a href="/ua/blog/yak-obraty-powerbank">як обрати повербанк</a>,
+    моделі зібрані в розділі <a href="/ua/category/poverbanky">Повербанки</a>.
 </p>
 <figure class="blog-figure">
     <img src="{$extra}" alt="{$alt2}" width="1400" height="788" loading="lazy">
@@ -524,13 +524,13 @@ HTML);
     <li>Тримайте банк зарядженим до відключення, а не згадуйте про нього, коли згасло.</li>
     <li>Спочатку телефон, далі світло, і лише потім другорядні гаджети.</li>
     <li>Роутер саджайте на ДБЖ або на банк із правильною напругою. Не подавайте 5 В туди, де написано 12 В.</li>
-    <li>Ефірне телебачення без інтернету описане окремо: <a href="/uk/blog/cyfrove-telebachennya-t2">як підключити Т2</a>. Сам телевізор від повербанка не живиться.</li>
+    <li>Ефірне телебачення без інтернету описане окремо: <a href="/ua/blog/cyfrove-telebachennya-t2">як підключити Т2</a>. Сам телевізор від повербанка не живиться.</li>
     <li>Кабель до банку беріть короткий і цілий: тонкий шнур гріється і краде частину заряду.</li>
 </ol>
 <p>
     Ще поради щодо техніки для дому —
-    <a href="/uk/blog/category/powerbanky">у статтях про повербанки</a>
-    та <a href="/uk/blog/category/porady">у розділі «Поради покупцям»</a>.
+    <a href="/ua/blog/category/powerbanky">у статтях про повербанки</a>
+    та <a href="/ua/blog/category/porady">у розділі «Поради покупцям»</a>.
 </p>
 HTML);
     }

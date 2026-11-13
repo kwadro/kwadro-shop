@@ -47,9 +47,9 @@ DirectoryIndex index.php
     RewriteCond %{REQUEST_URI}::$0 ^(/.+)/(.*)::\2$
     RewriteRule .* - [E=BASE:%1]
 
-    # Redirect legacy /ru/... locale URLs to /uk/...
-    RewriteRule ^ru$ %{ENV:BASE}/uk [R=301,L]
-    RewriteRule ^ru/(.*)$ %{ENV:BASE}/uk/$1 [R=301,L]
+    # Redirect legacy /ru/... locale URLs (default home is unprefixed /).
+    RewriteRule ^ru$ %{ENV:BASE}/ [R=301,L]
+    RewriteRule ^ru/(.*)$ %{ENV:BASE}/ua/$1 [R=301,L]
 
     # Sets the HTTP_AUTHORIZATION header removed by Apache
     RewriteCond %{HTTP:Authorization} .+

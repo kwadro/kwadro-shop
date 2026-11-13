@@ -67,7 +67,7 @@ class OrderEmailMailer
      */
     private function mergeBrandingContext(EmailTemplate $template, array $context, ?Order $order = null): array
     {
-        $locale = $order?->getLocale() ?? 'uk';
+        $locale = $order?->getLocale() ?? 'ua';
 
         return array_merge(
             $this->brandingContextProvider->create($template->getSite(), $locale),

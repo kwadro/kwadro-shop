@@ -26,7 +26,7 @@ class MailboxMessageAttachmentController extends AbstractController
         '/admin/{_locale}/mailbox-message/{id}/attachment/{stored}',
         name: 'admin_mailbox_message_attachment',
         requirements: [
-            '_locale' => 'uk|en',
+            '_locale' => 'ua|en',
             'id' => '\d+',
             'stored' => '[^/]+',
         ],

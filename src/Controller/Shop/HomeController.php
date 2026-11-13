@@ -33,15 +33,18 @@ class HomeController extends AbstractController
     }
 
     #[Route(
-        '/{_locale}',
+        [
+            'ua' => '/',
+            'en' => '/en',
+        ],
         name: 'shop_home',
-        requirements: ['_locale' => ShopRoutes::LOCALE_REQUIREMENTS],
-        priority: 20,
+        priority: 30,
     )]
     #[Route(
-        '/{_locale}/',
+        [
+            'en' => '/en/',
+        ],
         name: 'shop_home_trailing_slash',
-        requirements: ['_locale' => ShopRoutes::LOCALE_REQUIREMENTS],
         priority: 20,
     )]
     public function index(string $_locale, Request $request): Response

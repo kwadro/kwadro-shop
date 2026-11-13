@@ -14,7 +14,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-#[Route('/admin/{_locale}/product-social-posts', name: 'admin_product_social_posts', requirements: ['_locale' => 'uk|en'])]
+#[Route('/admin/{_locale}/product-social-posts', name: 'admin_product_social_posts', requirements: ['_locale' => 'ua|en'])]
 #[IsGranted('ROLE_SUPER_ADMIN')]
 final class ProductSocialPostController extends AbstractController
 {
@@ -29,7 +29,7 @@ final class ProductSocialPostController extends AbstractController
     #[Route('', name: '', methods: ['GET'])]
     public function index(Request $request): Response
     {
-        $locale = (string) $request->attributes->get('_locale', 'uk');
+        $locale = (string) $request->attributes->get('_locale', 'ua');
 
         return $this->render('admin/product_social_posts/index.html.twig', [
             'page_title' => $this->translator->trans('admin.social_posts.title', [], 'messages'),
@@ -99,7 +99,7 @@ final class ProductSocialPostController extends AbstractController
     #[Route('/product/{id}/generate', name: '_generate', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function generate(Request $request, Product $product): JsonResponse
     {
-        $locale = (string) $request->attributes->get('_locale', 'uk');
+        $locale = (string) $request->attributes->get('_locale', 'ua');
         $text = $this->generator->generate($product, $locale);
         $save = filter_var($request->request->get('save', '1'), \FILTER_VALIDATE_BOOL);
         $post = null;

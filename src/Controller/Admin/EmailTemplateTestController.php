@@ -13,7 +13,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-#[Route('/admin/{_locale}/email-template-test', name: 'admin_email_template_test', requirements: ['_locale' => 'uk'])]
+#[Route('/admin/{_locale}/email-template-test', name: 'admin_email_template_test', requirements: ['_locale' => 'ua'])]
 #[IsGranted('ROLE_SUPER_ADMIN')]
 final class EmailTemplateTestController extends AbstractController
 {

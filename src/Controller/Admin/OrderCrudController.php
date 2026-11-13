@@ -371,7 +371,7 @@ class OrderCrudController extends AbstractCrudController
         $controller = $card['singleMessageFolder'] === MailboxMessage::FOLDER_SENT
             ? MailboxSentMessageCrudController::class
             : MailboxMessageCrudController::class;
-        $locale = $this->getContext()?->getRequest()->getLocale() ?? 'uk';
+        $locale = $this->getContext()?->getRequest()->getLocale() ?? 'ua';
 
         return [
             'dialog' => $this->urlGenerator->generate('admin_mailbox_message_html', [

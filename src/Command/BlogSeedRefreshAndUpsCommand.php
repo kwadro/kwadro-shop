@@ -40,7 +40,7 @@ final class BlogSeedRefreshAndUpsCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
         $site = $this->siteRepository->find(1);
-        $locale = $this->localeRepository->findOneBy(['code' => 'uk']);
+        $locale = $this->localeRepository->findOneBy(['code' => 'ua']);
         if ($site === null || $locale === null) {
             $io->error('Site #1 or locale uk not found.');
 
@@ -252,7 +252,7 @@ HTML;
 <div class="blog-note">
     У магазині Квадро підкажемо модель під ваші задачі.
     Якщо потрібен резерв для техніки вдома під час вимкнень світла — дивіться також матеріал про
-    <a href="/uk/blog/istoriya-dzherel-bezperebiynogo-zhyvlennya">історію джерел безперебійного живлення</a>.
+    <a href="/ua/blog/istoriya-dzherel-bezperebiynogo-zhyvlennya">історію джерел безперебійного живлення</a>.
 </div>
 HTML;
     }
@@ -276,9 +276,9 @@ HTML;
 <div class="blog-note">
     Після встановлення зробіть повний пошук каналів у меню тюнера.
     Базовий гайд:
-    <a href="/uk/blog/cyfrove-telebachennya-t2">як підключити цифрове телебачення Т2</a>
+    <a href="/ua/blog/cyfrove-telebachennya-t2">як підключити цифрове телебачення Т2</a>
     і каталог
-    <a href="/uk/category/antenu">ТВ-антен</a>.
+    <a href="/ua/category/antenu">ТВ-антен</a>.
 </div>
 HTML;
     }
@@ -332,7 +332,7 @@ HTML;
 
 <div class="blog-note">
     Якщо потрібен мобільний резерв для телефону чи планшета — дивіться гайд
-    <a href="/uk/blog/yak-obraty-powerbank">як обрати повербанк</a>.
+    <a href="/ua/blog/yak-obraty-powerbank">як обрати повербанк</a>.
     Для стаціонарної техніки краще підібрати ДБЖ під потужність і час автономії.
 </div>
 

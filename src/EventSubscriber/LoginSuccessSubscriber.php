@@ -58,7 +58,7 @@ class LoginSuccessSubscriber implements EventSubscriberInterface
         $this->adminAuditLogger->logLogin($user);
 
         $event->setResponse(new RedirectResponse(
-            $this->urlGenerator->generate('admin', ['_locale' => 'uk'])
+            $this->urlGenerator->generate('admin', ['_locale' => 'ua'])
         ));
     }
 }

@@ -3,7 +3,7 @@
 {# @var entity \EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto #}
 {% set message = entity.instance %}
 {% set attachments = message.attachments|default([]) %}
-{% set locale = app.request.locale|default('uk') %}
+{% set locale = app.request.locale|default('ua') %}
 
 {% if attachments is empty %}
     {% if message.hasAttachments %}

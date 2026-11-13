@@ -47,7 +47,7 @@ final class BlogSeedPowerbank20000Command extends Command
     {
         $io = new SymfonyStyle($input, $output);
         $site = $this->siteRepository->find(1);
-        $locale = $this->localeRepository->findOneBy(['code' => 'uk']);
+        $locale = $this->localeRepository->findOneBy(['code' => 'ua']);
         if ($site === null || $locale === null) {
             $io->error('Site #1 or locale uk not found.');
 
@@ -111,7 +111,7 @@ final class BlogSeedPowerbank20000Command extends Command
 
         $this->warnMissingImages($io);
 
-        $io->success(sprintf('Article seeded: /uk/blog/%s', self::SLUG));
+        $io->success(sprintf('Article seeded: /ua/blog/%s', self::SLUG));
         $io->table(
             ['Field', 'Value'],
             [
@@ -248,8 +248,8 @@ final class BlogSeedPowerbank20000Command extends Command
 <div class="blog-note">
     Перед покупкою також варто глянути порти (USB-C PD), максимальну потужність у ватах
     і чи підтримує ваш телефон швидку зарядку. Більше критеріїв —
-    у статті <a href="/uk/blog/yak-obraty-powerbank">як обрати повербанк</a>
-    та в каталозі <a href="/uk/category/powerbanky">повербанків</a>.
+    у статті <a href="/ua/blog/yak-obraty-powerbank">як обрати повербанк</a>
+    та в каталозі <a href="/ua/category/powerbanky">повербанків</a>.
 </div>
 
 <h2>Короткий висновок</h2>

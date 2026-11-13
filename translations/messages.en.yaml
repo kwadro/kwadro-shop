@@ -72,7 +72,7 @@ menu.link_product_search_setting_single: Product search setting
 menu.group_product_feed: Product feed
 menu.link_product_feed_setting: Feed settings
 menu.link_product_feed_setting_single: Product feed setting
-admin.product_feed.help: 'Facebook Catalog feed URL: %url% — add ?token=… when an access token is set. Only in-stock products from categories with Publish to feed = Yes are exported.'
+admin.product_feed.help: 'Facebook Catalog: %url% — Google Merchant: %google_url% — add ?token=… when an access token is set. Only in-stock products from categories with Publish to feed = Yes are exported.'
 admin.product_feed.fieldset_general: General
 admin.product_feed.fieldset_catalog: Catalog defaults
 admin.product_feed.site: Site
@@ -82,7 +82,7 @@ admin.product_feed.access_token: Access token
 admin.product_feed.access_token_help: Optional. If set, the feed requires ?token=VALUE. Leave empty for an open URL.
 admin.product_feed.format: Default format
 admin.product_feed.locale_code: Product link locale
-admin.product_feed.locale_code_help: Locale used in product URLs (uk or en).
+admin.product_feed.locale_code_help: Locale used in product URLs (ua or en).
 admin.product_feed.currency: Currency
 admin.product_feed.currency_help: ISO currency code for Facebook price fields, e.g. UAH.
 admin.product_feed.default_brand: Default brand
@@ -655,7 +655,7 @@ admin.redirect.type.custom: custom
 admin.redirect.from_path: From URL (path)
 admin.redirect.from_path_help: Legacy path, e.g. /efirne-tb.html
 admin.redirect.to_path: Redirect to
-admin.redirect.to_path_help: New path (/uk/...) or absolute URL. Empty = redirect not active yet.
+admin.redirect.to_path_help: New path (/ua/...) or absolute URL. Empty = redirect not active yet.
 admin.redirect.status_code: HTTP status
 admin.redirect.enabled: Enabled
 admin.redirect.from_path_unique: This from path already exists.

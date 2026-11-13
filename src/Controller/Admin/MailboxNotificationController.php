@@ -22,7 +22,7 @@ final class MailboxNotificationController extends AbstractController
     ) {
     }
 
-    #[Route('/admin/{_locale}/mailbox/notifications/poll', name: 'admin_mailbox_notifications_poll', methods: ['GET'], requirements: ['_locale' => 'uk|en'])]
+    #[Route('/admin/{_locale}/mailbox/notifications/poll', name: 'admin_mailbox_notifications_poll', methods: ['GET'], requirements: ['_locale' => 'ua|en'])]
     public function poll(Request $request): JsonResponse
     {
         $session = $request->getSession();

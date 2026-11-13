@@ -67,7 +67,7 @@ final class BlogFacebookPostFormatter
 
     public function resolveArticleUrl(BlogArticle $article, ?string $baseUrl = null): string
     {
-        $locale = $article->getLocale()?->getCode() ?? 'uk';
+        $locale = $article->getLocale()?->getCode() ?? 'ua';
         $path = $this->urlGenerator->generate('shop_blog_article', [
             '_locale' => $locale,
             'slug' => $article->getSlug(),

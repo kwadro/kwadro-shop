@@ -151,7 +151,7 @@ final class EmailTemplateTestService
     /** @param array<string, string> $context */
     private function mergeBrandingContext(EmailTemplate $template, array $context, ?Order $order = null): array
     {
-        $locale = $order?->getLocale() ?? 'uk';
+        $locale = $order?->getLocale() ?? 'ua';
 
         return array_merge(
             $this->brandingContextProvider->create($template->getSite(), $locale),
@@ -212,8 +212,8 @@ final class EmailTemplateTestService
             'items_summary' => 'Товар A × 1, Товар B × 2',
             'order_items_table' => $this->sampleOrderItemsTable(),
             'delivery_summary' => 'Київ, Відділення №1',
-            'shipment_pay_url' => 'https://example.test/uk/order/TEST-0001/shipment-pay?token=test',
-            'shipment_pay_iban_url' => 'https://example.test/uk/order/TEST-0001/shipment-pay/iban?token=test',
+            'shipment_pay_url' => 'https://example.test/ua/order/TEST-0001/shipment-pay?token=test',
+            'shipment_pay_iban_url' => 'https://example.test/ua/order/TEST-0001/shipment-pay/iban?token=test',
             'shipment_prepayment_amount' => '100,00',
             'user_id' => '0',
             'user_email' => $email,

@@ -27,7 +27,7 @@ abstract class AbstractMarketingLibraryController extends AbstractController
 
     protected function renderIndex(Request $request): Response
     {
-        $locale = (string) $request->attributes->get('_locale', 'uk');
+        $locale = (string) $request->attributes->get('_locale', 'ua');
         $prefix = $this->getRoutePrefix();
 
         return $this->render($this->getTemplate(), [

@@ -95,7 +95,7 @@ class DashboardController extends AbstractDashboardController
             ->disableDarkMode()
             ->setDefaultColorScheme('dark')
             ->generateRelativeUrls()
-            ->setLocales(['uk'])
+            ->setLocales(['ua'])
             ;
     }
 
@@ -135,43 +135,43 @@ class DashboardController extends AbstractDashboardController
             $this->translator->trans('menu.link_promo_image_editor', [], 'messages'),
             'fas fa-image',
             'admin_promo_image_editor',
-            ['_locale' => 'uk'],
+            ['_locale' => 'ua'],
         );
         yield MenuItem::linkToRoute(
             $this->translator->trans('menu.link_image_editor', [], 'messages'),
             'fas fa-crop-alt',
             'admin_image_editor',
-            ['_locale' => 'uk'],
+            ['_locale' => 'ua'],
         );
         yield MenuItem::linkToRoute(
             $this->translator->trans('menu.link_background_remover', [], 'messages'),
             'fas fa-eraser',
             'admin_background_remover',
-            ['_locale' => 'uk'],
+            ['_locale' => 'ua'],
         );
         yield MenuItem::linkToRoute(
             $this->translator->trans('menu.link_image_transform', [], 'messages'),
             'fas fa-expand',
             'admin_image_transform',
-            ['_locale' => 'uk'],
+            ['_locale' => 'ua'],
         );
         yield MenuItem::linkToRoute(
             $this->translator->trans('menu.link_media_library', [], 'messages'),
             'fas fa-photo-video',
             'admin_media_library',
-            ['_locale' => 'uk'],
+            ['_locale' => 'ua'],
         );
         yield MenuItem::linkToRoute(
             $this->translator->trans('menu.link_shape_library', [], 'messages'),
             'fas fa-shapes',
             'admin_shape_library',
-            ['_locale' => 'uk'],
+            ['_locale' => 'ua'],
         );
         yield MenuItem::linkToRoute(
             $this->translator->trans('menu.link_product_social_posts', [], 'messages'),
             'fas fa-share-alt',
             'admin_product_social_posts',
-            ['_locale' => 'uk'],
+            ['_locale' => 'ua'],
         );
         yield MenuItem::section($this->translator->trans('menu.group_email', [], 'messages'));
         yield MenuItem::linkTo(EmailTemplateCrudController::class, $this->translator->trans('menu.link_email_template', [], 'messages'), 'fas fa-envelope');
@@ -197,7 +197,7 @@ class DashboardController extends AbstractDashboardController
             $this->translator->trans('menu.link_email_template_test', [], 'messages'),
             'fas fa-vial',
             'admin_email_template_test',
-            ['_locale' => 'uk'],
+            ['_locale' => 'ua'],
         );
         yield MenuItem::section($this->translator->trans('menu.group_bank', [], 'messages'));
         yield MenuItem::linkTo(BankAccountCrudController::class, $this->translator->trans('menu.link_bank_account', [], 'messages'), 'fas fa-university');
@@ -208,7 +208,7 @@ class DashboardController extends AbstractDashboardController
             $this->translator->trans('menu.link_report_visitor_ids', [], 'messages'),
             'fas fa-chart-bar',
             'admin_report_visitor_ids',
-            ['_locale' => 'uk'],
+            ['_locale' => 'ua'],
         );
         yield MenuItem::linkTo(BlockedIpCrudController::class, $this->translator->trans('menu.link_blocked_ip', [], 'messages'), 'fas fa-ban');
         yield MenuItem::linkTo(AdminAuditLogCrudController::class, $this->translator->trans('menu.link_admin_audit_log', [], 'messages'), 'fas fa-clipboard-list');

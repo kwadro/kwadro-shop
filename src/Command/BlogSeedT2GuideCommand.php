@@ -43,7 +43,7 @@ final class BlogSeedT2GuideCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
         $site = $this->siteRepository->find(1);
-        $locale = $this->localeRepository->findOneBy(['code' => 'uk']);
+        $locale = $this->localeRepository->findOneBy(['code' => 'ua']);
         if ($site === null || $locale === null) {
             $io->error('Site #1 or locale uk not found.');
 
@@ -116,10 +116,10 @@ final class BlogSeedT2GuideCommand extends Command
                 ['facebook_draft', $article->getFacebookDraft() !== null ? 'yes ('.strlen($article->getFacebookDraft()).' chars)' : 'no'],
                 ['enabled', $article->isEnabled() ? '1' : '0'],
                 ['published_at', $article->getPublishedAt()?->format('Y-m-d H:i:s') ?? ''],
-                ['url', sprintf('/uk/blog/%s', self::SLUG)],
+                ['url', sprintf('/ua/blog/%s', self::SLUG)],
             ],
         );
-        $io->success(sprintf('Article saved to DB: /uk/blog/%s', self::SLUG));
+        $io->success(sprintf('Article saved to DB: /ua/blog/%s', self::SLUG));
 
         return Command::SUCCESS;
     }
@@ -209,12 +209,12 @@ final class BlogSeedT2GuideCommand extends Command
 </p>
 
 <div class="blog-note">
-    У магазині Квадро є <a href="/uk/category/tuner-t2">тюнери Т2</a> та
-    <a href="/uk/category/antenu">ТВ-антени</a>.
+    У магазині Квадро є <a href="/ua/category/tuner-t2">тюнери Т2</a> та
+    <a href="/ua/category/antenu">ТВ-антени</a>.
     Якщо сумніваєтесь із вибором — підкажемо комплект під ваш регіон і тип будинку.
     Також читайте:
-    <a href="/uk/blog/yak-obraty-antenu-dlya-tunera-t2">як обрати антену для тюнера T2</a>
-    і <a href="/uk/blog/kanaly-t2-spysok-i-zhanry">список каналів Т2</a>.
+    <a href="/ua/blog/yak-obraty-antenu-dlya-tunera-t2">як обрати антену для тюнера T2</a>
+    і <a href="/ua/blog/kanaly-t2-spysok-i-zhanry">список каналів Т2</a>.
 </div>
 HTML;
     }

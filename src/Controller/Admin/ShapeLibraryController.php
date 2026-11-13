@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[Route('/admin/{_locale}/shape-library', name: 'admin_shape_library', requirements: ['_locale' => 'uk|en'])]
+#[Route('/admin/{_locale}/shape-library', name: 'admin_shape_library', requirements: ['_locale' => 'ua|en'])]
 #[IsGranted('ROLE_SUPER_ADMIN')]
 final class ShapeLibraryController extends AbstractMarketingLibraryController
 {

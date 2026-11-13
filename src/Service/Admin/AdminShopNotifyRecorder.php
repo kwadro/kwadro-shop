@@ -72,7 +72,7 @@ final class AdminShopNotifyRecorder
                     ['%count%' => $todayCount],
                     'messages',
                 ))
-                ->setTargetPath($this->urlGenerator->generate('admin_request_list_index', ['_locale' => 'uk']))
+                ->setTargetPath($this->urlGenerator->generate('admin_request_list_index', ['_locale' => 'ua']))
                 ->setIsNotified(false);
 
             $this->entityManager->persist($notification);
@@ -162,7 +162,7 @@ final class AdminShopNotifyRecorder
                     'messages',
                 ),
                 'targetPath' => $this->urlGenerator->generate('admin_cart_detail', [
-                    '_locale' => 'uk',
+                    '_locale' => 'ua',
                     'entityId' => $id,
                 ]),
             ];
@@ -195,7 +195,7 @@ final class AdminShopNotifyRecorder
                     'messages',
                 ),
                 'targetPath' => $this->urlGenerator->generate('admin_order_detail', [
-                    '_locale' => 'uk',
+                    '_locale' => 'ua',
                     'entityId' => $id,
                 ]),
             ];
@@ -229,7 +229,7 @@ final class AdminShopNotifyRecorder
                     'messages',
                 ),
                 'targetPath' => $this->urlGenerator->generate('admin_payment_detail', [
-                    '_locale' => 'uk',
+                    '_locale' => 'ua',
                     'entityId' => $id,
                 ]),
             ];

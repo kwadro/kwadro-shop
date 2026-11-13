@@ -14,7 +14,7 @@ class SecurityController extends AbstractController
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
         if ($this->isGranted('ROLE_SUPER_ADMIN')) {
-            return $this->redirectToRoute('admin', ['_locale' => 'uk']);
+            return $this->redirectToRoute('admin', ['_locale' => 'ua']);
         }
 
         return $this->render('security/login.html.twig', [

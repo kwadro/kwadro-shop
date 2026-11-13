@@ -1,4 +1,4 @@
-
+/1-server
 ###> symfony/framework-bundle ###
 /data-price/
 /public/uploads/

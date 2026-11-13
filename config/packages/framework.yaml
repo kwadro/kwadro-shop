@@ -1,8 +1,8 @@
 # see https://symfony.com/doc/current/reference/configuration/framework.html
 framework:
     secret: '%env(APP_SECRET)%'
-    default_locale: uk
-    enabled_locales: ['uk', 'en']
+    default_locale: ua
+    enabled_locales: ['ua', 'en']
 
 
     session:

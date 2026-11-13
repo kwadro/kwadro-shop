@@ -159,7 +159,7 @@ final class MailboxNotifyTestCommand extends Command
             '  3) Expect a toast top-right: "You received a message" / "Ви отримали лист"',
             '  4) Unread badge bottom-right should show unread count',
             '',
-            'Endpoint: GET /admin/uk/mailbox/notifications/poll',
+            'Endpoint: GET /admin/ua/mailbox/notifications/poll',
             'Tip: hard-refresh the admin page (Ctrl+F5) so JS/CSS load.',
         ]);
     }

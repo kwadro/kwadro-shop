@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ app.request.locale|default('uk') }}">
+<html lang="{{ app.request.locale|default('ua') == 'en' ? 'en' : 'uk' }}">
 <head>
     {% set setting = site_settings() %}
     <meta charset="UTF-8">

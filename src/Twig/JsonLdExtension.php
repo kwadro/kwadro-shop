@@ -282,7 +282,7 @@ final class JsonLdExtension extends AbstractExtension
 
     private function locale(): string
     {
-        return $this->requestStack->getCurrentRequest()?->getLocale() ?? 'uk';
+        return $this->requestStack->getCurrentRequest()?->getLocale() ?? 'ua';
     }
 
     private function absoluteAssetUrl(string $path): string

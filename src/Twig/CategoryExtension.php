@@ -30,7 +30,7 @@ class CategoryExtension extends AbstractExtension
     {
         $request = $this->requestStack->getCurrentRequest();
         $host = $request?->getHost() ?? '';
-        $locale = $request?->getLocale() ?? 'uk';
+        $locale = $request?->getLocale() ?? 'ua';
 
         return $this->megaMenuBuilder->buildForHost($host, $locale);
     }

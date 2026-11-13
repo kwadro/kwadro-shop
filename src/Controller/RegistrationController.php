@@ -31,7 +31,7 @@ class RegistrationController extends AbstractController
         EntityManagerInterface $entityManager,
     ): Response {
         if ($this->isGranted('ROLE_SUPER_ADMIN')) {
-            return $this->redirectToRoute('admin', ['_locale' => 'uk']);
+            return $this->redirectToRoute('admin', ['_locale' => 'ua']);
         }
 
         if ($this->getUser()) {

@@ -61,7 +61,7 @@ final class FacebookProductFeedBuilder
         }
 
         fputcsv($handle, self::HEADERS, $delimiter);
-        foreach ($this->productRepository->findForFacebookFeed() as $product) {
+        foreach ($this->productRepository->findForProductFeed() as $product) {
             $row = $this->mapProduct($product, $setting, $baseUrl);
             if ($row === null) {
                 continue;

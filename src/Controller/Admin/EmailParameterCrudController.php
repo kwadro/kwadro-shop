@@ -69,7 +69,7 @@ class EmailParameterCrudController extends AbstractCrudController
             $entity->setSite($site);
         }
 
-        $locale = $this->container->get('doctrine')->getRepository(Locale::class)->findOneBy(['code' => 'uk'])
+        $locale = $this->container->get('doctrine')->getRepository(Locale::class)->findOneBy(['code' => 'ua'])
             ?? $this->container->get('doctrine')->getRepository(Locale::class)->findOneBy([], ['id' => 'ASC']);
         if ($locale instanceof Locale) {
             $entity->setLocale($locale);

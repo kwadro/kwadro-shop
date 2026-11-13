@@ -97,9 +97,9 @@ class FacebookAuthenticator extends OAuth2Authenticator
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
-        $locale = $request->getSession()->get('_locale', 'uk');
+        $locale = $request->getSession()->get('_locale', 'ua');
         if (!\is_string($locale) || $locale === '') {
-            $locale = 'uk';
+            $locale = 'ua';
         }
 
         return new RedirectResponse($this->urlGenerator->generate('shop_home', ['_locale' => $locale]));
@@ -107,9 +107,9 @@ class FacebookAuthenticator extends OAuth2Authenticator
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
     {
-        $locale = $request->getSession()->get('_locale', 'uk');
+        $locale = $request->getSession()->get('_locale', 'ua');
         if (!\is_string($locale) || $locale === '') {
-            $locale = 'uk';
+            $locale = 'ua';
         }
 
         $messageKey = $exception->getMessageKey();

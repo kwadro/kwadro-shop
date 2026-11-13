@@ -1,7 +1,7 @@
 {% extends 'shop/layout.html.twig' %}
 
 {% set block_search_engines = true %}
-{% set currentLocale = app.request.locale|default('uk') %}
+{% set currentLocale = app.request.locale|default('ua') %}
 
 {% block title %}{{ 'shop.error404.title'|trans }} — {{ site_settings().header.title|default('Kvadro') }}{% endblock %}
 

@@ -14,7 +14,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-#[Route('/admin/{_locale}/image-transform', name: 'admin_image_transform', requirements: ['_locale' => 'uk|en'])]
+#[Route('/admin/{_locale}/image-transform', name: 'admin_image_transform', requirements: ['_locale' => 'ua|en'])]
 #[IsGranted('ROLE_SUPER_ADMIN')]
 final class ImageTransformController extends AbstractController
 {
@@ -37,7 +37,7 @@ final class ImageTransformController extends AbstractController
     #[Route('', name: '', methods: ['GET'])]
     public function index(Request $request): Response
     {
-        $locale = (string) $request->attributes->get('_locale', 'uk');
+        $locale = (string) $request->attributes->get('_locale', 'ua');
 
         return $this->render('admin/image_transform/index.html.twig', [
             'page_title' => $this->translator->trans('admin.image_transform.title', [], 'messages'),

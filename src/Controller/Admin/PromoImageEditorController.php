@@ -10,7 +10,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-#[Route('/admin/{_locale}/promo-image-editor', name: 'admin_promo_image_editor', requirements: ['_locale' => 'uk|en'])]
+#[Route('/admin/{_locale}/promo-image-editor', name: 'admin_promo_image_editor', requirements: ['_locale' => 'ua|en'])]
 #[IsGranted('ROLE_SUPER_ADMIN')]
 final class PromoImageEditorController extends AbstractController
 {
@@ -31,17 +31,17 @@ final class PromoImageEditorController extends AbstractController
             'canvas_size' => self::CANVAS_SIZE,
             'defaults' => $defaults,
             'saved_images' => $this->listSavedImages(),
-            'save_url' => $this->generateUrl('admin_promo_image_editor_save', ['_locale' => 'uk']),
-            'upload_url' => $this->generateUrl('admin_promo_image_editor_upload', ['_locale' => 'uk']),
+            'save_url' => $this->generateUrl('admin_promo_image_editor_save', ['_locale' => 'ua']),
+            'upload_url' => $this->generateUrl('admin_promo_image_editor_upload', ['_locale' => 'ua']),
             'load_url_template' => str_replace(
                 'promo-placeholder.jpg',
                 '__FILENAME__',
-                $this->generateUrl('admin_promo_image_editor_load', ['_locale' => 'uk', 'filename' => 'promo-placeholder.jpg']),
+                $this->generateUrl('admin_promo_image_editor_load', ['_locale' => 'ua', 'filename' => 'promo-placeholder.jpg']),
             ),
             'delete_url_template' => str_replace(
                 'promo-placeholder.jpg',
                 '__FILENAME__',
-                $this->generateUrl('admin_promo_image_editor_delete', ['_locale' => 'uk', 'filename' => 'promo-placeholder.jpg']),
+                $this->generateUrl('admin_promo_image_editor_delete', ['_locale' => 'ua', 'filename' => 'promo-placeholder.jpg']),
             ),
         ]);
     }

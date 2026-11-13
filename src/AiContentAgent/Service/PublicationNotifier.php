@@ -35,7 +35,7 @@ final class PublicationNotifier
             throw new \RuntimeException('Published queue item has no article to announce.');
         }
 
-        $locale = $article->getLocale()?->getCode() ?? 'uk';
+        $locale = $article->getLocale()?->getCode() ?? 'ua';
         $path = $this->urlGenerator->generate('shop_blog_article', [
             '_locale' => $locale,
             'slug' => $article->getSlug(),

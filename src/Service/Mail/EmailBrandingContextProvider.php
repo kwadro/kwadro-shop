@@ -19,7 +19,7 @@ final class EmailBrandingContextProvider
     }
 
     /** @return array<string, string> */
-    public function create(?Site $site = null, string $locale = 'uk'): array
+    public function create(?Site $site = null, string $locale = 'ua'): array
     {
         $site ??= $this->siteRepository->findOneBy([], ['id' => 'ASC']);
         if ($site === null) {

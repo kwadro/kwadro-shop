@@ -762,7 +762,7 @@ class ProductRepository extends ServiceEntityRepository
      *
      * @return list<Product>
      */
-    public function findForFacebookFeed(): array
+    public function findForProductFeed(): array
     {
         /** @var list<Product> $products */
         $products = $this->createQueryBuilder('p')

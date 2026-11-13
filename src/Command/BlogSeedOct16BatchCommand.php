@@ -61,7 +61,7 @@ final class BlogSeedOct16BatchCommand extends Command
         $forceImages = (bool) $input->getOption('force-images');
 
         $site = $this->siteRepository->find(1);
-        $locale = $this->localeRepository->findOneBy(['code' => 'uk']);
+        $locale = $this->localeRepository->findOneBy(['code' => 'ua']);
         if ($site === null || $locale === null) {
             $io->error('Site #1 or locale uk not found.');
 
@@ -252,7 +252,7 @@ final class BlogSeedOct16BatchCommand extends Command
 <h2>Навіщо взагалі думати про версію HDMI</h2>
 <p>
     Сучасний телевізор рідко працює сам: до нього підключають тюнер
-    <a href="/uk/category/tuner-t2">DVB-T2</a>,
+    <a href="/ua/category/tuner-t2">DVB-T2</a>,
     приставку, ігрову консоль, ПК або саундбар.
     Якщо кабель «застарий» для потрібного режиму, ви отримаєте не чорний екран, а тихіші симптоми:
     картинка падає з 4K на Full HD, HDR вимикається, звук через ARC пропадає після сну ТВ.
@@ -260,7 +260,7 @@ final class BlogSeedOct16BatchCommand extends Command
 <p>
     Перед вибором кабелю варто також розуміти, як саме ви вішаєте телевізор:
     у гайді
-    <a href="/uk/blog/yak-obraty-kronshteyn-dlya-televizora">як обрати кронштейн для телевізора</a>
+    <a href="/ua/blog/yak-obraty-kronshteyn-dlya-televizora">як обрати кронштейн для телевізора</a>
     є чеклист по VESA і відстані від стіни — від цього залежить потрібна довжина HDMI.
 </p>
 
@@ -284,7 +284,7 @@ final class BlogSeedOct16BatchCommand extends Command
 <p>
     Якщо плануєте зовнішній звук, одразу закладайте кабель під ARC/eARC.
     У статті
-    <a href="/uk/blog/yak-pidklyuchyty-saundbar-do-televizora">як підключити саундбар до телевізора</a>
+    <a href="/ua/blog/yak-pidklyuchyty-saundbar-do-televizora">як підключити саундбар до телевізора</a>
     розібрані HDMI, оптика і Bluetooth.
     Для eARC беріть сертифікований HDMI 2.0/2.1 — дешеві «no name» на довгих трасах часто дають клацання в звуці.
 </p>
@@ -294,9 +294,9 @@ final class BlogSeedOct16BatchCommand extends Command
     Для відстані <strong>до 3–5 м</strong> (типовий шлях від тумби / кронштейна до приставки) вистачає звичайного мідного HDMI 2.0/2.1.
     На 10+ м краще активний або оптичний HDMI — інакше можливі артефакти.
     Якщо ТВ уже на стіні, спочатку оберіть
-    <a href="/uk/category/kronshteyny">кронштейн</a>
+    <a href="/ua/category/kronshteyny">кронштейн</a>
     і прокладіть шлях кабелю (з урахуванням
-    <a href="/uk/blog/yak-shovaty-kabeli-za-televizorom">схову дротів за телевізором</a>),
+    <a href="/ua/blog/yak-shovaty-kabeli-za-televizorom">схову дротів за телевізором</a>),
     і лише потім купуйте кабель з запасом 30–50 см.
 </p>
 
@@ -307,14 +307,14 @@ final class BlogSeedOct16BatchCommand extends Command
     <li>Виміряйте шлях з урахуванням кронштейна і кабель-каналу.</li>
     <li>Не женіться за «позлоченими» роз’ємами — важливіша сертифікація і адекватна довжина.</li>
     <li>Для ефірного ТБ перевірте також
-        <a href="/uk/category/digital-tb">розділ цифрового телебачення</a>
+        <a href="/ua/category/digital-tb">розділ цифрового телебачення</a>
         і гайд
-        <a href="/uk/blog/cyfrove-telebachennya-t2">що таке Т2 і як підключити</a>.</li>
+        <a href="/ua/blog/cyfrove-telebachennya-t2">що таке Т2 і як підключити</a>.</li>
 </ol>
 
 <p>
     Більше практичних матеріалів — у категорії блогу
-    <a href="/uk/blog/category/porady">Поради покупцям</a>.
+    <a href="/ua/blog/category/porady">Поради покупцям</a>.
 </p>
 HTML);
     }
@@ -335,17 +335,17 @@ HTML);
 <p>
     Акуратний результат починається не з кабель-каналу, а з розмітки.
     Оберіть місце підвісу за гайдом
-    <a href="/uk/blog/yak-obraty-kronshteyn-dlya-televizora">як обрати кронштейн для телевізора</a>,
+    <a href="/ua/blog/yak-obraty-kronshteyn-dlya-televizora">як обрати кронштейн для телевізора</a>,
     перегляньте моделі в каталозі
-    <a href="/uk/category/kronshteyny">Кронштейни</a>
+    <a href="/ua/category/kronshteyny">Кронштейни</a>
     (зокрема
-    <a href="/uk/category/unibracket">UniBracket</a>)
+    <a href="/ua/category/unibracket">UniBracket</a>)
     і закладіть розетку / інтернет якомога ближче до центру екрана.
 </p>
 <p>
     Популярні варіанти кріплень:
-    <a href="/uk/product/bz02-21-unibracket">BZ02-21</a>,
-    <a href="/uk/product/bz12-22-unibracket">BZ12-22</a> —
+    <a href="/ua/product/bz02-21-unibracket">BZ02-21</a>,
+    <a href="/ua/product/bz12-22-unibracket">BZ12-22</a> —
     у багатьох є отвори або жолоби під дроти; прокладайте HDMI і живлення <em>до</em> фінального затягування болтів.
 </p>
 
@@ -366,19 +366,19 @@ HTML);
     Не купуйте 10-метровий HDMI «про запас», якщо реально треба 2–3 м:
     зайва бухта за екраном заважає скласти кронштейн і псує вентиляцію.
     Про вибір кабелю —
-    <a href="/uk/blog/yak-obraty-hdmi-kabel-dlya-televizora">окремий матеріал про HDMI</a>.
+    <a href="/ua/blog/yak-obraty-hdmi-kabel-dlya-televizora">окремий матеріал про HDMI</a>.
     Для звуку дивіться
-    <a href="/uk/blog/yak-pidklyuchyty-saundbar-do-televizora">підключення саундбара</a>.
+    <a href="/ua/blog/yak-pidklyuchyty-saundbar-do-televizora">підключення саундбара</a>.
 </p>
 
 <h2>3. Розетка і фільтр за телевізором</h2>
 <p>
     Ідеально — розетка саме за панеллю. Якщо розетка нижче, сховайте і подовжувач:
     у каталозі є
-    <a href="/uk/category/podovzhuvachi-tm-logan-inc">подовжувачі та мережеві фільтри</a>,
+    <a href="/ua/category/podovzhuvachi-tm-logan-inc">подовжувачі та мережеві фільтри</a>,
     а порівняння з ДБЖ —
     у статті
-    <a href="/uk/blog/merezhevyy-filtr-chy-dbzh">мережевий фільтр чи ДБЖ</a>.
+    <a href="/ua/blog/merezhevyy-filtr-chy-dbzh">мережевий фільтр чи ДБЖ</a>.
 </p>
 <div class="blog-note">
     Не ховайте кабелі під натяжною стелею без лючка доступу і не перетискайте HDMI гострими краями профілю.
@@ -393,7 +393,7 @@ HTML);
 </ol>
 <p>
     Ще поради з вибору техніки —
-    <a href="/uk/blog/category/porady">у блозі «Поради покупцям»</a>.
+    <a href="/ua/blog/category/porady">у блозі «Поради покупцям»</a>.
 </p>
 HTML);
     }
@@ -420,11 +420,11 @@ HTML);
 </ul>
 <p>
     У каталозі зібрані готові варіанти —
-    <a href="/uk/category/podovzhuvachi-tm-logan-inc">подовжувачі та мережеві фільтри</a>,
+    <a href="/ua/category/podovzhuvachi-tm-logan-inc">подовжувачі та мережеві фільтри</a>,
     наприклад
-    <a href="/uk/product/homeware-hp-5-15-0">фільтр на 6 розеток з USB/Type-C</a>
+    <a href="/ua/product/homeware-hp-5-15-0">фільтр на 6 розеток з USB/Type-C</a>
     чи
-    <a href="/uk/product/homeware-hp-5-23-0">компактний F06U на 3 м</a>.
+    <a href="/ua/product/homeware-hp-5-23-0">компактний F06U на 3 м</a>.
     Для ТВ і приставки це базовий мінімум захисту.
 </p>
 
@@ -442,11 +442,11 @@ HTML);
 <p>
     Якщо цікавить еволюція таких рішень —
     почитайте
-    <a href="/uk/blog/istoriya-dzherel-bezperebiynogo-zhyvlennya">історію джерел безперебійного живлення</a>.
+    <a href="/ua/blog/istoriya-dzherel-bezperebiynogo-zhyvlennya">історію джерел безперебійного живлення</a>.
     Для портативної зарядки гаджетів інший інструмент —
-    <a href="/uk/blog/yak-obraty-powerbank">як обрати повербанк</a>
+    <a href="/ua/blog/yak-obraty-powerbank">як обрати повербанк</a>
     і підбірка
-    <a href="/uk/blog/category/powerbanky">статей про повербанки</a>.
+    <a href="/ua/blog/category/powerbanky">статей про повербанки</a>.
 </p>
 
 <div class="blog-note">
@@ -459,10 +459,10 @@ HTML);
     <li>Є лише «клацання» в мережі / індукція → якісний мережевий фільтр на лінію ТВ.</li>
     <li>Часті відключення світла → ДБЖ на роутер (інтернет) обовʼязково.</li>
     <li>Дорога AV-система → фільтр на ТВ/саундбар + ДБЖ на мережу; дивіться також
-        <a href="/uk/category/digital-tb">цифрове ТБ</a> і
-        <a href="/uk/blog/cyfrove-telebachennya-t2">гайд з підключення Т2</a>.</li>
+        <a href="/ua/category/digital-tb">цифрове ТБ</a> і
+        <a href="/ua/blog/cyfrove-telebachennya-t2">гайд з підключення Т2</a>.</li>
     <li>Кабелі за екраном ховайте акуратно —
-        <a href="/uk/blog/yak-shovaty-kabeli-za-televizorom">поради з кабель-менеджменту</a>.</li>
+        <a href="/ua/blog/yak-shovaty-kabeli-za-televizorom">поради з кабель-менеджменту</a>.</li>
 </ol>
 HTML);
     }
@@ -484,16 +484,16 @@ HTML);
 <p>
     Один кабель між портом ARC/eARC на телевізорі і відповідним портом на саундбарі.
     Потрібен адекватний HDMI — дивіться
-    <a href="/uk/blog/yak-obraty-hdmi-kabel-dlya-televizora">гайд з вибору HDMI-кабеля</a>.
+    <a href="/ua/blog/yak-obraty-hdmi-kabel-dlya-televizora">гайд з вибору HDMI-кабеля</a>.
     У меню ТВ увімкніть зовнішні динаміки / HDMI ARC і вимкніть динаміки панелі.
 </p>
 <p>
     Якщо ТВ на кронштейні, заздалегідь заложіть довжину кабелю і шлях за стіною:
-    <a href="/uk/blog/yak-obraty-kronshteyn-dlya-televizora">вибір кронштейна</a>,
+    <a href="/ua/blog/yak-obraty-kronshteyn-dlya-televizora">вибір кронштейна</a>,
     каталог
-    <a href="/uk/category/kronshteyny">кріплень</a>
+    <a href="/ua/category/kronshteyny">кріплень</a>
     і
-    <a href="/uk/blog/yak-shovaty-kabeli-za-televizorom">як сховати дроти</a>.
+    <a href="/ua/blog/yak-shovaty-kabeli-za-televizorom">як сховати дроти</a>.
 </p>
 
 <figure class="blog-figure">
@@ -505,12 +505,12 @@ HTML);
 <p>
     Стабільний цифровий звук, але без частини сучасних форматів, які дає eARC (наприклад, частини lossless-доріжок).
     Підходить, якщо HDMI зайняті тюнером
-    <a href="/uk/category/tuner-t2">DVB-T2</a>,
+    <a href="/ua/category/tuner-t2">DVB-T2</a>,
     приставкою чи ігровою консоллю.
     Про ефірне ТБ загалом —
-    <a href="/uk/blog/cyfrove-telebachennya-t2">цифрове телебачення Т2</a>
+    <a href="/ua/blog/cyfrove-telebachennya-t2">цифрове телебачення Т2</a>
     і розділ
-    <a href="/uk/category/digital-tb">Цифрове телебачення</a>.
+    <a href="/ua/category/digital-tb">Цифрове телебачення</a>.
 </p>
 
 <h2>Bluetooth</h2>
@@ -530,15 +530,15 @@ HTML);
     <li>У меню ТВ оберіть вихід звуку HDMI ARC / Optical.</li>
     <li>Прогоніть трейлер з діалогами і басом; за потреби підкрутіть sync.</li>
     <li>Живлення саундбара краще вести через
-        <a href="/uk/category/podovzhuvachi-tm-logan-inc">мережевий фільтр</a>
+        <a href="/ua/category/podovzhuvachi-tm-logan-inc">мережевий фільтр</a>
         — чому не завжди вистачає трійника, читайте в
-        <a href="/uk/blog/merezhevyy-filtr-chy-dbzh">фільтр чи ДБЖ</a>.</li>
+        <a href="/ua/blog/merezhevyy-filtr-chy-dbzh">фільтр чи ДБЖ</a>.</li>
 </ol>
 <p>
     Інші поради з вибору техніки для дому —
-    <a href="/uk/blog/category/porady">у розділі блогу «Поради»</a>
+    <a href="/ua/blog/category/porady">у розділі блогу «Поради»</a>
     та на
-    <a href="/uk/blog">головній блогу</a>.
+    <a href="/ua/blog">головній блогу</a>.
 </p>
 HTML);
     }
