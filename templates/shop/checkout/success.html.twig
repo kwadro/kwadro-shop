@@ -33,6 +33,13 @@
             <p>{{ 'shop.checkout.success_no_order'|trans }}</p>
         {% endif %}
 
+        {% include 'shop/partials/_google_review_cta.html.twig' with {
+            heading_id: 'shop-checkout-google-review-title',
+            modifier: 'checkout',
+            title: 'shop.google.review_title_checkout'|trans,
+            lead: 'shop.google.review_lead_checkout'|trans,
+        } %}
+
         <a href="{{ path('shop_home', {_locale: app.request.locale}) }}" class="shop-checkout__back">
             ← {{ 'shop.checkout.back_to_shop'|trans }}
         </a>

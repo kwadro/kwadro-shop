@@ -207,6 +207,12 @@ admin.site.facebook_url: Facebook сторінка
 admin.site.facebook_url_help: Повне посилання на сторінку Facebook (наприклад https://www.facebook.com/yourpage).
 admin.site.instagram_url: Instagram сторінка
 admin.site.instagram_url_help: Повне посилання на профіль Instagram (наприклад https://www.instagram.com/yourpage/).
+admin.site.google_review_enabled: Показувати кнопку відгуку Google
+admin.site.google_review_enabled_help: Якщо увімкнено — блок «Залишити відгук» з’явиться на головній і на сторінці успішного замовлення. Google API не дозволяє створювати відгуки з сайту; кнопка відкриває офіційну форму Google.
+admin.site.google_place_id: Google Place ID
+admin.site.google_place_id_help: Place ID профілю Google Business (Maps). Формується посилання https://search.google.com/local/writereview?placeid=…
+admin.site.google_review_url: URL відгуку Google (опційно)
+admin.site.google_review_url_help: Якщо задано — використовується замість Place ID (напр. https://g.page/r/…/review з кабінету Business Profile).
 admin.site.meta_pixel_id: Meta Pixel ID
 admin.site.meta_pixel_id_help: Числовий ID з Meta Events Manager. Якщо порожньо — використовується FB_META_PIXEL_ID з файлу оточення.
 admin.site.ignored_request_ips: Ігнорувати IP для RequestList
@@ -1313,6 +1319,11 @@ shop.home.blog_title: Цікаві статті
 shop.home.blog_lead: Короткі огляди та поради, які допоможуть зробити правильний вибір.
 shop.home.final_title: Готові обрати?
 shop.home.final_lead: Перейдіть у каталог і купіть потрібний товар за кілька хвилин.
+shop.google.review_title: Залиште відгук про магазин
+shop.google.review_lead: Ваша оцінка в Google допомагає іншим покупцям і нам ставати кращими.
+shop.google.review_title_checkout: Подобається наш магазин?
+shop.google.review_lead_checkout: Будемо вдячні за короткий відгук у Google після замовлення.
+shop.google.review_cta: Залишити відгук у Google
 shop.cart.added: Товар додано до кошика
 shop.cart.added_short: Додано ✓
 shop.cart.removed: Товар видалено з кошика

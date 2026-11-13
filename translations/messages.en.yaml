@@ -207,6 +207,12 @@ admin.site.facebook_url: Facebook page
 admin.site.facebook_url_help: Full URL to your Facebook page (e.g. https://www.facebook.com/yourpage).
 admin.site.instagram_url: Instagram page
 admin.site.instagram_url_help: Full URL to your Instagram profile (e.g. https://www.instagram.com/yourpage/).
+admin.site.google_review_enabled: Show Google review button
+admin.site.google_review_enabled_help: When enabled, a “Leave a review” block appears on the homepage and checkout success page. Google’s API cannot create reviews; the button opens Google’s official review form.
+admin.site.google_place_id: Google Place ID
+admin.site.google_place_id_help: Place ID of your Google Business Profile (Maps). Builds https://search.google.com/local/writereview?placeid=…
+admin.site.google_review_url: Google review URL (optional)
+admin.site.google_review_url_help: If set, used instead of Place ID (e.g. https://g.page/r/…/review from Business Profile).
 admin.site.meta_pixel_id: Meta Pixel ID
 admin.site.meta_pixel_id_help: Numeric ID from Meta Events Manager. If empty, FB_META_PIXEL_ID from the environment file is used.
 admin.site.ignored_request_ips: Ignore IPs for RequestList
@@ -1314,6 +1320,11 @@ shop.home.blog_title: Interesting articles
 shop.home.blog_lead: Short guides and tips to help you choose with confidence.
 shop.home.final_title: Ready to choose?
 shop.home.final_lead: Open the catalog and buy what you need in a few minutes.
+shop.google.review_title: Leave a store review
+shop.google.review_lead: Your Google rating helps other shoppers and helps us improve.
+shop.google.review_title_checkout: Enjoying our store?
+shop.google.review_lead_checkout: We would appreciate a short Google review after your order.
+shop.google.review_cta: Leave a Google review
 shop.cart.added: Product added to cart
 shop.cart.added_short: Added ✓
 shop.cart.removed: Product removed from cart

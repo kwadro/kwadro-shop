@@ -78,6 +78,23 @@ class Site
     #[Assert\Length(max: 512)]
     private ?string $instagramUrl = null;
 
+    /**
+     * Google Business Profile / Maps Place ID.
+     * Used to build the write-review URL (GBP API cannot create reviews programmatically).
+     */
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(max: 255)]
+    private ?string $googlePlaceId = null;
+
+    /** Optional override (e.g. https://g.page/r/…/review). Empty → built from Place ID. */
+    #[ORM\Column(length: 512, nullable: true)]
+    #[Assert\Length(max: 512)]
+    private ?string $googleReviewUrl = null;
+
+    /** Show “Leave a Google review” CTA on homepage and checkout success. */
+    #[ORM\Column(options: ['default' => false])]
+    private bool $googleReviewEnabled = false;
+
     /** Numeric Meta Pixel ID. Empty means use FB_META_PIXEL_ID from the environment. */
     #[ORM\Column(length: 32, nullable: true)]
     #[Assert\Length(max: 32)]
@@ -212,6 +229,60 @@ class Site
         $this->facebookUrl = $normalized !== '' ? $normalized : null;
 
         return $this;
+    }
+
+    public function getGooglePlaceId(): ?string
+    {
+        return $this->googlePlaceId;
+    }
+
+    public function setGooglePlaceId(?string $googlePlaceId): self
+    {
+        $normalized = $googlePlaceId !== null ? trim($googlePlaceId) : null;
+        $this->googlePlaceId = $normalized !== '' ? $normalized : null;
+
+        return $this;
+    }
+
+    public function getGoogleReviewUrl(): ?string
+    {
+        return $this->googleReviewUrl;
+    }
+
+    public function setGoogleReviewUrl(?string $googleReviewUrl): self
+    {
+        $normalized = $googleReviewUrl !== null ? trim($googleReviewUrl) : null;
+        $this->googleReviewUrl = $normalized !== '' ? $normalized : null;
+
+        return $this;
+    }
+
+    public function isGoogleReviewEnabled(): bool
+    {
+        return $this->googleReviewEnabled;
+    }
+
+    public function setGoogleReviewEnabled(bool $googleReviewEnabled): self
+    {
+        $this->googleReviewEnabled = $googleReviewEnabled;
+
+        return $this;
+    }
+
+    /**
+     * Direct Google “write a review” URL for this business profile, or null when not configured.
+     */
+    public function resolveGoogleWriteReviewUrl(): ?string
+    {
+        if ($this->googleReviewUrl !== null && $this->googleReviewUrl !== '') {
+            return $this->googleReviewUrl;
+        }
+
+        if ($this->googlePlaceId === null || $this->googlePlaceId === '') {
+            return null;
+        }
+
+        return 'https://search.google.com/local/writereview?placeid='.rawurlencode($this->googlePlaceId);
     }
 
     public function getInstagramUrl(): ?string

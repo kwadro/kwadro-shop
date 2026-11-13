@@ -227,6 +227,11 @@
             </section>
         {% endif %}
 
+        {% include 'shop/partials/_google_review_cta.html.twig' with {
+            heading_id: 'shop-home-google-review-title',
+            modifier: 'home',
+        } %}
+
         <section class="shop-home-final-cta" aria-labelledby="shop-home-final-title">
             <h2 id="shop-home-final-title" class="shop-home-final-cta__title">{{ 'shop.home.final_title'|trans }}</h2>
             <p class="shop-home-final-cta__lead">{{ 'shop.home.final_lead'|trans }}</p>

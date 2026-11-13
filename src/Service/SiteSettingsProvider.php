@@ -179,6 +179,13 @@ class SiteSettingsProvider
                 'facebook_url' => $site->getFacebookUrl(),
                 'instagram_url' => $site->getInstagramUrl(),
             ],
+            'google' => [
+                'review_enabled' => $site->isGoogleReviewEnabled(),
+                'place_id' => $site->getGooglePlaceId(),
+                'review_url' => $site->isGoogleReviewEnabled()
+                    ? $site->resolveGoogleWriteReviewUrl()
+                    : null,
+            ],
             'tracking' => [
                 'meta_pixel_id' => $this->resolveMetaPixelId($site),
             ],

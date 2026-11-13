@@ -48,6 +48,16 @@ class SiteCrudController extends AbstractCrudController
             UrlField::new('instagramUrl', $this->translator->trans('admin.site.instagram_url', [], 'messages'))
                 ->setRequired(false)
                 ->setHelp($this->translator->trans('admin.site.instagram_url_help', [], 'messages')),
+            BooleanField::new('googleReviewEnabled', $this->translator->trans('admin.site.google_review_enabled', [], 'messages'))
+                ->setHelp($this->translator->trans('admin.site.google_review_enabled_help', [], 'messages')),
+            TextField::new('googlePlaceId', $this->translator->trans('admin.site.google_place_id', [], 'messages'))
+                ->setRequired(false)
+                ->setHelp($this->translator->trans('admin.site.google_place_id_help', [], 'messages'))
+                ->hideOnIndex(),
+            UrlField::new('googleReviewUrl', $this->translator->trans('admin.site.google_review_url', [], 'messages'))
+                ->setRequired(false)
+                ->setHelp($this->translator->trans('admin.site.google_review_url_help', [], 'messages'))
+                ->hideOnIndex(),
             TextField::new('metaPixelId', $this->translator->trans('admin.site.meta_pixel_id', [], 'messages'))
                 ->setRequired(false)
                 ->setHelp($this->translator->trans('admin.site.meta_pixel_id_help', [], 'messages'))
