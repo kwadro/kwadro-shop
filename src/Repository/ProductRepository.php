@@ -764,17 +764,17 @@ class ProductRepository extends ServiceEntityRepository
     /**
      * In-stock enabled products that belong to at least one category marked publish_to_feed.
      *
+     * Two-step load: DISTINCT + fetch-joining several collections leaves typed
+     * associations (e.g. Product::$offers) uninitialized in Doctrine.
+     *
      * @return list<Product>
      */
     public function findForProductFeed(): array
     {
-        /** @var list<Product> $products */
-        $products = $this->createQueryBuilder('p')
-            ->distinct()
-            ->addSelect('c', 'o', 's')
+        /** @var list<int|string> $ids */
+        $ids = $this->createQueryBuilder('p')
+            ->select('DISTINCT p.id')
             ->innerJoin('p.categories', 'c')
-            ->leftJoin('p.offers', 'o')
-            ->leftJoin('o.supplier', 's')
             ->andWhere('p.enabled = true')
             ->andWhere('p.in_stock = true')
             ->andWhere('c.enabled = true')
@@ -783,6 +783,25 @@ class ProductRepository extends ServiceEntityRepository
                 SELECT 1 FROM App\Entity\ProductOffer o_avail
                 WHERE o_avail.product = p AND o_avail.qty > 0
             )')
+            ->orderBy('p.id', 'ASC')
+            ->getQuery()
+            ->getSingleColumnResult();
+
+        $ids = array_values(array_map('intval', $ids));
+        if ($ids === []) {
+            return [];
+        }
+
+        /** @var list<Product> $products */
+        $products = $this->createQueryBuilder('p')
+            ->addSelect('c', 'o', 's')
+            ->innerJoin('p.categories', 'c')
+            ->leftJoin('p.offers', 'o')
+            ->leftJoin('o.supplier', 's')
+            ->andWhere('p.id IN (:ids)')
+            ->andWhere('c.enabled = true')
+            ->andWhere('c.publish_to_feed = true')
+            ->setParameter('ids', $ids)
             ->orderBy('p.id', 'ASC')
             ->getQuery()
             ->getResult();

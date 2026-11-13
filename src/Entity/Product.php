@@ -610,6 +610,11 @@ class Product
      */
     public function getImageSupplierSlug(): string
     {
+        // PostLoad / partial hydration can run before Doctrine injects $offers.
+        if (!isset($this->offers)) {
+            return 'mahazyn-kvadro';
+        }
+
         foreach ([$this->getLowestAvailableOffer(), $this->getLowestOffer()] as $offer) {
             if (!$offer instanceof ProductOffer) {
                 continue;
@@ -730,12 +735,17 @@ class Product
     public function hydrateGalleryItems(): void
     {
         $items = new ArrayCollection();
+        // Do not resolve supplier slug here: PostLoad can run before $offers is injected.
+        $supplier = isset($this->offers) ? $this->getImageSupplierSlug() : 'mahazyn-kvadro';
         foreach ($this->gallery as $row) {
             if (!\is_array($row)) {
                 continue;
             }
             $item = new ProductGalleryItem();
-            $item->path = $this->adminGalleryRelativePath((string) ($row['full'] ?? $row['thumb'] ?? ''));
+            $item->path = $this->adminGalleryRelativePathForSupplier(
+                (string) ($row['full'] ?? $row['thumb'] ?? ''),
+                $supplier,
+            );
             $item->alt = trim((string) ($row['alt'] ?? $this->name));
             $items->add($item);
         }
@@ -931,6 +941,11 @@ class Product
 
     private function adminGalleryRelativePath(string $path): ?string
     {
+        return $this->adminGalleryRelativePathForSupplier($path, $this->getImageSupplierSlug());
+    }
+
+    private function adminGalleryRelativePathForSupplier(string $path, string $supplier): ?string
+    {
         $path = trim($path);
         if ($path === '') {
             return null;
@@ -945,12 +960,16 @@ class Product
             return null;
         }
 
-        return ProductImagePath::relativePath($filename, $this->getImageSupplierSlug());
+        return ProductImagePath::relativePath($filename, $supplier);
     }
 
     /** @return Collection<int, ProductOffer> */
     public function getOffers(): Collection
     {
+        if (!isset($this->offers)) {
+            $this->offers = new ArrayCollection();
+        }
+
         return $this->offers;
     }
 
@@ -1041,7 +1060,7 @@ class Product
     public function getLowestOffer(): ?ProductOffer
     {
         $lowest = null;
-        foreach ($this->offers as $offer) {
+        foreach ($this->getOffers() as $offer) {
             if ($lowest === null || $offer->getPrice() < $lowest->getPrice()) {
                 $lowest = $offer;
             }
@@ -1053,7 +1072,7 @@ class Product
     public function getLowestAvailableOffer(): ?ProductOffer
     {
         $lowest = null;
-        foreach ($this->offers as $offer) {
+        foreach ($this->getOffers() as $offer) {
             if (!$offer->isInStock()) {
                 continue;
             }
@@ -1098,7 +1117,7 @@ class Product
 
     public function hasOffers(): bool
     {
-        return !$this->offers->isEmpty();
+        return !$this->getOffers()->isEmpty();
     }
 
     public function isAvailableForSale(): bool
