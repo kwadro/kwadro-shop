@@ -11,10 +11,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\BooleanFilter;
-use EasyCorp\Bundle\EasyAdminBundle\Filter\EntityFilter;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class ProductAttributeCrudController extends AbstractCrudController
@@ -46,7 +44,6 @@ class ProductAttributeCrudController extends AbstractCrudController
     public function configureFilters(Filters $filters): Filters
     {
         return $filters
-            ->add(EntityFilter::new('group', $this->translator->trans('admin.product_attribute.group', [], 'messages')))
             ->add(BooleanFilter::new('show_in_filter', $this->translator->trans('admin.product_attribute.show_in_filter', [], 'messages')));
     }
 
@@ -54,13 +51,20 @@ class ProductAttributeCrudController extends AbstractCrudController
     {
         yield IdField::new('id')->hideOnForm();
         yield TextField::new('name', $this->translator->trans('admin.product_attribute.name', [], 'messages'));
-        yield AssociationField::new('group', $this->translator->trans('admin.product_attribute.group', [], 'messages'));
+        yield TextField::new('groups', $this->translator->trans('admin.product_attribute.groups', [], 'messages'))
+            ->formatValue(static function (mixed $value, ProductAttribute $attribute): string {
+                $names = [];
+                foreach ($attribute->getGroups() as $group) {
+                    $names[] = $group->getName();
+                }
+
+                return implode(', ', $names);
+            })
+            ->onlyOnIndex();
         yield TextField::new('slug', $this->translator->trans('admin.product_attribute.slug', [], 'messages'))
             ->hideOnForm();
         yield BooleanField::new('show_in_filter', $this->translator->trans('admin.product_attribute.show_in_filter', [], 'messages'))
             ->renderAsSwitch()
             ->setHelp($this->translator->trans('admin.product_attribute.show_in_filter_help', [], 'messages'));
-        yield IntegerField::new('position', $this->translator->trans('admin.product_attribute.position', [], 'messages'))
-            ->hideOnIndex();
     }
 }

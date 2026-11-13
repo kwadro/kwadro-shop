@@ -12,6 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Table(name: 'shop_product_attribute_group')]
 #[ORM\UniqueConstraint(name: 'uniq_shop_attr_group_slug', columns: ['slug'])]
 #[ORM\UniqueConstraint(name: 'uniq_shop_attr_group_external_category', columns: ['external_category_id'])]
+#[ORM\UniqueConstraint(name: 'uniq_shop_attr_group_category', columns: ['category_id'])]
 #[ORM\HasLifecycleCallbacks]
 class ProductAttributeGroup
 {
@@ -32,21 +33,21 @@ class ProductAttributeGroup
     #[ORM\Column(nullable: true)]
     private ?int $external_category_id = null;
 
-    #[ORM\ManyToOne(targetEntity: Category::class)]
+    #[ORM\OneToOne(targetEntity: Category::class, inversedBy: 'attributeGroup')]
     #[ORM\JoinColumn(name: 'category_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
     private ?Category $category = null;
 
     #[ORM\Column(type: 'integer', options: ['default' => 0])]
     private int $position = 0;
 
-    /** @var Collection<int, ProductAttribute> */
-    #[ORM\OneToMany(mappedBy: 'group', targetEntity: ProductAttribute::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
-    #[ORM\OrderBy(['position' => 'ASC', 'name' => 'ASC'])]
-    private Collection $attributes;
+    /** @var Collection<int, ProductAttributeGroupItem> */
+    #[ORM\OneToMany(mappedBy: 'group', targetEntity: ProductAttributeGroupItem::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OrderBy(['position' => 'ASC'])]
+    private Collection $items;
 
     public function __construct()
     {
-        $this->attributes = new ArrayCollection();
+        $this->items = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -114,29 +115,86 @@ class ProductAttributeGroup
         return $this;
     }
 
-    /** @return Collection<int, ProductAttribute> */
-    public function getAttributes(): Collection
+    /** @return Collection<int, ProductAttributeGroupItem> */
+    public function getItems(): Collection
     {
-        return $this->attributes;
+        return $this->items;
     }
 
-    public function addAttribute(ProductAttribute $attribute): static
+    /** Attributes linked to this group, ordered by membership position. */
+    /** @return list<ProductAttribute> */
+    public function getAttributes(): array
     {
-        if (!$this->attributes->contains($attribute)) {
-            $this->attributes->add($attribute);
-            $attribute->setGroup($this);
+        $attributes = [];
+        foreach ($this->items as $item) {
+            $attribute = $item->getAttribute();
+            if ($attribute instanceof ProductAttribute) {
+                $attributes[] = $attribute;
+            }
         }
+
+        return $attributes;
+    }
+
+    public function hasAttribute(ProductAttribute $attribute): bool
+    {
+        foreach ($this->items as $item) {
+            if ($item->getAttribute() === $attribute) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function addAttribute(ProductAttribute $attribute, ?int $position = null): static
+    {
+        if ($this->hasAttribute($attribute)) {
+            if ($position !== null) {
+                foreach ($this->items as $item) {
+                    if ($item->getAttribute() === $attribute) {
+                        $item->setPosition($position);
+                        break;
+                    }
+                }
+            }
+
+            return $this;
+        }
+
+        $item = (new ProductAttributeGroupItem())
+            ->setGroup($this)
+            ->setAttribute($attribute)
+            ->setPosition($position ?? $this->nextItemPosition());
+        $this->items->add($item);
+        $attribute->getGroupItems()->add($item);
 
         return $this;
     }
 
     public function removeAttribute(ProductAttribute $attribute): static
     {
-        if ($this->attributes->removeElement($attribute) && $attribute->getGroup() === $this) {
-            $attribute->setGroup(null);
+        foreach ($this->items->toArray() as $item) {
+            if ($item->getAttribute() !== $attribute) {
+                continue;
+            }
+            $this->items->removeElement($item);
+            $attribute->getGroupItems()->removeElement($item);
+            $item->setGroup(null);
+            $item->setAttribute(null);
         }
 
         return $this;
+    }
+
+    private function nextItemPosition(): int
+    {
+        $max = 0;
+        foreach ($this->items as $item) {
+            $max = max($max, $item->getPosition());
+        }
+
+        return $max + 1;
     }
 
     public function __toString(): string

@@ -1010,13 +1010,26 @@ class Product
             if ($attribute === null || $display === '') {
                 continue;
             }
+            $groupName = null;
+            foreach ($this->getCategories() as $category) {
+                $categoryGroup = $category->getAttributeGroup();
+                if ($categoryGroup !== null && $categoryGroup->hasAttribute($attribute)) {
+                    $groupName = $categoryGroup->getName();
+                    break;
+                }
+            }
+            if ($groupName === null) {
+                $firstGroup = $attribute->getGroups()->first();
+                $groupName = $firstGroup ? $firstGroup->getName() : null;
+            }
+
             $items[] = [
                 'name' => $attribute->getName(),
                 'value' => $display,
                 'slug' => $attribute->getSlug(),
                 'filterKey' => $attribute->getFilterKey(),
                 'showInFilter' => $attribute->isShowInFilter(),
-                'group' => $attribute->getGroup()?->getName(),
+                'group' => $groupName,
             ];
         }
 

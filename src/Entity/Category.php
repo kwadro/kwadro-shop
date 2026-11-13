@@ -100,6 +100,10 @@ class Category
     #[ORM\ManyToMany(targetEntity: Product::class, mappedBy: 'categories')]
     private Collection $products;
 
+    /** Attribute group (EAV set) assigned to this category. */
+    #[ORM\OneToOne(mappedBy: 'category', targetEntity: ProductAttributeGroup::class)]
+    private ?ProductAttributeGroup $attributeGroup = null;
+
     public function __construct()
     {
         $this->children = new ArrayCollection();
@@ -391,6 +395,19 @@ class Category
     public function isDefault(): bool
     {
         return $this->slug === self::DEFAULT_SLUG || $this->name === self::DEFAULT_NAME;
+    }
+
+    public function getAttributeGroup(): ?ProductAttributeGroup
+    {
+        return $this->attributeGroup;
+    }
+
+    /** Owned by ProductAttributeGroup::$category; keep in sync when Doctrine hydrates. */
+    public function setAttributeGroup(?ProductAttributeGroup $attributeGroup): static
+    {
+        $this->attributeGroup = $attributeGroup;
+
+        return $this;
     }
 
     #[ORM\PrePersist]

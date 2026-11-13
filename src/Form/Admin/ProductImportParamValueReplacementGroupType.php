@@ -114,7 +114,8 @@ final class ProductImportParamValueReplacementGroupType extends AbstractType
 
         $rows = $this->attributeRepository->createQueryBuilder('a')
             ->select('a.id AS id, a.name AS name, g.name AS group_name, c.name AS category_name')
-            ->innerJoin('a.group', 'g')
+            ->leftJoin('a.groupItems', 'i')
+            ->leftJoin('i.group', 'g')
             ->leftJoin('g.category', 'c')
             ->orderBy('c.name', 'ASC')
             ->addOrderBy('g.name', 'ASC')

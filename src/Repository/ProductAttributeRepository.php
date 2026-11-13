@@ -16,17 +16,18 @@ class ProductAttributeRepository extends ServiceEntityRepository
     }
 
     /**
-     * Filterable attributes for a category (via attribute group → category / external id).
+     * Filterable attributes for a category (via attribute group membership).
      *
      * @return list<ProductAttribute>
      */
     public function findFilterableForCategory(?Category $category): array
     {
         $qb = $this->createQueryBuilder('a')
-            ->innerJoin('a.group', 'g')
-            ->addSelect('g')
+            ->innerJoin('a.groupItems', 'i')
+            ->innerJoin('i.group', 'g')
+            ->addSelect('i', 'g')
             ->andWhere('a.show_in_filter = true')
-            ->orderBy('a.position', 'ASC')
+            ->orderBy('i.position', 'ASC')
             ->addOrderBy('a.name', 'ASC');
 
         if ($category instanceof Category) {
@@ -55,13 +56,21 @@ class ProductAttributeRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    public function slugExistsInGroup(int $groupId, string $slug, ?int $excludeId = null): bool
+    public function findOneBySlug(string $slug): ?ProductAttribute
+    {
+        return $this->findOneBy(['slug' => $slug]);
+    }
+
+    public function findOneByName(string $name): ?ProductAttribute
+    {
+        return $this->findOneBy(['name' => $name]);
+    }
+
+    public function slugExists(string $slug, ?int $excludeId = null): bool
     {
         $qb = $this->createQueryBuilder('a')
             ->select('COUNT(a.id)')
-            ->andWhere('a.group = :groupId')
             ->andWhere('a.slug = :slug')
-            ->setParameter('groupId', $groupId)
             ->setParameter('slug', $slug);
 
         if ($excludeId !== null) {

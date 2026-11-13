@@ -4,11 +4,13 @@ namespace App\Entity;
 
 use App\Entity\Traits\TimeStampAbleTrait;
 use App\Repository\ProductAttributeRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ProductAttributeRepository::class)]
 #[ORM\Table(name: 'shop_product_attribute')]
-#[ORM\UniqueConstraint(name: 'uniq_shop_product_attribute_slug', columns: ['group_id', 'slug'])]
+#[ORM\UniqueConstraint(name: 'uniq_shop_product_attribute_slug', columns: ['slug'])]
 #[ORM\HasLifecycleCallbacks]
 class ProductAttribute
 {
@@ -18,10 +20,6 @@ class ProductAttribute
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
-
-    #[ORM\ManyToOne(targetEntity: ProductAttributeGroup::class, inversedBy: 'attributes')]
-    #[ORM\JoinColumn(name: 'group_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
-    private ?ProductAttributeGroup $group = null;
 
     #[ORM\Column(length: 255)]
     private string $name = '';
@@ -38,24 +36,18 @@ class ProductAttribute
     #[ORM\Column(length: 16, enumType: ProductAttributeDataType::class)]
     private ProductAttributeDataType $data_type = ProductAttributeDataType::Varchar;
 
-    #[ORM\Column(type: 'integer', options: ['default' => 0])]
-    private int $position = 0;
+    /** @var Collection<int, ProductAttributeGroupItem> */
+    #[ORM\OneToMany(mappedBy: 'attribute', targetEntity: ProductAttributeGroupItem::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $groupItems;
+
+    public function __construct()
+    {
+        $this->groupItems = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getGroup(): ?ProductAttributeGroup
-    {
-        return $this->group;
-    }
-
-    public function setGroup(?ProductAttributeGroup $group): static
-    {
-        $this->group = $group;
-
-        return $this;
     }
 
     public function getName(): string
@@ -124,16 +116,24 @@ class ProductAttribute
         return $this;
     }
 
-    public function getPosition(): int
+    /** @return Collection<int, ProductAttributeGroupItem> */
+    public function getGroupItems(): Collection
     {
-        return $this->position;
+        return $this->groupItems;
     }
 
-    public function setPosition(int $position): static
+    /** @return Collection<int, ProductAttributeGroup> */
+    public function getGroups(): Collection
     {
-        $this->position = max(0, $position);
+        $groups = new ArrayCollection();
+        foreach ($this->groupItems as $item) {
+            $group = $item->getGroup();
+            if ($group instanceof ProductAttributeGroup && !$groups->contains($group)) {
+                $groups->add($group);
+            }
+        }
 
-        return $this;
+        return $groups;
     }
 
     public function __toString(): string

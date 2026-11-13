@@ -53,6 +53,16 @@ class ProductAttributeGroupCrudController extends AbstractCrudController
         yield TextField::new('slug', $this->translator->trans('admin.product_attribute_group.slug', [], 'messages'))
             ->hideOnForm();
         yield AssociationField::new('category', $this->translator->trans('admin.product_attribute_group.category', [], 'messages'));
+        yield AssociationField::new('items', $this->translator->trans('admin.product_attribute_group.attributes', [], 'messages'))
+            ->onlyOnDetail()
+            ->formatValue(static function (mixed $value, ProductAttributeGroup $group): string {
+                $names = [];
+                foreach ($group->getAttributes() as $attribute) {
+                    $names[] = $attribute->getName();
+                }
+
+                return implode(', ', $names);
+            });
         yield IntegerField::new('external_category_id', $this->translator->trans('admin.product_attribute_group.external_category_id', [], 'messages'))
             ->hideOnForm();
         yield IntegerField::new('position', $this->translator->trans('admin.product_attribute_group.position', [], 'messages'));

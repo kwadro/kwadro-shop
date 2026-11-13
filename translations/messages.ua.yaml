@@ -291,6 +291,8 @@ admin.product_import.disable_categories_after_import_help: 'Yes — після �
 admin.product_import.disabled_category_slugs: Які категорії вимкнути
 admin.product_import.disabled_category_slugs_help: 'Оберіть категорії зі списку. Якщо вище обрано Yes — ці категорії і товари в них будуть вимкнені після імпорту. Коли категорію прибирають зі списку, наступний імпорт знову її вмикає разом із товарами. SKU зі списку вимкнених лишаються вимкненими.'
 admin.product_attribute.group: Група
+admin.product_attribute.groups: Групи
+admin.product_attribute_group.attributes: Атрибути
 admin.product_attribute.name: Назва
 admin.product_attribute.slug: Slug
 admin.product_attribute.show_in_filter: Показувати у фільтрі

@@ -291,6 +291,8 @@ admin.product_import.disable_categories_after_import_help: 'Yes — after import
 admin.product_import.disabled_category_slugs: Categories to disable
 admin.product_import.disabled_category_slugs_help: 'Pick categories from the list. When Yes is selected above, those categories and their products are disabled after import. Removing a category turns it and its products back on at the next import. SKUs from the disabled list stay off.'
 admin.product_attribute.group: Group
+admin.product_attribute.groups: Groups
+admin.product_attribute_group.attributes: Attributes
 admin.product_attribute.name: Name
 admin.product_attribute.slug: Slug
 admin.product_attribute.show_in_filter: Show in filter
