@@ -95,7 +95,8 @@ class DashboardController extends AbstractDashboardController
             ->disableDarkMode()
             ->setDefaultColorScheme('dark')
             ->generateRelativeUrls()
-            ->setLocales(['ua'])
+            // Do not call setLocales(['ua']): Symfony Intl has no "ua" language
+            // (Ukrainian is "uk"). URL locale stays "ua"; admin has no locale switcher.
             ;
     }
 
