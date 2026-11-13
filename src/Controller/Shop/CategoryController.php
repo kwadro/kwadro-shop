@@ -2,6 +2,7 @@
 
 namespace App\Controller\Shop;
 
+use App\Entity\Category;
 use App\Repository\CategoryRepository;
 use App\Routing\ShopRoutes;
 use App\Service\ProductListingService;
@@ -37,21 +38,21 @@ class CategoryController extends AbstractController
 
         // Show a child only when that category itself has storefront-visible products.
         $directCounts = $this->categoryRepository->countStorefrontVisibleProductsGroupedByCategoryId();
-        $children = [];
-        foreach ($this->categoryRepository->findStorefrontDisplayChildren($category) as $child) {
-            $childId = $child->getId();
-            if ($childId === null) {
-                continue;
+        $children = $this->buildSubcategoryNavItems($category, $directCounts);
+
+        // Peer chips under a mid-level parent (skip top-level catalog peers like homeware).
+        $siblings = [];
+        $activeSiblingId = null;
+        $displayParent = $this->categoryRepository->findStorefrontDisplayParent($category);
+        if (
+            $displayParent instanceof Category
+            && $this->categoryRepository->findStorefrontDisplayParent($displayParent) instanceof Category
+        ) {
+            $peerItems = $this->buildSubcategoryNavItems($displayParent, $directCounts);
+            if (\count($peerItems) >= 2) {
+                $siblings = $peerItems;
+                $activeSiblingId = $category->getId();
             }
-            $movedHere = $child->getParent()?->getId() !== $category->getId();
-            if (!$movedHere && ($directCounts[$childId] ?? 0) < 1) {
-                continue;
-            }
-            $children[] = [
-                'id' => $childId,
-                'name' => $child->getName(),
-                'slug' => $child->getSlug(),
-            ];
         }
 
         $listing = $this->productListing->list(
@@ -62,9 +63,38 @@ class CategoryController extends AbstractController
 
         return $this->render('shop/category/show.html.twig', [
             'category' => $category,
+            'siblings' => $siblings,
+            'activeSiblingId' => $activeSiblingId,
             'children' => $children,
             'breadcrumbAncestors' => $this->categoryRepository->findStorefrontBreadcrumbAncestors($category),
             ...$listing,
         ]);
+    }
+
+    /**
+     * @param array $directCounts
+     *
+     * @return array
+     */
+    private function buildSubcategoryNavItems(Category $parent, array $directCounts): array
+    {
+        $children = [];
+        foreach ($this->categoryRepository->findStorefrontDisplayChildren($parent) as $child) {
+            $childId = $child->getId();
+            if ($childId === null) {
+                continue;
+            }
+            $movedHere = $child->getParent()?->getId() !== $parent->getId();
+            if (!$movedHere && ($directCounts[$childId] ?? 0) < 1) {
+                continue;
+            }
+            $children[] = [
+                'id' => $childId,
+                'name' => $child->getName(),
+                'slug' => $child->getSlug(),
+            ];
+        }
+
+        return $children;
     }
 }

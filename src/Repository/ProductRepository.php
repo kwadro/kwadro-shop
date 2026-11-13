@@ -17,7 +17,17 @@ class ProductRepository extends ServiceEntityRepository
 {
     private const SEARCH_CACHE_LIMIT = 20;
 
-    /** @var array<string, list<int>> search key => matching product ids (per request / worker) */
+    /** Match weights: name/SKU outrank meta fields. */
+    private const SEARCH_WEIGHT_NAME = 100;
+    private const SEARCH_WEIGHT_SKU = 100;
+    private const SEARCH_WEIGHT_CATEGORY = 70;
+    private const SEARCH_WEIGHT_MODEL = 50;
+    private const SEARCH_WEIGHT_BRAND = 50;
+    private const SEARCH_WEIGHT_META_TITLE = 25;
+    private const SEARCH_WEIGHT_META_DESCRIPTION = 15;
+    private const SEARCH_WEIGHT_ATTRIBUTE = 20;
+
+    /** @var array<string, list<int>> search key => matching product ids ordered by relevance (per request / worker) */
     private array $searchIdsCache = [];
 
     public function __construct(ManagerRegistry $registry)
@@ -265,31 +275,54 @@ class ProductRepository extends ServiceEntityRepository
     {
         $page = max(1, $page);
         $perPage = max(1, min(100, $perPage));
+        $searchQuery = trim((string) ($criteria['query'] ?? ''));
 
-        $countQb = $this->createCatalogQueryBuilder($criteria);
-        $total = (int) $countQb
-            ->select('COUNT(DISTINCT p.id)')
-            ->getQuery()
-            ->getSingleScalarResult();
+        if ($searchQuery !== '') {
+            $orderedSearchIds = $this->findIdsMatchingSearch($searchQuery, $criteria['searchFields'] ?? null);
+            if ($orderedSearchIds === []) {
+                return ['items' => [], 'total' => 0];
+            }
 
-        if ($total === 0) {
-            return ['items' => [], 'total' => 0];
+            $filteredSet = array_fill_keys($this->findScopeProductIds($criteria), true);
+            $orderedIds = [];
+            foreach ($orderedSearchIds as $id) {
+                if (isset($filteredSet[$id])) {
+                    $orderedIds[] = $id;
+                }
+            }
+
+            $total = \count($orderedIds);
+            if ($total === 0) {
+                return ['items' => [], 'total' => 0];
+            }
+
+            $ids = array_slice($orderedIds, ($page - 1) * $perPage, $perPage);
+        } else {
+            $countQb = $this->createCatalogQueryBuilder($criteria);
+            $total = (int) $countQb
+                ->select('COUNT(DISTINCT p.id)')
+                ->getQuery()
+                ->getSingleScalarResult();
+
+            if ($total === 0) {
+                return ['items' => [], 'total' => 0];
+            }
+
+            $ids = $this->createCatalogQueryBuilder($criteria)
+                ->select('p.id')
+                ->leftJoin('p.offers', 'o_sort')
+                ->addSelect('CASE WHEN p.in_stock = true AND SUM(CASE WHEN o_sort.qty > 0 THEN 1 ELSE 0 END) > 0 THEN 0 ELSE 1 END AS HIDDEN listing_stock_rank')
+                ->addSelect('CASE WHEN MIN(o_sort.price) IS NULL THEN 999999999 ELSE MIN(o_sort.price) END AS HIDDEN listing_min_price')
+                ->groupBy('p.id')
+                ->addGroupBy('p.in_stock')
+                ->orderBy('listing_stock_rank', 'ASC')
+                ->addOrderBy('listing_min_price', 'ASC')
+                ->addOrderBy('p.id', 'ASC')
+                ->setFirstResult(($page - 1) * $perPage)
+                ->setMaxResults($perPage)
+                ->getQuery()
+                ->getSingleColumnResult();
         }
-
-        $ids = $this->createCatalogQueryBuilder($criteria)
-            ->select('p.id')
-            ->leftJoin('p.offers', 'o_sort')
-            ->addSelect('CASE WHEN p.in_stock = true AND SUM(CASE WHEN o_sort.qty > 0 THEN 1 ELSE 0 END) > 0 THEN 0 ELSE 1 END AS HIDDEN listing_stock_rank')
-            ->addSelect('CASE WHEN MIN(o_sort.price) IS NULL THEN 999999999 ELSE MIN(o_sort.price) END AS HIDDEN listing_min_price')
-            ->groupBy('p.id')
-            ->addGroupBy('p.in_stock')
-            ->orderBy('listing_stock_rank', 'ASC')
-            ->addOrderBy('listing_min_price', 'ASC')
-            ->addOrderBy('p.id', 'ASC')
-            ->setFirstResult(($page - 1) * $perPage)
-            ->setMaxResults($perPage)
-            ->getQuery()
-            ->getSingleColumnResult();
 
         if ($ids === []) {
             return ['items' => [], 'total' => $total];
@@ -395,12 +428,15 @@ class ProductRepository extends ServiceEntityRepository
     }
 
     /**
-     * Product ids matching the free-text search. Computed once per query string
-     * so count, page and facet queries reuse it instead of re-running LIKE scans.
+     * Product ids matching free-text search, ordered by relevance (highest first).
+     * Always searches name, SKU, category name, meta_title and meta_description.
+     * Name/SKU weigh more than meta fields. Optional settings fields (model/brand) are included.
+     * Computed once per query string so count, page and facet queries reuse it.
      * Columns use case-insensitive collations, so LOWER() is not needed.
      *
-     * @param list<string>|null $searchFields
-     * @return list<int>
+     * @param array|null $searchFields
+     *
+     * @return array
      */
     public function findIdsMatchingSearch(string $query, ?array $searchFields = null): array
     {
@@ -415,19 +451,47 @@ class ProductRepository extends ServiceEntityRepository
             return $this->searchIdsCache[$cacheKey];
         }
 
-        $productConditions = implode(' OR ', array_map(
-            static fn (string $field): string => sprintf('p.%s LIKE :q', $field),
-            $fields,
-        ));
-
-        $ids = $this->getEntityManager()->getConnection()->fetchFirstColumn(
-            "SELECT p.id FROM shop_product p WHERE p.enabled = 1 AND ({$productConditions})
-             UNION
-             SELECT av.product_id
+        $like = '%'.addcslashes($query, '%_\\').'%';
+        $parts = [
+            'SELECT p.id AS id, '.self::SEARCH_WEIGHT_NAME.' AS score FROM shop_product p WHERE p.enabled = 1 AND p.name LIKE :q',
+            'SELECT p.id AS id, '.self::SEARCH_WEIGHT_SKU.' AS score FROM shop_product p WHERE p.enabled = 1 AND p.sku LIKE :q',
+            'SELECT p.id AS id, '.self::SEARCH_WEIGHT_META_TITLE.' AS score FROM shop_product p WHERE p.enabled = 1 AND p.meta_title LIKE :q',
+            'SELECT p.id AS id, '.self::SEARCH_WEIGHT_META_DESCRIPTION.' AS score FROM shop_product p WHERE p.enabled = 1 AND p.meta_description LIKE :q',
+            'SELECT pc.product_id AS id, '.self::SEARCH_WEIGHT_CATEGORY.' AS score
+             FROM shop_product_category pc
+             INNER JOIN shop_category c ON c.id = pc.category_id
+               AND c.enabled = 1
+               AND c.slug <> :defaultSlug
+               AND c.name LIKE :q
+             INNER JOIN shop_product p ON p.id = pc.product_id AND p.enabled = 1',
+            'SELECT av.product_id AS id, '.self::SEARCH_WEIGHT_ATTRIBUTE.' AS score
              FROM shop_product_attribute_value av
              INNER JOIN shop_product_attribute a ON a.id = av.attribute_id AND a.use_in_search = 1
-             WHERE av.value_varchar LIKE :q OR av.value_text LIKE :q",
-            ['q' => '%'.addcslashes($query, '%_\\').'%'],
+             INNER JOIN shop_product p ON p.id = av.product_id AND p.enabled = 1
+             WHERE av.value_varchar LIKE :q OR av.value_text LIKE :q',
+        ];
+
+        if (\in_array('model', $fields, true)) {
+            $parts[] = 'SELECT p.id AS id, '.self::SEARCH_WEIGHT_MODEL.' AS score FROM shop_product p WHERE p.enabled = 1 AND p.model LIKE :q';
+        }
+        if (\in_array('brand', $fields, true)) {
+            $parts[] = 'SELECT p.id AS id, '.self::SEARCH_WEIGHT_BRAND.' AS score FROM shop_product p WHERE p.enabled = 1 AND p.brand LIKE :q';
+        }
+
+        $sql = 'SELECT ranked.id
+                FROM (
+                    SELECT matched.id AS id, SUM(matched.score) AS score
+                    FROM ('.implode(' UNION ALL ', $parts).') matched
+                    GROUP BY matched.id
+                ) ranked
+                ORDER BY ranked.score DESC, ranked.id ASC';
+
+        $ids = $this->getEntityManager()->getConnection()->fetchFirstColumn(
+            $sql,
+            [
+                'q' => $like,
+                'defaultSlug' => Category::DEFAULT_SLUG,
+            ],
         );
 
         if (\count($this->searchIdsCache) >= self::SEARCH_CACHE_LIMIT) {
@@ -610,8 +674,9 @@ class ProductRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param list<string>|null $fields
-     * @return list<string>
+     * @param array|null $fields
+     *
+     * @return array
      */
     private function normalizeSearchFields(?array $fields): array
     {

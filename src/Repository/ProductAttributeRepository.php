@@ -27,6 +27,8 @@ class ProductAttributeRepository extends ServiceEntityRepository
             ->innerJoin('i.group', 'g')
             ->addSelect('i', 'g')
             ->andWhere('a.show_in_filter = true')
+            ->andWhere('i.show_in_filter = true')
+            ->andWhere('i.deleted = false')
             ->orderBy('i.position', 'ASC')
             ->addOrderBy('a.name', 'ASC');
 

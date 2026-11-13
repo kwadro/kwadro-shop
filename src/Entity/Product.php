@@ -1018,7 +1018,7 @@ class Product
     }
 
     /**
-     * @return list<array{name: string, value: string, slug: string, showInFilter: bool, group: string|null}>
+     * @return array
      */
     public function getAttributesCatalogArray(): array
     {
@@ -1030,12 +1030,19 @@ class Product
                 continue;
             }
             $groupName = null;
+            $showInFilter = $attribute->isShowInFilter();
             foreach ($this->getCategories() as $category) {
                 $categoryGroup = $category->getAttributeGroup();
-                if ($categoryGroup !== null && $categoryGroup->hasAttribute($attribute)) {
-                    $groupName = $categoryGroup->getName();
-                    break;
+                if ($categoryGroup === null) {
+                    continue;
                 }
+                $groupItem = $categoryGroup->findItemByAttribute($attribute);
+                if ($groupItem === null) {
+                    continue;
+                }
+                $groupName = $categoryGroup->getName();
+                $showInFilter = $groupItem->isEffectivelyShownInFilter();
+                break;
             }
             if ($groupName === null) {
                 $firstGroup = $attribute->getGroups()->first();
@@ -1047,7 +1054,7 @@ class Product
                 'value' => $display,
                 'slug' => $attribute->getSlug(),
                 'filterKey' => $attribute->getFilterKey(),
-                'showInFilter' => $attribute->isShowInFilter(),
+                'showInFilter' => $showInFilter,
                 'group' => $groupName,
             ];
         }

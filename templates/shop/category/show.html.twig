@@ -47,6 +47,21 @@
             <h1 class="shop-page__title">{{ category.name }}</h1>
         </header>
 
+        {% if siblings is not empty %}
+            <section class="shop-category-page__children" aria-label="{{ 'shop.category.subcategories'|trans }}">
+                {% for sibling in siblings %}
+                    {% set isActive = activeSiblingId is not null and sibling.id == activeSiblingId %}
+                    <a
+                        class="shop-category-page__child-chip{{ isActive ? ' is-active' : '' }}"
+                        href="{{ path('shop_category', {_locale: app.request.locale, slug: sibling.slug}) }}"
+                        {% if isActive %}aria-current="page"{% endif %}
+                    >
+                        {{ sibling.name }}
+                    </a>
+                {% endfor %}
+            </section>
+        {% endif %}
+
         {% if children is not empty %}
             <section class="shop-category-page__children" aria-label="{{ 'shop.category.subcategories'|trans }}">
                 {% for child in children %}

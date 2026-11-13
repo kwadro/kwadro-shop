@@ -299,6 +299,17 @@ admin.product_import.disabled_category_slugs_help: 'Pick categories from the lis
 admin.product_attribute.group: Group
 admin.product_attribute.groups: Groups
 admin.product_attribute_group.attributes: Attributes
+admin.product_attribute_group.attributes_help: 'Attributes that belong to this group. Mark Deleted to ignore the attribute and its values on the next product import.'
+admin.product_attribute_group.item_attribute: Attribute
+admin.product_attribute_group.item_position: Position
+admin.product_attribute_group.item_global_show_in_filter: Global show in filter
+admin.product_attribute_group.item_global_show_in_filter_help: 'Value from the attribute itself. Change it on the attribute edit page.'
+admin.product_attribute_group.item_global_show_yes: 'Yes — show'
+admin.product_attribute_group.item_global_show_no: 'No — hide'
+admin.product_attribute_group.item_show_in_filter: Show in filter in this group
+admin.product_attribute_group.item_show_in_filter_help: 'Uncheck to hide this attribute in filters for this group only. It still needs global “Show in filter” to be Yes.'
+admin.product_attribute_group.item_deleted: Deleted
+admin.product_attribute_group.item_deleted_help: 'When checked, the next product import skips this attribute and does not import its values.'
 admin.product_attribute.name: Name
 admin.product_attribute.slug: Slug
 admin.product_attribute.show_in_filter: Show in filter
@@ -1213,6 +1224,7 @@ shop.my_account: My Account
 shop.welcome: Welcome!
 shop.category.menu_label: Product categories
 shop.category.menu_toggle: Categories
+shop.category.expand_subcategories: Open subcategories for %name%
 shop.category.home: Home
 shop.category.subcategories: Subcategories
 shop.category.empty_products: There are no products in this category yet.

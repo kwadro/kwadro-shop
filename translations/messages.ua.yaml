@@ -299,6 +299,17 @@ admin.product_import.disabled_category_slugs_help: 'Оберіть катего�
 admin.product_attribute.group: Група
 admin.product_attribute.groups: Групи
 admin.product_attribute_group.attributes: Атрибути
+admin.product_attribute_group.attributes_help: 'Атрибути, що входять до цієї групи. Позначка «Видалений» ігнорує атрибут і його значення під час наступного імпорту товарів.'
+admin.product_attribute_group.item_attribute: Атрибут
+admin.product_attribute_group.item_position: Порядок
+admin.product_attribute_group.item_global_show_in_filter: Глобально показувати у фільтрі
+admin.product_attribute_group.item_global_show_in_filter_help: 'Значення з самого атрибута. Змінюється на сторінці редагування атрибута.'
+admin.product_attribute_group.item_global_show_yes: 'Так — показувати'
+admin.product_attribute_group.item_global_show_no: 'Ні — не показувати'
+admin.product_attribute_group.item_show_in_filter: Показувати у фільтрі в цій групі
+admin.product_attribute_group.item_show_in_filter_help: 'Зніміть позначку, щоб сховати атрибут у фільтрах лише для цієї групи. Для показу також потрібне глобальне «Показувати у фільтрі» = Так.'
+admin.product_attribute_group.item_deleted: Видалений
+admin.product_attribute_group.item_deleted_help: 'Якщо позначено, наступний імпорт товарів пропускає цей атрибут і не імпортує його значення.'
 admin.product_attribute.name: Назва
 admin.product_attribute.slug: Slug
 admin.product_attribute.show_in_filter: Показувати у фільтрі
@@ -1212,6 +1223,7 @@ shop.my_account: Мій кабінет
 shop.welcome: Ласкаво просимо!
 shop.category.menu_label: Категорії товарів
 shop.category.menu_toggle: Категорії
+shop.category.expand_subcategories: Відкрити підкатегорії «%name%»
 shop.category.home: Головна
 shop.category.subcategories: Підкатегорії
 shop.category.empty_products: У цій категорії поки немає товарів.

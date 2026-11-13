@@ -137,6 +137,13 @@ class AttributeImportService
             foreach ($info['params'] as $storeName => $stats) {
                 $feedName = (string) ($stats['feed_name'] ?? $storeName);
                 $attribute = $attributesByName[$feedName] ?? $attributesByName[$storeName] ?? null;
+                if ($attribute instanceof ProductAttribute) {
+                    $existingItem = $group->findItemByAttribute($attribute);
+                    if ($existingItem !== null && $existingItem->isDeleted()) {
+                        continue;
+                    }
+                }
+
                 $isNew = $attribute === null;
                 if ($attribute === null) {
                     $attribute = (new ProductAttribute())->setName($storeName);
@@ -195,6 +202,7 @@ class AttributeImportService
             ->innerJoin('a.groupItems', 'i')
             ->innerJoin('i.group', 'g')
             ->andWhere('g.external_category_id IS NOT NULL')
+            ->andWhere('i.deleted = false')
             ->getQuery()
             ->getArrayResult();
 
@@ -481,6 +489,7 @@ class AttributeImportService
             ->innerJoin('a.groupItems', 'i')
             ->innerJoin('i.group', 'g')
             ->andWhere('g.external_category_id IS NOT NULL')
+            ->andWhere('i.deleted = false')
             ->getQuery()
             ->getArrayResult();
 

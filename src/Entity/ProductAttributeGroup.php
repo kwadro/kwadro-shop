@@ -121,6 +121,45 @@ class ProductAttributeGroup
         return $this->items;
     }
 
+    /**
+     * @param iterable<ProductAttributeGroupItem>|null $items
+     */
+    public function setItems(?iterable $items): static
+    {
+        $incoming = [];
+        foreach ($items ?? [] as $item) {
+            if ($item instanceof ProductAttributeGroupItem) {
+                $incoming[] = $item;
+            }
+        }
+
+        foreach ($this->items->toArray() as $existing) {
+            if (!\in_array($existing, $incoming, true)) {
+                $this->items->removeElement($existing);
+                $attribute = $existing->getAttribute();
+                if ($attribute instanceof ProductAttribute) {
+                    $attribute->getGroupItems()->removeElement($existing);
+                }
+                $existing->setGroup(null);
+                $existing->setAttribute(null);
+            }
+        }
+
+        foreach ($incoming as $item) {
+            if ($this->items->contains($item)) {
+                continue;
+            }
+            $item->setGroup($this);
+            $this->items->add($item);
+            $attribute = $item->getAttribute();
+            if ($attribute instanceof ProductAttribute && !$attribute->getGroupItems()->contains($item)) {
+                $attribute->getGroupItems()->add($item);
+            }
+        }
+
+        return $this;
+    }
+
     /** Attributes linked to this group, ordered by membership position. */
     /** @return list<ProductAttribute> */
     public function getAttributes(): array
@@ -138,25 +177,30 @@ class ProductAttributeGroup
 
     public function hasAttribute(ProductAttribute $attribute): bool
     {
+        return $this->findItemByAttribute($attribute) instanceof ProductAttributeGroupItem;
+    }
+
+    public function findItemByAttribute(ProductAttribute $attribute): ?ProductAttributeGroupItem
+    {
         foreach ($this->items as $item) {
             if ($item->getAttribute() === $attribute) {
-                return true;
+                return $item;
             }
         }
 
-        return false;
+        return null;
     }
 
     public function addAttribute(ProductAttribute $attribute, ?int $position = null): static
     {
-        if ($this->hasAttribute($attribute)) {
+        $existing = $this->findItemByAttribute($attribute);
+        if ($existing instanceof ProductAttributeGroupItem) {
+            // Keep manually deleted memberships out of import updates.
+            if ($existing->isDeleted()) {
+                return $this;
+            }
             if ($position !== null) {
-                foreach ($this->items as $item) {
-                    if ($item->getAttribute() === $attribute) {
-                        $item->setPosition($position);
-                        break;
-                    }
-                }
+                $existing->setPosition($position);
             }
 
             return $this;

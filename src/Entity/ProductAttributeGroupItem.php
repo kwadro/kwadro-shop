@@ -33,6 +33,17 @@ class ProductAttributeGroupItem
     #[ORM\Column(type: 'integer', options: ['default' => 0])]
     private int $position = 0;
 
+    /** When true, product import skips this attribute and its values for this group. */
+    #[ORM\Column(options: ['default' => false])]
+    private bool $deleted = false;
+
+    /**
+     * Per-group filter visibility. Effective storefront filter requires this and the
+     * attribute's global show_in_filter to both be true.
+     */
+    #[ORM\Column(options: ['default' => true])]
+    private bool $show_in_filter = true;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -74,10 +85,47 @@ class ProductAttributeGroupItem
         return $this;
     }
 
+    public function isDeleted(): bool
+    {
+        return $this->deleted;
+    }
+
+    public function setDeleted(bool $deleted): static
+    {
+        $this->deleted = $deleted;
+
+        return $this;
+    }
+
+    public function isShowInFilter(): bool
+    {
+        return $this->show_in_filter;
+    }
+
+    public function setShowInFilter(bool $showInFilter): static
+    {
+        $this->show_in_filter = $showInFilter;
+
+        return $this;
+    }
+
+    /** True when this membership should appear in category filters. */
+    public function isEffectivelyShownInFilter(): bool
+    {
+        if ($this->deleted || !$this->show_in_filter) {
+            return false;
+        }
+
+        return $this->attribute?->isShowInFilter() ?? false;
+    }
+
     public function __toString(): string
     {
         $name = $this->attribute?->getName() ?? '';
+        if ($name === '') {
+            return 'Attribute group item';
+        }
 
-        return $name !== '' ? $name : 'Attribute group item';
+        return $this->deleted ? $name.' (deleted)' : $name;
     }
 }
