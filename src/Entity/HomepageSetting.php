@@ -98,6 +98,18 @@ class HomepageSetting
     #[ORM\InverseJoinColumn(onDelete: 'CASCADE')]
     private Collection $products;
 
+    /**
+     * Always shown first in the products block (auto or manual), in this order.
+     *
+     * @var Collection<int, Product>
+     */
+    #[ORM\ManyToMany(targetEntity: Product::class)]
+    #[ORM\JoinTable(name: 'shop_homepage_setting_product_top')]
+    #[ORM\JoinColumn(onDelete: 'CASCADE')]
+    #[ORM\InverseJoinColumn(onDelete: 'CASCADE')]
+    #[ORM\OrderColumn(name: 'position')]
+    private Collection $topProducts;
+
     #[ORM\Column(options: ['default' => true])]
     private bool $articlesEnabled = true;
 
@@ -126,6 +138,7 @@ class HomepageSetting
         $this->heroSlides = new ArrayCollection();
         $this->categoryItems = new ArrayCollection();
         $this->products = new ArrayCollection();
+        $this->topProducts = new ArrayCollection();
         $this->articles = new ArrayCollection();
     }
 
@@ -348,6 +361,47 @@ class HomepageSetting
         $this->products->removeElement($product);
 
         return $this;
+    }
+
+    /** @return Collection<int, Product> */
+    public function getTopProducts(): Collection
+    {
+        return $this->topProducts;
+    }
+
+    public function addTopProduct(Product $product): static
+    {
+        if (!$this->topProducts->contains($product)) {
+            $this->topProducts->add($product);
+        }
+
+        return $this;
+    }
+
+    public function removeTopProduct(Product $product): static
+    {
+        $this->topProducts->removeElement($product);
+
+        return $this;
+    }
+
+    /**
+     * Ordered product ids for fixed leading places (duplicates collapsed).
+     *
+     * @return list<int>
+     */
+    public function getTopProductIds(): array
+    {
+        $ids = [];
+        foreach ($this->topProducts as $product) {
+            $id = $product->getId();
+            if ($id === null || \in_array($id, $ids, true)) {
+                continue;
+            }
+            $ids[] = $id;
+        }
+
+        return $ids;
     }
 
     public function isArticlesEnabled(): bool

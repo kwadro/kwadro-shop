@@ -440,6 +440,8 @@ admin.homepage_setting.source_manual: Selected manually
 admin.homepage_setting.source_help: If "Selected manually" is chosen but the list is empty, the latest items are shown.
 admin.homepage_setting.limit: Count (slider threshold)
 admin.homepage_setting.limit_help: 'On desktop the slider appears when there are more products than this number (e.g. 5 → at 6+). On mobile — when there is more than 1 product. For “Latest” this is also how many products to load. For “Selected manually” all selected products are shown with no cap.'
+admin.homepage_setting.products_top: Top products (first places)
+admin.homepage_setting.products_top_help: These products always appear at the start of the "New offers" block, whether autofill or a manual list is used. Field order is the storefront order.
 admin.homepage_setting.products: Selected products
 admin.homepage_setting.products_help: Used when "Selected manually" is chosen. There is no count cap — all selected products are shown on the site.
 admin.homepage_setting.articles: Selected articles

@@ -48,12 +48,14 @@ class HomepageSettingCrudController extends AbstractCrudController
 
         yield IdField::new('id')->hideOnForm();
 
-        yield FormField::addFieldset($this->t('admin.homepage_setting.fieldset_general'));
+        yield FormField::addTab($this->t('admin.homepage_setting.fieldset_general'), 'fa fa-globe')
+            ->setTabId('general');
         yield AssociationField::new('site', $this->t('admin.homepage_setting.site'))->setRequired(true);
         yield AssociationField::new('locale', $this->t('admin.homepage_setting.locale'))->setRequired(true);
 
-        yield FormField::addFieldset($this->t('admin.homepage_setting.fieldset_hero'))
-            ->setHelp($this->t('admin.homepage_setting.fieldset_hero_help'));
+        yield FormField::addTab($this->t('admin.homepage_setting.fieldset_hero'), 'fa fa-image')
+            ->setHelp($this->t('admin.homepage_setting.fieldset_hero_help'))
+            ->setTabId('hero');
         yield BooleanField::new('heroEnabled', $this->t('admin.homepage_setting.enabled'))
             ->renderAsSwitch($pageName !== Crud::PAGE_INDEX);
         yield CollectionField::new('heroSlides', $this->t('admin.homepage_setting.hero_slides'))
@@ -69,8 +71,9 @@ class HomepageSettingCrudController extends AbstractCrudController
             ->setHelp($this->t('admin.homepage_setting.hero_slides_help'))
             ->hideOnIndex();
 
-        yield FormField::addFieldset($this->t('admin.homepage_setting.fieldset_categories'))
-            ->setHelp($this->t('admin.homepage_setting.fieldset_categories_help'));
+        yield FormField::addTab($this->t('admin.homepage_setting.fieldset_categories'), 'fa fa-th-large')
+            ->setHelp($this->t('admin.homepage_setting.fieldset_categories_help'))
+            ->setTabId('categories');
         yield BooleanField::new('categoriesEnabled', $this->t('admin.homepage_setting.enabled'))
             ->renderAsSwitch($pageName !== Crud::PAGE_INDEX);
         yield ChoiceField::new('categoriesSource', $this->t('admin.homepage_setting.source'))
@@ -97,8 +100,9 @@ class HomepageSettingCrudController extends AbstractCrudController
             ->setHelp($this->t('admin.homepage_setting.categories_help'))
             ->hideOnIndex();
 
-        yield FormField::addFieldset($this->t('admin.homepage_setting.fieldset_products'))
-            ->setHelp($this->t('admin.homepage_setting.fieldset_products_help'));
+        yield FormField::addTab($this->t('admin.homepage_setting.fieldset_products'), 'fa fa-box')
+            ->setHelp($this->t('admin.homepage_setting.fieldset_products_help'))
+            ->setTabId('products');
         yield BooleanField::new('productsEnabled', $this->t('admin.homepage_setting.enabled'))
             ->renderAsSwitch($pageName !== Crud::PAGE_INDEX);
         yield TextField::new('productsTitle', $this->t('admin.homepage_setting.title'))
@@ -106,6 +110,12 @@ class HomepageSettingCrudController extends AbstractCrudController
             ->hideOnIndex();
         yield TextareaField::new('productsLead', $this->t('admin.homepage_setting.lead'))
             ->setHelp($this->t('admin.homepage_setting.lead_help'))
+            ->hideOnIndex();
+        yield AssociationField::new('topProducts', $this->t('admin.homepage_setting.products_top'))
+            ->autocomplete()
+            ->setCrudController(ProductCrudController::class)
+            ->setFormTypeOption('by_reference', false)
+            ->setHelp($this->t('admin.homepage_setting.products_top_help'))
             ->hideOnIndex();
         yield ChoiceField::new('productsSource', $this->t('admin.homepage_setting.source'))
             ->setChoices($sourceChoices)
@@ -122,8 +132,9 @@ class HomepageSettingCrudController extends AbstractCrudController
             ->setHelp($this->t('admin.homepage_setting.products_help'))
             ->hideOnIndex();
 
-        yield FormField::addFieldset($this->t('admin.homepage_setting.fieldset_articles'))
-            ->setHelp($this->t('admin.homepage_setting.fieldset_articles_help'));
+        yield FormField::addTab($this->t('admin.homepage_setting.fieldset_articles'), 'fa fa-newspaper')
+            ->setHelp($this->t('admin.homepage_setting.fieldset_articles_help'))
+            ->setTabId('articles');
         yield BooleanField::new('articlesEnabled', $this->t('admin.homepage_setting.enabled'))
             ->renderAsSwitch($pageName !== Crud::PAGE_INDEX);
         yield TextField::new('articlesTitle', $this->t('admin.homepage_setting.title'))

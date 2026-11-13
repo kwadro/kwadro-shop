@@ -83,10 +83,7 @@ class HomeController extends AbstractController
         $productsSliderMin = $homeSetting?->getProductsLimit() ?? HomepageSetting::DEFAULT_PRODUCTS_LIMIT;
         $products = [];
         if ($homeSetting === null || $homeSetting->isProductsEnabled()) {
-            $products = $this->productCatalog->getHomepageProducts(
-                $productsSliderMin,
-                $this->manualSelectionIds($homeSetting?->getProductsSource(), $homeSetting?->getProducts()),
-            );
+            $products = $this->resolveHomepageProducts($homeSetting, $productsSliderMin);
         }
 
         $articles = [];
@@ -254,6 +251,54 @@ class HomeController extends AbstractController
 
         // Empty manual list falls back to auto (same as products/articles).
         return $ordered !== [] ? $ordered : $autoCategories;
+    }
+
+    /**
+     * Top products always lead; remaining come from manual selection or latest.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function resolveHomepageProducts(?HomepageSetting $homeSetting, int $limit): array
+    {
+        $topIds = $homeSetting?->getTopProductIds() ?? [];
+        $topProducts = $topIds !== []
+            ? $this->productCatalog->getHomepageProducts(\count($topIds), $topIds)
+            : [];
+        $topIdSet = [];
+        foreach ($topProducts as $product) {
+            $id = (int) ($product['id'] ?? 0);
+            if ($id > 0) {
+                $topIdSet[$id] = true;
+            }
+        }
+
+        $manualIds = $this->manualSelectionIds($homeSetting?->getProductsSource(), $homeSetting?->getProducts());
+        $isManual = $manualIds !== null;
+        if ($isManual) {
+            $manualIds = array_values(array_filter(
+                $manualIds,
+                static fn (int $id): bool => !isset($topIdSet[$id]),
+            ));
+        }
+
+        $restLimit = max(0, $limit - \count($topProducts));
+        $rest = [];
+        if ($isManual) {
+            if ($manualIds !== []) {
+                $rest = $this->productCatalog->getHomepageProducts(\count($manualIds), $manualIds);
+            }
+        } elseif ($restLimit > 0) {
+            // Over-fetch so excluded top products do not shrink the visible list.
+            $fetchLimit = $restLimit + \count($topIdSet);
+            $rest = $this->productCatalog->getHomepageProducts(max(1, $fetchLimit));
+            $rest = array_values(array_filter(
+                $rest,
+                static fn (array $product): bool => !isset($topIdSet[(int) ($product['id'] ?? 0)]),
+            ));
+            $rest = \array_slice($rest, 0, $restLimit);
+        }
+
+        return array_merge($topProducts, $rest);
     }
 
     /**
