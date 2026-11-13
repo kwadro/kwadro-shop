@@ -59,6 +59,6 @@ final class ProductImportProcessLauncher
     private function phpCliBinary(): string
     {
         /** Specific for  hosting provider */
-        return 'php';
+        return '/usr/local/php82/bin/php';
     }
 }
