@@ -2,6 +2,8 @@ framework:
     default_locale: ua
     translator:
         default_path: '%kernel.project_dir%/translations'
+        # URL locale is "ua"; ICU / Symfony packages ship Ukrainian as "uk".
         fallbacks:
-            - ua
+            - uk
+            - en
         providers:

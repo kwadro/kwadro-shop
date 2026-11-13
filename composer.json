@@ -46,7 +46,10 @@
     "autoload": {
         "psr-4": {
             "App\\": "src/"
-        }
+        },
+        "files": [
+            "src/Http/intl_safe_request_bootstrap.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {

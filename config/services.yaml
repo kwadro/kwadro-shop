@@ -60,6 +60,20 @@ services:
     # this creates a service per class whose id is the fully-qualified class name
     App\:
         resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
+            - '../src/Http/IntlSafeRequest.php'
+            - '../src/Http/intl_safe_request_bootstrap.php'
+            - '../src/Translation/IntlSafeLocaleSwitcher.php'
+
+    # EasyAdmin Intl crashes on request locale "ua" (ICU language is "uk").
+    App\Service\Intl\IntlLocaleAwareFormatter:
+        decorates: EasyCorp\Bundle\EasyAdminBundle\Intl\IntlFormatter
+        arguments:
+            $inner: '@.inner'
+
     App\Command\ImportCsvCommand:
         arguments:
             $appDomain: '%app.domain%'
