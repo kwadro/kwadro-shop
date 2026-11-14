@@ -22,6 +22,9 @@ class HomepageSetting
     public const DEFAULT_PRODUCTS_LIMIT = 5;
     public const DEFAULT_ARTICLES_LIMIT = 3;
     public const DEFAULT_CATEGORIES_PER_ROW = 4;
+    public const DEFAULT_SLIDER_INTERVAL_MS = 5000;
+    public const MIN_SLIDER_INTERVAL_MS = 1000;
+    public const MAX_SLIDER_INTERVAL_MS = 60000;
     public const MAX_PRODUCTS_LIMIT = 48;
     public const MAX_ARTICLES_LIMIT = 12;
     public const MAX_CATEGORIES_PER_ROW = 12;
@@ -54,6 +57,13 @@ class HomepageSetting
     #[ORM\OrderBy(['position' => 'ASC', 'id' => 'ASC'])]
     private Collection $heroSlides;
 
+    #[ORM\Column(options: ['default' => false])]
+    private bool $heroSliderAutoplay = false;
+
+    #[ORM\Column(options: ['default' => self::DEFAULT_SLIDER_INTERVAL_MS])]
+    #[Assert\Range(min: self::MIN_SLIDER_INTERVAL_MS, max: self::MAX_SLIDER_INTERVAL_MS)]
+    private int $heroSliderIntervalMs = self::DEFAULT_SLIDER_INTERVAL_MS;
+
     #[ORM\Column(options: ['default' => true])]
     private bool $categoriesEnabled = true;
 
@@ -74,6 +84,13 @@ class HomepageSetting
     )]
     #[ORM\OrderBy(['position' => 'ASC', 'id' => 'ASC'])]
     private Collection $categoryItems;
+
+    #[ORM\Column(options: ['default' => false])]
+    private bool $categoriesSliderAutoplay = false;
+
+    #[ORM\Column(options: ['default' => self::DEFAULT_SLIDER_INTERVAL_MS])]
+    #[Assert\Range(min: self::MIN_SLIDER_INTERVAL_MS, max: self::MAX_SLIDER_INTERVAL_MS)]
+    private int $categoriesSliderIntervalMs = self::DEFAULT_SLIDER_INTERVAL_MS;
 
     #[ORM\Column(options: ['default' => true])]
     private bool $productsEnabled = true;
@@ -109,6 +126,13 @@ class HomepageSetting
     #[ORM\InverseJoinColumn(onDelete: 'CASCADE')]
     #[ORM\OrderColumn(name: 'position')]
     private Collection $topProducts;
+
+    #[ORM\Column(options: ['default' => false])]
+    private bool $productsSliderAutoplay = false;
+
+    #[ORM\Column(options: ['default' => self::DEFAULT_SLIDER_INTERVAL_MS])]
+    #[Assert\Range(min: self::MIN_SLIDER_INTERVAL_MS, max: self::MAX_SLIDER_INTERVAL_MS)]
+    private int $productsSliderIntervalMs = self::DEFAULT_SLIDER_INTERVAL_MS;
 
     #[ORM\Column(options: ['default' => true])]
     private bool $articlesEnabled = true;
@@ -217,6 +241,30 @@ class HomepageSetting
         }
     }
 
+    public function isHeroSliderAutoplay(): bool
+    {
+        return $this->heroSliderAutoplay;
+    }
+
+    public function setHeroSliderAutoplay(bool $heroSliderAutoplay): static
+    {
+        $this->heroSliderAutoplay = $heroSliderAutoplay;
+
+        return $this;
+    }
+
+    public function getHeroSliderIntervalMs(): int
+    {
+        return $this->heroSliderIntervalMs;
+    }
+
+    public function setHeroSliderIntervalMs(?int $heroSliderIntervalMs): static
+    {
+        $this->heroSliderIntervalMs = self::normalizeSliderInterval($heroSliderIntervalMs);
+
+        return $this;
+    }
+
     public function isCategoriesEnabled(): bool
     {
         return $this->categoriesEnabled;
@@ -277,6 +325,30 @@ class HomepageSetting
         if ($this->categoryItems->removeElement($item) && $item->getHomepageSetting() === $this) {
             $item->setHomepageSetting(null);
         }
+
+        return $this;
+    }
+
+    public function isCategoriesSliderAutoplay(): bool
+    {
+        return $this->categoriesSliderAutoplay;
+    }
+
+    public function setCategoriesSliderAutoplay(bool $categoriesSliderAutoplay): static
+    {
+        $this->categoriesSliderAutoplay = $categoriesSliderAutoplay;
+
+        return $this;
+    }
+
+    public function getCategoriesSliderIntervalMs(): int
+    {
+        return $this->categoriesSliderIntervalMs;
+    }
+
+    public function setCategoriesSliderIntervalMs(?int $categoriesSliderIntervalMs): static
+    {
+        $this->categoriesSliderIntervalMs = self::normalizeSliderInterval($categoriesSliderIntervalMs);
 
         return $this;
     }
@@ -404,6 +476,30 @@ class HomepageSetting
         return $ids;
     }
 
+    public function isProductsSliderAutoplay(): bool
+    {
+        return $this->productsSliderAutoplay;
+    }
+
+    public function setProductsSliderAutoplay(bool $productsSliderAutoplay): static
+    {
+        $this->productsSliderAutoplay = $productsSliderAutoplay;
+
+        return $this;
+    }
+
+    public function getProductsSliderIntervalMs(): int
+    {
+        return $this->productsSliderIntervalMs;
+    }
+
+    public function setProductsSliderIntervalMs(?int $productsSliderIntervalMs): static
+    {
+        $this->productsSliderIntervalMs = self::normalizeSliderInterval($productsSliderIntervalMs);
+
+        return $this;
+    }
+
     public function isArticlesEnabled(): bool
     {
         return $this->articlesEnabled;
@@ -504,5 +600,13 @@ class HomepageSetting
     private static function normalizeSource(?string $source): string
     {
         return $source === self::SOURCE_MANUAL ? self::SOURCE_MANUAL : self::SOURCE_LATEST;
+    }
+
+    private static function normalizeSliderInterval(?int $intervalMs): int
+    {
+        return max(
+            self::MIN_SLIDER_INTERVAL_MS,
+            min(self::MAX_SLIDER_INTERVAL_MS, $intervalMs ?? self::DEFAULT_SLIDER_INTERVAL_MS),
+        );
     }
 }

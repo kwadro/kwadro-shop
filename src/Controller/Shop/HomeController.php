@@ -106,6 +106,14 @@ class HomeController extends AbstractController
             'products' => $products,
             'productsSliderMin' => $productsSliderMin,
             'articles' => $articles,
+            'sliderAutoplay' => [
+                'hero' => $homeSetting?->isHeroSliderAutoplay() ?? false,
+                'heroInterval' => $homeSetting?->getHeroSliderIntervalMs() ?? HomepageSetting::DEFAULT_SLIDER_INTERVAL_MS,
+                'categories' => $homeSetting?->isCategoriesSliderAutoplay() ?? false,
+                'categoriesInterval' => $homeSetting?->getCategoriesSliderIntervalMs() ?? HomepageSetting::DEFAULT_SLIDER_INTERVAL_MS,
+                'products' => $homeSetting?->isProductsSliderAutoplay() ?? false,
+                'productsInterval' => $homeSetting?->getProductsSliderIntervalMs() ?? HomepageSetting::DEFAULT_SLIDER_INTERVAL_MS,
+            ],
             'homeBlocks' => [
                 'products_title' => $homeSetting?->getProductsTitle(),
                 'products_lead' => $homeSetting?->getProductsLead(),

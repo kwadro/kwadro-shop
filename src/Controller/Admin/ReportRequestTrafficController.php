@@ -3,16 +3,21 @@
 namespace App\Controller\Admin;
 
 use App\Repository\RequestListRepository;
+use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminRoute;
+use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-#[Route('/admin/{_locale}/report-request-traffic', name: 'admin_report_request_traffic', requirements: ['_locale' => 'ua|en'])]
+/**
+ * Custom admin page — must use #[AdminRoute] so EasyAdmin builds AdminContext (ea)
+ * and marks the sidebar menu item as selected.
+ */
 #[IsGranted('ROLE_SUPER_ADMIN')]
+#[AdminRoute('/report-request-traffic', name: 'report_request_traffic')]
 final class ReportRequestTrafficController extends AbstractController
 {
     private const PERIOD_TODAY = 'today';
@@ -24,10 +29,11 @@ final class ReportRequestTrafficController extends AbstractController
     public function __construct(
         private readonly RequestListRepository $requestListRepository,
         private readonly TranslatorInterface $translator,
+        private readonly AdminUrlGenerator $adminUrlGenerator,
     ) {
     }
 
-    #[Route('', name: '', methods: ['GET'])]
+    #[AdminRoute('', name: 'index', options: ['methods' => ['GET']])]
     public function index(Request $request): Response
     {
         $resolved = $this->resolvePeriod($request);
@@ -37,9 +43,10 @@ final class ReportRequestTrafficController extends AbstractController
             'period' => $resolved['period'],
             'fromDate' => $resolved['fromDate'],
             'toDate' => $resolved['toDate'],
-            'data_url' => $this->generateUrl('admin_report_request_traffic_data', [
-                '_locale' => $request->attributes->get('_locale', 'ua'),
-            ]),
+            'data_url' => $this->adminUrlGenerator
+                ->setController(self::class)
+                ->setAction('data')
+                ->generateUrl(),
             'chart_labels' => [
                 'requests' => $this->translator->trans('admin.report_request_traffic.series_requests', [], 'messages'),
                 'uniqueIps' => $this->translator->trans('admin.report_request_traffic.series_unique_ips', [], 'messages'),
@@ -47,7 +54,7 @@ final class ReportRequestTrafficController extends AbstractController
         ]);
     }
 
-    #[Route('/data', name: '_data', methods: ['GET'])]
+    #[AdminRoute('/data', name: 'data', options: ['methods' => ['GET']])]
     public function data(Request $request): JsonResponse
     {
         $resolved = $this->resolvePeriod($request);

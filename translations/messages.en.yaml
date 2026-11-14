@@ -1,5 +1,11 @@
 #@GENERATE TRANSLATE START
 admin.dashboard_title: Kvadro Admin
+grud.manage: Manage
+grud.edit: Edit
+grud.create_new: Create
+menu.link_new: New
+menu.link_export_csv: Export CSV
+menu.link_import_csv: Import CSV
 menu.dashboard: Dashboard
 menu.group_setting: Setting Site
 menu.group_catalog: Product catalog
@@ -491,6 +497,10 @@ admin.homepage_setting.products: Selected products
 admin.homepage_setting.products_help: Used when "Selected manually" is chosen. There is no count cap — all selected products are shown on the site.
 admin.homepage_setting.articles: Selected articles
 admin.homepage_setting.articles_help: Used when "Selected manually" is chosen. Articles from another site or language are not shown.
+admin.homepage_setting.slider_autoplay: Autoplay slider
+admin.homepage_setting.slider_autoplay_help: Automatically advance slides when the block is in slider mode.
+admin.homepage_setting.slider_interval: Slide interval (ms)
+admin.homepage_setting.slider_interval_help: Delay between slides in milliseconds (1000–60000). Default is 5000.
 admin.product_import_run.import: Import
 admin.product_import_run.started_at: Started at
 admin.product_import_run.finished_at: Finished at
@@ -1480,6 +1490,7 @@ shop.checkout.qty_increase: Increase quantity
 shop.checkout.cart_update_failed: Could not update the cart. Please try again.
 shop.checkout.supplier_unknown: Other supplier
 shop.checkout.delivery_cost_time_pay: payment is due after receipt of the goods.
+shop.checkout.delivery_pay_time: payment is due after receipt of the goods.
 shop.checkout.total: Total
 shop.checkout.placeholder: Next, a form for delivery and payment details will appear here.
 shop.checkout.back_to_shop: Back to shop

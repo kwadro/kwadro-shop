@@ -38,10 +38,9 @@
                 data-count="{{ heroCount }}"
                 data-slider-min="1"
                 data-item-selector="[data-home-slider-item]"
+                data-autoplay="{{ sliderAutoplay.hero ? '1' : '0' }}"
+                data-autoplay-interval="{{ sliderAutoplay.heroInterval }}"
             >
-                <button type="button" class="shop-home-slider__nav shop-home-hero__nav" data-home-slider-prev aria-label="{{ 'shop.home.hero_prev'|trans }}" hidden>
-                    <span aria-hidden="true">‹</span>
-                </button>
                 <div class="shop-home-hero__viewport">
                     <div class="shop-home-hero__track" data-home-slider-track>
                         {% for slide in heroSlides %}
@@ -100,9 +99,7 @@
                         {% endfor %}
                     </div>
                 </div>
-                <button type="button" class="shop-home-slider__nav shop-home-hero__nav" data-home-slider-next aria-label="{{ 'shop.home.hero_next'|trans }}" hidden>
-                    <span aria-hidden="true">›</span>
-                </button>
+                <div class="shop-home-slider__dots" data-home-slider-dots hidden></div>
             </section>
         {% endif %}
 
@@ -121,10 +118,9 @@
                     data-count="{{ categoriesCount }}"
                     data-slider-min="{{ categoriesCols }}"
                     data-item-selector="[data-home-slider-item]"
+                    data-autoplay="{{ sliderAutoplay.categories ? '1' : '0' }}"
+                    data-autoplay-interval="{{ sliderAutoplay.categoriesInterval }}"
                 >
-                    <button type="button" class="shop-home-slider__nav" data-home-slider-prev aria-label="{{ 'shop.home.categories_prev'|trans }}" hidden>
-                        <span aria-hidden="true">‹</span>
-                    </button>
                     <div class="shop-home-categories__viewport">
                         <div class="shop-home-categories__track" data-home-slider-track>
                             {% for category in categories %}
@@ -161,9 +157,7 @@
                             {% endfor %}
                         </div>
                     </div>
-                    <button type="button" class="shop-home-slider__nav" data-home-slider-next aria-label="{{ 'shop.home.categories_next'|trans }}" hidden>
-                        <span aria-hidden="true">›</span>
-                    </button>
+                    <div class="shop-home-slider__dots" data-home-slider-dots hidden></div>
                 </div>
             </section>
         {% endif %}
@@ -183,10 +177,9 @@
                     data-count="{{ productsCount }}"
                     data-slider-min="{{ sliderMin }}"
                     data-item-selector="[data-home-slider-item]"
+                    data-autoplay="{{ sliderAutoplay.products ? '1' : '0' }}"
+                    data-autoplay-interval="{{ sliderAutoplay.productsInterval }}"
                 >
-                    <button type="button" class="shop-home-slider__nav" data-home-slider-prev aria-label="{{ 'shop.home.products_prev'|trans }}" hidden>
-                        <span aria-hidden="true">‹</span>
-                    </button>
                     <div class="shop-home-products__viewport">
                         <div class="shop-home-products__track" data-home-slider-track>
                             {% for product in products %}
@@ -196,9 +189,7 @@
                             {% endfor %}
                         </div>
                     </div>
-                    <button type="button" class="shop-home-slider__nav" data-home-slider-next aria-label="{{ 'shop.home.products_next'|trans }}" hidden>
-                        <span aria-hidden="true">›</span>
-                    </button>
+                    <div class="shop-home-slider__dots" data-home-slider-dots hidden></div>
                 </div>
                 <div class="shop-home-section__footer">
                     <a class="shop-home__btn shop-home__btn--primary" href="{{ shopCtaPath }}">

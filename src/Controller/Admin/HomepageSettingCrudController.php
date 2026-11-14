@@ -70,6 +70,18 @@ class HomepageSettingCrudController extends AbstractCrudController
             ])
             ->setHelp($this->t('admin.homepage_setting.hero_slides_help'))
             ->hideOnIndex();
+        yield BooleanField::new('heroSliderAutoplay', $this->t('admin.homepage_setting.slider_autoplay'))
+            ->renderAsSwitch($pageName !== Crud::PAGE_INDEX)
+            ->setHelp($this->t('admin.homepage_setting.slider_autoplay_help'))
+            ->hideOnIndex();
+        yield IntegerField::new('heroSliderIntervalMs', $this->t('admin.homepage_setting.slider_interval'))
+            ->setFormTypeOption('attr', [
+                'min' => HomepageSetting::MIN_SLIDER_INTERVAL_MS,
+                'max' => HomepageSetting::MAX_SLIDER_INTERVAL_MS,
+                'step' => 500,
+            ])
+            ->setHelp($this->t('admin.homepage_setting.slider_interval_help'))
+            ->hideOnIndex();
 
         yield FormField::addTab($this->t('admin.homepage_setting.fieldset_categories'), 'fa fa-th-large')
             ->setHelp($this->t('admin.homepage_setting.fieldset_categories_help'))
@@ -98,6 +110,18 @@ class HomepageSettingCrudController extends AbstractCrudController
                 'entry_options' => ['label' => false],
             ])
             ->setHelp($this->t('admin.homepage_setting.categories_help'))
+            ->hideOnIndex();
+        yield BooleanField::new('categoriesSliderAutoplay', $this->t('admin.homepage_setting.slider_autoplay'))
+            ->renderAsSwitch($pageName !== Crud::PAGE_INDEX)
+            ->setHelp($this->t('admin.homepage_setting.slider_autoplay_help'))
+            ->hideOnIndex();
+        yield IntegerField::new('categoriesSliderIntervalMs', $this->t('admin.homepage_setting.slider_interval'))
+            ->setFormTypeOption('attr', [
+                'min' => HomepageSetting::MIN_SLIDER_INTERVAL_MS,
+                'max' => HomepageSetting::MAX_SLIDER_INTERVAL_MS,
+                'step' => 500,
+            ])
+            ->setHelp($this->t('admin.homepage_setting.slider_interval_help'))
             ->hideOnIndex();
 
         yield FormField::addTab($this->t('admin.homepage_setting.fieldset_products'), 'fa fa-box')
@@ -130,6 +154,18 @@ class HomepageSettingCrudController extends AbstractCrudController
             ->setCrudController(ProductCrudController::class)
             ->setFormTypeOption('by_reference', false)
             ->setHelp($this->t('admin.homepage_setting.products_help'))
+            ->hideOnIndex();
+        yield BooleanField::new('productsSliderAutoplay', $this->t('admin.homepage_setting.slider_autoplay'))
+            ->renderAsSwitch($pageName !== Crud::PAGE_INDEX)
+            ->setHelp($this->t('admin.homepage_setting.slider_autoplay_help'))
+            ->hideOnIndex();
+        yield IntegerField::new('productsSliderIntervalMs', $this->t('admin.homepage_setting.slider_interval'))
+            ->setFormTypeOption('attr', [
+                'min' => HomepageSetting::MIN_SLIDER_INTERVAL_MS,
+                'max' => HomepageSetting::MAX_SLIDER_INTERVAL_MS,
+                'step' => 500,
+            ])
+            ->setHelp($this->t('admin.homepage_setting.slider_interval_help'))
             ->hideOnIndex();
 
         yield FormField::addTab($this->t('admin.homepage_setting.fieldset_articles'), 'fa fa-newspaper')

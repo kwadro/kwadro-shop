@@ -70,6 +70,7 @@ use App\Controller\Admin\AdminAuditLogCrudController;
 use App\Controller\Admin\BlockedIpCrudController;
 use App\Controller\Admin\BotUserAgentMarkerCrudController;
 use App\Controller\Admin\RedirectCrudController;
+use App\Controller\Admin\ReportRequestTrafficController;
 use App\Controller\Admin\ShopMegaMenuSettingCrudController;
 // @GENERATE USE FINISH
 
@@ -106,143 +107,164 @@ class DashboardController extends AbstractDashboardController
     public function configureMenuItems(): iterable
     {
         yield MenuItem::linkToDashboard($this->translator->trans('menu.dashboard', [], 'messages'), 'fa fa-home');
-        yield MenuItem::section($this->translator->trans('menu.group_catalog', [], 'messages'));
-        yield MenuItem::linkTo(ProductCrudController::class, $this->translator->trans('menu.link_product', [], 'messages'), 'fas fa-box');
-        yield MenuItem::linkTo(CategoryCrudController::class, $this->translator->trans('menu.link_category', [], 'messages'), 'fas fa-folder');
-        yield MenuItem::linkTo(ProductAttributeGroupCrudController::class, $this->translator->trans('menu.link_product_attribute_group', [], 'messages'), 'fas fa-layer-group');
-        yield MenuItem::linkTo(ProductAttributeCrudController::class, $this->translator->trans('menu.link_product_attribute', [], 'messages'), 'fas fa-sliders-h');
-        yield MenuItem::linkTo(SupplierCrudController::class, $this->translator->trans('menu.link_supplier', [], 'messages'), 'fas fa-truck');
-        yield MenuItem::linkTo(ProductOfferCrudController::class, $this->translator->trans('menu.link_product_offer', [], 'messages'), 'fas fa-tags');
-        yield MenuItem::linkTo(ProductImportCrudController::class, $this->translator->trans('menu.link_product_import', [], 'messages'), 'fas fa-file-import');
-        yield MenuItem::linkTo(ProductImportRunCrudController::class, $this->translator->trans('menu.link_product_import_run', [], 'messages'), 'fas fa-history');
-        yield MenuItem::section($this->translator->trans('menu.group_product_search', [], 'messages'));
-        yield MenuItem::linkTo(ProductSearchSettingCrudController::class, $this->translator->trans('menu.link_product_search_setting', [], 'messages'), 'fas fa-search');
-        yield MenuItem::section($this->translator->trans('menu.group_product_feed', [], 'messages'));
-        yield MenuItem::linkTo(ProductFeedSettingCrudController::class, $this->translator->trans('menu.link_product_feed_setting', [], 'messages'), 'fas fa-rss');
-        yield MenuItem::section($this->translator->trans('menu.group_blog', [], 'messages'));
-        yield MenuItem::linkTo(BlogArticleCrudController::class, $this->translator->trans('menu.link_blog_article', [], 'messages'), 'fas fa-newspaper');
-        yield MenuItem::linkTo(BlogCategoryCrudController::class, $this->translator->trans('menu.link_blog_category', [], 'messages'), 'fas fa-folder-open');
-        yield MenuItem::section('AI Content');
-        yield MenuItem::linkTo(ContentSourceCrudController::class, 'Source history', 'fas fa-link');
-        yield MenuItem::linkTo(ContentTopicCrudController::class, 'Topics', 'fas fa-check-double');
-        yield MenuItem::linkTo(PublicationQueueCrudController::class, 'Publication queue', 'fas fa-clock');
-        yield MenuItem::linkTo(ContentAgentLogCrudController::class, 'Agent log', 'fas fa-clipboard-list');
-        yield MenuItem::section($this->translator->trans('menu.group_orders', [], 'messages'));
-        yield MenuItem::linkTo(CartCrudController::class, $this->translator->trans('menu.link_cart', [], 'messages'), 'fas fa-shopping-cart');
-        yield MenuItem::linkTo(CartItemCrudController::class, $this->translator->trans('menu.link_cart_item', [], 'messages'), 'fas fa-list');
-        yield MenuItem::linkTo(OrderCrudController::class, $this->translator->trans('menu.link_order', [], 'messages'), 'fas fa-receipt');
-        yield MenuItem::linkTo(OrderItemCrudController::class, $this->translator->trans('menu.link_order_item', [], 'messages'), 'fas fa-list-ul');
-        yield MenuItem::linkTo(PaymentCrudController::class, $this->translator->trans('menu.link_payment', [], 'messages'), 'fas fa-credit-card');
-        yield MenuItem::linkTo(ShipmentAddressCrudController::class, $this->translator->trans('menu.link_shipment_address', [], 'messages'), 'fas fa-map-marker-alt');
-        yield MenuItem::section($this->translator->trans('menu.group_marketing', [], 'messages'));
-        yield MenuItem::linkToRoute(
-            $this->translator->trans('menu.link_promo_image_editor', [], 'messages'),
-            'fas fa-image',
-            'admin_promo_image_editor',
-            ['_locale' => 'ua'],
-        );
-        yield MenuItem::linkToRoute(
-            $this->translator->trans('menu.link_image_editor', [], 'messages'),
-            'fas fa-crop-alt',
-            'admin_image_editor',
-            ['_locale' => 'ua'],
-        );
-        yield MenuItem::linkToRoute(
-            $this->translator->trans('menu.link_background_remover', [], 'messages'),
-            'fas fa-eraser',
-            'admin_background_remover',
-            ['_locale' => 'ua'],
-        );
-        yield MenuItem::linkToRoute(
-            $this->translator->trans('menu.link_image_transform', [], 'messages'),
-            'fas fa-expand',
-            'admin_image_transform',
-            ['_locale' => 'ua'],
-        );
-        yield MenuItem::linkToRoute(
-            $this->translator->trans('menu.link_media_library', [], 'messages'),
-            'fas fa-photo-video',
-            'admin_media_library',
-            ['_locale' => 'ua'],
-        );
-        yield MenuItem::linkToRoute(
-            $this->translator->trans('menu.link_shape_library', [], 'messages'),
-            'fas fa-shapes',
-            'admin_shape_library',
-            ['_locale' => 'ua'],
-        );
-        yield MenuItem::linkToRoute(
-            $this->translator->trans('menu.link_product_social_posts', [], 'messages'),
-            'fas fa-share-alt',
-            'admin_product_social_posts',
-            ['_locale' => 'ua'],
-        );
-        yield MenuItem::section($this->translator->trans('menu.group_email', [], 'messages'));
-        yield MenuItem::linkTo(EmailTemplateCrudController::class, $this->translator->trans('menu.link_email_template', [], 'messages'), 'fas fa-envelope');
-        yield MenuItem::linkTo(EmailTemplateSectionCrudController::class, $this->translator->trans('menu.link_email_template_section', [], 'messages'), 'fas fa-layer-group');
-        yield MenuItem::linkTo(EmailParameterCrudController::class, $this->translator->trans('menu.link_email_parameter', [], 'messages'), 'fas fa-sliders-h');
-        yield MenuItem::linkTo(EmailSenderCrudController::class, $this->translator->trans('menu.link_email_sender', [], 'messages'), 'fas fa-paper-plane');
-        yield MenuItem::linkTo(OrderEmailCrudController::class, $this->translator->trans('menu.link_order_email', [], 'messages'), 'fas fa-envelope-open-text');
-        yield MenuItem::linkTo(EmailLogCrudController::class, $this->translator->trans('menu.link_email_log', [], 'messages'), 'fas fa-inbox');
-        yield MenuItem::linkTo(MailboxAccountCrudController::class, $this->translator->trans('menu.link_mailbox_account', [], 'messages'), 'fas fa-at');
-        yield MenuItem::linkTo(MailboxMessageCrudController::class, $this->translator->trans('menu.link_mailbox_message', [], 'messages'), 'fas fa-envelope-open');
-        yield MenuItem::linkTo(MailboxSentMessageCrudController::class, $this->translator->trans('menu.link_mailbox_sent_message', [], 'messages'), 'fas fa-paper-plane');
-        yield MenuItem::linkTo(
-            MailboxConversationController::class,
-            $this->translator->trans('menu.link_mailbox_conversation', [], 'messages'),
-            'fas fa-comments',
-        )->setAction('index');
-        yield MenuItem::linkTo(
-            MailboxComposeController::class,
-            $this->translator->trans('menu.link_mailbox_compose', [], 'messages'),
-            'fas fa-pen',
-        )->setAction('compose');
-        yield MenuItem::linkToRoute(
-            $this->translator->trans('menu.link_email_template_test', [], 'messages'),
-            'fas fa-vial',
-            'admin_email_template_test',
-            ['_locale' => 'ua'],
-        );
-        yield MenuItem::section($this->translator->trans('menu.group_bank', [], 'messages'));
-        yield MenuItem::linkTo(BankAccountCrudController::class, $this->translator->trans('menu.link_bank_account', [], 'messages'), 'fas fa-university');
-        yield MenuItem::section($this->translator->trans('menu.users', [], 'messages'));
-        yield MenuItem::linkTo(UserCrudController::class, $this->translator->trans('menu.link_user', [], 'messages'), 'fas fa-users');
-        yield MenuItem::linkTo(UserGroupCrudController::class, $this->translator->trans('menu.link_user_group', [], 'messages'), 'fas fa-user-friends');
-        yield MenuItem::linkTo(UserRoleCrudController::class, $this->translator->trans('menu.link_user_role', [], 'messages'), 'fas fa-user-tag');
-        yield MenuItem::linkTo(RequestListCrudController::class, $this->translator->trans('menu.link_request_list', [], 'messages'), 'fas fa-globe');
-        yield MenuItem::linkToRoute(
-            $this->translator->trans('menu.link_report_visitor_ids', [], 'messages'),
-            'fas fa-chart-bar',
-            'admin_report_visitor_ids',
-            ['_locale' => 'ua'],
-        );
-        yield MenuItem::linkToRoute(
-            $this->translator->trans('menu.link_report_request_traffic', [], 'messages'),
-            'fas fa-chart-line',
-            'admin_report_request_traffic',
-            ['_locale' => 'ua'],
-        );
-        yield MenuItem::linkTo(BotUserAgentMarkerCrudController::class, $this->translator->trans('menu.link_bot_user_agent_marker', [], 'messages'), 'fas fa-robot');
-        yield MenuItem::linkTo(BlockedIpCrudController::class, $this->translator->trans('menu.link_blocked_ip', [], 'messages'), 'fas fa-ban');
-        yield MenuItem::linkTo(AdminAuditLogCrudController::class, $this->translator->trans('menu.link_admin_audit_log', [], 'messages'), 'fas fa-clipboard-list');
-        yield MenuItem::linkTo(RedirectCrudController::class, $this->translator->trans('menu.link_redirect', [], 'messages'), 'fas fa-random');
+
+        yield MenuItem::subMenu($this->translator->trans('menu.group_catalog', [], 'messages'), 'fas fa-boxes')->setSubItems([
+            MenuItem::linkTo(ProductCrudController::class, $this->translator->trans('menu.link_product', [], 'messages'), 'fas fa-box'),
+            MenuItem::linkTo(CategoryCrudController::class, $this->translator->trans('menu.link_category', [], 'messages'), 'fas fa-folder'),
+            MenuItem::linkTo(ProductAttributeGroupCrudController::class, $this->translator->trans('menu.link_product_attribute_group', [], 'messages'), 'fas fa-layer-group'),
+            MenuItem::linkTo(ProductAttributeCrudController::class, $this->translator->trans('menu.link_product_attribute', [], 'messages'), 'fas fa-sliders-h'),
+            MenuItem::linkTo(SupplierCrudController::class, $this->translator->trans('menu.link_supplier', [], 'messages'), 'fas fa-truck'),
+            MenuItem::linkTo(ProductOfferCrudController::class, $this->translator->trans('menu.link_product_offer', [], 'messages'), 'fas fa-tags'),
+            MenuItem::linkTo(ProductImportCrudController::class, $this->translator->trans('menu.link_product_import', [], 'messages'), 'fas fa-file-import'),
+            MenuItem::linkTo(ProductImportRunCrudController::class, $this->translator->trans('menu.link_product_import_run', [], 'messages'), 'fas fa-history'),
+        ]);
+
+        yield MenuItem::subMenu($this->translator->trans('menu.group_product_search', [], 'messages'), 'fas fa-search')->setSubItems([
+            MenuItem::linkTo(ProductSearchSettingCrudController::class, $this->translator->trans('menu.link_product_search_setting', [], 'messages'), 'fas fa-search'),
+        ]);
+
+        yield MenuItem::subMenu($this->translator->trans('menu.group_product_feed', [], 'messages'), 'fas fa-rss')->setSubItems([
+            MenuItem::linkTo(ProductFeedSettingCrudController::class, $this->translator->trans('menu.link_product_feed_setting', [], 'messages'), 'fas fa-rss'),
+        ]);
+
+        yield MenuItem::subMenu($this->translator->trans('menu.group_blog', [], 'messages'), 'fas fa-newspaper')->setSubItems([
+            MenuItem::linkTo(BlogArticleCrudController::class, $this->translator->trans('menu.link_blog_article', [], 'messages'), 'fas fa-newspaper'),
+            MenuItem::linkTo(BlogCategoryCrudController::class, $this->translator->trans('menu.link_blog_category', [], 'messages'), 'fas fa-folder-open'),
+        ]);
+
+        yield MenuItem::subMenu('AI Content', 'fas fa-robot')->setSubItems([
+            MenuItem::linkTo(ContentSourceCrudController::class, 'Source history', 'fas fa-link'),
+            MenuItem::linkTo(ContentTopicCrudController::class, 'Topics', 'fas fa-check-double'),
+            MenuItem::linkTo(PublicationQueueCrudController::class, 'Publication queue', 'fas fa-clock'),
+            MenuItem::linkTo(ContentAgentLogCrudController::class, 'Agent log', 'fas fa-clipboard-list'),
+        ]);
+
+        yield MenuItem::subMenu($this->translator->trans('menu.group_orders', [], 'messages'), 'fas fa-receipt')->setSubItems([
+            MenuItem::linkTo(CartCrudController::class, $this->translator->trans('menu.link_cart', [], 'messages'), 'fas fa-shopping-cart'),
+            MenuItem::linkTo(CartItemCrudController::class, $this->translator->trans('menu.link_cart_item', [], 'messages'), 'fas fa-list'),
+            MenuItem::linkTo(OrderCrudController::class, $this->translator->trans('menu.link_order', [], 'messages'), 'fas fa-receipt'),
+            MenuItem::linkTo(OrderItemCrudController::class, $this->translator->trans('menu.link_order_item', [], 'messages'), 'fas fa-list-ul'),
+            MenuItem::linkTo(PaymentCrudController::class, $this->translator->trans('menu.link_payment', [], 'messages'), 'fas fa-credit-card'),
+            MenuItem::linkTo(ShipmentAddressCrudController::class, $this->translator->trans('menu.link_shipment_address', [], 'messages'), 'fas fa-map-marker-alt'),
+        ]);
+
+        yield MenuItem::subMenu($this->translator->trans('menu.group_marketing', [], 'messages'), 'fas fa-bullhorn')->setSubItems([
+            MenuItem::linkToRoute(
+                $this->translator->trans('menu.link_promo_image_editor', [], 'messages'),
+                'fas fa-image',
+                'admin_promo_image_editor',
+                ['_locale' => 'ua'],
+            ),
+            MenuItem::linkToRoute(
+                $this->translator->trans('menu.link_image_editor', [], 'messages'),
+                'fas fa-crop-alt',
+                'admin_image_editor',
+                ['_locale' => 'ua'],
+            ),
+            MenuItem::linkToRoute(
+                $this->translator->trans('menu.link_background_remover', [], 'messages'),
+                'fas fa-eraser',
+                'admin_background_remover',
+                ['_locale' => 'ua'],
+            ),
+            MenuItem::linkToRoute(
+                $this->translator->trans('menu.link_image_transform', [], 'messages'),
+                'fas fa-expand',
+                'admin_image_transform',
+                ['_locale' => 'ua'],
+            ),
+            MenuItem::linkToRoute(
+                $this->translator->trans('menu.link_media_library', [], 'messages'),
+                'fas fa-photo-video',
+                'admin_media_library',
+                ['_locale' => 'ua'],
+            ),
+            MenuItem::linkToRoute(
+                $this->translator->trans('menu.link_shape_library', [], 'messages'),
+                'fas fa-shapes',
+                'admin_shape_library',
+                ['_locale' => 'ua'],
+            ),
+            MenuItem::linkToRoute(
+                $this->translator->trans('menu.link_product_social_posts', [], 'messages'),
+                'fas fa-share-alt',
+                'admin_product_social_posts',
+                ['_locale' => 'ua'],
+            ),
+        ]);
+
+        yield MenuItem::subMenu($this->translator->trans('menu.group_email', [], 'messages'), 'fas fa-envelope')->setSubItems([
+            MenuItem::linkTo(EmailTemplateCrudController::class, $this->translator->trans('menu.link_email_template', [], 'messages'), 'fas fa-envelope'),
+            MenuItem::linkTo(EmailTemplateSectionCrudController::class, $this->translator->trans('menu.link_email_template_section', [], 'messages'), 'fas fa-layer-group'),
+            MenuItem::linkTo(EmailParameterCrudController::class, $this->translator->trans('menu.link_email_parameter', [], 'messages'), 'fas fa-sliders-h'),
+            MenuItem::linkTo(EmailSenderCrudController::class, $this->translator->trans('menu.link_email_sender', [], 'messages'), 'fas fa-paper-plane'),
+            MenuItem::linkTo(OrderEmailCrudController::class, $this->translator->trans('menu.link_order_email', [], 'messages'), 'fas fa-envelope-open-text'),
+            MenuItem::linkTo(EmailLogCrudController::class, $this->translator->trans('menu.link_email_log', [], 'messages'), 'fas fa-inbox'),
+            MenuItem::linkTo(MailboxAccountCrudController::class, $this->translator->trans('menu.link_mailbox_account', [], 'messages'), 'fas fa-at'),
+            MenuItem::linkTo(MailboxMessageCrudController::class, $this->translator->trans('menu.link_mailbox_message', [], 'messages'), 'fas fa-envelope-open'),
+            MenuItem::linkTo(MailboxSentMessageCrudController::class, $this->translator->trans('menu.link_mailbox_sent_message', [], 'messages'), 'fas fa-paper-plane'),
+            MenuItem::linkTo(
+                MailboxConversationController::class,
+                $this->translator->trans('menu.link_mailbox_conversation', [], 'messages'),
+                'fas fa-comments',
+            )->setAction('index'),
+            MenuItem::linkTo(
+                MailboxComposeController::class,
+                $this->translator->trans('menu.link_mailbox_compose', [], 'messages'),
+                'fas fa-pen',
+            )->setAction('compose'),
+            MenuItem::linkToRoute(
+                $this->translator->trans('menu.link_email_template_test', [], 'messages'),
+                'fas fa-vial',
+                'admin_email_template_test',
+                ['_locale' => 'ua'],
+            ),
+        ]);
+
+        yield MenuItem::subMenu($this->translator->trans('menu.group_bank', [], 'messages'), 'fas fa-university')->setSubItems([
+            MenuItem::linkTo(BankAccountCrudController::class, $this->translator->trans('menu.link_bank_account', [], 'messages'), 'fas fa-university'),
+        ]);
+
+        yield MenuItem::subMenu($this->translator->trans('menu.users', [], 'messages'), 'fas fa-users')->setSubItems([
+            MenuItem::linkTo(UserCrudController::class, $this->translator->trans('menu.link_user', [], 'messages'), 'fas fa-users'),
+            MenuItem::linkTo(UserGroupCrudController::class, $this->translator->trans('menu.link_user_group', [], 'messages'), 'fas fa-user-friends'),
+            MenuItem::linkTo(UserRoleCrudController::class, $this->translator->trans('menu.link_user_role', [], 'messages'), 'fas fa-user-tag'),
+            MenuItem::linkTo(RequestListCrudController::class, $this->translator->trans('menu.link_request_list', [], 'messages'), 'fas fa-globe'),
+            MenuItem::linkToRoute(
+                $this->translator->trans('menu.link_report_visitor_ids', [], 'messages'),
+                'fas fa-chart-bar',
+                'admin_report_visitor_ids',
+                ['_locale' => 'ua'],
+            ),
+            MenuItem::linkTo(
+                ReportRequestTrafficController::class,
+                $this->translator->trans('menu.link_report_request_traffic', [], 'messages'),
+                'fas fa-chart-line',
+            )->setAction('index'),
+            MenuItem::linkTo(BotUserAgentMarkerCrudController::class, $this->translator->trans('menu.link_bot_user_agent_marker', [], 'messages'), 'fas fa-robot'),
+            MenuItem::linkTo(BlockedIpCrudController::class, $this->translator->trans('menu.link_blocked_ip', [], 'messages'), 'fas fa-ban'),
+            MenuItem::linkTo(AdminAuditLogCrudController::class, $this->translator->trans('menu.link_admin_audit_log', [], 'messages'), 'fas fa-clipboard-list'),
+            MenuItem::linkTo(RedirectCrudController::class, $this->translator->trans('menu.link_redirect', [], 'messages'), 'fas fa-random'),
+        ]);
+
         // @GENERATE MENU START
-yield MenuItem::section($this->translator->trans('menu.group_setting', [], 'messages'));
-yield MenuItem::linkTo(FootersettingCrudController::class,$this->translator->trans('menu.link_footersetting', [], 'messages'), 'fas fa-list' );
-yield MenuItem::linkTo(FootertranslationCrudController::class,$this->translator->trans('menu.link_footertranslation', [], 'messages'), 'fas fa-list' );
-yield MenuItem::linkTo(HeadersettingCrudController::class,$this->translator->trans('menu.link_headersetting', [], 'messages'), 'fas fa-list' );
-yield MenuItem::linkTo(HeadertranslationCrudController::class,$this->translator->trans('menu.link_headertranslation', [], 'messages'), 'fas fa-list' );
-yield MenuItem::linkTo(LocaleCrudController::class,$this->translator->trans('menu.link_locale', [], 'messages'), 'fas fa-list' );
-yield MenuItem::linkTo(MegamenusettingCrudController::class,$this->translator->trans('menu.link_megamenusetting', [], 'messages'), 'fas fa-list' );
-yield MenuItem::linkTo(MegamenutranslationCrudController::class,$this->translator->trans('menu.link_megamenutranslation', [], 'messages'), 'fas fa-list' );
-yield MenuItem::linkTo(MegamenutypeCrudController::class,$this->translator->trans('menu.link_megamenutype', [], 'messages'), 'fas fa-list' );
-yield MenuItem::linkTo(PopularsearchCrudController::class,$this->translator->trans('menu.link_popularsearch', [], 'messages'), 'fas fa-list' );
-yield MenuItem::linkTo(SeosettingCrudController::class,$this->translator->trans('menu.link_seosetting', [], 'messages'), 'fas fa-list' );
-yield MenuItem::linkTo(SeosettingstranslationCrudController::class,$this->translator->trans('menu.link_seosettingstranslation', [], 'messages'), 'fas fa-list' );
-yield MenuItem::linkTo(SiteCrudController::class,$this->translator->trans('menu.link_site', [], 'messages'), 'fas fa-list' );
-yield MenuItem::linkTo(HomepageSettingCrudController::class,$this->translator->trans('menu.link_homepage_setting', [], 'messages'), 'fas fa-home' );
-yield MenuItem::linkTo(ShopMegaMenuSettingCrudController::class, $this->translator->trans('menu.link_shop_mega_menu', [], 'messages'), 'fas fa-bars');
-// @GENERATE MENU FINISH
+        yield MenuItem::subMenu($this->translator->trans('menu.group_setting', [], 'messages'), 'fas fa-cog')->setSubItems([
+            MenuItem::linkTo(FootersettingCrudController::class, $this->translator->trans('menu.link_footersetting', [], 'messages'), 'fas fa-list'),
+            MenuItem::linkTo(FootertranslationCrudController::class, $this->translator->trans('menu.link_footertranslation', [], 'messages'), 'fas fa-list'),
+            MenuItem::linkTo(HeadersettingCrudController::class, $this->translator->trans('menu.link_headersetting', [], 'messages'), 'fas fa-list'),
+            MenuItem::linkTo(HeadertranslationCrudController::class, $this->translator->trans('menu.link_headertranslation', [], 'messages'), 'fas fa-list'),
+            MenuItem::linkTo(LocaleCrudController::class, $this->translator->trans('menu.link_locale', [], 'messages'), 'fas fa-list'),
+            MenuItem::linkTo(MegamenusettingCrudController::class, $this->translator->trans('menu.link_megamenusetting', [], 'messages'), 'fas fa-list'),
+            MenuItem::linkTo(MegamenutranslationCrudController::class, $this->translator->trans('menu.link_megamenutranslation', [], 'messages'), 'fas fa-list'),
+            MenuItem::linkTo(MegamenutypeCrudController::class, $this->translator->trans('menu.link_megamenutype', [], 'messages'), 'fas fa-list'),
+            MenuItem::linkTo(PopularsearchCrudController::class, $this->translator->trans('menu.link_popularsearch', [], 'messages'), 'fas fa-list'),
+            MenuItem::linkTo(SeosettingCrudController::class, $this->translator->trans('menu.link_seosetting', [], 'messages'), 'fas fa-list'),
+            MenuItem::linkTo(SeosettingstranslationCrudController::class, $this->translator->trans('menu.link_seosettingstranslation', [], 'messages'), 'fas fa-list'),
+            MenuItem::linkTo(SiteCrudController::class, $this->translator->trans('menu.link_site', [], 'messages'), 'fas fa-list'),
+            MenuItem::linkTo(HomepageSettingCrudController::class, $this->translator->trans('menu.link_homepage_setting', [], 'messages'), 'fas fa-home'),
+            MenuItem::linkTo(ShopMegaMenuSettingCrudController::class, $this->translator->trans('menu.link_shop_mega_menu', [], 'messages'), 'fas fa-bars'),
+        ]);
+        // @GENERATE MENU FINISH
     }
 
 

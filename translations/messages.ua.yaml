@@ -1,5 +1,11 @@
 #@GENERATE TRANSLATE START
 admin.dashboard_title: Адмінпанель Квадро
+grud.manage: Керування
+grud.edit: Редагувати
+grud.create_new: Створити
+menu.link_new: Новий
+menu.link_export_csv: Експорт CSV
+menu.link_import_csv: Імпорт CSV
 menu.dashboard: Головна
 menu.group_setting: Настройки Сайта
 menu.group_catalog: Каталог товарів
@@ -491,6 +497,10 @@ admin.homepage_setting.products: Вибрані товари
 admin.homepage_setting.products_help: Використовується, коли вибрано «Вибрані вручну». Кількість не обмежується — усі вибрані товари показуються на сайті.
 admin.homepage_setting.articles: Вибрані статті
 admin.homepage_setting.articles_help: Використовується, коли вибрано «Вибрані вручну». Статті іншого сайту чи мови не показуються.
+admin.homepage_setting.slider_autoplay: Автоперемикання слайдера
+admin.homepage_setting.slider_autoplay_help: Автоматично перемикати слайди, коли блок у режимі слайдера.
+admin.homepage_setting.slider_interval: Інтервал слайдів (мс)
+admin.homepage_setting.slider_interval_help: Пауза між слайдами в мілісекундах (1000–60000). За замовчуванням 5000.
 admin.product_import_run.import: Імпорт
 admin.product_import_run.started_at: Початок
 admin.product_import_run.finished_at: Завершення
@@ -1418,6 +1428,7 @@ shop.footer.contacts: Контакти
 shop.footer.social: Ми в соцмережах
 shop.footer.facebook: Facebook
 shop.footer.instagram: Instagram
+shop.footer.rights: Усі права захищено.
 shop.error404.title: Сторінку не знайдено
 shop.error404.text: Запитана сторінка не існує або була переміщена. Перевірте адресу або поверніться на головну.
 shop.error404.back_home: На головну
@@ -1478,7 +1489,7 @@ shop.checkout.qty_increase: Збільшити кількість
 shop.checkout.cart_update_failed: Не вдалося оновити кошик. Спробуйте ще раз.
 shop.checkout.supplier_unknown: Інший постачальник
 shop.checkout.delivery_cost_time_pay: оплачується при отриманні товару
-shop.checkout.delivery_pay_time:
+shop.checkout.delivery_pay_time: оплачується при отриманні товару
 shop.checkout.total: До сплати
 shop.checkout.placeholder: Наступним кроком тут буде форма з даними для доставки та оплати.
 shop.checkout.back_to_shop: Повернутись до магазину

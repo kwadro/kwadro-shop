@@ -217,9 +217,20 @@ class RequestListCrudController extends AbstractCrudController
         $quick = $this->readQuickFilters();
 
         if ($quick['path'] !== '') {
-            $queryBuilder
-                ->andWhere(sprintf('%s.path = :requestListQuickPath', $alias))
-                ->setParameter('requestListQuickPath', $quick['path']);
+            $knownPaths = $this->requestListRepository->findPopularPaths(500, 90);
+            if (\in_array($quick['path'], $knownPaths, true)) {
+                $queryBuilder
+                    ->andWhere(sprintf('%s.path = :requestListQuickPath', $alias))
+                    ->setParameter('requestListQuickPath', $quick['path']);
+            } else {
+                // Free-text value that is not in the select options → substring match.
+                $queryBuilder
+                    ->andWhere(sprintf('%s.path LIKE :requestListQuickPath', $alias))
+                    ->setParameter(
+                        'requestListQuickPath',
+                        '%'.$this->escapeLike($quick['path']).'%',
+                    );
+            }
         }
 
         // Period select is skipped when the standard createdAt filter is already applied.
@@ -290,5 +301,14 @@ class RequestListCrudController extends AbstractCrudController
             ],
             default => null,
         };
+    }
+
+    private function escapeLike(string $value): string
+    {
+        return str_replace(
+            ['\\', '%', '_'],
+            ['\\\\', '\\%', '\\_'],
+            $value,
+        );
     }
 }
