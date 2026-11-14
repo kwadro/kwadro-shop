@@ -44,6 +44,8 @@ menu.link_user_single: Користувач
 menu.link_request_list: Запити (IP)
 menu.link_request_list_single: Запит
 menu.link_report_visitor_ids: Report Visitor Ids
+menu.link_bot_user_agent_marker: User-Agent ботів
+menu.link_bot_user_agent_marker_single: Маркер бота (User-Agent)
 menu.link_blocked_ip: Заблоковані IP адреси
 menu.link_blocked_ip_single: Заблокована IP адреса
 menu.link_admin_audit_log: Журнал дій адміна
@@ -650,7 +652,7 @@ admin.request_list.unique_ips_today: Унікальних IP сьогодні
 admin.request_list.requests_today: Всього запитів сьогодні
 admin.request_list.unique_ips_filtered: Унікальних IP у вибірці
 admin.request_list.requests_filtered: Всього запитів у вибірці
-admin.report_visitor_ids.intro: 'Статистика запитів IP за останні %days% днів. Bot — User-Agent схожий на краулер (googlebot, bingbot, yandex, ahrefs, gptbot тощо). Порожній UA не вважається ботом автоматично. Unique IPs — унікальні IP за день / за період. New IPs — адреси, які вперше з’явилися в базі.'
+admin.report_visitor_ids.intro: 'Статистика запитів IP за останні %days% днів. Bot — User-Agent містить один із маркерів зі списку «User-Agent ботів» у меню. Порожній UA не вважається ботом автоматично. Unique IPs — унікальні IP за день / за період. New IPs — адреси, які вперше з’явилися в базі.'
 admin.report_visitor_ids.day: День
 admin.report_visitor_ids.requests: Запити
 admin.report_visitor_ids.google_bot: Boot
@@ -664,6 +666,13 @@ admin.report_visitor_ids.period_14: Останні 14 днів
 admin.report_visitor_ids.period_30: Останні 30 днів
 admin.report_visitor_ids.load_error: Не вдалося завантажити дані звіту.
 
+admin.bot_user_agent_marker.help: 'Підрядки User-Agent (без урахування регістру), за якими запити вважаються ботами у звітах. Приклад: googlebot, gptbot, bot/.'
+admin.bot_user_agent_marker.marker: Маркер
+admin.bot_user_agent_marker.marker_help: 'Підрядок у User-Agent, наприклад googlebot або gptbot. Порівняння без урахування регістру.'
+admin.bot_user_agent_marker.note: Примітка
+admin.bot_user_agent_marker.is_active: Активний
+admin.bot_user_agent_marker.created_at: Створено
+admin.bot_user_agent_marker.updated_at: Оновлено
 admin.blocked_ip.ip: IP адреса
 admin.blocked_ip.ip_help: 'IPv4 або IPv6. Заблокований IP отримає 403 на вітрині (адмінка лишається доступною).'
 admin.blocked_ip.note: Примітка

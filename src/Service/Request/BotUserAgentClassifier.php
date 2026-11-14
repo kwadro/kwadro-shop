@@ -2,16 +2,22 @@
 
 namespace App\Service\Request;
 
+use App\Repository\BotUserAgentMarkerRepository;
+
 /**
  * Heuristic bot / crawler detection from User-Agent.
  *
- * Empty UA is treated as "suspicious", not as a confirmed bot (scrapers and
- * privacy tools both omit UA; decide policy separately by IP volume / rate).
+ * Markers are editable in admin (BotUserAgentMarker). Empty UA is treated as
+ * "suspicious", not as a confirmed bot.
  */
 final class BotUserAgentClassifier
 {
-    /** @var list<string> Substrings matched case-insensitively */
-    private const BOT_MARKERS = [
+    /**
+     * Seed / fallback list when the admin table is empty.
+     *
+     * @var list<string>
+     */
+    public const DEFAULT_MARKERS = [
         'googlebot',
         'google.com',
         'bingbot',
@@ -48,6 +54,11 @@ final class BotUserAgentClassifier
         'crawl',
     ];
 
+    public function __construct(
+        private readonly BotUserAgentMarkerRepository $markerRepository,
+    ) {
+    }
+
     public function isEmpty(?string $userAgent): bool
     {
         return $userAgent === null || trim($userAgent) === '';
@@ -60,7 +71,7 @@ final class BotUserAgentClassifier
         }
 
         $ua = mb_strtolower(trim((string) $userAgent));
-        foreach (self::BOT_MARKERS as $marker) {
+        foreach ($this->markers() as $marker) {
             if (str_contains($ua, $marker)) {
                 return true;
             }
@@ -75,30 +86,30 @@ final class BotUserAgentClassifier
     }
 
     /**
-     * SQL LIKE patterns for aggregate reports (keep in sync with {@see BOT_MARKERS} loosely).
+     * Active markers from admin, or {@see DEFAULT_MARKERS} if none configured.
      *
      * @return list<string>
      */
-    public static function sqlLikePatterns(): array
+    public function markers(): array
     {
-        return [
-            '%googlebot%',
-            '%google.com%',
-            '%bingbot%',
-            '%bing.com%',
-            '%yandex%',
-            '%baiduspider%',
-            '%duckduckbot%',
-            '%facebookexternalhit%',
-            '%twitterbot%',
-            '%linkedinbot%',
-            '%semrushbot%',
-            '%ahrefsbot%',
-            '%gptbot%',
-            '%bytespider%',
-            '%crawler%',
-            '%spider%',
-            '%bot/%',
-        ];
+        $fromDb = $this->markerRepository->findActiveMarkers();
+
+        return $fromDb !== [] ? $fromDb : self::DEFAULT_MARKERS;
+    }
+
+    /**
+     * SQL LIKE patterns for aggregate reports.
+     *
+     * @return list<string>
+     */
+    public function sqlLikePatterns(): array
+    {
+        $patterns = [];
+        foreach ($this->markers() as $marker) {
+            $escaped = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $marker);
+            $patterns[] = '%'.$escaped.'%';
+        }
+
+        return $patterns;
     }
 }

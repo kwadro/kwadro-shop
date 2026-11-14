@@ -15,6 +15,11 @@ use App\Entity\MegaMenuType;
 use App\Routing\ShopRoutes;
 
 #[ORM\Entity(repositoryClass: MegaMenuTranslationRepository::class)]
+#[ORM\Table(name: 'mega_menu_translation')]
+#[ORM\Index(
+    name: 'idx_mmt_setting_locale_status_pos',
+    columns: ['megamenusetting_id', 'locale_id', 'status', 'position'],
+)]
 #[ORM\HasLifecycleCallbacks]
 class MegaMenuTranslation
 {

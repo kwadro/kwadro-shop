@@ -44,6 +44,8 @@ menu.link_user_single: User
 menu.link_request_list: Requests (IP)
 menu.link_request_list_single: Request
 menu.link_report_visitor_ids: Report Visitor Ids
+menu.link_bot_user_agent_marker: Bot User-Agents
+menu.link_bot_user_agent_marker_single: Bot User-Agent marker
 menu.link_blocked_ip: Blocked IP addresses
 menu.link_blocked_ip_single: Blocked IP address
 menu.link_admin_audit_log: Admin action log
@@ -650,7 +652,7 @@ admin.request_list.unique_ips_today: Unique IPs today
 admin.request_list.requests_today: Total requests today
 admin.request_list.unique_ips_filtered: Unique IPs in selection
 admin.request_list.requests_filtered: Total requests in selection
-admin.report_visitor_ids.intro: 'IP request statistics for the last %days% days. Bot — User-Agent looks like a crawler (googlebot, bingbot, yandex, ahrefs, gptbot, etc.). Empty UA is not treated as a bot automatically. Unique IPs — distinct IPs that day / in the period. New IPs — addresses seen for the first time in the database.'
+admin.report_visitor_ids.intro: 'IP request statistics for the last %days% days. Bot — User-Agent contains a marker from the “Bot User-Agents” admin list. Empty UA is not treated as a bot automatically. Unique IPs — distinct IPs that day / in the period. New IPs — addresses seen for the first time in the database.'
 admin.report_visitor_ids.day: Day
 admin.report_visitor_ids.requests: Requests
 admin.report_visitor_ids.google_bot: Boot
@@ -664,6 +666,13 @@ admin.report_visitor_ids.period_14: Last 14 days
 admin.report_visitor_ids.period_30: Last 30 days
 admin.report_visitor_ids.load_error: Failed to load report data.
 
+admin.bot_user_agent_marker.help: 'User-Agent substrings (case-insensitive) that mark requests as bots in reports. Examples: googlebot, gptbot, bot/.'
+admin.bot_user_agent_marker.marker: Marker
+admin.bot_user_agent_marker.marker_help: 'Substring matched in User-Agent, e.g. googlebot or gptbot. Matching is case-insensitive.'
+admin.bot_user_agent_marker.note: Note
+admin.bot_user_agent_marker.is_active: Active
+admin.bot_user_agent_marker.created_at: Created
+admin.bot_user_agent_marker.updated_at: Updated
 admin.blocked_ip.ip: IP address
 admin.blocked_ip.ip_help: 'IPv4 or IPv6. Blocked IPs get HTTP 403 on the storefront (admin stays accessible).'
 admin.blocked_ip.note: Note

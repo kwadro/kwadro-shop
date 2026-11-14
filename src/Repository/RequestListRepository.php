@@ -10,8 +10,10 @@ use Doctrine\Persistence\ManagerRegistry;
 /** @extends ServiceEntityRepository<RequestList> */
 class RequestListRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
-    {
+    public function __construct(
+        ManagerRegistry $registry,
+        private readonly BotUserAgentClassifier $botUserAgentClassifier,
+    ) {
         parent::__construct($registry, RequestList::class);
     }
 
@@ -214,7 +216,7 @@ class RequestListRepository extends ServiceEntityRepository
     private function botPatternParameters(): array
     {
         $params = [];
-        foreach (BotUserAgentClassifier::sqlLikePatterns() as $i => $pattern) {
+        foreach ($this->botUserAgentClassifier->sqlLikePatterns() as $i => $pattern) {
             $params['botPattern'.$i] = $pattern;
         }
 

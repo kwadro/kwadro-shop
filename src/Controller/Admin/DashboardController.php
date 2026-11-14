@@ -66,6 +66,7 @@ use App\Controller\Admin\BlogCategoryCrudController;
 use App\Controller\Admin\RequestListCrudController;
 use App\Controller\Admin\AdminAuditLogCrudController;
 use App\Controller\Admin\BlockedIpCrudController;
+use App\Controller\Admin\BotUserAgentMarkerCrudController;
 use App\Controller\Admin\RedirectCrudController;
 use App\Controller\Admin\ShopMegaMenuSettingCrudController;
 // @GENERATE USE FINISH
@@ -211,6 +212,7 @@ class DashboardController extends AbstractDashboardController
             'admin_report_visitor_ids',
             ['_locale' => 'ua'],
         );
+        yield MenuItem::linkTo(BotUserAgentMarkerCrudController::class, $this->translator->trans('menu.link_bot_user_agent_marker', [], 'messages'), 'fas fa-robot');
         yield MenuItem::linkTo(BlockedIpCrudController::class, $this->translator->trans('menu.link_blocked_ip', [], 'messages'), 'fas fa-ban');
         yield MenuItem::linkTo(AdminAuditLogCrudController::class, $this->translator->trans('menu.link_admin_audit_log', [], 'messages'), 'fas fa-clipboard-list');
         yield MenuItem::linkTo(RedirectCrudController::class, $this->translator->trans('menu.link_redirect', [], 'messages'), 'fas fa-random');
