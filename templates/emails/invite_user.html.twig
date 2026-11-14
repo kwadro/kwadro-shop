@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="{{ locale|default('ua') }}">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ 'auth.invite_email_subject'|trans({}, 'messages', locale|default('ua')) }}</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.5; color: #222;">
+    <p>{{ 'auth.invite_email_hello'|trans({'%name%': user_name}, 'messages', locale|default('ua')) }}</p>
+    <p>{{ 'auth.invite_email_body'|trans({}, 'messages', locale|default('ua')) }}</p>
+    <p>
+        <a href="{{ invite_url }}" style="display:inline-block;padding:10px 18px;background:#2e7d32;color:#fff;text-decoration:none;border-radius:4px;">
+            {{ 'auth.invite_email_cta'|trans({}, 'messages', locale|default('ua')) }}
+        </a>
+    </p>
+    <p style="word-break:break-all;font-size:12px;color:#666;">{{ invite_url }}</p>
+</body>
+</html>

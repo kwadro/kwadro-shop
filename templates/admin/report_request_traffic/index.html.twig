@@ -1,0 +1,64 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block head_stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('lib/admin-report-request-traffic.css') }}">
+{% endblock %}
+
+{% block content_title %}{{ page_title }}{% endblock %}
+
+{% block main %}
+    <div
+        class="request-traffic-report"
+        data-request-traffic-report
+        data-url="{{ data_url|e('html_attr') }}"
+        data-period="{{ period|e('html_attr') }}"
+        data-from="{{ fromDate|e('html_attr') }}"
+        data-to="{{ toDate|e('html_attr') }}"
+        data-label-requests="{{ chart_labels.requests|e('html_attr') }}"
+        data-label-unique-ips="{{ chart_labels.uniqueIps|e('html_attr') }}"
+        data-load-error="{{ 'admin.report_request_traffic.load_error'|trans|e('html_attr') }}"
+    >
+        <div class="request-traffic-report__filters">
+            <label class="request-traffic-report__field">
+                {{ 'admin.report_request_traffic.period'|trans }}
+                <select data-filter="period" aria-label="{{ 'admin.report_request_traffic.period'|trans }}">
+                    <option value="today" {% if period == 'today' %}selected{% endif %}>
+                        {{ 'admin.report_request_traffic.period_today'|trans }}
+                    </option>
+                    <option value="7d" {% if period == '7d' %}selected{% endif %}>
+                        {{ 'admin.report_request_traffic.period_7d'|trans }}
+                    </option>
+                    <option value="30d" {% if period == '30d' %}selected{% endif %}>
+                        {{ 'admin.report_request_traffic.period_30d'|trans }}
+                    </option>
+                    <option value="custom" {% if period == 'custom' %}selected{% endif %}>
+                        {{ 'admin.report_request_traffic.period_custom'|trans }}
+                    </option>
+                </select>
+            </label>
+
+            <div class="request-traffic-report__custom{% if period != 'custom' %} is-hidden{% endif %}" data-custom-range>
+                <label class="request-traffic-report__field">
+                    {{ 'admin.report_request_traffic.from'|trans }}
+                    <input type="date" data-filter="from" value="{{ fromDate|e('html_attr') }}">
+                </label>
+                <label class="request-traffic-report__field">
+                    {{ 'admin.report_request_traffic.to'|trans }}
+                    <input type="date" data-filter="to" value="{{ toDate|e('html_attr') }}">
+                </label>
+                <button type="button" class="btn btn-primary" data-apply-custom>
+                    {{ 'admin.report_request_traffic.apply'|trans }}
+                </button>
+            </div>
+        </div>
+
+        <div class="request-traffic-report__chart-wrap">
+            <canvas data-chart aria-label="{{ page_title }}"></canvas>
+            <p class="request-traffic-report__status text-muted mb-0" data-status></p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js" defer></script>
+    <script src="{{ asset('lib/admin-report-request-traffic.js') }}" defer></script>
+{% endblock %}

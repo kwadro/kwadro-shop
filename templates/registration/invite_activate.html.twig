@@ -1,0 +1,33 @@
+{% extends 'shop/auth_layout.html.twig' %}
+
+{% block title %}{{ 'auth.invite_title'|trans }}{% endblock %}
+
+{% block auth %}
+    <div class="shop-auth-card">
+        <div class="shop-auth-card__head">
+            <span class="shop-auth-card__badge">{{ 'shop.brand'|trans }}</span>
+            <h1>{{ 'auth.invite_title'|trans }}</h1>
+            <p>{{ 'auth.invite_subtitle'|trans({'%email%': userEmail}) }}</p>
+        </div>
+
+        {{ form_start(form, { attr: { class: 'shop-auth-form' } }) }}
+            <div class="shop-auth-field">
+                {{ form_label(form.plainPassword.first) }}
+                {{ form_widget(form.plainPassword.first) }}
+                {{ form_errors(form.plainPassword.first) }}
+            </div>
+            <div class="shop-auth-field">
+                {{ form_label(form.plainPassword.second) }}
+                {{ form_widget(form.plainPassword.second) }}
+                {{ form_errors(form.plainPassword.second) }}
+            </div>
+            {{ form_errors(form.plainPassword) }}
+            <button class="shop-auth-submit" type="submit">{{ 'auth.invite_submit'|trans }}</button>
+        {{ form_end(form) }}
+
+        <div class="shop-auth-footer">
+            {{ 'auth.have_account'|trans }}
+            <a href="{{ path('app_login') }}">{{ 'auth.login_link'|trans }}</a>
+        </div>
+    </div>
+{% endblock %}
