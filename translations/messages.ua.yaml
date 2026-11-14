@@ -652,10 +652,16 @@ admin.request_list.path_select: Request URL
 admin.request_list.bot_filter: Тип відвідувача
 admin.request_list.bot_filter_bots: Показати тільки запити ботів
 admin.request_list.bot_filter_humans: Показати тільки запити не ботів
+admin.request_list.period_filter: Період
+admin.request_list.period_today: Сьогодні
+admin.request_list.period_7d: Останні 7 днів
+admin.request_list.period_28d: Останні 28 днів
 admin.request_list.filter_all: Усі
 admin.request_list.filter_reset: Скинути фільтр
 admin.request_list.unique_ips_today: Унікальних IP сьогодні
 admin.request_list.requests_today: Всього запитів сьогодні
+admin.request_list.unique_ips_all: Унікальних IP
+admin.request_list.requests_all: Всього запитів
 admin.request_list.unique_ips_filtered: Унікальних IP у вибірці
 admin.request_list.requests_filtered: Всього запитів у вибірці
 admin.report_visitor_ids.intro: 'Статистика запитів IP за останні %days% днів. Bot — User-Agent містить один із маркерів зі списку «User-Agent ботів» у меню. Порожній UA не вважається ботом автоматично. Unique IPs — унікальні IP за день / за період. New IPs — адреси, які вперше з’явилися в базі.'

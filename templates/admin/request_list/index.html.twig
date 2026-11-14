@@ -2,12 +2,33 @@
 
 {% block main %}
     {% set filtered = statsScopedToFilters|default(false) %}
-    {% set defaultToday = statsDefaultToday|default(true) %}
     {# Cast to string once: AdminUrlGenerator resets after generateUrl(), so a second
        {{ url }} would re-read rl_* from the request and break "Reset filter". #}
-    {% set request_list_index_url = ea_url().unset('rl_path').unset('rl_visitor').unset('page').setAction('index').generateUrl() %}
+    {% set request_list_index_url = ea_url()
+        .unset('rl_path')
+        .unset('rl_visitor')
+        .unset('rl_period')
+        .unset('page')
+        .setAction('index')
+        .generateUrl() %}
 
     <div class="request-list-filters" data-index-url="{{ request_list_index_url|e('html_attr') }}">
+        <label class="request-list-filters__field">
+            {{ 'admin.request_list.period_filter'|trans }}
+            <select data-filter="period" aria-label="{{ 'admin.request_list.period_filter'|trans }}">
+                <option value="">{{ 'admin.request_list.filter_all'|trans }}</option>
+                <option value="today" {% if requestListFilterPeriod|default('') == 'today' %}selected{% endif %}>
+                    {{ 'admin.request_list.period_today'|trans }}
+                </option>
+                <option value="7d" {% if requestListFilterPeriod|default('') == '7d' %}selected{% endif %}>
+                    {{ 'admin.request_list.period_7d'|trans }}
+                </option>
+                <option value="28d" {% if requestListFilterPeriod|default('') == '28d' %}selected{% endif %}>
+                    {{ 'admin.request_list.period_28d'|trans }}
+                </option>
+            </select>
+        </label>
+
         <label class="request-list-filters__field request-list-filters__field--wide">
             {{ 'admin.request_list.path_select'|trans }}
             <select data-filter="path" aria-label="{{ 'admin.request_list.path_select'|trans }}">
@@ -43,10 +64,8 @@
             <strong>
                 {% if filtered %}
                     {{ 'admin.request_list.unique_ips_filtered'|trans }}
-                {% elseif defaultToday %}
-                    {{ 'admin.request_list.unique_ips_today'|trans }}
                 {% else %}
-                    {{ 'admin.request_list.unique_ips_filtered'|trans }}
+                    {{ 'admin.request_list.unique_ips_all'|trans }}
                 {% endif %}
                 :
             </strong>
@@ -55,10 +74,8 @@
         <div class="text-muted">
             {% if filtered %}
                 {{ 'admin.request_list.requests_filtered'|trans }}
-            {% elseif defaultToday %}
-                {{ 'admin.request_list.requests_today'|trans }}
             {% else %}
-                {{ 'admin.request_list.requests_filtered'|trans }}
+                {{ 'admin.request_list.requests_all'|trans }}
             {% endif %}
             :
             <strong>{{ requestsToday|default(0) }}</strong>

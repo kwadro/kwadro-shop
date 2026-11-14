@@ -652,10 +652,16 @@ admin.request_list.path_select: Request URL
 admin.request_list.bot_filter: Visitor type
 admin.request_list.bot_filter_bots: Show bot requests only
 admin.request_list.bot_filter_humans: Show non-bot requests only
+admin.request_list.period_filter: Period
+admin.request_list.period_today: Today
+admin.request_list.period_7d: Last 7 days
+admin.request_list.period_28d: Last 28 days
 admin.request_list.filter_all: All
 admin.request_list.filter_reset: Reset filter
 admin.request_list.unique_ips_today: Unique IPs today
 admin.request_list.requests_today: Total requests today
+admin.request_list.unique_ips_all: Unique IPs
+admin.request_list.requests_all: Total requests
 admin.request_list.unique_ips_filtered: Unique IPs in selection
 admin.request_list.requests_filtered: Total requests in selection
 admin.report_visitor_ids.intro: 'IP request statistics for the last %days% days. Bot — User-Agent contains a marker from the “Bot User-Agents” admin list. Empty UA is not treated as a bot automatically. Unique IPs — distinct IPs that day / in the period. New IPs — addresses seen for the first time in the database.'

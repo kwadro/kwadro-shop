@@ -29,6 +29,10 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class RequestListCrudController extends AbstractCrudController
 {
+    private const PERIOD_TODAY = 'today';
+    private const PERIOD_7D = '7d';
+    private const PERIOD_28D = '28d';
+
     public function __construct(
         private readonly TranslatorInterface $translator,
         private readonly RequestListRepository $requestListRepository,
@@ -99,22 +103,8 @@ class RequestListCrudController extends AbstractCrudController
     public function createIndexQueryBuilder(SearchDto $searchDto, EntityDto $entityDto, FieldCollection $fields, FilterCollection $filters): QueryBuilder
     {
         $queryBuilder = parent::createIndexQueryBuilder($searchDto, $entityDto, $fields, $filters);
-
-        // Default window = today when no createdAt filter is applied (keeps previous UX).
-        $applied = $searchDto->getAppliedFilters();
         $alias = $queryBuilder->getRootAliases()[0] ?? 'entity';
-        if (!isset($applied['createdAt'])) {
-            $timezone = new \DateTimeZone(date_default_timezone_get() ?: 'Europe/Kyiv');
-            $from = new \DateTimeImmutable('today', $timezone);
-            $to = $from->modify('+1 day');
-            $queryBuilder
-                ->andWhere(sprintf('%s.createdAt >= :requestListDefaultFrom', $alias))
-                ->andWhere(sprintf('%s.createdAt < :requestListDefaultTo', $alias))
-                ->setParameter('requestListDefaultFrom', $from)
-                ->setParameter('requestListDefaultTo', $to);
-        }
-
-        $this->applyQuickFilters($queryBuilder, $alias);
+        $this->applyQuickFilters($queryBuilder, $alias, $searchDto->getAppliedFilters());
 
         return $queryBuilder;
     }
@@ -127,19 +117,19 @@ class RequestListCrudController extends AbstractCrudController
             $responseParameters->set('uniqueIpsToday', $stats['uniqueIps']);
             $responseParameters->set('requestsToday', $stats['requests']);
             $responseParameters->set('statsScopedToFilters', $stats['filtered']);
-            $responseParameters->set('statsDefaultToday', $stats['defaultToday']);
             $responseParameters->set('requestListFilterPaths', $this->requestListRepository->findPopularPaths());
             $responseParameters->set('requestListFilterPath', $quick['path']);
             $responseParameters->set('requestListFilterVisitor', $quick['visitor']);
+            $responseParameters->set('requestListFilterPeriod', $quick['period']);
         }
 
         return $responseParameters;
     }
 
     /**
-     * @param array{path: string, visitor: string} $quick
+     * @param array $quick
      *
-     * @return array{uniqueIps: int, requests: int, filtered: bool, defaultToday: bool}
+     * @return array
      */
     private function buildFilteredStats(array $quick): array
     {
@@ -149,7 +139,6 @@ class RequestListCrudController extends AbstractCrudController
                 'uniqueIps' => $this->requestListRepository->countUniqueIpsToday(),
                 'requests' => $this->requestListRepository->countToday(),
                 'filtered' => false,
-                'defaultToday' => true,
             ];
         }
 
@@ -168,9 +157,8 @@ class RequestListCrudController extends AbstractCrudController
 
         $alias = $queryBuilder->getRootAliases()[0] ?? 'entity';
         $applied = $context->getSearch()->getAppliedFilters();
-        $hasQuickFilters = $quick['path'] !== '' || $quick['visitor'] !== '';
+        $hasQuickFilters = $quick['path'] !== '' || $quick['visitor'] !== '' || $quick['period'] !== '';
         $hasExplicitFilters = $applied !== [] || $hasQuickFilters;
-        $defaultToday = !isset($applied['createdAt']) && !$hasQuickFilters;
 
         $requestsQb = clone $queryBuilder;
         $requestsQb->resetDQLPart('orderBy')
@@ -190,29 +178,37 @@ class RequestListCrudController extends AbstractCrudController
             'uniqueIps' => (int) $uniqueQb->getQuery()->getSingleScalarResult(),
             'requests' => (int) $requestsQb->getQuery()->getSingleScalarResult(),
             'filtered' => $hasExplicitFilters,
-            'defaultToday' => $defaultToday && !$hasExplicitFilters,
         ];
     }
 
     /**
-     * @return array{path: string, visitor: string}
+     * @return array
      */
     private function readQuickFilters(): array
     {
         $request = $this->getContext()?->getRequest();
         $path = trim((string) ($request?->query->get('rl_path') ?? ''));
         $visitor = trim((string) ($request?->query->get('rl_visitor') ?? ''));
+        $period = trim((string) ($request?->query->get('rl_period') ?? ''));
+
         if ($visitor !== 'bots' && $visitor !== 'humans') {
             $visitor = '';
+        }
+        if (!\in_array($period, [self::PERIOD_TODAY, self::PERIOD_7D, self::PERIOD_28D], true)) {
+            $period = '';
         }
 
         return [
             'path' => $path,
             'visitor' => $visitor,
+            'period' => $period,
         ];
     }
 
-    private function applyQuickFilters(QueryBuilder $queryBuilder, string $alias): void
+    /**
+     * @param array $appliedFilters
+     */
+    private function applyQuickFilters(QueryBuilder $queryBuilder, string $alias, array $appliedFilters): void
     {
         $quick = $this->readQuickFilters();
 
@@ -220,6 +216,18 @@ class RequestListCrudController extends AbstractCrudController
             $queryBuilder
                 ->andWhere(sprintf('%s.path = :requestListQuickPath', $alias))
                 ->setParameter('requestListQuickPath', $quick['path']);
+        }
+
+        // Period select is skipped when the standard createdAt filter is already applied.
+        if ($quick['period'] !== '' && !isset($appliedFilters['createdAt'])) {
+            $range = $this->resolvePeriodRange($quick['period']);
+            if ($range !== null) {
+                $queryBuilder
+                    ->andWhere(sprintf('%s.createdAt >= :requestListPeriodFrom', $alias))
+                    ->andWhere(sprintf('%s.createdAt < :requestListPeriodTo', $alias))
+                    ->setParameter('requestListPeriodFrom', $range['from'])
+                    ->setParameter('requestListPeriodTo', $range['to']);
+            }
         }
 
         if ($quick['visitor'] === '') {
@@ -252,5 +260,31 @@ class RequestListCrudController extends AbstractCrudController
         }
 
         $queryBuilder->andWhere(sprintf('NOT %s', $botCondition));
+    }
+
+    /**
+     * @return array|null
+     */
+    private function resolvePeriodRange(string $period): ?array
+    {
+        $timezone = new \DateTimeZone(date_default_timezone_get() ?: 'Europe/Kyiv');
+        $today = new \DateTimeImmutable('today', $timezone);
+        $to = $today->modify('+1 day');
+
+        return match ($period) {
+            self::PERIOD_TODAY => [
+                'from' => $today,
+                'to' => $to,
+            ],
+            self::PERIOD_7D => [
+                'from' => $today->modify('-6 days'),
+                'to' => $to,
+            ],
+            self::PERIOD_28D => [
+                'from' => $today->modify('-27 days'),
+                'to' => $to,
+            ],
+            default => null,
+        };
     }
 }

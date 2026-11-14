@@ -13,18 +13,24 @@
             var url = new URL(window.location.href);
             url.searchParams.delete('rl_path');
             url.searchParams.delete('rl_visitor');
+            url.searchParams.delete('rl_period');
             url.searchParams.delete('page');
 
             var pathSelect = root.querySelector('[data-filter="path"]');
             var visitorSelect = root.querySelector('[data-filter="visitor"]');
+            var periodSelect = root.querySelector('[data-filter="period"]');
             var pathValue = pathSelect ? pathSelect.value : '';
             var visitorValue = visitorSelect ? visitorSelect.value : '';
+            var periodValue = periodSelect ? periodSelect.value : '';
 
             if (pathValue !== '') {
                 url.searchParams.set('rl_path', pathValue);
             }
             if (visitorValue !== '') {
                 url.searchParams.set('rl_visitor', visitorValue);
+            }
+            if (periodValue !== '') {
+                url.searchParams.set('rl_period', periodValue);
             }
 
             window.location.assign(url.toString());
