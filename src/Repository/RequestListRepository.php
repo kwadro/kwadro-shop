@@ -52,6 +52,44 @@ class RequestListRepository extends ServiceEntityRepository
     }
 
     /**
+     * Popular request paths for the admin path select filter.
+     *
+     * @return list<string>
+     */
+    public function findPopularPaths(int $limit = 200, int $days = 7, ?\DateTimeZone $timezone = null): array
+    {
+        $limit = max(1, min(500, $limit));
+        $days = max(1, min(90, $days));
+        $timezone ??= new \DateTimeZone(date_default_timezone_get() ?: 'Europe/Kyiv');
+        $to = (new \DateTimeImmutable('today', $timezone))->modify('+1 day');
+        $from = $to->modify(sprintf('-%d days', $days));
+
+        $rows = $this->createQueryBuilder('r')
+            ->select('r.path AS path', 'COUNT(r.id) AS hits')
+            ->andWhere('r.createdAt >= :from')
+            ->andWhere('r.createdAt < :to')
+            ->andWhere("r.path <> ''")
+            ->setParameter('from', $from)
+            ->setParameter('to', $to)
+            ->groupBy('r.path')
+            ->orderBy('hits', 'DESC')
+            ->addOrderBy('r.path', 'ASC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getArrayResult();
+
+        $paths = [];
+        foreach ($rows as $row) {
+            $path = $row['path'] ?? null;
+            if (\is_string($path) && $path !== '') {
+                $paths[] = $path;
+            }
+        }
+
+        return $paths;
+    }
+
+    /**
      * Daily request stats for the last N calendar days (including days with zero).
      *
      * @return array{

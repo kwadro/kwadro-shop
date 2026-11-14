@@ -1,0 +1,44 @@
+.request-list-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 12px 16px;
+    margin-bottom: 1rem;
+    padding: 12px 14px;
+    background: #fff;
+    border: 1px solid #e6e6e6;
+    border-radius: 8px;
+}
+
+.request-list-filters__field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 0;
+    min-width: 220px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #5f6368;
+}
+
+.request-list-filters__field--wide {
+    min-width: 320px;
+    flex: 1 1 320px;
+}
+
+.request-list-filters__field select {
+    min-width: 220px;
+    height: 36px;
+    padding: 0 8px;
+    border: 1px solid #dadce0;
+    border-radius: 6px;
+    background: #fff;
+    color: #202124;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.request-list-filters__field--wide select {
+    min-width: 320px;
+    width: 100%;
+}

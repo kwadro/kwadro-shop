@@ -5,10 +5,13 @@ namespace App\Controller\Admin;
 use App\Admin\Filter\EmptyUserAgentFilter;
 use App\Entity\RequestList;
 use App\Repository\RequestListRepository;
+use App\Service\Request\BotUserAgentClassifier;
 use Doctrine\ORM\QueryBuilder;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
+use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Assets;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
@@ -22,7 +25,6 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\DateTimeFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\TextFilter;
-use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class RequestListCrudController extends AbstractCrudController
@@ -30,6 +32,7 @@ class RequestListCrudController extends AbstractCrudController
     public function __construct(
         private readonly TranslatorInterface $translator,
         private readonly RequestListRepository $requestListRepository,
+        private readonly BotUserAgentClassifier $botUserAgentClassifier,
     ) {
     }
 
@@ -47,6 +50,13 @@ class RequestListCrudController extends AbstractCrudController
             ->setSearchFields(['ip', 'path', 'pathAfterRedirect', 'userAgent'])
             ->setPaginatorPageSize(50)
             ->overrideTemplate('crud/index', 'admin/request_list/index.html.twig');
+    }
+
+    public function configureAssets(Assets $assets): Assets
+    {
+        return $assets
+            ->addCssFile('lib/admin-request-list.css')
+            ->addJsFile('lib/admin-request-list-filters.js');
     }
 
     public function configureActions(Actions $actions): Actions
@@ -92,11 +102,11 @@ class RequestListCrudController extends AbstractCrudController
 
         // Default window = today when no createdAt filter is applied (keeps previous UX).
         $applied = $searchDto->getAppliedFilters();
+        $alias = $queryBuilder->getRootAliases()[0] ?? 'entity';
         if (!isset($applied['createdAt'])) {
             $timezone = new \DateTimeZone(date_default_timezone_get() ?: 'Europe/Kyiv');
             $from = new \DateTimeImmutable('today', $timezone);
             $to = $from->modify('+1 day');
-            $alias = $queryBuilder->getRootAliases()[0] ?? 'entity';
             $queryBuilder
                 ->andWhere(sprintf('%s.createdAt >= :requestListDefaultFrom', $alias))
                 ->andWhere(sprintf('%s.createdAt < :requestListDefaultTo', $alias))
@@ -104,26 +114,34 @@ class RequestListCrudController extends AbstractCrudController
                 ->setParameter('requestListDefaultTo', $to);
         }
 
+        $this->applyQuickFilters($queryBuilder, $alias);
+
         return $queryBuilder;
     }
 
     public function configureResponseParameters(KeyValueStore $responseParameters): KeyValueStore
     {
         if ($responseParameters->get('pageName') === Crud::PAGE_INDEX) {
-            $stats = $this->buildFilteredStats();
+            $quick = $this->readQuickFilters();
+            $stats = $this->buildFilteredStats($quick);
             $responseParameters->set('uniqueIpsToday', $stats['uniqueIps']);
             $responseParameters->set('requestsToday', $stats['requests']);
             $responseParameters->set('statsScopedToFilters', $stats['filtered']);
             $responseParameters->set('statsDefaultToday', $stats['defaultToday']);
+            $responseParameters->set('requestListFilterPaths', $this->requestListRepository->findPopularPaths());
+            $responseParameters->set('requestListFilterPath', $quick['path']);
+            $responseParameters->set('requestListFilterVisitor', $quick['visitor']);
         }
 
         return $responseParameters;
     }
 
     /**
+     * @param array{path: string, visitor: string} $quick
+     *
      * @return array{uniqueIps: int, requests: int, filtered: bool, defaultToday: bool}
      */
-    private function buildFilteredStats(): array
+    private function buildFilteredStats(array $quick): array
     {
         $context = $this->getContext();
         if (!$context instanceof AdminContext) {
@@ -150,8 +168,9 @@ class RequestListCrudController extends AbstractCrudController
 
         $alias = $queryBuilder->getRootAliases()[0] ?? 'entity';
         $applied = $context->getSearch()->getAppliedFilters();
-        $hasExplicitFilters = $applied !== [];
-        $defaultToday = !isset($applied['createdAt']);
+        $hasQuickFilters = $quick['path'] !== '' || $quick['visitor'] !== '';
+        $hasExplicitFilters = $applied !== [] || $hasQuickFilters;
+        $defaultToday = !isset($applied['createdAt']) && !$hasQuickFilters;
 
         $requestsQb = clone $queryBuilder;
         $requestsQb->resetDQLPart('orderBy')
@@ -173,5 +192,65 @@ class RequestListCrudController extends AbstractCrudController
             'filtered' => $hasExplicitFilters,
             'defaultToday' => $defaultToday && !$hasExplicitFilters,
         ];
+    }
+
+    /**
+     * @return array{path: string, visitor: string}
+     */
+    private function readQuickFilters(): array
+    {
+        $request = $this->getContext()?->getRequest();
+        $path = trim((string) ($request?->query->get('rl_path') ?? ''));
+        $visitor = trim((string) ($request?->query->get('rl_visitor') ?? ''));
+        if ($visitor !== 'bots' && $visitor !== 'humans') {
+            $visitor = '';
+        }
+
+        return [
+            'path' => $path,
+            'visitor' => $visitor,
+        ];
+    }
+
+    private function applyQuickFilters(QueryBuilder $queryBuilder, string $alias): void
+    {
+        $quick = $this->readQuickFilters();
+
+        if ($quick['path'] !== '') {
+            $queryBuilder
+                ->andWhere(sprintf('%s.path = :requestListQuickPath', $alias))
+                ->setParameter('requestListQuickPath', $quick['path']);
+        }
+
+        if ($quick['visitor'] === '') {
+            return;
+        }
+
+        $patterns = $this->botUserAgentClassifier->sqlLikePatterns();
+        $uaExpr = sprintf('LOWER(COALESCE(%s.userAgent, \'\'))', $alias);
+
+        if ($patterns === []) {
+            if ($quick['visitor'] === 'bots') {
+                $queryBuilder->andWhere('1 = 0');
+            }
+
+            return;
+        }
+
+        $parts = [];
+        foreach ($patterns as $i => $pattern) {
+            $param = 'requestListBotPattern'.$i;
+            $parts[] = sprintf('%s LIKE :%s', $uaExpr, $param);
+            $queryBuilder->setParameter($param, $pattern);
+        }
+
+        $botCondition = '('.implode(' OR ', $parts).')';
+        if ($quick['visitor'] === 'bots') {
+            $queryBuilder->andWhere($botCondition);
+
+            return;
+        }
+
+        $queryBuilder->andWhere(sprintf('NOT %s', $botCondition));
     }
 }

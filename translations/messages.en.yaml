@@ -648,6 +648,12 @@ admin.request_list.user_agent: User-Agent
 admin.request_list.user_agent_status: User-Agent (status)
 admin.request_list.user_agent_empty: Empty
 admin.request_list.user_agent_filled: Filled
+admin.request_list.path_select: Request URL
+admin.request_list.bot_filter: Visitor type
+admin.request_list.bot_filter_bots: Show bot requests only
+admin.request_list.bot_filter_humans: Show non-bot requests only
+admin.request_list.filter_all: All
+admin.request_list.filter_reset: Reset filter
 admin.request_list.unique_ips_today: Unique IPs today
 admin.request_list.requests_today: Total requests today
 admin.request_list.unique_ips_filtered: Unique IPs in selection

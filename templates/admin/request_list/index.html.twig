@@ -3,6 +3,41 @@
 {% block main %}
     {% set filtered = statsScopedToFilters|default(false) %}
     {% set defaultToday = statsDefaultToday|default(true) %}
+    {# Cast to string once: AdminUrlGenerator resets after generateUrl(), so a second
+       {{ url }} would re-read rl_* from the request and break "Reset filter". #}
+    {% set request_list_index_url = ea_url().unset('rl_path').unset('rl_visitor').unset('page').setAction('index').generateUrl() %}
+
+    <div class="request-list-filters" data-index-url="{{ request_list_index_url|e('html_attr') }}">
+        <label class="request-list-filters__field request-list-filters__field--wide">
+            {{ 'admin.request_list.path_select'|trans }}
+            <select data-filter="path" aria-label="{{ 'admin.request_list.path_select'|trans }}">
+                <option value="">{{ 'admin.request_list.filter_all'|trans }}</option>
+                {% for path in requestListFilterPaths|default([]) %}
+                    <option value="{{ path|e('html_attr') }}" {% if requestListFilterPath|default('') == path %}selected{% endif %}>
+                        {{ path }}
+                    </option>
+                {% endfor %}
+            </select>
+        </label>
+
+        <label class="request-list-filters__field">
+            {{ 'admin.request_list.bot_filter'|trans }}
+            <select data-filter="visitor" aria-label="{{ 'admin.request_list.bot_filter'|trans }}">
+                <option value="">{{ 'admin.request_list.filter_all'|trans }}</option>
+                <option value="bots" {% if requestListFilterVisitor|default('') == 'bots' %}selected{% endif %}>
+                    {{ 'admin.request_list.bot_filter_bots'|trans }}
+                </option>
+                <option value="humans" {% if requestListFilterVisitor|default('') == 'humans' %}selected{% endif %}>
+                    {{ 'admin.request_list.bot_filter_humans'|trans }}
+                </option>
+            </select>
+        </label>
+
+        <a class="btn btn-secondary" href="{{ request_list_index_url }}" data-filter-reset>
+            {{ 'admin.request_list.filter_reset'|trans }}
+        </a>
+    </div>
+
     <div class="alert alert-info d-flex flex-wrap gap-4 align-items-center mb-3" role="status">
         <div>
             <strong>

@@ -1,0 +1,51 @@
+(function () {
+    'use strict';
+
+    function boot() {
+        var root = document.querySelector('.request-list-filters');
+        if (!root) {
+            return;
+        }
+
+        var indexUrl = root.getAttribute('data-index-url') || '';
+
+        function applyFilters() {
+            var url = new URL(window.location.href);
+            url.searchParams.delete('rl_path');
+            url.searchParams.delete('rl_visitor');
+            url.searchParams.delete('page');
+
+            var pathSelect = root.querySelector('[data-filter="path"]');
+            var visitorSelect = root.querySelector('[data-filter="visitor"]');
+            var pathValue = pathSelect ? pathSelect.value : '';
+            var visitorValue = visitorSelect ? visitorSelect.value : '';
+
+            if (pathValue !== '') {
+                url.searchParams.set('rl_path', pathValue);
+            }
+            if (visitorValue !== '') {
+                url.searchParams.set('rl_visitor', visitorValue);
+            }
+
+            window.location.assign(url.toString());
+        }
+
+        root.querySelectorAll('select').forEach(function (select) {
+            select.addEventListener('change', applyFilters);
+        });
+
+        var reset = root.querySelector('[data-filter-reset]');
+        if (reset && indexUrl) {
+            reset.addEventListener('click', function (event) {
+                event.preventDefault();
+                window.location.assign(indexUrl);
+            });
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', boot);
+    } else {
+        boot();
+    }
+})();
