@@ -117,7 +117,11 @@ class RequestListCrudController extends AbstractCrudController
             $responseParameters->set('uniqueIpsToday', $stats['uniqueIps']);
             $responseParameters->set('requestsToday', $stats['requests']);
             $responseParameters->set('statsScopedToFilters', $stats['filtered']);
-            $responseParameters->set('requestListFilterPaths', $this->requestListRepository->findPopularPaths());
+            $paths = $this->requestListRepository->findPopularPaths(500, 90);
+            if ($quick['path'] !== '' && !\in_array($quick['path'], $paths, true)) {
+                array_unshift($paths, $quick['path']);
+            }
+            $responseParameters->set('requestListFilterPaths', $paths);
             $responseParameters->set('requestListFilterPath', $quick['path']);
             $responseParameters->set('requestListFilterVisitor', $quick['visitor']);
             $responseParameters->set('requestListFilterPeriod', $quick['period']);

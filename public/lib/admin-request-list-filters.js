@@ -36,8 +36,16 @@
             window.location.assign(url.toString());
         }
 
+        // Ignore Tom Select init noise: only navigate when the value actually changes.
         root.querySelectorAll('select').forEach(function (select) {
-            select.addEventListener('change', applyFilters);
+            var previous = select.value;
+            select.addEventListener('change', function () {
+                if (select.value === previous) {
+                    return;
+                }
+                previous = select.value;
+                applyFilters();
+            });
         });
 
         var reset = root.querySelector('[data-filter-reset]');

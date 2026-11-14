@@ -31,7 +31,12 @@
 
         <label class="request-list-filters__field request-list-filters__field--wide">
             {{ 'admin.request_list.path_select'|trans }}
-            <select data-filter="path" aria-label="{{ 'admin.request_list.path_select'|trans }}">
+            <select
+                data-filter="path"
+                data-ea-widget="ea-autocomplete"
+                data-ea-i18n-no-results-found="{{ 'admin.request_list.path_search_empty'|trans|e('html_attr') }}"
+                aria-label="{{ 'admin.request_list.path_select'|trans }}"
+            >
                 <option value="">{{ 'admin.request_list.filter_all'|trans }}</option>
                 {% for path in requestListFilterPaths|default([]) %}
                     <option value="{{ path|e('html_attr') }}" {% if requestListFilterPath|default('') == path %}selected{% endif %}>

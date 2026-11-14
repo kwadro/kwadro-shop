@@ -649,6 +649,7 @@ admin.request_list.user_agent_status: User-Agent (стан)
 admin.request_list.user_agent_empty: Незаповнений
 admin.request_list.user_agent_filled: Заповнений
 admin.request_list.path_select: Request URL
+admin.request_list.path_search_empty: Нічого не знайдено
 admin.request_list.bot_filter: Тип відвідувача
 admin.request_list.bot_filter_bots: Показати тільки запити ботів
 admin.request_list.bot_filter_humans: Показати тільки запити не ботів

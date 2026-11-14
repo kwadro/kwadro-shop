@@ -649,6 +649,7 @@ admin.request_list.user_agent_status: User-Agent (status)
 admin.request_list.user_agent_empty: Empty
 admin.request_list.user_agent_filled: Filled
 admin.request_list.path_select: Request URL
+admin.request_list.path_search_empty: No results found
 admin.request_list.bot_filter: Visitor type
 admin.request_list.bot_filter_bots: Show bot requests only
 admin.request_list.bot_filter_humans: Show non-bot requests only
