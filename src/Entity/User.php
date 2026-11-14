@@ -21,6 +21,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public const ROLE_SUPER_ADMIN = 'ROLE_SUPER_ADMIN';
     public const ROLE_ADMIN = 'ROLE_ADMIN';
+    public const ROLE_CLIENT = 'ROLE_CLIENT';
     public const ROLE_USER = 'ROLE_USER';
 
     #[ORM\Id]
@@ -42,12 +43,27 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 32, nullable: true)]
     private ?string $phone = null;
 
-    /** @var list<string> */
+    /**
+     * Legacy roles column. Security roles are resolved from {@see $userGroup}.
+     *
+     * @var array
+     */
     #[ORM\Column]
     private array $roles = [];
 
+    #[ORM\ManyToOne(targetEntity: UserGroup::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?UserGroup $userGroup = null;
+
     #[ORM\Column(nullable: true)]
     private ?string $password = null;
+
+    /** SHA-256 hash of one-time account activation / invite token. */
+    #[ORM\Column(length: 64, nullable: true, unique: true)]
+    private ?string $invitationTokenHash = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $invitationExpiresAt = null;
 
     /** Last successful login that opened the admin panel. */
     #[ORM\Column(nullable: true)]
@@ -153,19 +169,66 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return (string) $this->email;
     }
 
-    /** @return list<string> */
+    public function getUserGroup(): ?UserGroup
+    {
+        return $this->userGroup;
+    }
+
+    public function setUserGroup(?UserGroup $userGroup): static
+    {
+        $this->userGroup = $userGroup;
+        if ($userGroup !== null) {
+            $this->roles = $userGroup->getRoleCodes();
+        }
+
+        return $this;
+    }
+
+    public function belongsToGroupCode(string $groupCode): bool
+    {
+        return $this->userGroup !== null
+            && $this->userGroup->getCode() === strtolower(trim($groupCode));
+    }
+
+    public function isSuperAdministrator(): bool
+    {
+        return $this->belongsToGroupCode(UserGroup::CODE_SUPER_ADMINISTRATOR);
+    }
+
+    /**
+     * Roles come from the assigned user group (ROLE_USER is always present).
+     *
+     * @return array
+     */
     public function getRoles(): array
     {
-        $roles = $this->roles;
-        $roles[] = self::ROLE_USER;
+        $roles = [self::ROLE_USER];
+        if ($this->userGroup !== null) {
+            foreach ($this->userGroup->getRoleCodes() as $code) {
+                $roles[] = $code;
+            }
+        } else {
+            foreach ($this->roles as $code) {
+                if (\is_string($code) && $code !== '') {
+                    $roles[] = $code;
+                }
+            }
+        }
 
         return array_values(array_unique($roles));
     }
 
-    /** @param list<string> $roles */
+    /**
+     * @param array $roles
+     *
+     * @deprecated Prefer {@see setUserGroup()}; kept for legacy commands/imports.
+     */
     public function setRoles(array $roles): static
     {
-        $this->roles = $roles;
+        $this->roles = array_values(array_unique(array_filter(
+            $roles,
+            static fn (mixed $role): bool => \is_string($role) && $role !== '',
+        )));
 
         return $this;
     }
@@ -180,6 +243,45 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->password = $password;
 
         return $this;
+    }
+
+    public function getInvitationTokenHash(): ?string
+    {
+        return $this->invitationTokenHash;
+    }
+
+    public function setInvitationTokenHash(?string $invitationTokenHash): static
+    {
+        $this->invitationTokenHash = $invitationTokenHash;
+
+        return $this;
+    }
+
+    public function getInvitationExpiresAt(): ?\DateTimeImmutable
+    {
+        return $this->invitationExpiresAt;
+    }
+
+    public function setInvitationExpiresAt(?\DateTimeImmutable $invitationExpiresAt): static
+    {
+        $this->invitationExpiresAt = $invitationExpiresAt;
+
+        return $this;
+    }
+
+    public function clearInvitation(): static
+    {
+        $this->invitationTokenHash = null;
+        $this->invitationExpiresAt = null;
+
+        return $this;
+    }
+
+    public function hasPendingInvitation(): bool
+    {
+        return $this->invitationTokenHash !== null
+            && $this->invitationExpiresAt instanceof \DateTimeImmutable
+            && $this->invitationExpiresAt > new \DateTimeImmutable();
     }
 
     public function getLastAdminLoginAt(): ?\DateTimeImmutable

@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
 use App\Routing\ShopRoutes;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -13,7 +14,8 @@ class SecurityController extends AbstractController
     #[Route('/{_locale}/login', name: 'app_login', requirements: ['_locale' => ShopRoutes::LOCALE_REQUIREMENTS])]
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
-        if ($this->isGranted('ROLE_SUPER_ADMIN')) {
+        $user = $this->getUser();
+        if ($user instanceof User && $user->isSuperAdministrator()) {
             return $this->redirectToRoute('admin', ['_locale' => 'ua']);
         }
 

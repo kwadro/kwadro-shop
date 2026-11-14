@@ -14,75 +14,72 @@ class ProductCatalog
         private readonly ProductRepository $productRepository,
         private readonly SiteRepository $siteRepository,
         private readonly RequestStack $requestStack,
+        private readonly CustomerPriceApplier $customerPriceApplier,
     ) {
     }
 
-    /** @return array<string, mixed>|null */
+    /** @return array|null */
     public function getFeaturedProduct(): ?array
     {
         $product = $this->productRepository->findFeatured($this->resolveFeatureId());
 
-        return $product?->toCatalogArray();
+        return $product !== null
+            ? $this->customerPriceApplier->applyToCatalogItem($product->toCatalogArray())
+            : null;
     }
 
-    /**
-     * @param list<int>|null $onlyIds
-     *
-     * @return list<array<string, mixed>>
-     */
+    /** @param array|null $onlyIds */
     public function getHomepageProducts(int $limit = 5, ?array $onlyIds = null): array
     {
         $products = $this->productRepository->findHomepageProducts($limit, $onlyIds);
 
-        return array_map(
+        return $this->customerPriceApplier->applyToCatalogItems(array_map(
             static fn ($product): array => $product->toCatalogArray(),
             $products,
-        );
+        ));
     }
 
-    /** @return array<string, mixed>|null */
+    /** @return array|null */
     public function findById(int $id): ?array
     {
         $product = $this->productRepository->findOneWithOffers($id);
 
-        return $product?->toCatalogArray();
+        return $product !== null
+            ? $this->customerPriceApplier->applyToCatalogItem($product->toCatalogArray())
+            : null;
     }
 
-    /** @return array<string, mixed>|null */
+    /** @return array|null */
     public function findBySlug(string $slug): ?array
     {
         $product = $this->productRepository->findOneBySlugWithOffers($slug);
 
-        return $product?->toCatalogArray();
+        return $product !== null
+            ? $this->customerPriceApplier->applyToCatalogItem($product->toCatalogArray())
+            : null;
     }
 
-    /**
-     * @return list<array<string, mixed>>
-     */
     public function findByCategory(Category $category): array
     {
         $products = $this->productRepository->findByCategoryWithOffers($category);
 
-        return array_map(
+        return $this->customerPriceApplier->applyToCatalogItems(array_map(
             static fn ($product): array => $product->toCatalogArray(),
             $products,
-        );
+        ));
     }
 
-    /**
-     * @return list<array<string, mixed>>
-     */
     public function findBySupplier(Supplier $supplier): array
     {
         $products = $this->productRepository->findBySupplierWithOffers($supplier);
 
-        return array_map(
+        return $this->customerPriceApplier->applyToCatalogItems(array_map(
             static fn ($product): array => $product->toCatalogArray(),
             $products,
-        );
+        ));
     }
 
-    /** @param array<string, mixed> $product */
+    /** @param array $product */
     public function applyOffer(array $product, int $offerId): array
     {
         foreach ($product['offers'] ?? [] as $offer) {
@@ -91,8 +88,10 @@ class ProductCatalog
             }
 
             $product['price'] = $offer['price'];
+            $product['rrp'] = $offer['rrp'] ?? null;
             $product['oldPrice'] = $offer['oldPrice'] ?? null;
             $product['discountPercent'] = $offer['discountPercent'] ?? null;
+            $product['member_discount_percent'] = $offer['member_discount_percent'] ?? ($product['member_discount_percent'] ?? null);
             $product['selectedOfferId'] = $offerId;
             $product['supplier'] = $offer['supplier'] ?? null;
             $product['offerSku'] = $offer['sku'] ?? null;

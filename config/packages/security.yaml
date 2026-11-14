@@ -34,6 +34,7 @@ security:
     access_control:
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/register, roles: PUBLIC_ACCESS }
+        - { path: '^/[a-z]{2}/invite/', roles: PUBLIC_ACCESS }
         - { path: ^/connect/facebook, roles: PUBLIC_ACCESS }
         - { path: ^/admin, roles: ROLE_SUPER_ADMIN }
 

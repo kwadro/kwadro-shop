@@ -36,7 +36,8 @@ class LoginSuccessSubscriber implements EventSubscriberInterface
             return;
         }
 
-        if (!\in_array(User::ROLE_SUPER_ADMIN, $user->getRoles(), true)) {
+        // Admin panel access: membership in Super Administrator group (which owns ROLE_SUPER_ADMIN).
+        if (!$user->isSuperAdministrator()) {
             return;
         }
 

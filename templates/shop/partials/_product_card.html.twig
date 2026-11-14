@@ -19,7 +19,9 @@
         <div class="shop-product-card__price">
             {% if product.hasPrice %}
                 <strong>{{ product.price|number_format(2, ',', ' ') }} ₴</strong>
-                {% if product.oldPrice %}
+                {% if product.rrp is defined and product.rrp %}
+                    <span class="shop-product-card__rrp">{{ 'shop.product.rrp'|trans }} {{ product.rrp|number_format(2, ',', ' ') }} ₴</span>
+                {% elseif product.oldPrice %}
                     <del>{{ product.oldPrice|number_format(2, ',', ' ') }} ₴</del>
                 {% endif %}
             {% else %}

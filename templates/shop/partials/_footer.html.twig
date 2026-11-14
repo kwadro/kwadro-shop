@@ -5,7 +5,7 @@
 <footer class="shop-footer">
     <div class="shop-footer__inner{% if hasSocial %} shop-footer__inner--with-social{% endif %}">
 
-        <div>
+        <div class="shop-footer__column shop-footer__column--buyers">
             <h4>{{ 'shop.footer.buyers'|trans }}</h4>
             <ul>
                 {% for item in setting.menu %}
@@ -15,7 +15,7 @@
                 {% endfor %}
             </ul>
         </div>
-        <div>
+        <div class="shop-footer__column shop-footer__column--contacts">
             <h4>{{ 'shop.footer.contacts'|trans }}</h4>
             <ul>
                 {% set phoneLinks = setting.header.phone_links|default([

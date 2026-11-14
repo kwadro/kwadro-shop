@@ -25,7 +25,9 @@
                         </span>
                         <span class="shop-offers-modal__item-price">
                             <strong>{{ offer.price|number_format(2, ',', ' ') }} ₴</strong>
-                            {% if offer.oldPrice %}
+                            {% if offer.rrp is defined and offer.rrp %}
+                                <span class="shop-offers-modal__rrp">{{ 'shop.product.rrp'|trans }} {{ offer.rrp|number_format(2, ',', ' ') }} ₴</span>
+                            {% elseif offer.oldPrice %}
                                 <del>{{ offer.oldPrice|number_format(2, ',', ' ') }} ₴</del>
                             {% endif %}
                         </span>

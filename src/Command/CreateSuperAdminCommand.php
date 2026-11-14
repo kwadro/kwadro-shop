@@ -3,6 +3,7 @@
 namespace App\Command;
 
 use App\Entity\User;
+use App\Service\User\UserGroupAssigner;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -15,13 +16,14 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 #[AsCommand(
     name: 'app:create-super-admin',
-    description: 'Create a user with ROLE_SUPER_ADMIN',
+    description: 'Create a user in the Super Administrator group',
 )]
 class CreateSuperAdminCommand extends Command
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly UserPasswordHasherInterface $passwordHasher,
+        private readonly UserGroupAssigner $userGroupAssigner,
     ) {
         parent::__construct();
     }
@@ -51,23 +53,23 @@ class CreateSuperAdminCommand extends Command
 
         $existing = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
         if ($existing instanceof User) {
-            $existing->setRoles([User::ROLE_SUPER_ADMIN]);
+            $this->userGroupAssigner->assignSuperAdministratorGroup($existing);
             $existing->setPassword($this->passwordHasher->hashPassword($existing, $password));
             $this->entityManager->flush();
-            $io->success(sprintf('Updated existing user "%s" with ROLE_SUPER_ADMIN.', $email));
+            $io->success(sprintf('Updated existing user "%s" as Super Administrator.', $email));
 
             return Command::SUCCESS;
         }
 
         $user = new User();
         $user->setEmail($email);
-        $user->setRoles([User::ROLE_SUPER_ADMIN]);
+        $this->userGroupAssigner->assignSuperAdministratorGroup($user);
         $user->setPassword($this->passwordHasher->hashPassword($user, $password));
 
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 
-        $io->success(sprintf('Super admin "%s" created.', $email));
+        $io->success(sprintf('Super Administrator "%s" created.', $email));
 
         return Command::SUCCESS;
     }

@@ -22,6 +22,7 @@ class ProductListingService
         private readonly ProductSearchSettingRepository $productSearchSettingRepository,
         private readonly SiteRepository $siteRepository,
         private readonly RequestStack $requestStack,
+        private readonly CustomerPriceApplier $customerPriceApplier,
     ) {
     }
 
@@ -92,10 +93,10 @@ class ProductListingService
             $pageResult = $this->productRepository->findCatalogPage($criteria, $page, $perPage);
         }
 
-        $products = array_map(
+        $products = $this->customerPriceApplier->applyToCatalogItems(array_map(
             static fn ($product): array => $product->toCatalogArray(),
             $pageResult['items'],
-        );
+        ));
 
         $facets = $showFilters
             ? $this->productRepository->findAttributeFacets($facetCriteria)

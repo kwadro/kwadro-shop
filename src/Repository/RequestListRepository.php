@@ -240,6 +240,164 @@ class RequestListRepository extends ServiceEntityRepository
         ];
     }
 
+    /**
+     * Non-bot traffic series for the admin chart.
+     *
+     * Daily buckets when the range spans multiple calendar days; hourly (0–23)
+     * when from/to fall on the same calendar day.
+     *
+     * @return array
+     */
+    public function getNonBotTrafficSeries(
+        \DateTimeImmutable $from,
+        \DateTimeImmutable $to,
+        ?\DateTimeZone $timezone = null,
+    ): array {
+        $timezone ??= new \DateTimeZone(date_default_timezone_get() ?: 'Europe/Kyiv');
+        $from = $from->setTimezone($timezone);
+        $to = $to->setTimezone($timezone);
+        if ($to <= $from) {
+            $to = $from->modify('+1 day');
+        }
+
+        $lastInstant = $to->modify('-1 second');
+        $hourly = $from->format('Y-m-d') === $lastInstant->format('Y-m-d');
+
+        return $hourly
+            ? $this->buildHourlyNonBotSeries($from, $to)
+            : $this->buildDailyNonBotSeries($from, $to);
+    }
+
+    /**
+     * @return array
+     */
+    private function buildDailyNonBotSeries(
+        \DateTimeImmutable $from,
+        \DateTimeImmutable $to,
+    ): array {
+        $conn = $this->getEntityManager()->getConnection();
+        $botCase = $this->buildBotCaseSql('r.user_agent');
+        $humanCase = sprintf('NOT (%s)', $botCase);
+        $fromStr = $from->format('Y-m-d H:i:s');
+        $toStr = $to->format('Y-m-d H:i:s');
+
+        $sql = <<<SQL
+            SELECT DATE(r.created_at) AS bucket,
+                   SUM(CASE WHEN {$humanCase} THEN 1 ELSE 0 END) AS human_requests,
+                   COUNT(DISTINCT CASE
+                       WHEN {$humanCase}
+                            AND r.ip IS NOT NULL
+                            AND r.ip <> ''
+                       THEN r.ip
+                   END) AS human_unique_ips
+            FROM shop_request_list r
+            WHERE r.created_at >= :from
+              AND r.created_at < :to
+            GROUP BY DATE(r.created_at)
+            ORDER BY bucket ASC
+        SQL;
+
+        $raw = $conn->fetchAllAssociative($sql, [
+            'from' => $fromStr,
+            'to' => $toStr,
+            ...$this->botPatternParameters(),
+        ]);
+
+        $byBucket = [];
+        foreach ($raw as $row) {
+            $bucket = (string) ($row['bucket'] ?? '');
+            if ($bucket === '') {
+                continue;
+            }
+            $byBucket[$bucket] = [
+                'requests' => (int) ($row['human_requests'] ?? 0),
+                'uniqueIps' => (int) ($row['human_unique_ips'] ?? 0),
+            ];
+        }
+
+        $labels = [];
+        $requests = [];
+        $uniqueIps = [];
+        $cursor = $from->setTime(0, 0);
+        $endDay = $to->modify('-1 second')->setTime(0, 0);
+        while ($cursor <= $endDay) {
+            $key = $cursor->format('Y-m-d');
+            $labels[] = $key;
+            $requests[] = $byBucket[$key]['requests'] ?? 0;
+            $uniqueIps[] = $byBucket[$key]['uniqueIps'] ?? 0;
+            $cursor = $cursor->modify('+1 day');
+        }
+
+        return [
+            'mode' => 'daily',
+            'labels' => $labels,
+            'requests' => $requests,
+            'uniqueIps' => $uniqueIps,
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    private function buildHourlyNonBotSeries(\DateTimeImmutable $from, \DateTimeImmutable $to): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+        $botCase = $this->buildBotCaseSql('r.user_agent');
+        $humanCase = sprintf('NOT (%s)', $botCase);
+        $fromStr = $from->format('Y-m-d H:i:s');
+        $toStr = $to->format('Y-m-d H:i:s');
+
+        $sql = <<<SQL
+            SELECT HOUR(r.created_at) AS bucket,
+                   SUM(CASE WHEN {$humanCase} THEN 1 ELSE 0 END) AS human_requests,
+                   COUNT(DISTINCT CASE
+                       WHEN {$humanCase}
+                            AND r.ip IS NOT NULL
+                            AND r.ip <> ''
+                       THEN r.ip
+                   END) AS human_unique_ips
+            FROM shop_request_list r
+            WHERE r.created_at >= :from
+              AND r.created_at < :to
+            GROUP BY HOUR(r.created_at)
+            ORDER BY bucket ASC
+        SQL;
+
+        $raw = $conn->fetchAllAssociative($sql, [
+            'from' => $fromStr,
+            'to' => $toStr,
+            ...$this->botPatternParameters(),
+        ]);
+
+        $byHour = [];
+        foreach ($raw as $row) {
+            $hour = (int) ($row['bucket'] ?? -1);
+            if ($hour < 0 || $hour > 23) {
+                continue;
+            }
+            $byHour[$hour] = [
+                'requests' => (int) ($row['human_requests'] ?? 0),
+                'uniqueIps' => (int) ($row['human_unique_ips'] ?? 0),
+            ];
+        }
+
+        $labels = [];
+        $requests = [];
+        $uniqueIps = [];
+        for ($hour = 0; $hour <= 23; ++$hour) {
+            $labels[] = sprintf('%02d:00', $hour);
+            $requests[] = $byHour[$hour]['requests'] ?? 0;
+            $uniqueIps[] = $byHour[$hour]['uniqueIps'] ?? 0;
+        }
+
+        return [
+            'mode' => 'hourly',
+            'labels' => $labels,
+            'requests' => $requests,
+            'uniqueIps' => $uniqueIps,
+        ];
+    }
+
     private function buildBotCaseSql(string $columnSql): string
     {
         $parts = [];
@@ -250,7 +408,9 @@ class RequestListRepository extends ServiceEntityRepository
         return $parts === [] ? '0 = 1' : implode(' OR ', $parts);
     }
 
-    /** @return array<string, string> */
+    /**
+     * @return array
+     */
     private function botPatternParameters(): array
     {
         $params = [];

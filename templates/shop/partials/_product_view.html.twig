@@ -94,6 +94,7 @@
                 data-product-offers
                 data-offers='{{ product.offers|json_encode|e('html_attr') }}'
                 data-you-save-label="{{ 'shop.product.you_save'|trans|e('html_attr') }}"
+                data-rrp-label="{{ 'shop.product.rrp'|trans|e('html_attr') }}"
                 data-supplier-label="{{ 'shop.product.supplier'|trans|e('html_attr') }}"
                 data-supplier-url-template="{{ path('shop_supplier', {_locale: app.request.locale, slug: 'placeholder'})|replace({'placeholder': '__SLUG__'})|e('html_attr') }}"
                 data-product-in-stock="{{ product.productInStock ? '1' : '0' }}"
@@ -101,8 +102,19 @@
                 <div class="shop-product__price-row">
                     <div class="shop-product__price{% if not product.hasPrice %} shop-product__price--unavailable{% endif %}">
                         {% if product.hasPrice %}
-                            <strong data-offer-price>{{ product.price|number_format(2, ',', ' ') }} ₴</strong>
-                            <del data-offer-old-price{% if not product.oldPrice %} hidden{% endif %}>{{ product.oldPrice|number_format(2, ',', ' ') }} ₴</del>
+                            <div class="shop-product__price-main">
+                                <strong data-offer-price>{{ product.price|number_format(2, ',', ' ') }} ₴</strong>
+                                <del data-offer-old-price{% if not product.oldPrice or (product.rrp is defined and product.rrp) %} hidden{% endif %}>{{ product.oldPrice|number_format(2, ',', ' ') }} ₴</del>
+                            </div>
+                            <span
+                                class="shop-product__rrp"
+                                data-offer-rrp
+                                {% if product.rrp is not defined or not product.rrp %}hidden{% endif %}
+                            >
+                                {% if product.rrp is defined and product.rrp %}
+                                    {{ 'shop.product.rrp'|trans }} {{ product.rrp|number_format(2, ',', ' ') }} ₴
+                                {% endif %}
+                            </span>
                         {% else %}
                             <strong>{{ 'shop.product.no_price'|trans }}</strong>
                         {% endif %}

@@ -9,4 +9,5 @@ enum OrderEmailEvent: string
     case DepositPay = 'deposit_pay';
     case OrderPaid = 'order_paid';
     case RegisterUser = 'register_user';
+    case InviteUser = 'invite_user';
 }

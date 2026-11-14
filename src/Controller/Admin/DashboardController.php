@@ -45,6 +45,8 @@ use App\Controller\Admin\ImageEditorController;
 use App\Controller\Admin\ShipmentAddressCrudController;
 use App\Controller\Admin\SupplierCrudController;
 use App\Controller\Admin\UserCrudController;
+use App\Controller\Admin\UserGroupCrudController;
+use App\Controller\Admin\UserRoleCrudController;
 use App\Controller\Admin\EmailTemplateCrudController;
 use App\Controller\Admin\EmailTemplateSectionCrudController;
 use App\Controller\Admin\EmailLogCrudController;
@@ -205,11 +207,19 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkTo(BankAccountCrudController::class, $this->translator->trans('menu.link_bank_account', [], 'messages'), 'fas fa-university');
         yield MenuItem::section($this->translator->trans('menu.users', [], 'messages'));
         yield MenuItem::linkTo(UserCrudController::class, $this->translator->trans('menu.link_user', [], 'messages'), 'fas fa-users');
+        yield MenuItem::linkTo(UserGroupCrudController::class, $this->translator->trans('menu.link_user_group', [], 'messages'), 'fas fa-user-friends');
+        yield MenuItem::linkTo(UserRoleCrudController::class, $this->translator->trans('menu.link_user_role', [], 'messages'), 'fas fa-user-tag');
         yield MenuItem::linkTo(RequestListCrudController::class, $this->translator->trans('menu.link_request_list', [], 'messages'), 'fas fa-globe');
         yield MenuItem::linkToRoute(
             $this->translator->trans('menu.link_report_visitor_ids', [], 'messages'),
             'fas fa-chart-bar',
             'admin_report_visitor_ids',
+            ['_locale' => 'ua'],
+        );
+        yield MenuItem::linkToRoute(
+            $this->translator->trans('menu.link_report_request_traffic', [], 'messages'),
+            'fas fa-chart-line',
+            'admin_report_request_traffic',
             ['_locale' => 'ua'],
         );
         yield MenuItem::linkTo(BotUserAgentMarkerCrudController::class, $this->translator->trans('menu.link_bot_user_agent_marker', [], 'messages'), 'fas fa-robot');

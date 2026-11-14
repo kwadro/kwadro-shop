@@ -90,18 +90,29 @@
 
         const priceEl = offersBox.querySelector('[data-offer-price]');
         const oldPriceEl = offersBox.querySelector('[data-offer-old-price]');
+        const rrpEl = offersBox.querySelector('[data-offer-rrp]');
         const supplierEl = offersBox.querySelector('[data-offer-supplier]');
         const saveEl = offersBox.querySelector('[data-offer-save]');
         const discountBadge = document.getElementById('product-discount-badge');
         const supplierLabel = offersBox.dataset.supplierLabel || 'Supplier';
         const youSaveLabel = offersBox.dataset.youSaveLabel || 'You save %amount%';
+        const rrpLabel = offersBox.dataset.rrpLabel || 'RRP';
 
         if (priceEl) {
             priceEl.textContent = formatPrice(offer.price);
         }
 
+        if (rrpEl) {
+            if (offer.rrp) {
+                rrpEl.textContent = rrpLabel + ' ' + formatPrice(offer.rrp);
+                rrpEl.hidden = false;
+            } else {
+                rrpEl.hidden = true;
+            }
+        }
+
         if (oldPriceEl) {
-            if (offer.oldPrice) {
+            if (offer.oldPrice && !offer.rrp) {
                 oldPriceEl.textContent = formatPrice(offer.oldPrice);
                 oldPriceEl.hidden = false;
             } else {

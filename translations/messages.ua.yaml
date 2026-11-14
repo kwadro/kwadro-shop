@@ -40,10 +40,15 @@ menu.link_mailbox_sent_message_single: Відправлений лист
 menu.link_mailbox_conversation: Розмови email
 menu.users: Користувачі
 menu.link_user: Користувачі
+menu.link_user_group: Групи користувачів
+menu.link_user_group_single: Група користувачів
+menu.link_user_role: Ролі користувачів
+menu.link_user_role_single: Роль користувача
 menu.link_user_single: Користувач
 menu.link_request_list: Запити (IP)
 menu.link_request_list_single: Запит
 menu.link_report_visitor_ids: Report Visitor Ids
+menu.link_report_request_traffic: Графік запитів
 menu.link_bot_user_agent_marker: User-Agent ботів
 menu.link_bot_user_agent_marker_single: Маркер бота (User-Agent)
 menu.link_blocked_ip: Заблоковані IP адреси
@@ -186,6 +191,27 @@ admin.shipment_address.user: Користувач
 admin.user.saved_addresses: Збережені адреси
 admin.user.full_name: Ім'я
 admin.user.phone: Телефон
+admin.user.user_group: Група
+admin.user.user_group_help: Доступ користувача визначається ролями вибраної групи.
+admin.user.password_help: Залиште порожнім, щоб не змінювати поточний пароль.
+admin.user.password_invite_help: Залиште порожнім, щоб створити користувача через запрошення на email (посилання активації).
+admin.user.invite_help: Вкажіть email клієнта. Якщо пароль порожній — на пошту піде лист із посиланням для активації.
+admin.user.invite_sent: 'Лист із запрошенням надіслано на %email%.'
+admin.user_role.name: Назва
+admin.user_role.code: Код ролі
+admin.user_role.code_help: 'Symfony-код, наприклад ROLE_ADMIN.'
+admin.user_role.created_at: Створено
+admin.user_role.updated_at: Оновлено
+admin.user_group.help: 'Кожна група має одну або кілька ролей. ROLE_USER додається автоматично.'
+admin.user_group.name: Назва
+admin.user_group.code: Код групи
+admin.user_group.code_help: 'Стабільний код латиницею, наприклад super_administrator.'
+admin.user_group.roles: Ролі
+admin.user_group.roles_help: 'ROLE_USER додається автоматично, навіть якщо її прибрати.'
+admin.user_group.discount_percent: Знижка %
+admin.user_group.discount_percent_help: Знижка на ціну каталогу для авторизованих учасників цієї групи (0–100). Для групи Client за замовчуванням 5.
+admin.user_group.created_at: Створено
+admin.user_group.updated_at: Оновлено
 admin.order.contact: Контактні дані
 admin.order.customer_name: Ім'я клієнта
 admin.order.customer_phone: Телефон клієнта
@@ -678,6 +704,18 @@ admin.report_visitor_ids.period_7: Останні 7 днів
 admin.report_visitor_ids.period_14: Останні 14 днів
 admin.report_visitor_ids.period_30: Останні 30 днів
 admin.report_visitor_ids.load_error: Не вдалося завантажити дані звіту.
+
+admin.report_request_traffic.period: Період
+admin.report_request_traffic.period_today: Сьогодні
+admin.report_request_traffic.period_7d: Останні 7 днів
+admin.report_request_traffic.period_30d: Останні 30 днів
+admin.report_request_traffic.period_custom: Кастомний період
+admin.report_request_traffic.from: Початок
+admin.report_request_traffic.to: Завершення
+admin.report_request_traffic.apply: Застосувати
+admin.report_request_traffic.series_requests: Запити (не боти)
+admin.report_request_traffic.series_unique_ips: Унікальні IP (не боти)
+admin.report_request_traffic.load_error: Не вдалося завантажити дані графіка.
 
 admin.bot_user_agent_marker.help: 'Підрядки User-Agent (без урахування регістру), за якими запити вважаються ботами у звітах. Приклад: googlebot, gptbot, bot/.'
 admin.bot_user_agent_marker.marker: Маркер
@@ -1389,6 +1427,7 @@ shop.product.in_stock: 'В наявності (%qty% шт.)'
 shop.product.in_stock_available: В наявності
 shop.product.out_of_stock: Немає в наявності
 shop.product.no_price: Ціни немає
+shop.product.rrp: РРЦ
 shop.product.empty_catalog_title: Товари тимчасово недоступні
 shop.product.empty_catalog_text: Додайте товар у адмінці або виконайте міграції бази даних.
 shop.product.quantity: Кількість
@@ -1582,5 +1621,15 @@ auth.login_link: Увійти
 auth.registration_success: Обліковий запис створено. Тепер ви можете увійти.
 auth.password_required: Будь ласка, введіть пароль
 auth.password_min_length: Пароль має містити щонайменше {{ limit }} символів
+auth.password_mismatch: Паролі мають збігатися.
 auth.agree_terms_required: Потрібно погодитись з умовами
 auth.back_to_shop: Повернутись до магазину
+auth.invite_title: Активація облікового запису
+auth.invite_subtitle: 'Встановіть пароль для %email%, щоб завершити реєстрацію.'
+auth.invite_submit: Активувати акаунт
+auth.invite_invalid: Це посилання-запрошення недійсне або протерміноване.
+auth.invite_activated: Обліковий запис активовано. Ласкаво просимо!
+auth.invite_email_subject: Активація облікового запису в магазині
+auth.invite_email_hello: 'Вітаємо, %name%!'
+auth.invite_email_body: Для вас створено обліковий запис. Перейдіть за посиланням нижче, щоб встановити пароль і увійти.
+auth.invite_email_cta: Активувати акаунт

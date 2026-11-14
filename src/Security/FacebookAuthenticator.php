@@ -6,6 +6,7 @@ use App\Entity\OrderEmailEvent;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Service\Mail\OrderEmailMailer;
+use App\Service\User\UserGroupAssigner;
 use Doctrine\ORM\EntityManagerInterface;
 use KnpU\OAuth2ClientBundle\Client\ClientRegistry;
 use KnpU\OAuth2ClientBundle\Security\Authenticator\OAuth2Authenticator;
@@ -33,6 +34,7 @@ class FacebookAuthenticator extends OAuth2Authenticator
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly OrderEmailMailer $orderEmailMailer,
         private readonly TranslatorInterface $translator,
+        private readonly UserGroupAssigner $userGroupAssigner,
     ) {
     }
 
@@ -80,7 +82,7 @@ class FacebookAuthenticator extends OAuth2Authenticator
             $user->setEmail($email);
             $user->setFacebookId($facebookId);
             $user->setFullName($facebookUser->getName());
-            $user->setRoles([User::ROLE_USER]);
+            $this->userGroupAssigner->assignClientGroup($user);
             $user->setPassword($this->passwordHasher->hashPassword(
                 $user,
                 bin2hex(random_bytes(32))

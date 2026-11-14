@@ -46,9 +46,12 @@ class OrderEmailMailer
         );
     }
 
-    public function sendForUser(User $user, OrderEmailEvent $event): void
+    /**
+     * @param array $extraContext Extra placeholders (e.g. invite_url)
+     */
+    public function sendForUser(User $user, OrderEmailEvent $event, array $extraContext = []): void
     {
-        $context = $this->userContextFactory->create($user);
+        $context = array_merge($this->userContextFactory->create($user), $extraContext);
         $recipient = $context['user_email'] ?? '';
 
         $this->sendConfiguredEmail(

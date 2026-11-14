@@ -7,6 +7,7 @@ use App\Entity\User;
 use App\Form\Type\RegistrationFormType;
 use App\Routing\ShopRoutes;
 use App\Service\Mail\OrderEmailMailer;
+use App\Service\User\UserGroupAssigner;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,6 +21,7 @@ class RegistrationController extends AbstractController
     public function __construct(
         private readonly TranslatorInterface $translator,
         private readonly OrderEmailMailer $orderEmailMailer,
+        private readonly UserGroupAssigner $userGroupAssigner,
     ) {
     }
 
@@ -30,7 +32,8 @@ class RegistrationController extends AbstractController
         UserPasswordHasherInterface $passwordHasher,
         EntityManagerInterface $entityManager,
     ): Response {
-        if ($this->isGranted('ROLE_SUPER_ADMIN')) {
+        $current = $this->getUser();
+        if ($current instanceof User && $current->isSuperAdministrator()) {
             return $this->redirectToRoute('admin', ['_locale' => 'ua']);
         }
 
@@ -45,7 +48,7 @@ class RegistrationController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $plainPassword = $form->get('plainPassword')->getData();
             $user->setPassword($passwordHasher->hashPassword($user, $plainPassword));
-            $user->setRoles([User::ROLE_USER]);
+            $this->userGroupAssigner->assignClientGroup($user);
 
             $entityManager->persist($user);
             $entityManager->flush();

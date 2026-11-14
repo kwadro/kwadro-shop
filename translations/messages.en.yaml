@@ -40,10 +40,15 @@ menu.link_mailbox_sent_message_single: Sent message
 menu.link_mailbox_conversation: Email conversations
 menu.users: Users
 menu.link_user: Users
+menu.link_user_group: User groups
+menu.link_user_group_single: User group
+menu.link_user_role: User roles
+menu.link_user_role_single: User role
 menu.link_user_single: User
 menu.link_request_list: Requests (IP)
 menu.link_request_list_single: Request
 menu.link_report_visitor_ids: Report Visitor Ids
+menu.link_report_request_traffic: Request traffic chart
 menu.link_bot_user_agent_marker: Bot User-Agents
 menu.link_bot_user_agent_marker_single: Bot User-Agent marker
 menu.link_blocked_ip: Blocked IP addresses
@@ -186,6 +191,27 @@ admin.shipment_address.user: User
 admin.user.saved_addresses: Saved addresses
 admin.user.full_name: Full name
 admin.user.phone: Phone
+admin.user.user_group: Group
+admin.user.user_group_help: Access is determined by the roles of the selected group.
+admin.user.password_help: Leave empty to keep the current password.
+admin.user.password_invite_help: Leave empty to create the user by email invite (activation link).
+admin.user.invite_help: Enter an email to create a customer. If password is empty, an invite link is emailed.
+admin.user.invite_sent: 'Invite email sent to %email%.'
+admin.user_role.name: Name
+admin.user_role.code: Role code
+admin.user_role.code_help: 'Symfony code, e.g. ROLE_ADMIN.'
+admin.user_role.created_at: Created
+admin.user_role.updated_at: Updated
+admin.user_group.help: 'Each group has one or more roles. ROLE_USER is added automatically.'
+admin.user_group.name: Name
+admin.user_group.code: Group code
+admin.user_group.code_help: 'Stable lowercase code, e.g. super_administrator.'
+admin.user_group.roles: Roles
+admin.user_group.roles_help: 'ROLE_USER is always kept, even if removed in the form.'
+admin.user_group.discount_percent: Discount %
+admin.user_group.discount_percent_help: Catalog price reduction for logged-in members of this group (0–100). Client group default is 5.
+admin.user_group.created_at: Created
+admin.user_group.updated_at: Updated
 admin.order.contact: Contact details
 admin.order.customer_name: Customer name
 admin.order.customer_phone: Customer phone
@@ -678,6 +704,18 @@ admin.report_visitor_ids.period_7: Last 7 days
 admin.report_visitor_ids.period_14: Last 14 days
 admin.report_visitor_ids.period_30: Last 30 days
 admin.report_visitor_ids.load_error: Failed to load report data.
+
+admin.report_request_traffic.period: Period
+admin.report_request_traffic.period_today: Today
+admin.report_request_traffic.period_7d: Last 7 days
+admin.report_request_traffic.period_30d: Last 30 days
+admin.report_request_traffic.period_custom: Custom period
+admin.report_request_traffic.from: Start
+admin.report_request_traffic.to: End
+admin.report_request_traffic.apply: Apply
+admin.report_request_traffic.series_requests: Requests (non-bots)
+admin.report_request_traffic.series_unique_ips: Unique IPs (non-bots)
+admin.report_request_traffic.load_error: Failed to load chart data.
 
 admin.bot_user_agent_marker.help: 'User-Agent substrings (case-insensitive) that mark requests as bots in reports. Examples: googlebot, gptbot, bot/.'
 admin.bot_user_agent_marker.marker: Marker
@@ -1391,6 +1429,7 @@ shop.product.in_stock: 'In stock (%qty% pcs.)'
 shop.product.in_stock_available: In stock
 shop.product.out_of_stock: Out of stock
 shop.product.no_price: Price not available
+shop.product.rrp: RRP
 shop.product.empty_catalog_title: Products are temporarily unavailable
 shop.product.empty_catalog_text: Add a product in the admin panel or run database migrations.
 shop.product.quantity: Quantity
@@ -1583,5 +1622,15 @@ auth.login_link: Sign in
 auth.registration_success: Account created. You can sign in now.
 auth.password_required: Please enter a password
 auth.password_min_length: Password must be at least {{ limit }} characters
+auth.password_mismatch: The password fields must match.
 auth.agree_terms_required: You must agree to the terms
 auth.back_to_shop: Back to shop
+auth.invite_title: Activate your account
+auth.invite_subtitle: 'Set a password for %email% to finish registration.'
+auth.invite_submit: Activate account
+auth.invite_invalid: This invite link is invalid or has expired.
+auth.invite_activated: Your account is ready. Welcome!
+auth.invite_email_subject: Activate your store account
+auth.invite_email_hello: 'Hello, %name%!'
+auth.invite_email_body: An account was created for you. Open the link below to set your password and sign in.
+auth.invite_email_cta: Activate account
