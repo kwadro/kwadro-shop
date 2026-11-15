@@ -11,7 +11,6 @@
     {% block stylesheets %}{% endblock %}
     {% include 'shop/partials/_gtm.html.twig' with { placement: 'head', setting: setting } only %}
     {% include 'shop/partials/_meta_pixel.html.twig' with { setting: setting } only %}
-    {% include 'shop/partials/_partner_tracker.html.twig' %}
 </head>
 <body class="shop-body shop-body--auth">
     {% include 'shop/partials/_gtm.html.twig' with { placement: 'body', setting: setting } only %}
