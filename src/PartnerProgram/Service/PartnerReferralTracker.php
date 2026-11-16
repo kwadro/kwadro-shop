@@ -69,10 +69,12 @@ final class PartnerReferralTracker
 
         $landingUrl = $request->getUri();
         $visitorId = $this->visitorIdResolver->resolve($request);
+        $ipAddress = trim((string) ($request->getClientIp() ?? ''));
         $apiResult = $this->affiliateViewClient->registerView(
             $parsed['referralKey'],
             $landingUrl,
             $visitorId,
+            $ipAddress !== '' ? $ipAddress : null,
         );
 
         $cleanPath = $needsPathStrip

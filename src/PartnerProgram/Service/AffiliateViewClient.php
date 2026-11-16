@@ -22,8 +22,12 @@ final class AffiliateViewClient
     /**
      * @return array{ok: bool, advertisingLinkId: ?int}
      */
-    public function registerView(string $referralKey, string $landingUrl, ?string $visitorId = null): array
-    {
+    public function registerView(
+        string $referralKey,
+        string $landingUrl,
+        ?string $visitorId = null,
+        ?string $ipAddress = null,
+    ): array {
         $base = rtrim(trim($this->apiBase), '/');
         if ($base === '' || $referralKey === '') {
             return ['ok' => false, 'advertisingLinkId' => null];
@@ -36,6 +40,10 @@ final class AffiliateViewClient
         $visitorId = $visitorId !== null ? trim($visitorId) : '';
         if ($visitorId !== '') {
             $payload['visitor_id'] = mb_substr($visitorId, 0, 64);
+        }
+        $ipAddress = $ipAddress !== null ? trim($ipAddress) : '';
+        if ($ipAddress !== '') {
+            $payload['ip_address'] = mb_substr($ipAddress, 0, 45);
         }
 
         try {
