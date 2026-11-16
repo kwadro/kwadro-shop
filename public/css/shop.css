@@ -190,6 +190,7 @@ a {
     align-items: flex-start;
     gap: .15rem;
     min-width: 0;
+    padding-left: var(--shop-gutter);
 }
 
 .shop-category-nav__toggle-label {
@@ -198,6 +199,7 @@ a {
     letter-spacing: .03em;
     text-transform: uppercase;
     color: var(--shop-muted);
+    display: none;
 }
 
 .shop-category-nav__toggle-current {
@@ -456,7 +458,7 @@ a {
     align-items: center;
     margin: 0 0 1rem;
     color: var(--shop-muted);
-    font-size: .9rem;
+    font-size: .7rem;
 }
 
 .shop-category-page__breadcrumb a {
@@ -472,9 +474,26 @@ a {
     text-decoration: underline;
 }
 
+.shop-category-page__breadcrumb-home {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 0;
+}
+
+.shop-category-page__breadcrumb-home:hover,
+.shop-category-page__breadcrumb-home:focus-visible,
+.shop-category-page__breadcrumb-home:active {
+    text-decoration: none;
+}
+
+.shop-category-page__breadcrumb-home-icon {
+    display: block;
+}
+
 /* Touch devices have no real hover — keep links underlined so they stay recognizable. */
 @media (hover: none) {
-    .shop-category-page__breadcrumb a {
+    .shop-category-page__breadcrumb a:not(.shop-category-page__breadcrumb-home) {
         text-decoration: underline;
         text-underline-offset: .12em;
     }
@@ -483,9 +502,16 @@ a {
 .shop-category-page__breadcrumb-sep {
     display: inline-flex;
     align-items: center;
-    color: var(--shop-muted);
-    font-weight: 400;
-    opacity: .75;
+    justify-content: center;
+    width: .28rem;
+    height: .28rem;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--shop-green-dark);
+    color: transparent;
+    font-size: 0;
+    line-height: 0;
+    overflow: hidden;
 }
 
 .shop-category-page__breadcrumb > span:not([aria-hidden="true"]) {
@@ -4729,6 +4755,7 @@ body.shop-offers-modal-open {
 
 .shop-catalog__filters .shop-sheet__dialog {
     min-width: 0;
+    margin-top:3rem;
     padding: 1rem;
     background: var(--shop-white);
     border: 1px solid var(--shop-border);
@@ -4953,6 +4980,7 @@ body.shop-offers-modal-open {
     margin: 0;
     color: var(--shop-muted);
     font-size: .92rem;
+    display: none;
 }
 
 .shop-catalog__sort {
@@ -4975,6 +5003,7 @@ body.shop-offers-modal-open {
     font-size: .78rem;
     font-weight: 600;
     color: var(--shop-muted);
+    display: none;
 }
 
 .shop-catalog__sort-trigger {
@@ -5230,6 +5259,7 @@ body.shop-sheet-open {
 @media (max-width: 900px) {
     .shop-catalog--with-filters {
         grid-template-columns: 1fr;
+        gap:0;
     }
 
     .shop-catalog__mobile-bar {

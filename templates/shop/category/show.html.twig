@@ -32,7 +32,7 @@
 {% block main %}
     <article class="shop-page shop-category-page">
         <nav class="shop-category-page__breadcrumb" aria-label="breadcrumb">
-            <a href="{{ path('shop_home', {_locale: app.request.locale}) }}">{{ 'shop.category.home'|trans }}</a>
+            {% include 'shop/partials/_breadcrumb_home.html.twig' %}
             {% for parentCategory in breadcrumbAncestors|default([]) %}
                 {% if parentCategory and not parentCategory.default %}
                     <span class="shop-category-page__breadcrumb-sep" aria-hidden="true">&gt;</span>

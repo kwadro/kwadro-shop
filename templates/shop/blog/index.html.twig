@@ -35,7 +35,7 @@
 {% block main %}
     <div class="shop-page shop-blog-page">
         <nav class="shop-category-page__breadcrumb" aria-label="breadcrumb">
-            <a href="{{ path('shop_home', {_locale: app.request.locale}) }}">{{ 'shop.category.home'|trans }}</a>
+            {% include 'shop/partials/_breadcrumb_home.html.twig' %}
             <span class="shop-category-page__breadcrumb-sep" aria-hidden="true">&gt;</span>
             <span>{{ 'shop.blog.title'|trans }}</span>
         </nav>

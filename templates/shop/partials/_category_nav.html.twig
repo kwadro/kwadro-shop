@@ -108,27 +108,28 @@
                                                 {% set childExpanded = isCategoryRoute and currentSlug in childGrandSlugs %}
                                                 <li class="shop-category-nav__submenu-item{% if childHasChildren %} shop-category-nav__submenu-item--has-children{% endif %}{% if childIsActive %} is-active{% endif %}{% if childExpanded %} is-expanded{% endif %}">
                                                     <div class="shop-category-nav__row">
-                                                        <a
-                                                            href="{{ path('shop_category', {_locale: app.request.locale, slug: child.slug}) }}"
-                                                            class="shop-category-nav__submenu-link{% if childIsActive %} is-active{% endif %}"
-                                                            data-sheet-autoclose
-                                                            {% if childIsActive and currentSlug == child.slug %}aria-current="page"{% endif %}
-                                                        >
-                                                            {{ child.name }}
-                                                            {% if childHasChildren %}
-                                                                <span class="shop-category-nav__submenu-caret" aria-hidden="true"></span>
-                                                            {% endif %}
-                                                        </a>
                                                         {% if childHasChildren %}
                                                             <button
                                                                 type="button"
-                                                                class="shop-category-nav__expand"
+                                                                class="shop-category-nav__link"
                                                                 data-category-nav-expand
                                                                 aria-expanded="{{ childExpanded ? 'true' : 'false' }}"
                                                                 aria-label="{{ 'shop.category.expand_subcategories'|trans({ '%name%': child.name }) }}"
                                                             >
+                                                                {{ child.name }}
                                                                 <span class="shop-category-nav__expand-icon" aria-hidden="true"></span>
                                                             </button>
+
+                                                        {% else %}
+                                                            <a
+                                                                href="{{ path('shop_category', {_locale: app.request.locale, slug: child.slug}) }}"
+                                                                class="shop-category-nav__submenu-link{% if childIsActive %} is-active{% endif %}"
+                                                                data-sheet-autoclose
+                                                                {% if childIsActive and currentSlug == child.slug %}aria-current="page"{% endif %}
+                                                            >
+                                                                {{ child.name }}
+
+                                                            </a>
                                                         {% endif %}
                                                     </div>
 
