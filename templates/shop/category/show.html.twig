@@ -35,11 +35,11 @@
             <a href="{{ path('shop_home', {_locale: app.request.locale}) }}">{{ 'shop.category.home'|trans }}</a>
             {% for parentCategory in breadcrumbAncestors|default([]) %}
                 {% if parentCategory and not parentCategory.default %}
-                    <span aria-hidden="true">/</span>
+                    <span class="shop-category-page__breadcrumb-sep" aria-hidden="true">&gt;</span>
                     <a href="{{ path('shop_category', {_locale: app.request.locale, slug: parentCategory.slug}) }}">{{ parentCategory.name }}</a>
                 {% endif %}
             {% endfor %}
-            <span aria-hidden="true">/</span>
+            <span class="shop-category-page__breadcrumb-sep" aria-hidden="true">&gt;</span>
             <span>{{ category.name }}</span>
         </nav>
 
@@ -47,29 +47,19 @@
             <h1 class="shop-page__title">{{ category.name }}</h1>
         </header>
 
-        {% if siblings is not empty %}
-            <section class="shop-category-page__children" aria-label="{{ 'shop.category.subcategories'|trans }}">
-                {% for sibling in siblings %}
-                    {% set isActive = activeSiblingId is not null and sibling.id == activeSiblingId %}
+        {% set subcategoryNavItems = siblings is not empty ? siblings : children %}
+        {% set showSubcategoryNav = subcategoryNavItems|length > 2 %}
+        {% set subcategoryNavParentName = subcategoryNavParentName|default(category.name) %}
+        {% if showSubcategoryNav %}
+            <section class="shop-category-page__children shop-category-page__children--desktop" aria-label="{{ 'shop.category.subcategories_of'|trans({ '%name%': subcategoryNavParentName }) }}">
+                {% for item in subcategoryNavItems %}
+                    {% set isActive = activeSiblingId is not null and item.id == activeSiblingId %}
                     <a
                         class="shop-category-page__child-chip{{ isActive ? ' is-active' : '' }}"
-                        href="{{ path('shop_category', {_locale: app.request.locale, slug: sibling.slug}) }}"
+                        href="{{ path('shop_category', {_locale: app.request.locale, slug: item.slug}) }}"
                         {% if isActive %}aria-current="page"{% endif %}
                     >
-                        {{ sibling.name }}
-                    </a>
-                {% endfor %}
-            </section>
-        {% endif %}
-
-        {% if children is not empty %}
-            <section class="shop-category-page__children" aria-label="{{ 'shop.category.subcategories'|trans }}">
-                {% for child in children %}
-                    <a
-                        class="shop-category-page__child-chip"
-                        href="{{ path('shop_category', {_locale: app.request.locale, slug: child.slug}) }}"
-                    >
-                        {{ child.name }}
+                        {{ item.name }}
                     </a>
                 {% endfor %}
             </section>
@@ -86,8 +76,7 @@
             activeFilters: activeFilters|default([]),
             query: query,
             showFilters: showFilters,
-            sort: sort|default('position'),
-            sortDir: sortDir|default('asc'),
+            sort: sort|default('rank'),
             priceMin: priceMin|default(null),
             priceMax: priceMax|default(null),
             priceBounds: priceBounds|default(null),
@@ -95,7 +84,10 @@
             preserveQuery: false,
             emptyMessage: 'shop.category.empty_products'|trans,
             paginationBasePath: categoryUrl,
-            paginationQuery: paginationQuery
+            paginationQuery: paginationQuery,
+            subcategoryNavItems: showSubcategoryNav ? subcategoryNavItems : [],
+            activeSiblingId: activeSiblingId|default(null),
+            subcategoryNavParentName: subcategoryNavParentName
         } %}
     </article>
 {% endblock %}

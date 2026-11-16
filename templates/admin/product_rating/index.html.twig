@@ -1,0 +1,197 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block head_stylesheets %}
+    {{ parent() }}
+    <style>
+        .pr__layout { display: grid; grid-template-columns: minmax(280px, 360px) 1fr; gap: 1rem; align-items: start; }
+        @media (max-width: 992px) { .pr__layout { grid-template-columns: 1fr; } }
+        .pr__results { max-height: 420px; overflow: auto; }
+        .pr__result {
+            display: block; width: 100%; text-align: left; border: 1px solid #e2e8f0; border-radius: .5rem;
+            background: #fff; padding: .65rem .75rem; margin-bottom: .4rem; cursor: pointer;
+        }
+        .pr__result.is-active { border-color: #0d6efd; box-shadow: 0 0 0 2px rgba(13,110,253,.15); }
+        .pr__result strong { display: block; font-size: .9rem; }
+        .pr__result small { color: #64748b; }
+        .pr__empty { color: #64748b; padding: 1rem 0; }
+        .pr__form { display: flex; flex-wrap: wrap; gap: .75rem; align-items: end; }
+        .pr__form .form-group { margin: 0; min-width: 10rem; }
+    </style>
+{% endblock %}
+
+{% block content_title %}{{ page_title }}{% endblock %}
+
+{% block main %}
+    <div class="pr" id="product-rating"
+         data-search-url="{{ search_url }}"
+         data-product-template="{{ product_url_template }}"
+         data-save-template="{{ save_url_template }}">
+        <div class="pr__layout">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <p class="text-muted small">{{ 'admin.product_rating.help'|trans }}</p>
+                    <label class="form-label">{{ 'admin.product_rating.search'|trans }}</label>
+                    <input type="search" class="form-control" data-pr-search placeholder="{{ 'admin.product_rating.search_placeholder'|trans }}" autocomplete="off">
+                    <div class="pr__results mt-3" data-pr-results>
+                        <div class="pr__empty">{{ 'admin.product_rating.search_hint'|trans }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div data-pr-empty class="pr__empty">{{ 'admin.product_rating.select_product'|trans }}</div>
+                    <div data-pr-editor hidden>
+                        <div class="mb-3">
+                            <h3 class="h5 mb-1" data-pr-product-name></h3>
+                            <div class="text-muted small">
+                                SKU: <span data-pr-product-sku></span>
+                            </div>
+                        </div>
+                        <form class="pr__form" data-pr-form>
+                            <div class="form-group">
+                                <label class="form-label" for="pr-rating">{{ 'admin.product_rating.rating'|trans }}</label>
+                                <input id="pr-rating" class="form-control" type="number" min="0" max="999999" step="1" data-pr-rating required>
+                            </div>
+                            <button type="submit" class="btn btn-primary" data-pr-save>{{ 'admin.product_rating.save'|trans }}</button>
+                        </form>
+                        <div class="small text-muted mt-3" data-pr-status></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body_javascript %}
+    {{ parent() }}
+    <script>
+    (function () {
+        const root = document.getElementById('product-rating');
+        if (!root) return;
+
+        const i18n = {
+            noResults: {{ 'admin.product_rating.no_results'|trans|json_encode|raw }},
+            error: {{ 'admin.product_rating.error'|trans|json_encode|raw }},
+            saving: {{ 'admin.product_rating.saving'|trans|json_encode|raw }},
+        };
+
+        let selectedId = null;
+        let searchTimer = null;
+        const searchInput = root.querySelector('[data-pr-search]');
+        const resultsEl = root.querySelector('[data-pr-results]');
+        const emptyEl = root.querySelector('[data-pr-empty]');
+        const editorEl = root.querySelector('[data-pr-editor]');
+        const formEl = root.querySelector('[data-pr-form]');
+        const ratingInput = root.querySelector('[data-pr-rating]');
+        const statusEl = root.querySelector('[data-pr-status]');
+        const nameEl = root.querySelector('[data-pr-product-name]');
+        const skuEl = root.querySelector('[data-pr-product-sku]');
+
+        function setStatus(msg) { statusEl.textContent = msg || ''; }
+
+        function tpl(template, id) {
+            return template.replace('__ID__', String(id));
+        }
+
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        function renderResults(items) {
+            if (!items.length) {
+                resultsEl.innerHTML = '<div class="pr__empty">' + escapeHtml(i18n.noResults) + '</div>';
+                return;
+            }
+            resultsEl.innerHTML = items.map(function (item) {
+                return '<button type="button" class="pr__result' + (String(item.id) === String(selectedId) ? ' is-active' : '') + '" data-pr-pick="' + item.id + '">' +
+                    '<strong>' + escapeHtml(item.name) + '</strong>' +
+                    '<small>SKU: ' + escapeHtml(item.sku) + ' · rating: ' + escapeHtml(item.rating) + '</small>' +
+                    '</button>';
+            }).join('');
+        }
+
+        function showProduct(product) {
+            selectedId = product.id;
+            emptyEl.hidden = true;
+            editorEl.hidden = false;
+            nameEl.textContent = product.name;
+            skuEl.textContent = product.sku;
+            ratingInput.value = String(product.rating);
+            setStatus('');
+            resultsEl.querySelectorAll('[data-pr-pick]').forEach(function (btn) {
+                btn.classList.toggle('is-active', String(btn.getAttribute('data-pr-pick')) === String(selectedId));
+            });
+        }
+
+        async function loadProduct(id) {
+            const response = await fetch(tpl(root.dataset.productTemplate, id), {
+                headers: { 'Accept': 'application/json' },
+            });
+            const data = await response.json();
+            if (!data.ok || !data.product) {
+                throw new Error(data.message || i18n.error);
+            }
+            showProduct(data.product);
+        }
+
+        searchInput.addEventListener('input', function () {
+            window.clearTimeout(searchTimer);
+            const q = searchInput.value.trim();
+            if (q.length < 2) {
+                resultsEl.innerHTML = '<div class="pr__empty">' + {{ 'admin.product_rating.search_hint'|trans|json_encode|raw }} + '</div>';
+                return;
+            }
+            searchTimer = window.setTimeout(async function () {
+                try {
+                    const response = await fetch(root.dataset.searchUrl + '?q=' + encodeURIComponent(q), {
+                        headers: { 'Accept': 'application/json' },
+                    });
+                    const data = await response.json();
+                    renderResults(data.items || []);
+                } catch (e) {
+                    resultsEl.innerHTML = '<div class="pr__empty">' + escapeHtml(i18n.error) + '</div>';
+                }
+            }, 250);
+        });
+
+        resultsEl.addEventListener('click', function (event) {
+            const button = event.target.closest('[data-pr-pick]');
+            if (!button) return;
+            loadProduct(button.getAttribute('data-pr-pick')).catch(function () {
+                setStatus(i18n.error);
+            });
+        });
+
+        formEl.addEventListener('submit', async function (event) {
+            event.preventDefault();
+            if (!selectedId) return;
+            setStatus(i18n.saving);
+            try {
+                const body = new URLSearchParams();
+                body.set('rating', ratingInput.value);
+                const response = await fetch(tpl(root.dataset.saveTemplate, selectedId), {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                    },
+                    body: body.toString(),
+                });
+                const data = await response.json();
+                if (!data.ok || !data.product) {
+                    throw new Error(data.message || i18n.error);
+                }
+                showProduct(data.product);
+                setStatus(data.message || '');
+            } catch (e) {
+                setStatus(e.message || i18n.error);
+            }
+        });
+    })();
+    </script>
+{% endblock %}

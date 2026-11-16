@@ -43,6 +43,7 @@ class CategoryController extends AbstractController
         // Peer chips under a mid-level parent (skip top-level catalog peers like homeware).
         $siblings = [];
         $activeSiblingId = null;
+        $subcategoryNavParentName = $category->getName();
         $displayParent = $this->categoryRepository->findStorefrontDisplayParent($category);
         if (
             $displayParent instanceof Category
@@ -52,6 +53,7 @@ class CategoryController extends AbstractController
             if (\count($peerItems) >= 2) {
                 $siblings = $peerItems;
                 $activeSiblingId = $category->getId();
+                $subcategoryNavParentName = $displayParent->getName();
             }
         }
 
@@ -66,6 +68,7 @@ class CategoryController extends AbstractController
             'siblings' => $siblings,
             'activeSiblingId' => $activeSiblingId,
             'children' => $children,
+            'subcategoryNavParentName' => $subcategoryNavParentName,
             'breadcrumbAncestors' => $this->categoryRepository->findStorefrontBreadcrumbAncestors($category),
             ...$listing,
         ]);

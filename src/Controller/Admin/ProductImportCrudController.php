@@ -138,6 +138,14 @@ class ProductImportCrudController extends AbstractCrudController
             ->setNumDecimals(2)
             ->setFormTypeOption('attr', ['min' => 0, 'step' => '0.01'])
             ->onlyWhenUpdating();
+        yield ChoiceField::new('stripSkuFromName', $this->translator->trans('admin.product_import.strip_sku_from_name', [], 'messages'))
+            ->setChoices([
+                $this->translator->trans('admin.product_import.yes', [], 'messages') => true,
+                $this->translator->trans('admin.product_import.no', [], 'messages') => false,
+            ])
+            ->setHelp($this->translator->trans('admin.product_import.strip_sku_from_name_help', [], 'messages'))
+            ->renderAsNativeWidget()
+            ->onlyWhenUpdating();
 
         yield FormField::addFieldset($this->translator->trans('admin.product_import.menu_display', [], 'messages'))
             ->setHelp($this->translator->trans('admin.product_import.menu_display_help', [], 'messages'))

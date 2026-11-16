@@ -21,6 +21,7 @@ menu.link_image_transform: Transform image
 menu.link_media_library: Image library
 menu.link_shape_library: Shape library
 menu.link_product_social_posts: Product Facebook posts
+menu.link_product_rating: Product rating
 menu.link_email_template: Email templates
 menu.link_email_template_single: Email template
 menu.link_email_template_section: Email sections
@@ -357,6 +358,8 @@ admin.product_attribute_group.external_category_id: Category external ID
 admin.product_attribute_group.position: Position
 admin.product_import.markup_percent: Markup
 admin.product_import.markup_percent_help: 'Markup in percent for price calculation, e.g. 30 = +30%.'
+admin.product_import.strip_sku_from_name: Remove SKU from product name
+admin.product_import.strip_sku_from_name_help: 'Yes — during import remove the feed SKU (vendor code) from the product title, e.g. leave “Салатниця…” without “LB-1569G”. No — keep the feed name as is.'
 admin.product_import.tab_general: Settings
 admin.product_import.param_value_replacements: Attribute value replacements
 admin.product_import.param_value_replacements_help: 'Exact replacement of a feed value with the storefront value. Select one or more attributes (from any groups), then add from/to replacements. An empty attribute list means the replacements apply to every attribute.'
@@ -1069,6 +1072,19 @@ admin.image_editor.library_close: Close
 admin.image_editor.library_use: Use
 admin.image_editor.library_loading: Loading library…
 
+admin.product_rating.title: Product rating
+admin.product_rating.help: Find a product by SKU or name and set its catalog sort rating.
+admin.product_rating.search: Product search
+admin.product_rating.search_placeholder: SKU or name…
+admin.product_rating.search_hint: Enter at least 2 characters.
+admin.product_rating.no_results: No results found.
+admin.product_rating.select_product: Select a product from the list on the left.
+admin.product_rating.rating: Rating
+admin.product_rating.save: Save
+admin.product_rating.saving: Saving…
+admin.product_rating.saved: Rating saved.
+admin.product_rating.invalid: Enter a valid numeric rating.
+admin.product_rating.error: Something went wrong. Please try again.
 admin.social_posts.title: Product Facebook posts
 admin.social_posts.help: Find a product by SKU or name, generate post text, and keep multiple variants per product.
 admin.social_posts.search: Search product
@@ -1294,9 +1310,12 @@ shop.my_account: My Account
 shop.welcome: Welcome!
 shop.category.menu_label: Product categories
 shop.category.menu_toggle: Categories
+shop.category.close_menu: Close categories menu
 shop.category.expand_subcategories: Open subcategories for %name%
 shop.category.home: Home
 shop.category.subcategories: Subcategories
+shop.category.subcategories_of: Subcategories of “%name%”
+shop.category.close_subcategories: Close subcategories
 shop.category.empty_products: There are no products in this category yet.
 shop.search.label: Product search
 shop.search.placeholder: Search products…
@@ -1310,6 +1329,7 @@ shop.search.meta_description: Search products in the Kvadro catalog.
 shop.search.empty: 'No products found for “%query%”.'
 shop.search.empty_no_query: Enter a product name to search.
 shop.filter.title: Filters
+shop.filter.close: Close filters
 shop.filter.brand: Brand
 shop.filter.color: Color
 shop.filter.type: Type
@@ -1326,11 +1346,10 @@ shop.filter.show_all: 'Show all (+%count%)'
 shop.filter.show_less: Show less
 shop.catalog.results_count: 'Found: %count%'
 shop.sort.by: Sort by
-shop.sort.direction: Direction
-shop.sort.position: Product position
-shop.sort.price: Product price
-shop.sort.asc: Ascending
-shop.sort.desc: Descending
+shop.sort.rank: By rating
+shop.sort.cheap: Cheap to expensive
+shop.sort.expensive: Expensive to cheap
+shop.sort.novelty: New arrivals
 shop.pagination.label: Pagination
 shop.pagination.prev: Previous
 shop.pagination.next: Next

@@ -191,6 +191,12 @@ class DashboardController extends AbstractDashboardController
                 'admin_product_social_posts',
                 ['_locale' => 'ua'],
             ),
+            MenuItem::linkToRoute(
+                $this->translator->trans('menu.link_product_rating', [], 'messages'),
+                'fas fa-star',
+                'admin_product_rating',
+                ['_locale' => 'ua'],
+            ),
         ]);
 
         yield MenuItem::subMenu($this->translator->trans('menu.group_email', [], 'messages'), 'fas fa-envelope')->setSubItems([

@@ -45,7 +45,6 @@ class ProductListingService
      *   query: string,
      *   showFilters: bool,
      *   sort: string,
-     *   sortDir: string,
      *   priceMin: float|null,
      *   priceMax: float|null,
      *   priceBounds: array{min: float, max: float}|null,
@@ -67,7 +66,6 @@ class ProductListingService
             $filters = array_intersect_key($filters, array_flip($allowedFacets));
         }
         $sort = $this->parseSort($request);
-        $sortDir = $this->parseSortDir($request);
         $priceRange = $showFilters ? $this->parsePriceRange($request) : ['min' => null, 'max' => null];
         $perPage = $this->resolveProductsPerPage();
         $page = max(1, (int) $request->query->get('page', 1));
@@ -84,7 +82,7 @@ class ProductListingService
             'inStockOnly' => $inStockOnly,
             'filterAttributes' => $filterAttributes,
             'sort' => $sort,
-            'sortDir' => $sortDir,
+            'sortDir' => $request->query->get('dir'),
             'priceMin' => $priceRange['min'],
             'priceMax' => $priceRange['max'],
         ];
@@ -149,7 +147,6 @@ class ProductListingService
 
         $listingState = [
             'sort' => $sort,
-            'sortDir' => $sortDir,
             'priceMin' => $priceRange['min'],
             'priceMax' => $priceRange['max'],
         ];
@@ -166,7 +163,6 @@ class ProductListingService
             'query' => $query,
             'showFilters' => $showFilters,
             'sort' => $sort,
-            'sortDir' => $sortDir,
             'priceMin' => $priceRange['min'],
             'priceMax' => $priceRange['max'],
             'priceBounds' => $priceBounds,
@@ -191,7 +187,7 @@ class ProductListingService
 
     /**
      * @param array<string, list<string>> $filters
-     * @param array{sort: string, sortDir: string, priceMin: float|null, priceMax: float|null} $listingState
+     * @param array{sort: string, priceMin: float|null, priceMax: float|null} $listingState
      * @param array{min: float, max: float}|null $priceBounds
      * @return list<array{attr: string, value: string, query: array<string, mixed>}>
      */
@@ -237,7 +233,7 @@ class ProductListingService
 
     /**
      * @param array<string, list<string>> $filters
-     * @param array{sort?: string, sortDir?: string, priceMin?: float|null, priceMax?: float|null} $listingState
+     * @param array{sort?: string, priceMin?: float|null, priceMax?: float|null} $listingState
      * @return array<string, mixed>
      */
     private function buildPaginationQuery(string $query, array $filters, array $listingState = []): array
@@ -252,13 +248,9 @@ class ProductListingService
             }
         }
 
-        $sort = $listingState['sort'] ?? ProductRepository::SORT_POSITION;
-        $sortDir = $listingState['sortDir'] ?? ProductRepository::SORT_DIR_ASC;
-        if ($sort !== ProductRepository::SORT_POSITION) {
+        $sort = $listingState['sort'] ?? ProductRepository::SORT_RANK;
+        if ($sort !== ProductRepository::SORT_RANK) {
             $params['sort'] = $sort;
-        }
-        if ($sortDir !== ProductRepository::SORT_DIR_ASC) {
-            $params['dir'] = $sortDir;
         }
 
         if (isset($listingState['priceMin']) && $listingState['priceMin'] !== null) {
@@ -305,20 +297,21 @@ class ProductListingService
 
     public function parseSort(Request $request): string
     {
-        $sort = strtolower(trim((string) $request->query->get('sort', ProductRepository::SORT_POSITION)));
+        $sort = strtolower(trim((string) $request->query->get('sort', ProductRepository::SORT_RANK)));
+        if ($sort === ProductRepository::SORT_PRICE) {
+            $dir = strtolower(trim((string) $request->query->get('dir', ProductRepository::SORT_DIR_ASC)));
 
-        return \in_array($sort, [ProductRepository::SORT_POSITION, ProductRepository::SORT_PRICE], true)
+            return $dir === ProductRepository::SORT_DIR_DESC
+                ? ProductRepository::SORT_EXPENSIVE
+                : ProductRepository::SORT_CHEAP;
+        }
+        if ($sort === ProductRepository::SORT_POSITION) {
+            return ProductRepository::SORT_RANK;
+        }
+
+        return \in_array($sort, ProductRepository::SORT_OPTIONS, true)
             ? $sort
-            : ProductRepository::SORT_POSITION;
-    }
-
-    public function parseSortDir(Request $request): string
-    {
-        $dir = strtolower(trim((string) $request->query->get('dir', ProductRepository::SORT_DIR_ASC)));
-
-        return $dir === ProductRepository::SORT_DIR_DESC
-            ? ProductRepository::SORT_DIR_DESC
-            : ProductRepository::SORT_DIR_ASC;
+            : ProductRepository::SORT_RANK;
     }
 
     /**

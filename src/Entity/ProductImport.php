@@ -65,6 +65,10 @@ class ProductImport
     #[ORM\Column(type: 'decimal', precision: 8, scale: 2, options: ['default' => '0'])]
     private string $markup_percent = '0';
 
+    /** When true, remove the feed SKU / vendor code from the product name during import. */
+    #[ORM\Column(options: ['default' => false])]
+    private bool $strip_sku_from_name = false;
+
     /**
      * Menu-only pin list. Does not change the position written by the import file.
      *
@@ -252,6 +256,18 @@ class ProductImport
     public function setDisableCategoriesAfterImport(bool $disableCategoriesAfterImport): static
     {
         $this->disable_categories_after_import = $disableCategoriesAfterImport;
+
+        return $this;
+    }
+
+    public function isStripSkuFromName(): bool
+    {
+        return $this->strip_sku_from_name;
+    }
+
+    public function setStripSkuFromName(bool $stripSkuFromName): static
+    {
+        $this->strip_sku_from_name = $stripSkuFromName;
 
         return $this;
     }

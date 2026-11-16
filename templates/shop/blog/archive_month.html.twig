@@ -35,11 +35,11 @@
     <div class="shop-page shop-blog-page">
         <nav class="shop-category-page__breadcrumb" aria-label="breadcrumb">
             <a href="{{ path('shop_home', {_locale: app.request.locale}) }}">{{ 'shop.category.home'|trans }}</a>
-            <span aria-hidden="true">/</span>
+            <span class="shop-category-page__breadcrumb-sep" aria-hidden="true">&gt;</span>
             <a href="{{ path('shop_blog_index', {_locale: app.request.locale}) }}">{{ 'shop.blog.title'|trans }}</a>
-            <span aria-hidden="true">/</span>
+            <span class="shop-category-page__breadcrumb-sep" aria-hidden="true">&gt;</span>
             <a href="{{ path('shop_blog_archive', {_locale: app.request.locale}) }}">{{ 'shop.blog.archive'|trans }}</a>
-            <span aria-hidden="true">/</span>
+            <span class="shop-category-page__breadcrumb-sep" aria-hidden="true">&gt;</span>
             <span>{{ heading }}</span>
         </nav>
 

@@ -21,6 +21,7 @@ menu.link_image_transform: Трансформувати картинку
 menu.link_media_library: Бібліотека картинок
 menu.link_shape_library: Бібліотека фігур
 menu.link_product_social_posts: Facebook пости товарів
+menu.link_product_rating: Рейтинг товару
 menu.link_email_template: Шаблони листів
 menu.link_email_template_single: Шаблон листа
 menu.link_email_template_section: Секції листів
@@ -357,6 +358,8 @@ admin.product_attribute_group.external_category_id: External ID категорі
 admin.product_attribute_group.position: Порядок
 admin.product_import.markup_percent: Націнка
 admin.product_import.markup_percent_help: 'Націнка у відсотках для розрахунку ціни, наприклад 30 = +30%.'
+admin.product_import.strip_sku_from_name: Вирізати SKU з назви товару
+admin.product_import.strip_sku_from_name_help: 'Yes — під час імпорту прибрати SKU (vendor code) з назви товару, наприклад залишити «Салатниця…» без «LB-1569G». No — лишити назву з фіду без змін.'
 admin.product_import.tab_general: Налаштування
 admin.product_import.param_value_replacements: Заміна значень атрибутів
 admin.product_import.param_value_replacements_help: 'Точна заміна значення з фіду на значення у магазині. Оберіть один або кілька атрибутів (з будь-яких груп), потім додайте заміни from/to. Порожній список атрибутів означає, що заміни діють для всіх атрибутів.'
@@ -1069,6 +1072,19 @@ admin.image_editor.library_close: Закрити
 admin.image_editor.library_use: Використати
 admin.image_editor.library_loading: Завантаження бібліотеки…
 
+admin.product_rating.title: Рейтинг товару
+admin.product_rating.help: Знайдіть товар за SKU або назвою та встановіть рейтинг для сортування в каталозі.
+admin.product_rating.search: Пошук товару
+admin.product_rating.search_placeholder: SKU або назва…
+admin.product_rating.search_hint: Введіть щонайменше 2 символи.
+admin.product_rating.no_results: Нічого не знайдено.
+admin.product_rating.select_product: Оберіть товар зі списку зліва.
+admin.product_rating.rating: Рейтинг
+admin.product_rating.save: Зберегти
+admin.product_rating.saving: Збереження…
+admin.product_rating.saved: Рейтинг збережено.
+admin.product_rating.invalid: Вкажіть коректне числове значення рейтингу.
+admin.product_rating.error: Помилка. Спробуйте ще раз.
 admin.social_posts.title: Facebook пости товарів
 admin.social_posts.help: Знайдіть товар за SKU або назвою, згенеруйте текст поста й збережіть кілька варіантів для одного товару.
 admin.social_posts.search: Пошук товару
@@ -1293,9 +1309,12 @@ shop.my_account: Мій кабінет
 shop.welcome: Ласкаво просимо!
 shop.category.menu_label: Категорії товарів
 shop.category.menu_toggle: Категорії
+shop.category.close_menu: Закрити меню категорій
 shop.category.expand_subcategories: Відкрити підкатегорії «%name%»
 shop.category.home: Головна
 shop.category.subcategories: Підкатегорії
+shop.category.subcategories_of: Підкатегорії «%name%»
+shop.category.close_subcategories: Закрити підкатегорії
 shop.category.empty_products: У цій категорії поки немає товарів.
 shop.search.label: Пошук товарів
 shop.search.placeholder: Пошук товарів…
@@ -1309,6 +1328,7 @@ shop.search.meta_description: Пошук товарів у каталозі ма
 shop.search.empty: 'За запитом «%query%» товарів не знайдено.'
 shop.search.empty_no_query: Введіть назву товару для пошуку.
 shop.filter.title: Фільтри
+shop.filter.close: Закрити фільтри
 shop.filter.brand: Бренд
 shop.filter.color: Колір
 shop.filter.type: Тип
@@ -1325,11 +1345,10 @@ shop.filter.show_all: 'Показати всі (+%count%)'
 shop.filter.show_less: Згорнути
 shop.catalog.results_count: 'Знайдено: %count%'
 shop.sort.by: Сортування
-shop.sort.direction: Напрямок
-shop.sort.position: Позиція товару
-shop.sort.price: Ціна товару
-shop.sort.asc: За зростанням
-shop.sort.desc: За спаданням
+shop.sort.rank: За рейтингом
+shop.sort.cheap: Від дешевих до дорогих
+shop.sort.expensive: Від дорогих до дешевих
+shop.sort.novelty: Новинки
 shop.pagination.label: Пагінація
 shop.pagination.prev: Назад
 shop.pagination.next: Далі

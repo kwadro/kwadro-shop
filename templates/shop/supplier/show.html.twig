@@ -24,7 +24,7 @@
     <article class="shop-page shop-category-page shop-supplier-page">
         <nav class="shop-category-page__breadcrumb" aria-label="breadcrumb">
             <a href="{{ path('shop_home', {_locale: app.request.locale}) }}">{{ 'shop.category.home'|trans }}</a>
-            <span aria-hidden="true">/</span>
+            <span class="shop-category-page__breadcrumb-sep" aria-hidden="true">&gt;</span>
             <span>{{ supplier.name }}</span>
         </nav>
 
@@ -46,8 +46,7 @@
             activeFilters: activeFilters|default([]),
             query: query,
             showFilters: showFilters,
-            sort: sort|default('position'),
-            sortDir: sortDir|default('asc'),
+            sort: sort|default('rank'),
             priceMin: priceMin|default(null),
             priceMax: priceMax|default(null),
             priceBounds: priceBounds|default(null),

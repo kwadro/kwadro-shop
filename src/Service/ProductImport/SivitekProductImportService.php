@@ -223,6 +223,7 @@ final class SivitekProductImportService
             ->setShortDescription($this->toShortDescription($row['description']))
             ->setInStock($row['in_stock'])
             ->setStockQty($row['in_stock'] ? max(1, $row['stock_qty']) : 0)
+            ->setRating(1)
             ->setBadge($row['in_stock'] ? null : 'Очікується')
             ->setOgType('product')
             ->setEnabled(!$forceDisabled)

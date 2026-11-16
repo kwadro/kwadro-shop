@@ -259,10 +259,24 @@ class ProductRepository extends ServiceEntityRepository
 
     public const FILTER_ATTRIBUTES = ['brand', 'color', 'type', 'model'];
 
+    public const SORT_CHEAP = 'cheap';
+    public const SORT_EXPENSIVE = 'expensive';
+    public const SORT_NOVELTY = 'novelty';
+    public const SORT_RANK = 'rank';
+
+    /** @deprecated Kept for old URLs; mapped to SORT_RANK */
     public const SORT_POSITION = 'position';
+    /** @deprecated Kept for old URLs; mapped to cheap/expensive via dir */
     public const SORT_PRICE = 'price';
     public const SORT_DIR_ASC = 'asc';
     public const SORT_DIR_DESC = 'desc';
+
+    public const SORT_OPTIONS = [
+        self::SORT_RANK,
+        self::SORT_CHEAP,
+        self::SORT_EXPENSIVE,
+        self::SORT_NOVELTY,
+    ];
 
     /**
      * @param array{
@@ -285,10 +299,10 @@ class ProductRepository extends ServiceEntityRepository
         $page = max(1, $page);
         $perPage = max(1, min(100, $perPage));
         $searchQuery = trim((string) ($criteria['query'] ?? ''));
-        $sort = $this->normalizeCatalogSort($criteria['sort'] ?? null);
-        $sortDir = $this->normalizeCatalogSortDir($criteria['sortDir'] ?? null);
+        $sort = $this->normalizeCatalogSort($criteria['sort'] ?? null, $criteria['sortDir'] ?? null);
 
-        if ($searchQuery !== '' && $sort === self::SORT_POSITION) {
+        // Search relevance order only for default "rank" sort.
+        if ($searchQuery !== '' && $sort === self::SORT_RANK) {
             $orderedSearchIds = $this->findIdsMatchingSearch($searchQuery, $criteria['searchFields'] ?? null);
             if ($orderedSearchIds === []) {
                 return ['items' => [], 'total' => 0];
@@ -300,10 +314,6 @@ class ProductRepository extends ServiceEntityRepository
                 if (isset($filteredSet[$id])) {
                     $orderedIds[] = $id;
                 }
-            }
-
-            if ($sortDir === self::SORT_DIR_DESC) {
-                $orderedIds = array_reverse($orderedIds);
             }
 
             $total = \count($orderedIds);
@@ -323,7 +333,7 @@ class ProductRepository extends ServiceEntityRepository
                 return ['items' => [], 'total' => 0];
             }
 
-            $ids = $this->createCatalogOrderedIdQuery($criteria, $sort, $sortDir)
+            $ids = $this->createCatalogOrderedIdQuery($criteria, $sort)
                 ->setFirstResult(($page - 1) * $perPage)
                 ->setMaxResults($perPage)
                 ->getQuery()
@@ -742,7 +752,7 @@ class ProductRepository extends ServiceEntityRepository
     /**
      * @param array<string, mixed> $criteria
      */
-    private function createCatalogOrderedIdQuery(array $criteria, string $sort, string $sortDir): QueryBuilder
+    private function createCatalogOrderedIdQuery(array $criteria, string $sort): QueryBuilder
     {
         $qb = $this->createCatalogQueryBuilder($criteria)
             ->select('p.id')
@@ -750,35 +760,44 @@ class ProductRepository extends ServiceEntityRepository
             ->addSelect('CASE WHEN p.in_stock = true AND SUM(CASE WHEN o_sort.qty > 0 THEN 1 ELSE 0 END) > 0 THEN 0 ELSE 1 END AS HIDDEN listing_stock_rank')
             ->addSelect('CASE WHEN MIN(o_sort.price) IS NULL THEN 1 ELSE 0 END AS HIDDEN listing_missing_price')
             ->addSelect('CASE WHEN MIN(o_sort.price) IS NULL THEN 0 ELSE MIN(o_sort.price) END AS HIDDEN listing_min_price')
+            ->addSelect('p.rating AS HIDDEN listing_rating')
             ->groupBy('p.id')
             ->addGroupBy('p.in_stock')
+            ->addGroupBy('p.rating')
             ->orderBy('listing_stock_rank', 'ASC');
 
-        if ($sort === self::SORT_PRICE) {
+        if ($sort === self::SORT_CHEAP) {
             $qb->addOrderBy('listing_missing_price', 'ASC')
-                ->addOrderBy('listing_min_price', strtoupper($sortDir))
+                ->addOrderBy('listing_min_price', 'ASC')
                 ->addOrderBy('p.id', 'ASC');
+        } elseif ($sort === self::SORT_EXPENSIVE) {
+            $qb->addOrderBy('listing_missing_price', 'ASC')
+                ->addOrderBy('listing_min_price', 'DESC')
+                ->addOrderBy('p.id', 'DESC');
+        } elseif ($sort === self::SORT_NOVELTY) {
+            $qb->addOrderBy('p.id', 'DESC');
         } else {
-            $qb->addOrderBy('p.id', strtoupper($sortDir));
+            $qb->addOrderBy('listing_rating', 'DESC')
+                ->addOrderBy('p.id', 'DESC');
         }
 
         return $qb;
     }
 
-    private function normalizeCatalogSort(mixed $sort): string
+    private function normalizeCatalogSort(mixed $sort, mixed $legacyDir = null): string
     {
         $sort = is_string($sort) ? strtolower(trim($sort)) : '';
 
-        return \in_array($sort, [self::SORT_POSITION, self::SORT_PRICE], true)
-            ? $sort
-            : self::SORT_POSITION;
-    }
+        if ($sort === self::SORT_PRICE) {
+            $dir = is_string($legacyDir) ? strtolower(trim($legacyDir)) : self::SORT_DIR_ASC;
 
-    private function normalizeCatalogSortDir(mixed $dir): string
-    {
-        $dir = is_string($dir) ? strtolower(trim($dir)) : '';
+            return $dir === self::SORT_DIR_DESC ? self::SORT_EXPENSIVE : self::SORT_CHEAP;
+        }
+        if ($sort === self::SORT_POSITION) {
+            return self::SORT_RANK;
+        }
 
-        return $dir === self::SORT_DIR_DESC ? self::SORT_DIR_DESC : self::SORT_DIR_ASC;
+        return \in_array($sort, self::SORT_OPTIONS, true) ? $sort : self::SORT_RANK;
     }
 
     /**

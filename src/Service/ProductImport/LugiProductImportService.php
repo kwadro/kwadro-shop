@@ -167,6 +167,9 @@ class LugiProductImportService
                 if (!$productData) {
                     continue;
                 }
+                if ($import->isStripSkuFromName()) {
+                    $productData = $this->productService->applyStripSkuFromName($productData);
+                }
                 $categoryId = $productData['category_id'];
                 if (!isset($categoryPositions[$categoryId])) {
                     $categoryPositions[$categoryId] = 0;

@@ -81,6 +81,10 @@ class Product
     #[ORM\Column(options: ['default' => 0])]
     private int $stock_qty = 0;
 
+    /** Catalog sort weight; higher values appear first when sorting by rating. */
+    #[ORM\Column(options: ['default' => 1])]
+    private int $rating = 1;
+
     #[ORM\Column(length: 120, nullable: true)]
     private ?string $badge = null;
 
@@ -414,6 +418,18 @@ class Product
     public function setStockQty(int $stockQty): static
     {
         $this->stock_qty = max(0, $stockQty);
+
+        return $this;
+    }
+
+    public function getRating(): int
+    {
+        return $this->rating;
+    }
+
+    public function setRating(int $rating): static
+    {
+        $this->rating = max(0, min(999999, $rating));
 
         return $this;
     }

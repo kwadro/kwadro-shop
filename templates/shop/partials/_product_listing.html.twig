@@ -6,8 +6,7 @@
     price: 'shop.filter.price'|trans
 }|merge(facetLabels|default({})) %}
 
-{% set sort = sort|default('position') %}
-{% set sortDir = sortDir|default('asc') %}
+{% set sort = sort|default('rank') %}
 {% set priceBounds = priceBounds|default(null) %}
 {% set hasPriceFilter = priceBounds is not null and priceBounds.max > priceBounds.min %}
 {% set selectedPriceMin = priceMin is not null ? priceMin : (hasPriceFilter ? priceBounds.min : null) %}
@@ -25,57 +24,158 @@
 
 {% set sortFormParams = paginationQuery|default({})|filter((v, k) => k not in ['sort', 'dir']) %}
 
+{% macro filter_chips(activeFilters, facetLabels, filterAction, clearAllHref) %}
+    {% if activeFilters is not empty %}
+        <div class="shop-filters__selected" aria-label="{{ 'shop.filter.selected'|trans }}">
+            <div class="shop-filters__chips">
+                {% for item in activeFilters %}
+                    {% set chipHref = filterAction ~ (item.query is not empty ? '?' ~ item.query|url_encode : '') %}
+                    <a
+                        class="shop-filters__chip"
+                        href="{{ chipHref }}"
+                        title="{{ 'shop.filter.remove'|trans }}"
+                    >
+                        <span class="shop-filters__chip-label">{{ facetLabels[item.attr]|default(item.attr) }}: {{ item.value }}</span>
+                        <span class="shop-filters__chip-remove" aria-hidden="true">×</span>
+                        <span class="visually-hidden">{{ 'shop.filter.remove'|trans }}</span>
+                    </a>
+                {% endfor %}
+            </div>
+            {% if activeFilters|length > 1 %}
+                <a class="shop-filters__clear-all" href="{{ clearAllHref }}">
+                    {{ 'shop.filter.clear_all'|trans }}
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+{% endmacro %}
+{% import _self as listing %}
+
+{% set subcategoryNavItems = subcategoryNavItems|default([]) %}
+{% set hasSubcategoryNav = subcategoryNavItems is not empty %}
+
 <div class="shop-catalog{% if showFilters|default(false) %} shop-catalog--with-filters{% endif %}">
+    {% if showFilters|default(false) or hasSubcategoryNav %}
+        <div class="shop-catalog__mobile-bar">
+            <div class="shop-catalog__mobile-actions">
+                {% if hasSubcategoryNav %}
+                    <button
+                        type="button"
+                        class="shop-sheet-trigger"
+                        data-sheet-open="shop-category-sheet"
+                        aria-expanded="false"
+                        aria-controls="shop-category-sheet"
+                    >
+                        {{ 'shop.category.subcategories'|trans }}
+                    </button>
+                {% endif %}
+                {% if showFilters|default(false) %}
+                    <button
+                        type="button"
+                        class="shop-sheet-trigger"
+                        data-sheet-open="shop-filters-sheet"
+                        aria-expanded="false"
+                        aria-controls="shop-filters-sheet"
+                    >
+                        {{ 'shop.filter.title'|trans }}
+                        {% if activeFilters|default([]) is not empty %}
+                            <span class="shop-sheet-trigger__badge">{{ activeFilters|length }}</span>
+                        {% endif %}
+                    </button>
+                {% endif %}
+            </div>
+
+            {% if showFilters|default(false) and activeFilters|default([]) is not empty %}
+                <div class="shop-catalog__mobile-chips">
+                    {{ listing.filter_chips(activeFilters, facetLabels, filterAction, clearAllHref) }}
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    {% if hasSubcategoryNav %}
+        <div
+            id="shop-category-sheet"
+            class="shop-sheet shop-sheet--popover shop-category-page__sheet"
+            data-sheet
+        >
+            <div class="shop-sheet__overlay" data-sheet-close></div>
+            <div
+                class="shop-sheet__dialog"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="shop-category-sheet-title"
+            >
+                <div class="shop-sheet__header">
+                    <h2 id="shop-category-sheet-title" class="shop-sheet__title">
+                        {% if subcategoryNavParentName|default('') != '' %}
+                            {{ 'shop.category.subcategories_of'|trans({ '%name%': subcategoryNavParentName }) }}
+                        {% else %}
+                            {{ 'shop.category.subcategories'|trans }}
+                        {% endif %}
+                    </h2>
+                    <button
+                        type="button"
+                        class="shop-sheet__close"
+                        data-sheet-close
+                        aria-label="{{ 'shop.category.close_subcategories'|trans }}"
+                    >×</button>
+                </div>
+                <div class="shop-sheet__body">
+                    <section class="shop-category-page__children" aria-label="{{ subcategoryNavParentName|default('') != '' ? 'shop.category.subcategories_of'|trans({ '%name%': subcategoryNavParentName }) : 'shop.category.subcategories'|trans }}">
+                        {% for item in subcategoryNavItems %}
+                            {% set isActive = activeSiblingId is defined and activeSiblingId is not null and item.id == activeSiblingId %}
+                            <a
+                                class="shop-category-page__child-chip{{ isActive ? ' is-active' : '' }}"
+                                href="{{ path('shop_category', {_locale: app.request.locale, slug: item.slug}) }}"
+                                data-sheet-autoclose
+                                {% if isActive %}aria-current="page"{% endif %}
+                            >
+                                {{ item.name }}
+                            </a>
+                        {% endfor %}
+                    </section>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
     {% if showFilters|default(false) %}
-        <aside class="shop-catalog__filters" aria-label="{{ 'shop.filter.title'|trans }}">
-            <form class="shop-filters" method="get" action="{{ filterAction }}" data-shop-filters>
+        <aside
+            id="shop-filters-sheet"
+            class="shop-catalog__filters shop-sheet shop-sheet--popover"
+            data-sheet
+            aria-label="{{ 'shop.filter.title'|trans }}"
+        >
+            <div class="shop-sheet__overlay" data-sheet-close></div>
+            <div
+                class="shop-sheet__dialog"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="shop-filters-sheet-title"
+            >
+                <div class="shop-sheet__header shop-filters__sheet-header">
+                    <h2 id="shop-filters-sheet-title" class="shop-sheet__title">{{ 'shop.filter.title'|trans }}</h2>
+                    <button
+                        type="button"
+                        class="shop-sheet__close"
+                        data-sheet-close
+                        aria-label="{{ 'shop.filter.close'|trans }}"
+                    >×</button>
+                </div>
+
+                <form class="shop-filters shop-sheet__body" method="get" action="{{ filterAction }}" data-shop-filters>
                 {% if preserveQuery|default(false) and query|default('') != '' %}
                     <input type="hidden" name="q" value="{{ query }}">
                 {% endif %}
-                {% if sort != 'position' %}
+                {% if sort != 'rank' %}
                     <input type="hidden" name="sort" value="{{ sort }}">
                 {% endif %}
-                {% if sortDir != 'asc' %}
-                    <input type="hidden" name="dir" value="{{ sortDir }}">
-                {% endif %}
-
-                <div class="shop-filters__header">
-                    <button
-                        type="button"
-                        class="shop-filters__panel-toggle"
-                        data-filter-panel-toggle
-                        aria-expanded="true"
-                        aria-controls="shop-filters-panel-body"
-                    >
-                        <span class="shop-filters__title">{{ 'shop.filter.title'|trans }}</span>
-                        <span class="shop-filters__chevron" aria-hidden="true"></span>
-                    </button>
-                </div>
 
                 <div class="shop-filters__body" id="shop-filters-panel-body" data-filter-panel-body>
-                    {% if activeFilters|default([]) is not empty %}
-                        <div class="shop-filters__selected" aria-label="{{ 'shop.filter.selected'|trans }}">
-                            <div class="shop-filters__chips">
-                                {% for item in activeFilters %}
-                                    {% set chipHref = filterAction ~ (item.query is not empty ? '?' ~ item.query|url_encode : '') %}
-                                    <a
-                                        class="shop-filters__chip"
-                                        href="{{ chipHref }}"
-                                        title="{{ 'shop.filter.remove'|trans }}"
-                                    >
-                                        <span class="shop-filters__chip-label">{{ facetLabels[item.attr]|default(item.attr) }}: {{ item.value }}</span>
-                                        <span class="shop-filters__chip-remove" aria-hidden="true">×</span>
-                                        <span class="visually-hidden">{{ 'shop.filter.remove'|trans }}</span>
-                                    </a>
-                                {% endfor %}
-                            </div>
-                            {% if activeFilters|length > 1 %}
-                                <a class="shop-filters__clear-all" href="{{ clearAllHref }}">
-                                    {{ 'shop.filter.clear_all'|trans }}
-                                </a>
-                            {% endif %}
-                        </div>
-                    {% endif %}
+                    <div class="shop-filters__selected--desktop">
+                        {{ listing.filter_chips(activeFilters|default([]), facetLabels, filterAction, clearAllHref) }}
+                    </div>
 
                     {% if hasPriceFilter %}
                         {% set priceGroupHasSelection = (priceMin is not null) or (priceMax is not null) %}
@@ -228,7 +328,8 @@
                         <button class="shop-filters__submit" type="submit">{{ 'shop.filter.apply'|trans }}</button>
                     </noscript>
                 </div>
-            </form>
+                </form>
+            </div>
         </aside>
     {% endif %}
 
@@ -243,6 +344,12 @@
                     <p class="shop-catalog__count">{{ 'shop.catalog.results_count'|trans({'%count%': total}) }}</p>
                 {% endif %}
 
+                {% set sortOptions = {
+                    rank: 'shop.sort.rank'|trans,
+                    cheap: 'shop.sort.cheap'|trans,
+                    expensive: 'shop.sort.expensive'|trans,
+                    novelty: 'shop.sort.novelty'|trans
+                } %}
                 <form class="shop-catalog__sort" method="get" action="{{ filterAction }}" data-shop-sort>
                     {% for key, value in sortFormParams %}
                         {% if value is iterable %}
@@ -254,25 +361,54 @@
                         {% endif %}
                     {% endfor %}
 
-                    <label class="shop-catalog__sort-field">
-                        <span class="shop-catalog__sort-label">{{ 'shop.sort.by'|trans }}</span>
-                        <select name="sort" onchange="this.form.submit()" aria-label="{{ 'shop.sort.by'|trans }}">
-                            <option value="position"{% if sort == 'position' %} selected{% endif %}>{{ 'shop.sort.position'|trans }}</option>
-                            <option value="price"{% if sort == 'price' %} selected{% endif %}>{{ 'shop.sort.price'|trans }}</option>
-                        </select>
-                    </label>
+                    <div class="shop-catalog__sort-field" data-sort-dropdown>
+                        <span class="shop-catalog__sort-label" id="shop-sort-label">{{ 'shop.sort.by'|trans }}</span>
+                        <button
+                            type="button"
+                            class="shop-catalog__sort-trigger"
+                            data-sort-trigger
+                            aria-expanded="false"
+                            aria-haspopup="listbox"
+                            aria-controls="shop-sort-menu"
+                            aria-labelledby="shop-sort-label shop-sort-value"
+                        >
+                            <span id="shop-sort-value" data-sort-value-label>{{ sortOptions[sort]|default(sortOptions.rank) }}</span>
+                            <span class="shop-catalog__sort-caret" aria-hidden="true"></span>
+                        </button>
 
-                    {% set nextSortDir = sortDir == 'asc' ? 'desc' : 'asc' %}
-                    <button
-                        class="shop-catalog__sort-dir"
-                        type="submit"
-                        name="dir"
-                        value="{{ nextSortDir }}"
-                        title="{{ sortDir == 'asc' ? 'shop.sort.desc'|trans : 'shop.sort.asc'|trans }}"
-                        aria-label="{{ sortDir == 'asc' ? 'shop.sort.desc'|trans : 'shop.sort.asc'|trans }}"
-                    >
-                        <span class="shop-catalog__sort-dir-icon" aria-hidden="true">{{ sortDir == 'asc' ? '↑' : '↓' }}</span>
-                    </button>
+                        <div
+                            id="shop-sort-menu"
+                            class="shop-catalog__sort-menu"
+                            data-sort-menu
+                            role="listbox"
+                            aria-labelledby="shop-sort-label"
+                            hidden
+                        >
+                            {% for value, label in sortOptions %}
+                                <button
+                                    type="submit"
+                                    class="shop-catalog__sort-option{% if sort == value %} is-active{% endif %}"
+                                    name="sort"
+                                    value="{{ value }}"
+                                    role="option"
+                                    aria-selected="{{ sort == value ? 'true' : 'false' }}"
+                                >
+                                    {{ label }}
+                                </button>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <noscript>
+                        <label class="shop-catalog__sort-field">
+                            <span class="shop-catalog__sort-label">{{ 'shop.sort.by'|trans }}</span>
+                            <select name="sort" onchange="this.form.submit()" aria-label="{{ 'shop.sort.by'|trans }}">
+                                {% for value, label in sortOptions %}
+                                    <option value="{{ value }}"{% if sort == value %} selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </label>
+                    </noscript>
                 </form>
             </div>
 
@@ -299,6 +435,43 @@
     const mobileMq = window.matchMedia('(max-width: 900px)');
     const scrollAfterFilterKey = 'shopScrollToCategoryHeader';
 
+    document.querySelectorAll('[data-sort-dropdown]').forEach((dropdown) => {
+        const trigger = dropdown.querySelector('[data-sort-trigger]');
+        const menu = dropdown.querySelector('[data-sort-menu]');
+        if (!trigger || !menu) {
+            return;
+        }
+
+        const setOpen = (open) => {
+            trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+            menu.hidden = !open;
+        };
+
+        trigger.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            setOpen(menu.hidden);
+        });
+
+        menu.querySelectorAll('.shop-catalog__sort-option').forEach((option) => {
+            option.addEventListener('click', () => {
+                setOpen(false);
+            });
+        });
+
+        document.addEventListener('click', (event) => {
+            if (!dropdown.contains(event.target)) {
+                setOpen(false);
+            }
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                setOpen(false);
+            }
+        });
+    });
+
     const markScrollToCategoryHeader = () => {
         if (!mobileMq.matches) {
             return;
@@ -310,11 +483,19 @@
         }
     };
 
+    const closeFilterSheet = (form) => {
+        const sheet = form?.closest('[data-sheet]');
+        if (sheet && window.ShopSheet) {
+            window.ShopSheet.close(sheet);
+        }
+    };
+
     const submitFilterForm = (form) => {
         if (!form) {
             return;
         }
         markScrollToCategoryHeader();
+        closeFilterSheet(form);
         form.submit();
     };
 
@@ -356,14 +537,6 @@
     const applyViewportState = () => {
         const isMobile = mobileMq.matches;
 
-        document.querySelectorAll('[data-filter-panel-toggle]').forEach((button) => {
-            const form = button.closest('[data-shop-filters]');
-            const body = form?.querySelector('[data-filter-panel-body]');
-            if (!isMobile) {
-                setExpanded(button, body, true);
-            }
-        });
-
         document.querySelectorAll('[data-filter-group-toggle]').forEach((button) => {
             const group = button.closest('[data-filter-group]');
             const body = group?.querySelector('[data-filter-group-body]');
@@ -371,25 +544,12 @@
                 setExpanded(button, body, true, group);
                 return;
             }
-            // On mobile: keep sections with active filters open, collapse the rest.
             if (group?.dataset.userToggled === '1') {
                 return;
             }
             setExpanded(button, body, group?.hasAttribute('data-has-selection') ?? false, group);
         });
     };
-
-    document.querySelectorAll('[data-filter-panel-toggle]').forEach((button) => {
-        button.addEventListener('click', () => {
-            if (!mobileMq.matches) {
-                return;
-            }
-            const form = button.closest('[data-shop-filters]');
-            const body = form?.querySelector('[data-filter-panel-body]');
-            const expanded = button.getAttribute('aria-expanded') === 'true';
-            setExpanded(button, body, !expanded);
-        });
-    });
 
     document.querySelectorAll('[data-filter-group-toggle]').forEach((button) => {
         button.addEventListener('click', () => {
@@ -500,9 +660,12 @@
         });
     });
 
-    document.querySelectorAll('[data-shop-filters] .shop-filters__chip, [data-shop-filters] .shop-filters__clear-all').forEach((link) => {
+    document.querySelectorAll(
+        '[data-shop-filters] .shop-filters__chip, [data-shop-filters] .shop-filters__clear-all, .shop-catalog__mobile-chips .shop-filters__chip, .shop-catalog__mobile-chips .shop-filters__clear-all'
+    ).forEach((link) => {
         link.addEventListener('click', () => {
             markScrollToCategoryHeader();
+            closeFilterSheet(link.closest('form') || document.querySelector('[data-shop-filters]'));
         });
     });
 

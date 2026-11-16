@@ -65,19 +65,67 @@ use SimpleXMLElement;
             }
         }
 
+        $vendorCode = trim((string) $node->vendorCode);
+
         return [
             'id' => $externalId,
             'available' => true,
-            'name' => (string)$node->name,
-            'category_id' => (int)$node->categoryId,
-            'price' => (int)$node->price,
-            'description' => (string)$node->description,
-            'brand' => (string)$node->vendor,
-            'stock_qty' => (int)$node->quantity_in_stock,
-            'sku' => 'homeware-' . $node->vendorCode,
+            'name' => (string) $node->name,
+            'category_id' => (int) $node->categoryId,
+            'price' => (int) $node->price,
+            'description' => (string) $node->description,
+            'brand' => (string) $node->vendor,
+            'stock_qty' => (int) $node->quantity_in_stock,
+            'vendor_code' => $vendorCode,
+            'sku' => 'homeware-'.$vendorCode,
             'params' => $params,
             'weight' => WeightParser::fromParams($params),
         ];
+    }
+
+    /**
+     * Remove feed SKU / vendor code tokens from a product title.
+     * Example: "… золотистий Yiwu LB-1569G" + vendorCode LB-1569G → "… золотистий Yiwu".
+     */
+    public function stripSkuFromName(string $name, string ...$skuTokens): string
+    {
+        $name = trim($name);
+        if ($name === '') {
+            return $name;
+        }
+
+        foreach ($skuTokens as $token) {
+            $token = trim($token);
+            if ($token === '') {
+                continue;
+            }
+            $quoted = preg_quote($token, '/');
+            $name = preg_replace(
+                '/(?<![\p{L}\p{N}_-])'.$quoted.'(?![\p{L}\p{N}_-])/iu',
+                '',
+                $name,
+            ) ?? $name;
+        }
+
+        $name = preg_replace('/\s{2,}/u', ' ', $name) ?? $name;
+        $name = preg_replace('/\s+,/u', ',', $name) ?? $name;
+
+        return trim($name, " \t\n\r\0\x0B,;-");
+    }
+
+    /**
+     * @param array<string, mixed> $productData
+     * @return array<string, mixed>
+     */
+    public function applyStripSkuFromName(array $productData): array
+    {
+        $name = trim((string) ($productData['name'] ?? ''));
+        $vendorCode = trim((string) ($productData['vendor_code'] ?? ''));
+        $sku = trim((string) ($productData['sku'] ?? ''));
+        $productData['name'] = $this->stripSkuFromName($name, $vendorCode, $sku);
+        $productData['strip_sku_from_name'] = true;
+
+        return $productData;
     }
 
 
@@ -138,6 +186,7 @@ use SimpleXMLElement;
             ->setShortDescription('')
             ->setInStock($inStock)
             ->setStockQty($inStock ? max(1, $productData['stock_qty']) : 0)
+            ->setRating(1)
             ->setBadge($inStock ? null : 'Очікується')
             ->setOgType('product')
             ->setEnabled(!$productData['force_disabled'])
@@ -174,6 +223,13 @@ use SimpleXMLElement;
             ->setInStock($inStock)
             ->setStockQty($inStock ? max(1, $productData['stock_qty']) : 0)
             ->setBadge($inStock ? null : 'Очікується');
+
+        if (!empty($productData['strip_sku_from_name'])) {
+            $name = trim((string) ($productData['name'] ?? ''));
+            if ($name !== '') {
+                $product->setName($name);
+            }
+        }
 
         if (($productData['weight'] ?? null) !== null) {
             $product->setWeight($productData['weight']);
