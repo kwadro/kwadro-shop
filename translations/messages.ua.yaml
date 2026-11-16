@@ -14,6 +14,9 @@ menu.group_orders: Замовлення
 menu.group_email: Пошта
 menu.group_bank: Банк
 menu.group_marketing: Маркетинг
+menu.group_partner_program: Партнерська програма
+menu.link_partner_query_parameter: Параметри запитів
+menu.link_partner_query_parameter_single: Параметр запиту
 menu.link_promo_image_editor: Редактор промо-картинок
 menu.link_image_editor: Редактор картинок
 menu.link_background_remover: Прибрати фон
@@ -737,6 +740,15 @@ admin.bot_user_agent_marker.note: Примітка
 admin.bot_user_agent_marker.is_active: Активний
 admin.bot_user_agent_marker.created_at: Створено
 admin.bot_user_agent_marker.updated_at: Оновлено
+admin.partner_query_parameter.help: 'Імена GET-параметрів, у яких шукається партнерський ключ (наприклад pr, ref, key). Після захоплення параметра відбувається 302 на чистий URL.'
+admin.partner_query_parameter.name: Параметр
+admin.partner_query_parameter.name_help: 'Імʼя GET-параметра, наприклад pr або ref. Регістр у URL не важливий.'
+admin.partner_query_parameter.name_unique: Параметр із такою назвою вже існує.
+admin.partner_query_parameter.name_format: 'Дозволені латинські літери, цифри, _ і -. Має починатися з літери.'
+admin.partner_query_parameter.note: Примітка
+admin.partner_query_parameter.is_active: Активний
+admin.partner_query_parameter.created_at: Створено
+admin.partner_query_parameter.updated_at: Оновлено
 admin.blocked_ip.ip: IP адреса
 admin.blocked_ip.ip_help: 'IPv4 або IPv6. Заблокований IP отримає 403 на вітрині (адмінка лишається доступною).'
 admin.blocked_ip.note: Примітка

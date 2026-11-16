@@ -41,6 +41,7 @@ parameters:
     env(AI_CONTENT_NOTIFY_EMAIL): ''
     env(AI_CONTENT_NOTIFY_FROM): 'noreply@localhost'
     env(FB_META_PIXEL_ID): ''
+    env(PARTNER_AFFILIATE_API_BASE): 'https://affiliate.kvadro.if.ua'
     shop_default_city: '%env(SHOP_DEFAULT_CITY)%'
     shop_default_package_weight: '%env(SHOP_DEFAULT_PACKAGE_WEIGHT)%'
     shop_default_package_height: '%env(SHOP_DEFAULT_PACKAGE_HEIGHT)%'
@@ -92,6 +93,10 @@ services:
     App\Service\GeoIp\GeoIpFileLogger:
         arguments:
             $logFile: '%kernel.logs_dir%/geoip.log'
+
+    App\PartnerProgram\Service\PartnerProgramLogger:
+        arguments:
+            $logFile: '%kernel.logs_dir%/partner-program.log'
 
     App\Service\GeoIp\UserCityService:
         arguments:

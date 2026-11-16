@@ -14,6 +14,9 @@ menu.group_orders: Orders
 menu.group_email: Email
 menu.group_bank: Bank
 menu.group_marketing: Marketing
+menu.group_partner_program: Partner program
+menu.link_partner_query_parameter: Query parameters
+menu.link_partner_query_parameter_single: Query parameter
 menu.link_promo_image_editor: Promo image editor
 menu.link_image_editor: Image editor
 menu.link_background_remover: Remove background
@@ -737,6 +740,15 @@ admin.bot_user_agent_marker.note: Note
 admin.bot_user_agent_marker.is_active: Active
 admin.bot_user_agent_marker.created_at: Created
 admin.bot_user_agent_marker.updated_at: Updated
+admin.partner_query_parameter.help: 'GET parameter names that may carry a partner referral key (e.g. pr, ref, key). After capture the visitor is 302-redirected to a clean URL.'
+admin.partner_query_parameter.name: Parameter
+admin.partner_query_parameter.name_help: 'GET parameter name, e.g. pr or ref. Matching is case-insensitive.'
+admin.partner_query_parameter.name_unique: A parameter with this name already exists.
+admin.partner_query_parameter.name_format: 'Use Latin letters, digits, _ and -. Must start with a letter.'
+admin.partner_query_parameter.note: Note
+admin.partner_query_parameter.is_active: Active
+admin.partner_query_parameter.created_at: Created
+admin.partner_query_parameter.updated_at: Updated
 admin.blocked_ip.ip: IP address
 admin.blocked_ip.ip_help: 'IPv4 or IPv6. Blocked IPs get HTTP 403 on the storefront (admin stays accessible).'
 admin.blocked_ip.note: Note
