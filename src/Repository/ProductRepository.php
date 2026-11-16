@@ -259,6 +259,11 @@ class ProductRepository extends ServiceEntityRepository
 
     public const FILTER_ATTRIBUTES = ['brand', 'color', 'type', 'model'];
 
+    public const SORT_POSITION = 'position';
+    public const SORT_PRICE = 'price';
+    public const SORT_DIR_ASC = 'asc';
+    public const SORT_DIR_DESC = 'desc';
+
     /**
      * @param array{
      *   category?: Category|null,
@@ -267,7 +272,11 @@ class ProductRepository extends ServiceEntityRepository
      *   filters?: array<string, list<string>>,
      *   searchFields?: list<string>,
      *   inStockOnly?: bool,
-     *   filterAttributes?: list<ProductAttribute>
+     *   filterAttributes?: list<ProductAttribute>,
+     *   sort?: string,
+     *   sortDir?: string,
+     *   priceMin?: float|null,
+     *   priceMax?: float|null
      * } $criteria
      * @return array{items: list<Product>, total: int}
      */
@@ -276,8 +285,10 @@ class ProductRepository extends ServiceEntityRepository
         $page = max(1, $page);
         $perPage = max(1, min(100, $perPage));
         $searchQuery = trim((string) ($criteria['query'] ?? ''));
+        $sort = $this->normalizeCatalogSort($criteria['sort'] ?? null);
+        $sortDir = $this->normalizeCatalogSortDir($criteria['sortDir'] ?? null);
 
-        if ($searchQuery !== '') {
+        if ($searchQuery !== '' && $sort === self::SORT_POSITION) {
             $orderedSearchIds = $this->findIdsMatchingSearch($searchQuery, $criteria['searchFields'] ?? null);
             if ($orderedSearchIds === []) {
                 return ['items' => [], 'total' => 0];
@@ -289,6 +300,10 @@ class ProductRepository extends ServiceEntityRepository
                 if (isset($filteredSet[$id])) {
                     $orderedIds[] = $id;
                 }
+            }
+
+            if ($sortDir === self::SORT_DIR_DESC) {
+                $orderedIds = array_reverse($orderedIds);
             }
 
             $total = \count($orderedIds);
@@ -308,16 +323,7 @@ class ProductRepository extends ServiceEntityRepository
                 return ['items' => [], 'total' => 0];
             }
 
-            $ids = $this->createCatalogQueryBuilder($criteria)
-                ->select('p.id')
-                ->leftJoin('p.offers', 'o_sort')
-                ->addSelect('CASE WHEN p.in_stock = true AND SUM(CASE WHEN o_sort.qty > 0 THEN 1 ELSE 0 END) > 0 THEN 0 ELSE 1 END AS HIDDEN listing_stock_rank')
-                ->addSelect('CASE WHEN MIN(o_sort.price) IS NULL THEN 999999999 ELSE MIN(o_sort.price) END AS HIDDEN listing_min_price')
-                ->groupBy('p.id')
-                ->addGroupBy('p.in_stock')
-                ->orderBy('listing_stock_rank', 'ASC')
-                ->addOrderBy('listing_min_price', 'ASC')
-                ->addOrderBy('p.id', 'ASC')
+            $ids = $this->createCatalogOrderedIdQuery($criteria, $sort, $sortDir)
                 ->setFirstResult(($page - 1) * $perPage)
                 ->setMaxResults($perPage)
                 ->getQuery()
@@ -345,6 +351,42 @@ class ProductRepository extends ServiceEntityRepository
             ->getResult();
 
         return ['items' => $this->orderProductsByIds($items, $ids), 'total' => $total];
+    }
+
+    /**
+     * Min/max offer prices in catalog scope (ignores selected price range).
+     *
+     * @param array<string, mixed> $criteria
+     * @return array{min: float, max: float}|null
+     */
+    public function findCatalogPriceBounds(array $criteria): ?array
+    {
+        $boundsCriteria = $criteria;
+        unset($boundsCriteria['priceMin'], $boundsCriteria['priceMax']);
+
+        $qb = $this->createCatalogQueryBuilder($boundsCriteria);
+        if (($boundsCriteria['supplier'] ?? null) instanceof Supplier) {
+            $qb->select('MIN(o_scope.price) AS min_price', 'MAX(o_scope.price) AS max_price');
+        } else {
+            $qb->select('MIN(o_bounds.price) AS min_price', 'MAX(o_bounds.price) AS max_price')
+                ->innerJoin('p.offers', 'o_bounds');
+        }
+
+        $row = $qb->getQuery()->getOneOrNullResult();
+        if (!\is_array($row)) {
+            return null;
+        }
+
+        $min = isset($row['min_price']) && is_numeric($row['min_price']) ? (float) $row['min_price'] : null;
+        $max = isset($row['max_price']) && is_numeric($row['max_price']) ? (float) $row['max_price'] : null;
+        if ($min === null || $max === null || $max < $min) {
+            return null;
+        }
+
+        return [
+            'min' => floor($min),
+            'max' => ceil($max),
+        ];
     }
 
     /**
@@ -605,7 +647,9 @@ class ProductRepository extends ServiceEntityRepository
      *   filters?: array<string, list<string>>,
      *   searchFields?: list<string>,
      *   inStockOnly?: bool,
-     *   filterAttributes?: list<ProductAttribute>
+     *   filterAttributes?: list<ProductAttribute>,
+     *   priceMin?: float|null,
+     *   priceMax?: float|null
      * } $criteria
      */
     private function createCatalogQueryBuilder(array $criteria): QueryBuilder
@@ -670,7 +714,71 @@ class ProductRepository extends ServiceEntityRepository
                 ->setParameter('filterVals'.$index, $values);
         }
 
+        $priceMin = $criteria['priceMin'] ?? null;
+        $priceMax = $criteria['priceMax'] ?? null;
+        if (is_numeric($priceMin) || is_numeric($priceMax)) {
+            $priceParts = ['o_price.product = p'];
+            if (($criteria['supplier'] ?? null) instanceof Supplier) {
+                $priceParts[] = 'o_price.supplier = :catalogPriceSupplier';
+                $qb->setParameter('catalogPriceSupplier', $criteria['supplier']);
+            }
+            if (is_numeric($priceMin)) {
+                $priceParts[] = 'o_price.price >= :catalogPriceMin';
+                $qb->setParameter('catalogPriceMin', (float) $priceMin);
+            }
+            if (is_numeric($priceMax)) {
+                $priceParts[] = 'o_price.price <= :catalogPriceMax';
+                $qb->setParameter('catalogPriceMax', (float) $priceMax);
+            }
+            $qb->andWhere(sprintf(
+                'EXISTS (SELECT 1 FROM App\Entity\ProductOffer o_price WHERE %s)',
+                implode(' AND ', $priceParts),
+            ));
+        }
+
         return $qb;
+    }
+
+    /**
+     * @param array<string, mixed> $criteria
+     */
+    private function createCatalogOrderedIdQuery(array $criteria, string $sort, string $sortDir): QueryBuilder
+    {
+        $qb = $this->createCatalogQueryBuilder($criteria)
+            ->select('p.id')
+            ->leftJoin('p.offers', 'o_sort')
+            ->addSelect('CASE WHEN p.in_stock = true AND SUM(CASE WHEN o_sort.qty > 0 THEN 1 ELSE 0 END) > 0 THEN 0 ELSE 1 END AS HIDDEN listing_stock_rank')
+            ->addSelect('CASE WHEN MIN(o_sort.price) IS NULL THEN 1 ELSE 0 END AS HIDDEN listing_missing_price')
+            ->addSelect('CASE WHEN MIN(o_sort.price) IS NULL THEN 0 ELSE MIN(o_sort.price) END AS HIDDEN listing_min_price')
+            ->groupBy('p.id')
+            ->addGroupBy('p.in_stock')
+            ->orderBy('listing_stock_rank', 'ASC');
+
+        if ($sort === self::SORT_PRICE) {
+            $qb->addOrderBy('listing_missing_price', 'ASC')
+                ->addOrderBy('listing_min_price', strtoupper($sortDir))
+                ->addOrderBy('p.id', 'ASC');
+        } else {
+            $qb->addOrderBy('p.id', strtoupper($sortDir));
+        }
+
+        return $qb;
+    }
+
+    private function normalizeCatalogSort(mixed $sort): string
+    {
+        $sort = is_string($sort) ? strtolower(trim($sort)) : '';
+
+        return \in_array($sort, [self::SORT_POSITION, self::SORT_PRICE], true)
+            ? $sort
+            : self::SORT_POSITION;
+    }
+
+    private function normalizeCatalogSortDir(mixed $dir): string
+    {
+        $dir = is_string($dir) ? strtolower(trim($dir)) : '';
+
+        return $dir === self::SORT_DIR_DESC ? self::SORT_DIR_DESC : self::SORT_DIR_ASC;
     }
 
     /**

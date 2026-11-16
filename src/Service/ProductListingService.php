@@ -30,7 +30,8 @@ class ProductListingService
      * @param array{
      *   category?: Category|null,
      *   supplier?: Supplier|null,
-     *   query?: string|null
+     *   query?: string|null,
+     *   facets?: list<string>
      * } $scope
      * @return array{
      *   products: list<array<string, mixed>>,
@@ -42,7 +43,14 @@ class ProductListingService
      *   facetLabels: array<string, string>,
      *   filters: array<string, list<string>>,
      *   query: string,
-     *   showFilters: bool
+     *   showFilters: bool,
+     *   sort: string,
+     *   sortDir: string,
+     *   priceMin: float|null,
+     *   priceMax: float|null,
+     *   priceBounds: array{min: float, max: float}|null,
+     *   paginationQuery: array<string, mixed>,
+     *   activeFilters: list<array{attr: string, value: string, query: array<string, mixed>}>
      * }
      */
     public function list(array $scope, Request $request, bool $showFilters = true): array
@@ -58,6 +66,9 @@ class ProductListingService
         if ($allowedFacets !== null) {
             $filters = array_intersect_key($filters, array_flip($allowedFacets));
         }
+        $sort = $this->parseSort($request);
+        $sortDir = $this->parseSortDir($request);
+        $priceRange = $showFilters ? $this->parsePriceRange($request) : ['min' => null, 'max' => null];
         $perPage = $this->resolveProductsPerPage();
         $page = max(1, (int) $request->query->get('page', 1));
 
@@ -72,6 +83,10 @@ class ProductListingService
             'searchFields' => $searchFields,
             'inStockOnly' => $inStockOnly,
             'filterAttributes' => $filterAttributes,
+            'sort' => $sort,
+            'sortDir' => $sortDir,
+            'priceMin' => $priceRange['min'],
+            'priceMax' => $priceRange['max'],
         ];
 
         $facetCriteria = [
@@ -83,7 +98,26 @@ class ProductListingService
             'inStockOnly' => $inStockOnly,
             'filterAttributes' => $filterAttributes,
             'facetKeys' => $allowedFacets,
+            'priceMin' => $priceRange['min'],
+            'priceMax' => $priceRange['max'],
         ];
+
+        $priceBounds = $showFilters
+            ? $this->productRepository->findCatalogPriceBounds($criteria)
+            : null;
+        if ($priceBounds !== null) {
+            $priceRange = $this->clampPriceRange($priceRange, $priceBounds);
+            $criteria['priceMin'] = $priceRange['min'];
+            $criteria['priceMax'] = $priceRange['max'];
+            $facetCriteria['priceMin'] = $priceRange['min'];
+            $facetCriteria['priceMax'] = $priceRange['max'];
+        } else {
+            $priceRange = ['min' => null, 'max' => null];
+            $criteria['priceMin'] = null;
+            $criteria['priceMax'] = null;
+            $facetCriteria['priceMin'] = null;
+            $facetCriteria['priceMax'] = null;
+        }
 
         $pageResult = $this->productRepository->findCatalogPage($criteria, $page, $perPage);
         $total = $pageResult['total'];
@@ -113,6 +147,13 @@ class ProductListingService
             }
         }
 
+        $listingState = [
+            'sort' => $sort,
+            'sortDir' => $sortDir,
+            'priceMin' => $priceRange['min'],
+            'priceMax' => $priceRange['max'],
+        ];
+
         return [
             'products' => $products,
             'total' => $total,
@@ -124,8 +165,13 @@ class ProductListingService
             'filters' => $filters,
             'query' => $query,
             'showFilters' => $showFilters,
-            'paginationQuery' => $this->buildPaginationQuery($query, $filters),
-            'activeFilters' => $this->buildActiveFilters($query, $filters),
+            'sort' => $sort,
+            'sortDir' => $sortDir,
+            'priceMin' => $priceRange['min'],
+            'priceMax' => $priceRange['max'],
+            'priceBounds' => $priceBounds,
+            'paginationQuery' => $this->buildPaginationQuery($query, $filters, $listingState),
+            'activeFilters' => $this->buildActiveFilters($query, $filters, $listingState, $priceBounds),
         ];
     }
 
@@ -145,9 +191,11 @@ class ProductListingService
 
     /**
      * @param array<string, list<string>> $filters
+     * @param array{sort: string, sortDir: string, priceMin: float|null, priceMax: float|null} $listingState
+     * @param array{min: float, max: float}|null $priceBounds
      * @return list<array{attr: string, value: string, query: array<string, mixed>}>
      */
-    private function buildActiveFilters(string $query, array $filters): array
+    private function buildActiveFilters(string $query, array $filters, array $listingState, ?array $priceBounds): array
     {
         $items = [];
         foreach ($filters as $attribute => $values) {
@@ -160,9 +208,28 @@ class ProductListingService
                 $items[] = [
                     'attr' => $attribute,
                     'value' => $value,
-                    'query' => $this->buildPaginationQuery($query, $remaining),
+                    'query' => $this->buildPaginationQuery($query, $remaining, $listingState),
                 ];
             }
+        }
+
+        if (
+            $priceBounds !== null
+            && (
+                ($listingState['priceMin'] !== null && $listingState['priceMin'] > $priceBounds['min'])
+                || ($listingState['priceMax'] !== null && $listingState['priceMax'] < $priceBounds['max'])
+            )
+        ) {
+            $minLabel = $listingState['priceMin'] ?? $priceBounds['min'];
+            $maxLabel = $listingState['priceMax'] ?? $priceBounds['max'];
+            $clearedPrice = $listingState;
+            $clearedPrice['priceMin'] = null;
+            $clearedPrice['priceMax'] = null;
+            $items[] = [
+                'attr' => 'price',
+                'value' => $this->formatPriceChip($minLabel, $maxLabel),
+                'query' => $this->buildPaginationQuery($query, $filters, $clearedPrice),
+            ];
         }
 
         return $items;
@@ -170,9 +237,10 @@ class ProductListingService
 
     /**
      * @param array<string, list<string>> $filters
+     * @param array{sort?: string, sortDir?: string, priceMin?: float|null, priceMax?: float|null} $listingState
      * @return array<string, mixed>
      */
-    private function buildPaginationQuery(string $query, array $filters): array
+    private function buildPaginationQuery(string $query, array $filters, array $listingState = []): array
     {
         $params = [];
         if ($query !== '') {
@@ -182,6 +250,22 @@ class ProductListingService
             if ($values !== []) {
                 $params[$attribute] = $values;
             }
+        }
+
+        $sort = $listingState['sort'] ?? ProductRepository::SORT_POSITION;
+        $sortDir = $listingState['sortDir'] ?? ProductRepository::SORT_DIR_ASC;
+        if ($sort !== ProductRepository::SORT_POSITION) {
+            $params['sort'] = $sort;
+        }
+        if ($sortDir !== ProductRepository::SORT_DIR_ASC) {
+            $params['dir'] = $sortDir;
+        }
+
+        if (isset($listingState['priceMin']) && $listingState['priceMin'] !== null) {
+            $params['price_min'] = (int) $listingState['priceMin'];
+        }
+        if (isset($listingState['priceMax']) && $listingState['priceMax'] !== null) {
+            $params['price_max'] = (int) $listingState['priceMax'];
         }
 
         return $params;
@@ -217,6 +301,92 @@ class ProductListingService
         }
 
         return $filters;
+    }
+
+    public function parseSort(Request $request): string
+    {
+        $sort = strtolower(trim((string) $request->query->get('sort', ProductRepository::SORT_POSITION)));
+
+        return \in_array($sort, [ProductRepository::SORT_POSITION, ProductRepository::SORT_PRICE], true)
+            ? $sort
+            : ProductRepository::SORT_POSITION;
+    }
+
+    public function parseSortDir(Request $request): string
+    {
+        $dir = strtolower(trim((string) $request->query->get('dir', ProductRepository::SORT_DIR_ASC)));
+
+        return $dir === ProductRepository::SORT_DIR_DESC
+            ? ProductRepository::SORT_DIR_DESC
+            : ProductRepository::SORT_DIR_ASC;
+    }
+
+    /**
+     * @return array{min: float|null, max: float|null}
+     */
+    public function parsePriceRange(Request $request): array
+    {
+        return [
+            'min' => $this->parsePriceParam($request->query->get('price_min')),
+            'max' => $this->parsePriceParam($request->query->get('price_max')),
+        ];
+    }
+
+    private function parsePriceParam(mixed $value): ?float
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+        if (!is_numeric($value)) {
+            return null;
+        }
+
+        $price = (float) $value;
+        if ($price < 0) {
+            return null;
+        }
+
+        return $price;
+    }
+
+    /**
+     * @param array{min: float|null, max: float|null} $range
+     * @param array{min: float, max: float} $bounds
+     * @return array{min: float|null, max: float|null}
+     */
+    private function clampPriceRange(array $range, array $bounds): array
+    {
+        $min = $range['min'];
+        $max = $range['max'];
+
+        if ($min !== null) {
+            $min = max($bounds['min'], min($bounds['max'], $min));
+        }
+        if ($max !== null) {
+            $max = max($bounds['min'], min($bounds['max'], $max));
+        }
+        if ($min !== null && $max !== null && $min > $max) {
+            [$min, $max] = [$max, $min];
+        }
+
+        // Treat full-range selection as "no price filter".
+        if ($min !== null && $min <= $bounds['min']) {
+            $min = null;
+        }
+        if ($max !== null && $max >= $bounds['max']) {
+            $max = null;
+        }
+
+        return ['min' => $min, 'max' => $max];
+    }
+
+    private function formatPriceChip(float $min, float $max): string
+    {
+        return sprintf(
+            '%s – %s ₴',
+            number_format($min, 0, ',', ' '),
+            number_format($max, 0, ',', ' '),
+        );
     }
 
     public function resolveProductsPerPage(): int

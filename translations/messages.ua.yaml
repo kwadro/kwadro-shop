@@ -1313,6 +1313,9 @@ shop.filter.brand: Бренд
 shop.filter.color: Колір
 shop.filter.type: Тип
 shop.filter.model: Модель
+shop.filter.price: Ціна
+shop.filter.price_min: Ціна від
+shop.filter.price_max: Ціна до
 shop.filter.reset: Скинути
 shop.filter.apply: Застосувати
 shop.filter.selected: Вибрані фільтри
@@ -1321,6 +1324,12 @@ shop.filter.clear_all: Видалити всі
 shop.filter.show_all: 'Показати всі (+%count%)'
 shop.filter.show_less: Згорнути
 shop.catalog.results_count: 'Знайдено: %count%'
+shop.sort.by: Сортування
+shop.sort.direction: Напрямок
+shop.sort.position: Позиція товару
+shop.sort.price: Ціна товару
+shop.sort.asc: За зростанням
+shop.sort.desc: За спаданням
 shop.pagination.label: Пагінація
 shop.pagination.prev: Назад
 shop.pagination.next: Далі

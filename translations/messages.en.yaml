@@ -1314,6 +1314,9 @@ shop.filter.brand: Brand
 shop.filter.color: Color
 shop.filter.type: Type
 shop.filter.model: Model
+shop.filter.price: Price
+shop.filter.price_min: Price from
+shop.filter.price_max: Price to
 shop.filter.reset: Reset
 shop.filter.apply: Apply
 shop.filter.selected: Selected filters
@@ -1322,6 +1325,12 @@ shop.filter.clear_all: Remove all
 shop.filter.show_all: 'Show all (+%count%)'
 shop.filter.show_less: Show less
 shop.catalog.results_count: 'Found: %count%'
+shop.sort.by: Sort by
+shop.sort.direction: Direction
+shop.sort.position: Product position
+shop.sort.price: Product price
+shop.sort.asc: Ascending
+shop.sort.desc: Descending
 shop.pagination.label: Pagination
 shop.pagination.prev: Previous
 shop.pagination.next: Next

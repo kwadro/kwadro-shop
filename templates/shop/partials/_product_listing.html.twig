@@ -2,18 +2,28 @@
     brand: 'shop.filter.brand'|trans,
     color: 'shop.filter.color'|trans,
     type: 'shop.filter.type'|trans,
-    model: 'shop.filter.model'|trans
+    model: 'shop.filter.model'|trans,
+    price: 'shop.filter.price'|trans
 }|merge(facetLabels|default({})) %}
+
+{% set sort = sort|default('position') %}
+{% set sortDir = sortDir|default('asc') %}
+{% set priceBounds = priceBounds|default(null) %}
+{% set hasPriceFilter = priceBounds is not null and priceBounds.max > priceBounds.min %}
+{% set selectedPriceMin = priceMin is not null ? priceMin : (hasPriceFilter ? priceBounds.min : null) %}
+{% set selectedPriceMax = priceMax is not null ? priceMax : (hasPriceFilter ? priceBounds.max : null) %}
 
 {# A facet group is rendered only when it offers a real choice (2+ options). #}
 {% set visibleFacetGroups = facets|default({})|filter(options => options|length > 1) %}
 {% set showFilters = showFilters|default(false)
-    and (visibleFacetGroups is not empty or activeFilters|default([]) is not empty) %}
+    and (visibleFacetGroups is not empty or activeFilters|default([]) is not empty or hasPriceFilter) %}
 
 {% set clearAllHref = filterAction %}
 {% if preserveQuery|default(false) and query|default('') != '' %}
     {% set clearAllHref = filterAction ~ '?q=' ~ query|url_encode %}
 {% endif %}
+
+{% set sortFormParams = paginationQuery|default({})|filter((v, k) => k not in ['sort', 'dir']) %}
 
 <div class="shop-catalog{% if showFilters|default(false) %} shop-catalog--with-filters{% endif %}">
     {% if showFilters|default(false) %}
@@ -21,6 +31,12 @@
             <form class="shop-filters" method="get" action="{{ filterAction }}" data-shop-filters>
                 {% if preserveQuery|default(false) and query|default('') != '' %}
                     <input type="hidden" name="q" value="{{ query }}">
+                {% endif %}
+                {% if sort != 'position' %}
+                    <input type="hidden" name="sort" value="{{ sort }}">
+                {% endif %}
+                {% if sortDir != 'asc' %}
+                    <input type="hidden" name="dir" value="{{ sortDir }}">
                 {% endif %}
 
                 <div class="shop-filters__header">
@@ -61,6 +77,70 @@
                         </div>
                     {% endif %}
 
+                    {% if hasPriceFilter %}
+                        {% set priceGroupHasSelection = (priceMin is not null) or (priceMax is not null) %}
+                        <fieldset
+                            class="shop-filters__group shop-filters__group--price"
+                            data-filter-group
+                            data-price-range
+                            data-price-bound-min="{{ priceBounds.min }}"
+                            data-price-bound-max="{{ priceBounds.max }}"
+                            {% if priceGroupHasSelection %}data-has-selection{% endif %}
+                        >
+                            <legend class="shop-filters__legend">
+                                <button
+                                    type="button"
+                                    class="shop-filters__group-toggle"
+                                    data-filter-group-toggle
+                                    aria-expanded="true"
+                                    aria-controls="shop-filter-group-price"
+                                >
+                                    <span>{{ 'shop.filter.price'|trans }}</span>
+                                    <span class="shop-filters__chevron" aria-hidden="true"></span>
+                                </button>
+                            </legend>
+                            <div
+                                class="shop-filters__options shop-filters__price"
+                                id="shop-filter-group-price"
+                                data-filter-group-body
+                            >
+                                <div class="shop-filters__price-values" aria-live="polite">
+                                    <span data-price-label-min>{{ selectedPriceMin|number_format(0, ',', ' ') }}</span>
+                                    <span aria-hidden="true">–</span>
+                                    <span data-price-label-max>{{ selectedPriceMax|number_format(0, ',', ' ') }}</span>
+                                    <span aria-hidden="true">₴</span>
+                                </div>
+                                <div class="shop-filters__price-slider">
+                                    <div class="shop-filters__price-track" aria-hidden="true">
+                                        <div class="shop-filters__price-range" data-price-range-fill></div>
+                                    </div>
+                                    <input
+                                        type="range"
+                                        class="shop-filters__price-thumb"
+                                        name="price_min"
+                                        min="{{ priceBounds.min }}"
+                                        max="{{ priceBounds.max }}"
+                                        step="1"
+                                        value="{{ selectedPriceMin }}"
+                                        aria-label="{{ 'shop.filter.price_min'|trans }}"
+                                        data-price-min
+                                    >
+                                    <input
+                                        type="range"
+                                        class="shop-filters__price-thumb"
+                                        name="price_max"
+                                        min="{{ priceBounds.min }}"
+                                        max="{{ priceBounds.max }}"
+                                        step="1"
+                                        value="{{ selectedPriceMax }}"
+                                        aria-label="{{ 'shop.filter.price_max'|trans }}"
+                                        data-price-max
+                                    >
+                                </div>
+                            </div>
+                        </fieldset>
+                    {% endif %}
+
                     {% for attr, options in facets|default({}) %}
                         {% if options|length > 1 %}
                             {% set visibleLimit = 5 %}
@@ -97,7 +177,7 @@
                                                 name="{{ attr }}[]"
                                                 value="{{ option.value }}"
                                                 {% if checked %}checked{% endif %}
-                                                onchange="this.form.submit()"
+                                                data-filter-auto-submit
                                             >
                                             <span class="shop-filters__option-label">{{ option.value }}</span>
                                             <span class="shop-filters__option-count">({{ option.count }})</span>
@@ -118,7 +198,7 @@
                                                         name="{{ attr }}[]"
                                                         value="{{ option.value }}"
                                                         {% if checked %}checked{% endif %}
-                                                        onchange="this.form.submit()"
+                                                        data-filter-auto-submit
                                                     >
                                                     <span class="shop-filters__option-label">{{ option.value }}</span>
                                                     <span class="shop-filters__option-count">({{ option.count }})</span>
@@ -158,9 +238,43 @@
                 <p>{{ emptyMessage }}</p>
             </div>
         {% else %}
-            {% if total is defined %}
-                <p class="shop-catalog__count">{{ 'shop.catalog.results_count'|trans({'%count%': total}) }}</p>
-            {% endif %}
+            <div class="shop-catalog__toolbar">
+                {% if total is defined %}
+                    <p class="shop-catalog__count">{{ 'shop.catalog.results_count'|trans({'%count%': total}) }}</p>
+                {% endif %}
+
+                <form class="shop-catalog__sort" method="get" action="{{ filterAction }}" data-shop-sort>
+                    {% for key, value in sortFormParams %}
+                        {% if value is iterable %}
+                            {% for item in value %}
+                                <input type="hidden" name="{{ key }}[]" value="{{ item }}">
+                            {% endfor %}
+                        {% else %}
+                            <input type="hidden" name="{{ key }}" value="{{ value }}">
+                        {% endif %}
+                    {% endfor %}
+
+                    <label class="shop-catalog__sort-field">
+                        <span class="shop-catalog__sort-label">{{ 'shop.sort.by'|trans }}</span>
+                        <select name="sort" onchange="this.form.submit()" aria-label="{{ 'shop.sort.by'|trans }}">
+                            <option value="position"{% if sort == 'position' %} selected{% endif %}>{{ 'shop.sort.position'|trans }}</option>
+                            <option value="price"{% if sort == 'price' %} selected{% endif %}>{{ 'shop.sort.price'|trans }}</option>
+                        </select>
+                    </label>
+
+                    {% set nextSortDir = sortDir == 'asc' ? 'desc' : 'asc' %}
+                    <button
+                        class="shop-catalog__sort-dir"
+                        type="submit"
+                        name="dir"
+                        value="{{ nextSortDir }}"
+                        title="{{ sortDir == 'asc' ? 'shop.sort.desc'|trans : 'shop.sort.asc'|trans }}"
+                        aria-label="{{ sortDir == 'asc' ? 'shop.sort.desc'|trans : 'shop.sort.asc'|trans }}"
+                    >
+                        <span class="shop-catalog__sort-dir-icon" aria-hidden="true">{{ sortDir == 'asc' ? '↑' : '↓' }}</span>
+                    </button>
+                </form>
+            </div>
 
             <div class="shop-catalog-grid">
                 {% for product in products %}
@@ -183,6 +297,51 @@
 <script>
 (() => {
     const mobileMq = window.matchMedia('(max-width: 900px)');
+    const scrollAfterFilterKey = 'shopScrollToCategoryHeader';
+
+    const markScrollToCategoryHeader = () => {
+        if (!mobileMq.matches) {
+            return;
+        }
+        try {
+            sessionStorage.setItem(scrollAfterFilterKey, '1');
+        } catch (e) {
+            // Ignore storage failures (private mode, etc.).
+        }
+    };
+
+    const submitFilterForm = (form) => {
+        if (!form) {
+            return;
+        }
+        markScrollToCategoryHeader();
+        form.submit();
+    };
+
+    const scrollToCategoryHeaderIfNeeded = () => {
+        if (!mobileMq.matches) {
+            return;
+        }
+        let shouldScroll = false;
+        try {
+            shouldScroll = sessionStorage.getItem(scrollAfterFilterKey) === '1';
+            if (shouldScroll) {
+                sessionStorage.removeItem(scrollAfterFilterKey);
+            }
+        } catch (e) {
+            return;
+        }
+        if (!shouldScroll) {
+            return;
+        }
+        const header = document.querySelector('.shop-category-page__header');
+        if (!header) {
+            return;
+        }
+        requestAnimationFrame(() => {
+            header.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    };
 
     const setExpanded = (button, body, expanded, group) => {
         button.setAttribute('aria-expanded', expanded ? 'true' : 'false');
@@ -262,6 +421,91 @@
         });
     });
 
+    const formatPrice = (value) => Number(value).toLocaleString('uk-UA', {
+        maximumFractionDigits: 0,
+    });
+
+    document.querySelectorAll('[data-price-range]').forEach((group) => {
+        const form = group.closest('form');
+        const minRange = group.querySelector('[data-price-min]');
+        const maxRange = group.querySelector('[data-price-max]');
+        const minLabel = group.querySelector('[data-price-label-min]');
+        const maxLabel = group.querySelector('[data-price-label-max]');
+        const fill = group.querySelector('[data-price-range-fill]');
+        const boundMin = Number(group.dataset.priceBoundMin);
+        const boundMax = Number(group.dataset.priceBoundMax);
+        if (!form || !minRange || !maxRange || !(boundMax > boundMin)) {
+            return;
+        }
+
+        let submitTimer = null;
+
+        const syncFill = (min, max) => {
+            if (!fill) {
+                return;
+            }
+            const span = boundMax - boundMin;
+            const left = ((min - boundMin) / span) * 100;
+            const right = ((max - boundMin) / span) * 100;
+            fill.style.left = `${left}%`;
+            fill.style.width = `${Math.max(0, right - left)}%`;
+        };
+
+        const applyValues = (min, max, { submit = false } = {}) => {
+            let nextMin = Math.min(Math.max(min, boundMin), boundMax);
+            let nextMax = Math.min(Math.max(max, boundMin), boundMax);
+            if (nextMin > nextMax) {
+                nextMin = nextMax;
+            }
+            minRange.value = String(nextMin);
+            maxRange.value = String(nextMax);
+            if (minLabel) {
+                minLabel.textContent = formatPrice(nextMin);
+            }
+            if (maxLabel) {
+                maxLabel.textContent = formatPrice(nextMax);
+            }
+            syncFill(nextMin, nextMax);
+
+            if (!submit) {
+                return;
+            }
+            window.clearTimeout(submitTimer);
+            submitTimer = window.setTimeout(() => submitFilterForm(form), 350);
+        };
+
+        applyValues(Number(minRange.value), Number(maxRange.value));
+
+        minRange.addEventListener('input', () => {
+            minRange.style.zIndex = '3';
+            maxRange.style.zIndex = '2';
+            const min = Number(minRange.value);
+            const max = Number(maxRange.value);
+            applyValues(Math.min(min, max), max);
+        });
+        maxRange.addEventListener('input', () => {
+            maxRange.style.zIndex = '3';
+            minRange.style.zIndex = '2';
+            const min = Number(minRange.value);
+            const max = Number(maxRange.value);
+            applyValues(min, Math.max(min, max));
+        });
+        minRange.addEventListener('change', () => applyValues(Number(minRange.value), Number(maxRange.value), { submit: true }));
+        maxRange.addEventListener('change', () => applyValues(Number(minRange.value), Number(maxRange.value), { submit: true }));
+    });
+
+    document.querySelectorAll('[data-shop-filters] [data-filter-auto-submit]').forEach((input) => {
+        input.addEventListener('change', () => {
+            submitFilterForm(input.form);
+        });
+    });
+
+    document.querySelectorAll('[data-shop-filters] .shop-filters__chip, [data-shop-filters] .shop-filters__clear-all').forEach((link) => {
+        link.addEventListener('click', () => {
+            markScrollToCategoryHeader();
+        });
+    });
+
     mobileMq.addEventListener('change', () => {
         document.querySelectorAll('[data-filter-group]').forEach((group) => {
             delete group.dataset.userToggled;
@@ -269,5 +513,6 @@
         applyViewportState();
     });
     applyViewportState();
+    scrollToCategoryHeaderIfNeeded();
 })();
 </script>
