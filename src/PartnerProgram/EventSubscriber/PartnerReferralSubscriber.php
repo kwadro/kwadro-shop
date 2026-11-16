@@ -18,7 +18,7 @@ final class PartnerReferralSubscriber implements EventSubscriberInterface
 
     public static function getSubscribedEvents(): array
     {
-        // Before RedirectSubscriber (32) so referral query params are handled first.
+        // Before RedirectSubscriber (32) so referral query/path are handled first.
         return [
             KernelEvents::REQUEST => ['onKernelRequest', 40],
         ];

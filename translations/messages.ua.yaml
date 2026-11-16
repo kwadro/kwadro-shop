@@ -740,9 +740,9 @@ admin.bot_user_agent_marker.note: Примітка
 admin.bot_user_agent_marker.is_active: Активний
 admin.bot_user_agent_marker.created_at: Створено
 admin.bot_user_agent_marker.updated_at: Оновлено
-admin.partner_query_parameter.help: 'Імена GET-параметрів, у яких шукається партнерський ключ (наприклад pr, ref, key). Після захоплення параметра відбувається 302 на чистий URL.'
+admin.partner_query_parameter.help: 'Імена для партнерського трекінгу. Використовуються як GET-параметри (?pr=...) і, якщо рівно 2 символи, як сегмент шляху /{code}/{linkKey}. Після захоплення — 302 на чистий URL.'
 admin.partner_query_parameter.name: Параметр
-admin.partner_query_parameter.name_help: 'Імʼя GET-параметра, наприклад pr або ref. Регістр у URL не важливий.'
+admin.partner_query_parameter.name_help: 'Наприклад pr або ref. 2-символьні коди також шукаються в кінці шляху (/.../pr/xxxxx).'
 admin.partner_query_parameter.name_unique: Параметр із такою назвою вже існує.
 admin.partner_query_parameter.name_format: 'Дозволені латинські літери, цифри, _ і -. Має починатися з літери.'
 admin.partner_query_parameter.note: Примітка

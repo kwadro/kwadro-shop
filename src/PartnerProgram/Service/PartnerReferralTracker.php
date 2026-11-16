@@ -9,8 +9,9 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
- * Detects partner referral via admin-configured query params, stores cookies,
- * notifies affiliate API, and 302-redirects to a URL without those params.
+ * Detects partner referral from admin-configured query params and/or path suffix
+ * /{pageCode}/{linkKey} where pageCode is a 2-char name from the same admin list.
+ * Stores cookies, notifies affiliate API, 302-redirects to a cleaned URL.
  */
 final class PartnerReferralTracker
 {
@@ -39,41 +40,58 @@ final class PartnerReferralTracker
         }
 
         $allowedParamNames = $this->queryParameterRepository->findActiveNames();
+        $allowedPageCodes = $this->referralKeyParser->filterPathPageCodes($allowedParamNames);
         $this->logger->info('trackAndRedirect allowedParamNames', [
             'names' => $allowedParamNames,
+            'pathPageCodes' => $allowedPageCodes,
         ]);
 
         $fromQuery = $this->extractFromQuery($request, $allowedParamNames);
-        if ($fromQuery === null) {
+        $pathInfo = $request->getPathInfo();
+        $fromPath = $this->referralKeyParser->parsePath($pathInfo, $allowedPageCodes);
+
+        $parsed = $fromQuery ?? $fromPath;
+        if ($parsed === null) {
             $this->logger->info('trackAndRedirect no referral found');
 
             return null;
         }
 
+        $needsQueryStrip = $fromQuery !== null;
+        $needsPathStrip = $fromPath !== null;
         $this->logger->info('trackAndRedirect referral matched', [
-            'referralKey' => $fromQuery['referralKey'],
-            'param' => $fromQuery['param'],
+            'referralKey' => $parsed['referralKey'],
+            'needsQueryStrip' => $needsQueryStrip,
+            'needsPathStrip' => $needsPathStrip,
+            'source' => $fromQuery !== null ? 'query' : 'path',
+            'param' => $fromQuery['param'] ?? $fromPath['pageCode'] ?? null,
         ]);
 
         $landingUrl = $request->getUri();
         $visitorId = $this->visitorIdResolver->resolve($request);
         $apiResult = $this->affiliateViewClient->registerView(
-            $fromQuery['referralKey'],
+            $parsed['referralKey'],
             $landingUrl,
             $visitorId,
         );
 
+        $cleanPath = $needsPathStrip
+            ? $this->referralKeyParser->stripPathSuffix($pathInfo)
+            : $pathInfo;
+
         $query = $request->query->all();
-        foreach ($allowedParamNames as $name) {
-            unset($query[$name]);
-            foreach (array_keys($query) as $existing) {
-                if (\is_string($existing) && strcasecmp($existing, $name) === 0) {
-                    unset($query[$existing]);
+        if ($needsQueryStrip) {
+            foreach ($allowedParamNames as $name) {
+                unset($query[$name]);
+                foreach (array_keys($query) as $existing) {
+                    if (\is_string($existing) && strcasecmp($existing, $name) === 0) {
+                        unset($query[$existing]);
+                    }
                 }
             }
         }
 
-        $target = $request->getPathInfo();
+        $target = $cleanPath;
         if ($query !== []) {
             $qs = http_build_query($query);
             if ($qs !== '') {
@@ -82,7 +100,7 @@ final class PartnerReferralTracker
         }
 
         $response = new RedirectResponse($target !== '' ? $target : '/', 302);
-        $this->attachCookies($response, $request, $fromQuery['referralKey'], $apiResult['advertisingLinkId']);
+        $this->attachCookies($response, $request, $parsed['referralKey'], $apiResult['advertisingLinkId']);
 
         $this->logger->info('trackAndRedirect redirect', [
             'target' => $target,

@@ -740,9 +740,9 @@ admin.bot_user_agent_marker.note: Note
 admin.bot_user_agent_marker.is_active: Active
 admin.bot_user_agent_marker.created_at: Created
 admin.bot_user_agent_marker.updated_at: Updated
-admin.partner_query_parameter.help: 'GET parameter names that may carry a partner referral key (e.g. pr, ref, key). After capture the visitor is 302-redirected to a clean URL.'
+admin.partner_query_parameter.help: 'Names used for partner tracking: as GET params (?pr=...) and, when exactly 2 characters, as a path segment /{code}/{linkKey}. After capture — 302 to a clean URL.'
 admin.partner_query_parameter.name: Parameter
-admin.partner_query_parameter.name_help: 'GET parameter name, e.g. pr or ref. Matching is case-insensitive.'
+admin.partner_query_parameter.name_help: 'e.g. pr or ref. Two-character codes are also matched at the end of the path (/.../pr/xxxxx).'
 admin.partner_query_parameter.name_unique: A parameter with this name already exists.
 admin.partner_query_parameter.name_format: 'Use Latin letters, digits, _ and -. Must start with a letter.'
 admin.partner_query_parameter.note: Note
