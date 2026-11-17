@@ -34,7 +34,7 @@
     {% include 'shop/partials/_gtm.html.twig' with { placement: 'head', setting: setting } only %}
     {% include 'shop/partials/_meta_pixel.html.twig' with { setting: setting } only %}
 </head>
-<body class="shop-body">
+<body class="shop-body{% block body_class %}{% endblock %}">
     {% include 'shop/partials/_gtm.html.twig' with { placement: 'body', setting: setting } only %}
     {% include 'shop/partials/_header.html.twig' %}
     {% include 'shop/partials/_category_nav.html.twig' %}

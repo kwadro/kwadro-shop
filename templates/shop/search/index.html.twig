@@ -5,6 +5,8 @@
     ? 'shop.search.title_query'|trans({'%query%': query})
     : 'shop.search.title'|trans %}
 
+{% block body_class %} shop-body--search{% endblock %}
+
 {% block title %}{{ pageTitle }}{% endblock %}
 {% block meta_title %}{{ pageTitle }}{% endblock %}
 {% block meta_description %}{{ 'shop.search.meta_description'|trans }}{% endblock %}

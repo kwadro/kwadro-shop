@@ -15,6 +15,8 @@
 {% endif %}
 {% set categoryUrl = path('shop_category', {_locale: app.request.locale, slug: category.slug}) %}
 
+{% block body_class %} shop-body--category{% endblock %}
+
 {% block title %}{{ pageTitle }}{% endblock %}
 {% block meta_title %}{{ pageMetaTitle }}{% endblock %}
 {% block meta_description %}{{ pageMetaDescription }}{% endblock %}
@@ -47,7 +49,7 @@
             <h1 class="shop-page__title">{{ category.name }}</h1>
         </header>
 
-        {% set subcategoryNavItems = siblings is not empty ? siblings : children %}
+        {% set subcategoryNavItems = siblings is not empty ? siblings : [] %}
         {% set showSubcategoryNav = subcategoryNavItems|length > 2 %}
         {% set subcategoryNavParentName = subcategoryNavParentName|default(category.name) %}
         {% if showSubcategoryNav %}
@@ -65,6 +67,18 @@
             </section>
         {% endif %}
 
+        {% if children is not empty %}
+            <section class="shop-category-page__children shop-category-page__children--desktop " aria-label="{{ 'shop.category.subcategories'|trans }}">
+                {% for child in children %}
+                    <a
+                        class="shop-category-page__child-chip"
+                        href="{{ path('shop_category', {_locale: app.request.locale, slug: child.slug}) }}"
+                    >
+                        {{ child.name }}
+                    </a>
+                {% endfor %}
+            </section>
+        {% endif %}
         {% include 'shop/partials/_product_listing.html.twig' with {
             products: products,
             total: total,
