@@ -1291,6 +1291,7 @@ class Product
             'enabled' => $this->enabled,
             'stockQty' => $offerQty,
             'badge' => $this->badge,
+            'rating' => $this->rating,
             'shortDescription' => $this->short_description ?? '',
             'description' => $this->description ?? '',
             'title' => $this->title,

@@ -157,6 +157,26 @@ class HomepageSetting
     #[ORM\InverseJoinColumn(onDelete: 'CASCADE')]
     private Collection $articles;
 
+    #[ORM\Column(options: ['default' => false])]
+    private bool $promoStripEnabled = false;
+
+    #[ORM\Column(options: ['default' => true])]
+    private bool $promoStripDismissible = true;
+
+    #[ORM\Column(options: ['default' => self::DEFAULT_SLIDER_INTERVAL_MS])]
+    #[Assert\Range(min: self::MIN_SLIDER_INTERVAL_MS, max: self::MAX_SLIDER_INTERVAL_MS)]
+    private int $promoStripIntervalMs = self::DEFAULT_SLIDER_INTERVAL_MS;
+
+    /** @var Collection<int, HomepagePromoStripItem> */
+    #[ORM\OneToMany(
+        mappedBy: 'homepageSetting',
+        targetEntity: HomepagePromoStripItem::class,
+        cascade: ['persist', 'remove'],
+        orphanRemoval: true,
+    )]
+    #[ORM\OrderBy(['position' => 'ASC', 'id' => 'ASC'])]
+    private Collection $promoStripItems;
+
     public function __construct()
     {
         $this->heroSlides = new ArrayCollection();
@@ -164,6 +184,7 @@ class HomepageSetting
         $this->products = new ArrayCollection();
         $this->topProducts = new ArrayCollection();
         $this->articles = new ArrayCollection();
+        $this->promoStripItems = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -578,6 +599,67 @@ class HomepageSetting
     public function removeArticle(BlogArticle $article): static
     {
         $this->articles->removeElement($article);
+
+        return $this;
+    }
+
+    public function isPromoStripEnabled(): bool
+    {
+        return $this->promoStripEnabled;
+    }
+
+    public function setPromoStripEnabled(bool $promoStripEnabled): static
+    {
+        $this->promoStripEnabled = $promoStripEnabled;
+
+        return $this;
+    }
+
+    public function isPromoStripDismissible(): bool
+    {
+        return $this->promoStripDismissible;
+    }
+
+    public function setPromoStripDismissible(bool $promoStripDismissible): static
+    {
+        $this->promoStripDismissible = $promoStripDismissible;
+
+        return $this;
+    }
+
+    public function getPromoStripIntervalMs(): int
+    {
+        return $this->promoStripIntervalMs;
+    }
+
+    public function setPromoStripIntervalMs(?int $promoStripIntervalMs): static
+    {
+        $this->promoStripIntervalMs = self::normalizeSliderInterval($promoStripIntervalMs);
+
+        return $this;
+    }
+
+    /** @return Collection<int, HomepagePromoStripItem> */
+    public function getPromoStripItems(): Collection
+    {
+        return $this->promoStripItems;
+    }
+
+    public function addPromoStripItem(HomepagePromoStripItem $item): static
+    {
+        if (!$this->promoStripItems->contains($item)) {
+            $this->promoStripItems->add($item);
+            $item->setHomepageSetting($this);
+        }
+
+        return $this;
+    }
+
+    public function removePromoStripItem(HomepagePromoStripItem $item): static
+    {
+        if ($this->promoStripItems->removeElement($item) && $item->getHomepageSetting() === $this) {
+            $item->setHomepageSetting(null);
+        }
 
         return $this;
     }

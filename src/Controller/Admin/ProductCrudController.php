@@ -216,6 +216,9 @@ class ProductCrudController extends AbstractCrudController
         yield IntegerField::new('stock_qty', $this->translator->trans('admin.product.stock_qty', [], 'messages'));
         yield TextField::new('badge', $this->translator->trans('admin.product.badge', [], 'messages'))
             ->hideOnIndex();
+        yield IntegerField::new('rating', $this->translator->trans('admin.product.rating', [], 'messages'))
+            ->setFormTypeOption('attr', ['min' => 0, 'max' => 999999])
+            ->setHelp($this->translator->trans('admin.product.rating_help', [], 'messages'));
         yield TextareaField::new('shortDescription', $this->translator->trans('admin.product.short_description', [], 'messages'))
             ->hideOnIndex();
         yield TextareaField::new('description', $this->translator->trans('admin.product.description', [], 'messages'))

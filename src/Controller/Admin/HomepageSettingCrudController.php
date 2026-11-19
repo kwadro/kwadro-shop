@@ -6,6 +6,7 @@ use App\Entity\BlogArticle;
 use App\Entity\HomepageSetting;
 use App\Form\Admin\HomepageCategoryItemType;
 use App\Form\Admin\HomepageHeroSlideType;
+use App\Form\Admin\HomepagePromoStripItemType;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
@@ -52,6 +53,36 @@ class HomepageSettingCrudController extends AbstractCrudController
             ->setTabId('general');
         yield AssociationField::new('site', $this->t('admin.homepage_setting.site'))->setRequired(true);
         yield AssociationField::new('locale', $this->t('admin.homepage_setting.locale'))->setRequired(true);
+
+        yield FormField::addTab($this->t('admin.homepage_setting.fieldset_promo_strip'), 'fa fa-bullhorn')
+            ->setHelp($this->t('admin.homepage_setting.fieldset_promo_strip_help'))
+            ->setTabId('promo_strip');
+        yield BooleanField::new('promoStripEnabled', $this->t('admin.homepage_setting.enabled'))
+            ->renderAsSwitch($pageName !== Crud::PAGE_INDEX);
+        yield BooleanField::new('promoStripDismissible', $this->t('admin.homepage_setting.promo_strip_dismissible'))
+            ->renderAsSwitch($pageName !== Crud::PAGE_INDEX)
+            ->setHelp($this->t('admin.homepage_setting.promo_strip_dismissible_help'))
+            ->hideOnIndex();
+        yield IntegerField::new('promoStripIntervalMs', $this->t('admin.homepage_setting.promo_strip_interval'))
+            ->setFormTypeOption('attr', [
+                'min' => HomepageSetting::MIN_SLIDER_INTERVAL_MS,
+                'max' => HomepageSetting::MAX_SLIDER_INTERVAL_MS,
+                'step' => 500,
+            ])
+            ->setHelp($this->t('admin.homepage_setting.promo_strip_interval_help'))
+            ->hideOnIndex();
+        yield CollectionField::new('promoStripItems', $this->t('admin.homepage_setting.promo_strip_items'))
+            ->setEntryType(HomepagePromoStripItemType::class)
+            ->setEntryIsComplex()
+            ->renderExpanded()
+            ->allowAdd()
+            ->allowDelete()
+            ->setFormTypeOptions([
+                'by_reference' => false,
+                'entry_options' => ['label' => false],
+            ])
+            ->setHelp($this->t('admin.homepage_setting.promo_strip_items_help'))
+            ->hideOnIndex();
 
         yield FormField::addTab($this->t('admin.homepage_setting.fieldset_hero'), 'fa fa-image')
             ->setHelp($this->t('admin.homepage_setting.fieldset_hero_help'))

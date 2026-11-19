@@ -1,0 +1,36 @@
+{% set promoStrip = promoStrip|default(shop_promo_strip()) %}
+{% if promoStrip and promoStrip.items is not empty %}
+    <aside
+        class="shop-promo-strip"
+        data-promo-strip
+        data-interval="{{ promoStrip.intervalMs }}"
+        data-dismissible="{{ promoStrip.dismissible ? '1' : '0' }}"
+        data-dismiss-key="{{ promoStrip.dismissKey|e('html_attr') }}"
+        aria-label="{{ 'shop.home.promo_strip_region'|trans }}"
+        hidden
+    >
+        <div class="shop-promo-strip__inner">
+            <div class="shop-promo-strip__viewport">
+                <div class="shop-promo-strip__track" data-promo-strip-track>
+                    {% for item in promoStrip.items %}
+                        <div
+                            class="shop-promo-strip__item{% if loop.first %} is-active{% endif %}"
+                            data-promo-strip-item
+                            {% if not loop.first %}aria-hidden="true"{% endif %}
+                        >{{ item|raw }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% if promoStrip.dismissible %}
+                <button
+                    type="button"
+                    class="shop-promo-strip__close"
+                    data-promo-strip-close
+                    aria-label="{{ 'shop.home.promo_strip_close'|trans }}"
+                >
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            {% endif %}
+        </div>
+    </aside>
+{% endif %}

@@ -36,6 +36,9 @@
 </head>
 <body class="shop-body{% block body_class %}{% endblock %}">
     {% include 'shop/partials/_gtm.html.twig' with { placement: 'body', setting: setting } only %}
+    {% block shop_banner %}
+        {% include 'shop/partials/_promo_strip.html.twig' %}
+    {% endblock %}
     {% include 'shop/partials/_header.html.twig' %}
     {% include 'shop/partials/_category_nav.html.twig' %}
 
@@ -66,6 +69,7 @@
     <script src="{{ asset('js/shop-city.js') }}" defer></script>
     <script src="{{ asset('js/shop-category-nav.js') }}" defer></script>
     <script src="{{ asset('js/shop-sheet.js') }}" defer></script>
+    <script src="{{ asset('js/shop-promo-strip.js') }}" defer></script>
     {% block javascripts %}{% endblock %}
 </body>
 </html>

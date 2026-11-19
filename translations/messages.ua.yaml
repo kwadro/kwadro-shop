@@ -444,6 +444,19 @@ admin.shop_mega_menu.item_category_placeholder: Оберіть категорі�
 admin.homepage_setting.fieldset_general: Сайт і мова
 admin.homepage_setting.site: Сайт
 admin.homepage_setting.locale: Мова
+admin.homepage_setting.fieldset_promo_strip: Рекламна полоска
+admin.homepage_setting.fieldset_promo_strip_help: Верхня смуга на всіх сторінках магазину з прокруткою HTML-написів. Показується, коли блок увімкнено і є хоча б один активний айтем.
+admin.homepage_setting.promo_strip_dismissible: Можна закривати
+admin.homepage_setting.promo_strip_dismissible_help: Якщо увімкнено, відвідувач може закрити полоску. Вибір зберігається в браузері й більше не показується.
+admin.homepage_setting.promo_strip_interval: Затримка прокрутки (мс)
+admin.homepage_setting.promo_strip_interval_help: Пауза між написами в мілісекундах (1000–60000). За замовчуванням 5000.
+admin.homepage_setting.promo_strip_items: Написи
+admin.homepage_setting.promo_strip_items_help: Додайте HTML-написи та їхній порядок. На сайті показуються лише увімкнені айтеми з непорожнім контентом.
+admin.homepage_setting.promo_strip_item_enabled: Показувати
+admin.homepage_setting.promo_strip_item_position: Порядок
+admin.homepage_setting.promo_strip_item_position_help: Менше число з’являється раніше в ротації.
+admin.homepage_setting.promo_strip_item_content: HTML-контент
+admin.homepage_setting.promo_strip_item_content_help: Дозволено HTML (посилання, жирний текст тощо). Тримайте коротко — для однорядкової смуги.
 admin.homepage_setting.fieldset_hero: Блок hero (перший екран)
 admin.homepage_setting.fieldset_hero_help: Текст і кнопки першого блоку. Можна додати кілька секцій — якщо більше однієї, на сайті працює слайдер.
 admin.homepage_setting.hero_slides: Секції hero
@@ -519,6 +532,8 @@ admin.product_import_run.result: Результат
 admin.product_import_run.error: Помилка
 admin.product.stock_qty: Кількість на складі
 admin.product.badge: Бейдж
+admin.product.rating: Рейтинг
+admin.product.rating_help: Вага для сортування в каталозі. Більше значення — вище в сортуванні за рейтингом. Якщо більше 10 — на фото товару з’являється лейба «Лідер продажу».
 admin.product.short_description: Короткий опис
 admin.product.description: Опис
 admin.product.description_help: Можна використовувати HTML.
@@ -1421,6 +1436,8 @@ shop.add_to_cart: Купити
 shop.home.hero_title: Товари для дому та комфортного життя
 shop.home.hero_lead: Обирайте перевірені категорії, актуальні пропозиції та корисні поради в блозі.
 shop.home.hero_region: Головний банер
+shop.home.promo_strip_region: Рекламні повідомлення
+shop.home.promo_strip_close: Закрити рекламну полоску
 shop.home.hero_prev: Попередній слайд
 shop.home.hero_next: Наступний слайд
 shop.home.cta_buy: Купити
@@ -1474,6 +1491,7 @@ shop.error404.text: Запитана сторінка не існує або б�
 shop.error404.back_home: На головну
 
 shop.product.sku: Артикул
+shop.product.sales_leader: Лідер продажу
 shop.product.in_stock: 'В наявності (%qty% шт.)'
 shop.product.in_stock_available: В наявності
 shop.product.out_of_stock: Немає в наявності

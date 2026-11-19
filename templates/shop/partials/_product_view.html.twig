@@ -15,8 +15,16 @@
     <article class="shop-product">
         <div class="shop-product__gallery">
             <div class="shop-product__main-image{% if gallery|length == 0 %} shop-product__main-image--placeholder{% endif %}">
-                {% if product.badge %}
-                    <span class="shop-product__badge">{{ product.badge }}</span>
+                {% set isSalesLeader = product.rating is defined and product.rating > 10 %}
+                {% if isSalesLeader or product.badge %}
+                    <span class="shop-product__badges">
+                        {% if isSalesLeader %}
+                            <span class="shop-product__badge shop-product__badge--sales-leader">{{ 'shop.product.sales_leader'|trans }}</span>
+                        {% endif %}
+                        {% if product.badge %}
+                            <span class="shop-product__badge">{{ product.badge }}</span>
+                        {% endif %}
+                    </span>
                 {% endif %}
                 <span class="shop-product__discount" id="product-discount-badge"{% if not product.discountPercent %} hidden{% endif %}>
                     {%- if product.discountPercent -%}-{{ product.discountPercent }}%{%- endif -%}

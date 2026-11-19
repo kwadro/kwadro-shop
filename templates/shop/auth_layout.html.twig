@@ -14,6 +14,9 @@
 </head>
 <body class="shop-body shop-body--auth">
     {% include 'shop/partials/_gtm.html.twig' with { placement: 'body', setting: setting } only %}
+    {% block shop_banner %}
+        {% include 'shop/partials/_promo_strip.html.twig' %}
+    {% endblock %}
     {% include 'shop/partials/_header.html.twig' %}
 
     <div class="shop-auth">
@@ -23,6 +26,7 @@
     </div>
 
     {% include 'shop/partials/_footer.html.twig' %}
+    <script src="{{ asset('js/shop-promo-strip.js') }}" defer></script>
     {% block javascripts %}{% endblock %}
 </body>
 </html>

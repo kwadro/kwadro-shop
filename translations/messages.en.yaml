@@ -444,6 +444,19 @@ admin.shop_mega_menu.item_category_placeholder: Choose a category
 admin.homepage_setting.fieldset_general: Site and language
 admin.homepage_setting.site: Site
 admin.homepage_setting.locale: Language
+admin.homepage_setting.fieldset_promo_strip: Promo strip
+admin.homepage_setting.fieldset_promo_strip_help: Top sitewide banner with rotating HTML messages. Shown on all storefront pages when the block is enabled and at least one item is active.
+admin.homepage_setting.promo_strip_dismissible: Allow closing
+admin.homepage_setting.promo_strip_dismissible_help: If enabled, visitors can close the strip. The choice is stored in their browser and the strip will not show again.
+admin.homepage_setting.promo_strip_interval: Scroll delay (ms)
+admin.homepage_setting.promo_strip_interval_help: Delay between messages in milliseconds (1000–60000). Default is 5000.
+admin.homepage_setting.promo_strip_items: Messages
+admin.homepage_setting.promo_strip_items_help: Add HTML messages and their order. Only enabled items with non-empty content are shown.
+admin.homepage_setting.promo_strip_item_enabled: Show
+admin.homepage_setting.promo_strip_item_position: Order
+admin.homepage_setting.promo_strip_item_position_help: Lower number appears earlier in the rotation.
+admin.homepage_setting.promo_strip_item_content: HTML content
+admin.homepage_setting.promo_strip_item_content_help: HTML is allowed (links, bold text, etc.). Keep it short for a one-line strip.
 admin.homepage_setting.fieldset_hero: Hero block (first screen)
 admin.homepage_setting.fieldset_hero_help: Text and buttons for the first homepage block. You can add several sections — if there is more than one, a slider is used on the site.
 admin.homepage_setting.hero_slides: Hero sections
@@ -519,6 +532,8 @@ admin.product_import_run.result: Result
 admin.product_import_run.error: Error
 admin.product.stock_qty: Stock quantity
 admin.product.badge: Badge
+admin.product.rating: Rating
+admin.product.rating_help: Catalog sort weight. Higher values appear first when sorting by rating. Values above 10 show the “Sales leader” label on the product image.
 admin.product.short_description: Short description
 admin.product.description: Description
 admin.product.description_help: HTML is supported.
@@ -1422,6 +1437,8 @@ shop.add_to_cart: Buy
 shop.home.hero_title: Home goods for everyday comfort
 shop.home.hero_lead: Browse trusted categories, current offers, and helpful blog guides.
 shop.home.hero_region: Homepage hero
+shop.home.promo_strip_region: Promotional messages
+shop.home.promo_strip_close: Close promotional banner
 shop.home.hero_prev: Previous slide
 shop.home.hero_next: Next slide
 shop.home.cta_buy: Buy
@@ -1475,6 +1492,7 @@ shop.error404.back_home: Back to homepage
 shop.footer.rights: All rights reserved.
 
 shop.product.sku: SKU
+shop.product.sales_leader: Sales leader
 shop.product.in_stock: 'In stock (%qty% pcs.)'
 shop.product.in_stock_available: In stock
 shop.product.out_of_stock: Out of stock

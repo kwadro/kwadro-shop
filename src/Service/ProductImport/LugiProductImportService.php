@@ -60,9 +60,9 @@ class LugiProductImportService
             $this->em->flush();
         }
         try {
-            $feedUrl = $import->getFilePath();
-            $localPath = $this->downloadFeed($feedUrl);
-
+//            $feedUrl = $import->getFilePath();
+//            $localPath = $this->downloadFeed($feedUrl);
+            $localPath = '/home/igor/home/kvadro/var/import/lugi-20261116-225030.yml';
             $reader = new \XMLReader();
             $reader->open($localPath);
 
@@ -202,12 +202,15 @@ class LugiProductImportService
                 }
             }
             $deleted = 0;
+
             if ($import->getMode() === ProductImportMode::DeleteAddUpdate) {
+
                 // Supplier may be detached after the last batch clear.
                 if (!$this->em->contains($supplier)) {
                     $supplier = $this->supplierRepository->find($supplierId)
                         ?? throw new \RuntimeException('Supplier lost after EntityManager clear.');
                 }
+
                 $deleted = $this->productService->disableMissingProducts($supplier, $seenSkus, $dryRun);
             }
 
@@ -218,7 +221,6 @@ class LugiProductImportService
                 $dryRun,
                 $seenForRestore
             );
-
             $summary = sprintf(
                 'Created: %d, updated: %d, disabled: %d, deleted/deactivated: %d, attr groups: %d, attributes: %d, categories off: %d, products off by category: %d, categories on: %d, products on by category: %d (mode: %s)',
                 $result['created'],
