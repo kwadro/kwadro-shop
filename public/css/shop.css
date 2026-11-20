@@ -129,7 +129,7 @@ a {
     width: 100%;
     text-align: center;
     font-size: 0.92rem;
-    font-weight: 600;
+    font-weight: 300;
     line-height: 1.35;
 }
 
@@ -5365,6 +5365,9 @@ body.shop-sheet-open {
 }
 
 @media (max-width: 900px) {
+    .shop-promo-strip__item {
+        font-size: 0.81rem;
+    }
     .shop-catalog--with-filters {
         grid-template-columns: 1fr;
         gap:0;
