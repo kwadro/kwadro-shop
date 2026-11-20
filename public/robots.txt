@@ -6,4 +6,4 @@ Disallow: /checkout
 Disallow: /ua/checkout
 Disallow: /en/checkout
 
-Sitemap: /sitemap.xml
+Sitemap: https://www.kvadro.if.ua/sitemap.xml
