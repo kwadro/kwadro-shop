@@ -251,6 +251,7 @@ admin.site.google_place_id: Google Place ID
 admin.site.google_place_id_help: Place ID профілю Google Business (Maps). Формується посилання https://search.google.com/local/writereview?placeid=…
 admin.site.google_review_url: URL відгуку Google (опційно)
 admin.site.google_review_url_help: Якщо задано — використовується замість Place ID (напр. https://g.page/r/…/review з кабінету Business Profile).
+admin.site.meta_pixel_enabled: Включити Meta Pixel
 admin.site.meta_pixel_id: Meta Pixel ID
 admin.site.meta_pixel_id_help: Числовий ID з Meta Events Manager. Якщо порожньо — використовується FB_META_PIXEL_ID з файлу оточення.
 admin.site.ignored_request_ips: Ігнорувати IP для RequestList

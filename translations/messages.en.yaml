@@ -251,6 +251,7 @@ admin.site.google_place_id: Google Place ID
 admin.site.google_place_id_help: Place ID of your Google Business Profile (Maps). Builds https://search.google.com/local/writereview?placeid=…
 admin.site.google_review_url: Google review URL (optional)
 admin.site.google_review_url_help: If set, used instead of Place ID (e.g. https://g.page/r/…/review from Business Profile).
+admin.site.meta_pixel_enabled: Enable Meta Pixel
 admin.site.meta_pixel_id: Meta Pixel ID
 admin.site.meta_pixel_id_help: Numeric ID from Meta Events Manager. If empty, FB_META_PIXEL_ID from the environment file is used.
 admin.site.ignored_request_ips: Ignore IPs for RequestList

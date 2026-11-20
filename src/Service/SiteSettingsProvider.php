@@ -187,6 +187,7 @@ class SiteSettingsProvider
                     : null,
             ],
             'tracking' => [
+                'meta_pixel_enabled' => $site->isMetaPixelEnabled(),
                 'meta_pixel_id' => $this->resolveMetaPixelId($site),
             ],
             'menu_pages' => $menuPages ?: [],

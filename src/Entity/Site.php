@@ -95,6 +95,10 @@ class Site
     #[ORM\Column(options: ['default' => false])]
     private bool $googleReviewEnabled = false;
 
+    /** Add Meta Pixel on header. */
+    #[ORM\Column(options: ['default' => false])]
+    private bool $metaPixelEnabled = false;
+
     /** Numeric Meta Pixel ID. Empty means use FB_META_PIXEL_ID from the environment. */
     #[ORM\Column(length: 32, nullable: true)]
     #[Assert\Length(max: 32)]
@@ -253,6 +257,17 @@ class Site
     {
         $normalized = $googleReviewUrl !== null ? trim($googleReviewUrl) : null;
         $this->googleReviewUrl = $normalized !== '' ? $normalized : null;
+
+        return $this;
+    }
+    public function isMetaPixelEnabled(): bool
+    {
+        return $this->metaPixelEnabled;
+    }
+
+    public function setMetaPixelEnabled(bool $metaPixelEnabled): self
+    {
+        $this->metaPixelEnabled = $metaPixelEnabled;
 
         return $this;
     }

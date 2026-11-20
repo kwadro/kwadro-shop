@@ -58,6 +58,8 @@ class SiteCrudController extends AbstractCrudController
                 ->setRequired(false)
                 ->setHelp($this->translator->trans('admin.site.google_review_url_help', [], 'messages'))
                 ->hideOnIndex(),
+            BooleanField::new('metaPixelEnabled', $this->translator->trans('admin.site.meta_pixel_enabled', [], 'messages')),
+
             TextField::new('metaPixelId', $this->translator->trans('admin.site.meta_pixel_id', [], 'messages'))
                 ->setRequired(false)
                 ->setHelp($this->translator->trans('admin.site.meta_pixel_id_help', [], 'messages'))
@@ -71,10 +73,12 @@ class SiteCrudController extends AbstractCrudController
                 ])
                 ->hideOnIndex(),
             BooleanField::new('logAdminActions', $this->translator->trans('admin.site.log_admin_actions', [], 'messages'))
-                ->setHelp($this->translator->trans('admin.site.log_admin_actions_help', [], 'messages')),
+                ->setHelp($this->translator->trans('admin.site.log_admin_actions_help', [], 'messages'))
+                ->hideOnIndex(),
             AssociationField::new('featuredProduct', $this->translator->trans('admin.site.featured_product', [], 'messages'))
                 ->setRequired(false)
-                ->setHelp($this->translator->trans('admin.site.featured_product_help', [], 'messages')),
+                ->setHelp($this->translator->trans('admin.site.featured_product_help', [], 'messages'))
+                ->hideOnIndex(),
             IntegerField::new('productsPerPage', $this->translator->trans('admin.site.products_per_page', [], 'messages'))
                 ->setHelp($this->translator->trans('admin.site.products_per_page_help', [], 'messages')),
             MoneyField::new('courierDeliveryCost', $this->translator->trans('admin.site.courier_delivery_cost', [], 'messages'))
