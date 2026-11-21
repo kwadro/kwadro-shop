@@ -15,12 +15,14 @@ use App\Service\Product\ProductImagePath;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\OptimisticLockException;
+use RuntimeException;
 use SimpleXMLElement;
 use Symfony\Bridge\Doctrine\Middleware\Debug\DebugDataHolder;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Throwable;
+use XMLReader;
 
 class LugiProductImportService
 {
@@ -38,13 +40,34 @@ class LugiProductImportService
         private readonly AttributeImportService $attributeImportService,
         #[Autowire('%kernel.project_dir%')]
         private readonly string $projectDir,
+        private readonly ImageConverter $imageConverter,
         private readonly ?DebugDataHolder $debugDataHolder = null,
     ) {
     }
 
     /**
-     * @throws OptimisticLockException
+     * @param ProductImport $import
+     * @return void
+     * @throws TransportExceptionInterface
+     */
+    public function runImage(ProductImport $import): void
+    {
+        $feedUrl = $import->getFilePath();
+        $localPath = $this->downloadFeed($feedUrl);
+        $localPath = '/home/igor/home/symfony3/var/import/lugi-20261108-165831.yml';
+        $supplier = $this->resolveSupplier();
+        $supplierId = (int)$supplier->getId();
+        $supplierCode = $supplier->getSlug();
+        $this->downloadOfferImages($localPath, $supplierCode);
+    }
+
+    /**
+     * @param ProductImport $import
+     * @param bool $dryRun
+     * @param bool $loadImages
+     * @return ProductImportRun
      * @throws ORMException
+     * @throws OptimisticLockException
      */
     public function run(ProductImport $import, bool $dryRun = false, bool $loadImages = false): ProductImportRun
     {
@@ -60,20 +83,21 @@ class LugiProductImportService
             $this->em->flush();
         }
         try {
-//            $feedUrl = $import->getFilePath();
-//            $localPath = $this->downloadFeed($feedUrl);
+//           $feedUrl = $import->getFilePath();
+//           $localPath = $this->downloadFeed($feedUrl);
             $localPath = '/home/igor/home/kvadro/var/import/lugi-20261116-225030.yml';
-            $reader = new \XMLReader();
+            $localPath = '/home/igor/home/kvadro/var/import/lugi-20261108-165831.yml';
+            $reader = new XMLReader();
             $reader->open($localPath);
 
             $baseExternalId = $import->getDefaultCategoryExternalId();
             if ($baseExternalId === null) {
-                throw new \RuntimeException('Base category (external_id) is not set in admin.');
+                throw new RuntimeException('Base category (external_id) is not set in admin.');
             }
 
             $baseCategory = $this->categoryRepository->findOneBy(['external_id' => $baseExternalId]);
             if ($baseCategory === null) {
-                throw new \RuntimeException(
+                throw new RuntimeException(
                     sprintf(
                         'Base category with external_id=%d not found.',
                         $baseExternalId,
@@ -91,7 +115,7 @@ class LugiProductImportService
             // load file date
             $catalogDate = null;
             while ($reader->read()) {
-                if ($reader->nodeType === \XMLReader::ELEMENT && $reader->localName === 'yml_catalog') {
+                if ($reader->nodeType === XMLReader::ELEMENT && $reader->localName === 'yml_catalog') {
                     $catalogDate = $reader->getAttribute('date');
                     break;
                 }
@@ -100,18 +124,18 @@ class LugiProductImportService
             $categoryNameReplacements = $import->getCategoryNameReplacementMap();
 
             if ($catalogDate === $lastRunDate) {
-                throw new \RuntimeException('Import this price  is  run  as another process.');
+                throw new RuntimeException('Import this price  is  run  as another process.');
             }
             if ($loadImages && !$dryRun) {
                 $this->downloadOfferImages($localPath, $supplierCode);
             }
             // load category map
-            $reader = new \XMLReader();
+            $reader = new XMLReader();
             $reader->open($localPath);
             $position = 1;
 
             while ($reader->read()) {
-                if ($reader->nodeType !== \XMLReader::ELEMENT || $reader->localName !== 'category') {
+                if ($reader->nodeType !== XMLReader::ELEMENT || $reader->localName !== 'category') {
                     continue;
                 }
                 $node = simplexml_load_string($reader->readOuterXml());
@@ -142,7 +166,7 @@ class LugiProductImportService
 
 
             // load product map
-            $reader = new \XMLReader();
+            $reader = new XMLReader();
             $reader->open($localPath);
             $categoryPositions = [];
             $seenSkus = [];
@@ -156,7 +180,7 @@ class LugiProductImportService
             $this->productService->setMenuCategoryMoves($import->getMenuCategoryMoves());
 
             while ($reader->read()) {
-                if ($reader->nodeType !== \XMLReader::ELEMENT || $reader->localName !== 'offer') {
+                if ($reader->nodeType !== XMLReader::ELEMENT || $reader->localName !== 'offer') {
                     continue;
                 }
                 $node = simplexml_load_string($reader->readOuterXml());
@@ -204,11 +228,10 @@ class LugiProductImportService
             $deleted = 0;
 
             if ($import->getMode() === ProductImportMode::DeleteAddUpdate) {
-
                 // Supplier may be detached after the last batch clear.
                 if (!$this->em->contains($supplier)) {
                     $supplier = $this->supplierRepository->find($supplierId)
-                        ?? throw new \RuntimeException('Supplier lost after EntityManager clear.');
+                        ?? throw new RuntimeException('Supplier lost after EntityManager clear.');
                 }
 
                 $deleted = $this->productService->disableMissingProducts($supplier, $seenSkus, $dryRun);
@@ -288,11 +311,11 @@ class LugiProductImportService
     {
         $feedUrl = trim($feedUrl);
         if ($feedUrl === '' || !filter_var($feedUrl, FILTER_VALIDATE_URL)) {
-            throw new \RuntimeException(sprintf('Invalid feed URL: "%s"', $feedUrl));
+            throw new RuntimeException(sprintf('Invalid feed URL: "%s"', $feedUrl));
         }
         $dir = $this->projectDir . '/var/import';
         if (!is_dir($dir) && !mkdir($dir, 0775, true) && !is_dir($dir)) {
-            throw new \RuntimeException(sprintf('Cannot create import directory: %s', $dir));
+            throw new RuntimeException(sprintf('Cannot create import directory: %s', $dir));
         }
         $path = sprintf('%s/lugi-%s.yml', $dir, (new \DateTimeImmutable())->format('Ymd-His'));
         $response = $this->httpClient->request('GET', $feedUrl, [
@@ -304,7 +327,7 @@ class LugiProductImportService
             ],
         ]);
         if ($response->getStatusCode() !== 200) {
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 sprintf(
                     'Feed download failed with HTTP %d: %s',
                     $response->getStatusCode(),
@@ -315,7 +338,7 @@ class LugiProductImportService
         // Stream to disk — do not load the whole body into a PHP string.
         $handle = fopen($path, 'wb');
         if ($handle === false) {
-            throw new \RuntimeException(sprintf('Cannot write feed file: %s', $path));
+            throw new RuntimeException(sprintf('Cannot write feed file: %s', $path));
         }
         try {
             foreach ($this->httpClient->stream($response) as $chunk) {
@@ -329,7 +352,7 @@ class LugiProductImportService
         }
         if (!is_file($path) || filesize($path) === 0) {
             @unlink($path);
-            throw new \RuntimeException('Downloaded feed is empty.');
+            throw new RuntimeException('Downloaded feed is empty.');
         }
         return $path;
     }
@@ -343,22 +366,19 @@ class LugiProductImportService
      */
     private function downloadOfferImages(string $localPath, $supplierCode): void
     {
-        $reader = new \XMLReader();
+        $reader = new XMLReader();
         if (!$reader->open($localPath)) {
-            throw new \RuntimeException(sprintf('Cannot open feed for images: %s', $localPath));
+            throw new RuntimeException(sprintf('Cannot open feed for images: %s', $localPath));
         }
-
         try {
             while ($reader->read()) {
-                if ($reader->nodeType !== \XMLReader::ELEMENT || $reader->localName !== 'offer') {
+                if ($reader->nodeType !== XMLReader::ELEMENT || $reader->localName !== 'offer') {
                     continue;
                 }
-
                 $node = simplexml_load_string($reader->readOuterXml());
                 if ($node === false) {
                     continue;
                 }
-                $sku = $node->vendorCode;
                 $this->downloadOfferPictures($node, $supplierCode);
             }
         } finally {
@@ -395,21 +415,36 @@ class LugiProductImportService
             if ($targetPath === '') {
                 continue;
             }
+            $exists = $this->isNonEmptyFile($targetPath);
+            $webPath = $this->imageConverter->toWebpPath($targetPath);
+            $webpExists = $this->isNonEmptyFile($webPath);
             // Skip when this picture (or a legacy/alternate copy) is already on disk.
-            if ($this->isOfferImageAlreadyDownloaded($basename, $targetPath, $supplierCode)) {
+            if ($exists) {
+                if (!$webpExists) {
+                    // clone extension image to webp ( only once )
+                    $result = $this->imageConverter->convert($targetPath);
+                    if ($result['status'] === 'converted') {
+                        echo 'unlink downloadOfferPictures : ' . $targetPath . PHP_EOL;
+                        @unlink($targetPath);
+                    }
+                    echo 'result status: '.$result['status'].PHP_EOL;
+                }
                 continue;
             }
+            if (!$webpExists) {
+                $targetDir = \dirname($targetPath);
+                if (!is_dir($targetDir) && !mkdir($targetDir, 0775, true) && !is_dir($targetDir)) {
+                    continue;
+                }
 
-            $targetDir = \dirname($targetPath);
-            if (!is_dir($targetDir) && !mkdir($targetDir, 0775, true) && !is_dir($targetDir)) {
-                continue;
-            }
-
-            try {
-                $this->downloadBinaryToFile($url, $targetPath);
-            } catch (Throwable) {
-                // Keep downloading remaining pictures for this and other offers.
-                continue;
+                try {
+                    $this->downloadBinaryToFile($url, $targetPath);
+                } catch (Throwable) {
+                    // Keep downloading remaining pictures for this and other offers.
+                    continue;
+                }
+            } else {
+                echo 'transfer exists. ' . PHP_EOL;
             }
         }
     }
@@ -423,7 +458,7 @@ class LugiProductImportService
             return true;
         }
 
-        $extensions = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+        $extensions = ['webp'];
         $publicRoot = rtrim($this->projectDir, '/') . '/public' . ProductImagePath::WEB_BASE;
 
         foreach ($extensions as $ext) {
@@ -437,6 +472,7 @@ class LugiProductImportService
             ];
 
             foreach ($candidates as $candidate) {
+                echo 'candidate : ' . $candidate . PHP_EOL;
                 if ($candidate === '' || $candidate === $targetPath || !$this->isNonEmptyFile($candidate)) {
                     continue;
                 }
@@ -447,10 +483,9 @@ class LugiProductImportService
                 }
 
                 if (@rename($candidate, $targetPath) || @copy($candidate, $targetPath)) {
-                    if ($candidate !== $targetPath && is_file($candidate)) {
+                    if (is_file($candidate)) {
                         @unlink($candidate);
                     }
-
                     return $this->isNonEmptyFile($targetPath);
                 }
 
@@ -467,6 +502,10 @@ class LugiProductImportService
         return is_file($path) && filesize($path) > 0;
     }
 
+    /**
+     * @throws TransportExceptionInterface
+     * @throws Throwable
+     */
     private function downloadBinaryToFile(string $url, string $targetPath): void
     {
         $response = $this->httpClient->request('GET', $url, [
@@ -479,7 +518,7 @@ class LugiProductImportService
         ]);
 
         if ($response->getStatusCode() !== 200) {
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 sprintf(
                     'Image download failed with HTTP %d: %s',
                     $response->getStatusCode(),
@@ -490,7 +529,7 @@ class LugiProductImportService
 
         $handle = fopen($targetPath, 'wb');
         if ($handle === false) {
-            throw new \RuntimeException(sprintf('Cannot write image file: %s', $targetPath));
+            throw new RuntimeException(sprintf('Cannot write image file: %s', $targetPath));
         }
 
         try {
@@ -509,7 +548,13 @@ class LugiProductImportService
 
         if (!is_file($targetPath) || filesize($targetPath) === 0) {
             @unlink($targetPath);
-            throw new \RuntimeException(sprintf('Downloaded image is empty: %s', $url));
+            throw new RuntimeException(sprintf('Downloaded image is empty: %s', $url));
+        }
+        // clone extension image to webp ( only once )
+        $result = $this->imageConverter->convert($targetPath);
+        if ($result['status'] === 'converted') {
+            echo 'unlink downloadBinaryToFile : ' . $targetPath . PHP_EOL;
+            @unlink($targetPath);
         }
     }
 
@@ -567,7 +612,7 @@ class LugiProductImportService
         $baseCategory = $this->categoryRepository->find($baseCategoryId);
         $supplier = $this->supplierRepository->find($supplierId);
         if ($baseCategory === null || $supplier === null) {
-            throw new \RuntimeException('Base category or supplier lost after EntityManager clear.');
+            throw new RuntimeException('Base category or supplier lost after EntityManager clear.');
         }
 
         return [$baseCategory, $supplier];

@@ -27,10 +27,9 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 final class ProductAssignImportImagesCommand extends Command
 {
     /** @var list<string> */
-    private const SUFFIXES = ['', '_1', '_2', '_3', '_4'];
+    private const SUFFIXES = ['', '_1', '_2', '_3', '_4','_5','_6','_7','_8','_9','_10'];
 
-    /** @var list<string> Prefer PNG, then JPG */
-    private const EXTENSIONS = ['png', 'jpg'];
+    private const EXTENSIONS = ['webp'];
 
     /**
      * Fallback category slug when import has no default_category_external_id.

@@ -705,4 +705,9 @@ final class SivitekProductImportService
         }
         $product->setSlug($slug);
     }
+
+    public function runImage(ProductImport $import)
+    {
+
+    }
 }
