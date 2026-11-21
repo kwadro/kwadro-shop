@@ -83,10 +83,9 @@ class LugiProductImportService
             $this->em->flush();
         }
         try {
-//           $feedUrl = $import->getFilePath();
-//           $localPath = $this->downloadFeed($feedUrl);
-            $localPath = '/home/igor/home/kvadro/var/import/lugi-20261116-225030.yml';
-            $localPath = '/home/igor/home/kvadro/var/import/lugi-20261108-165831.yml';
+            $feedUrl = $import->getFilePath();
+            $localPath = $this->downloadFeed($feedUrl);
+//            $localPath = '/home/igor/home/kvadro/var/import/lugi-20261108-165831.yml';
             $reader = new XMLReader();
             $reader->open($localPath);
 
@@ -427,7 +426,7 @@ class LugiProductImportService
                         echo 'unlink downloadOfferPictures : ' . $targetPath . PHP_EOL;
                         @unlink($targetPath);
                     }
-                    echo 'result status: '.$result['status'].PHP_EOL;
+                    echo 'result status: ' . $result['status'] . PHP_EOL;
                 }
                 continue;
             }
