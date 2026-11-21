@@ -6,7 +6,7 @@
     <div class="shop-footer__inner{% if hasSocial %} shop-footer__inner--with-social{% endif %}">
 
         <div class="shop-footer__column shop-footer__column--buyers">
-            <h4>{{ 'shop.footer.buyers'|trans }}</h4>
+            <h2>{{ 'shop.footer.buyers'|trans }}</h2>
             <ul>
                 {% for item in setting.menu %}
                     {% if item.megamenutype == 'FooterLink' and item.url %}
@@ -16,7 +16,7 @@
             </ul>
         </div>
         <div class="shop-footer__column shop-footer__column--contacts">
-            <h4>{{ 'shop.footer.contacts'|trans }}</h4>
+            <h2>{{ 'shop.footer.contacts'|trans }}</h2>
             <ul>
                 {% set phoneLinks = setting.header.phone_links|default([
                     {display: '066-913-30-97', tel: '+380669133097'},
@@ -31,7 +31,7 @@
         </div>
         {% if hasSocial %}
             <div class="shop-footer__social">
-                <h4>{{ 'shop.footer.social'|trans }}</h4>
+                <h2>{{ 'shop.footer.social'|trans }}</h2>
                 <div class="shop-footer__social-links">
                     {% if facebookUrl %}
                         <a class="shop-footer__social-link"

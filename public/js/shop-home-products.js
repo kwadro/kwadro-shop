@@ -54,12 +54,14 @@
                 const clone = node.cloneNode(true);
                 clone.setAttribute('data-home-clone', 'before');
                 clone.setAttribute('aria-hidden', 'true');
+                clone.setAttribute('inert', true);
                 return clone;
             });
             const after = originals.map((node) => {
                 const clone = node.cloneNode(true);
                 clone.setAttribute('data-home-clone', 'after');
                 clone.setAttribute('aria-hidden', 'true');
+                clone.setAttribute('inert', true);
                 return clone;
             });
             before.reverse().forEach((clone) => track.insertBefore(clone, track.firstChild));

@@ -63,6 +63,7 @@
                 const clone = node.cloneNode(true);
                 clone.setAttribute('data-home-clone', 'before');
                 clone.setAttribute('aria-hidden', 'true');
+                clone.setAttribute('inert', true);
                 if (clone instanceof HTMLElement) {
                     clone.tabIndex = -1;
                 }
@@ -72,6 +73,7 @@
                 const clone = node.cloneNode(true);
                 clone.setAttribute('data-home-clone', 'after');
                 clone.setAttribute('aria-hidden', 'true');
+                clone.setAttribute('inert', true);
                 if (clone instanceof HTMLElement) {
                     clone.tabIndex = -1;
                 }
