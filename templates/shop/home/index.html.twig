@@ -47,9 +47,13 @@
                             {% set slideBrand = slide.brand ?: brandName %}
                             {% set slideTitle = slide.title ?: 'shop.home.hero_title'|trans %}
                             {% set slideLead = slide.lead ?: 'shop.home.hero_lead'|trans %}
-                            {% set slideImage = slide.image
+                            {% set slideImageMobile = slide.image
                                 ? (asset('uploads/images/' ~ slide.image)|imagine_filter('home_hero'))
                                 : (asset('images/home/hero-living-room.jpg')|imagine_filter('home_hero'))
+                            %}
+                            {% set slideImage = slide.image
+                                ? asset('uploads/images/' ~ slide.image)
+                                : asset('images/home/hero-living-room.jpg')
                             %}
                             {% set slideImagePosition = slide.imagePosition|default(70) %}
                             {% set primaryHref = slide.primaryCtaUrl ?: shopCtaPath %}
@@ -61,16 +65,23 @@
                             {% set secondaryLabel = slide.secondaryCtaLabel ?: 'shop.home.cta_blog'|trans %}
                             <div class="shop-home-hero__slide" data-home-slider-item>
                                 <div class="shop-home-hero__media" aria-hidden="true">
-                                    <img
-                                        class="shop-home-hero__image"
-                                        src="{{ slideImage }}"
-                                        alt=""
-                                        width="1152"
-                                        height="864"
-                                        style="--hero-image-position: {{ slideImagePosition }}%;"
-                                        {% if loop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %}
-                                        decoding="async"
-                                    >
+                                    <picture>
+                                        <source
+                                            media="(max-width: 900px)"
+                                            srcset="{{ slideImageMobile }}"
+                                            style="--hero-image-position: {{ slideImagePosition }}%;"
+                                        >
+                                        <img
+                                            src="{{ slideImage }}"
+                                            alt="{{ slideTitle }}"
+                                            class="shop-home-hero__image"
+                                            width="1152"
+                                            height="864"
+                                            style="--hero-image-position: {{ slideImagePosition }}%;"
+                                            {% if loop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %}
+                                            decoding="async"
+                                        >
+                                    </picture>
                                 </div>
                                 <div class="shop-home-hero__inner">
                                     {% if slideBrand %}

@@ -2,6 +2,14 @@
 liip_imagine:
     # valid drivers options include "gd" or "gmagick" or "imagick"
     driver: "imagick"
+    loaders:
+        default:
+            filesystem:
+                data_root:
+                    - '/home/kwadro/kvadro.if.ua/www/shared/public'
+                    - '%kernel.project_dir%/public'
+
+
     filter_sets:
         product_thumbnail:
             quality: 100
