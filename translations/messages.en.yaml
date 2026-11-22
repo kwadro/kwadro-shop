@@ -20,6 +20,7 @@ menu.link_partner_query_parameter_single: Query parameter
 menu.link_promo_image_editor: Promo image editor
 menu.link_image_editor: Image editor
 menu.link_background_remover: Remove background
+menu.link_image_convert: Convert image
 menu.link_image_transform: Transform image
 menu.link_media_library: Image library
 menu.link_shape_library: Shape library
@@ -1015,6 +1016,8 @@ admin.image_transform.title: Transform image
 admin.image_transform.help: Generates a new image at the target aspect. The full original fits without cropping; you can shift it on X/Y. Bands use the photo edge colour fading to a lighter shade at the outer frame. Ideal for Stories / Reels (9:16).
 admin.image_transform.file: Image file
 admin.image_transform.aspect: Aspect
+admin.image_convert.quality: Edge lightness
+admin.image_convert.quality_help: How much lighter the outer frame is relative to the photo edge colour.
 admin.image_transform.blur: Edge lightness
 admin.image_transform.blur_help: How much lighter the outer frame is relative to the photo edge colour.
 admin.image_transform.rotate: Rotate original
@@ -1034,14 +1037,19 @@ admin.image_transform.align_bottom: Bottom edge
 admin.image_transform.save_to_library: Also save to image library
 admin.image_transform.download_name: Download filename
 admin.image_transform.download_name_help: You can change this before downloading.
+admin.image_convert.run: Convert
 admin.image_transform.run: Transform
+admin.image_convert.download: Download WEBP
 admin.image_transform.download: Download JPG
 admin.image_transform.preview: Preview
+admin.image_convert.saved: Saved
+admin.image_convert.size: Size
 admin.image_transform.before: Original
 admin.image_transform.after: Result
 admin.image_transform.recent: Recent results
 admin.image_transform.upload_hint: Choose a file
 admin.image_transform.processing: Processing…
+admin.image_convert.done: Image converted.
 admin.image_transform.done: Image transformed.
 admin.image_transform.error: Failed to process image.
 admin.image_transform.deleted: Result deleted.

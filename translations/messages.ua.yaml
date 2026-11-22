@@ -20,6 +20,7 @@ menu.link_partner_query_parameter_single: Параметр запиту
 menu.link_promo_image_editor: Редактор промо-картинок
 menu.link_image_editor: Редактор картинок
 menu.link_background_remover: Прибрати фон
+menu.link_image_convert:  Конвертувати картинку
 menu.link_image_transform: Трансформувати картинку
 menu.link_media_library: Бібліотека картинок
 menu.link_shape_library: Бібліотека фігур
@@ -1010,11 +1011,15 @@ admin.background_remover.deleted: Результат видалено.
 admin.background_remover.delete_confirm: Видалити цей результат?
 admin.background_remover.open: Відкрити
 admin.background_remover.delete: Видалити
-
+admin.image_convert.title: Конвертувати картинку
 admin.image_transform.title: Трансформувати картинку
+admin.image_convert.help: Конвертує вибрану картинку до webp формату.
 admin.image_transform.help: Генерує нову картинку потрібного формату. Уся оригінальна вміщується без обрізання; можна змістити її по X/Y. Смуги — колір краю фото з градієнтом до світлішого на зовнішньому краї кадру. Зручно для Stories / Reels (9:16).
 admin.image_transform.file: Файл картинки
 admin.image_transform.aspect: Формат
+admin.image_convert.quality: Якість
+admin.image_convert.quality_help: Виберіть якість в процентах .
+
 admin.image_transform.blur: Світлість краю
 admin.image_transform.blur_help: Наскільки світліший зовнішній край градієнта відносно кольору краю картинки.
 admin.image_transform.rotate: Поворот оригіналу
@@ -1034,14 +1039,18 @@ admin.image_transform.align_bottom: Нижній край
 admin.image_transform.save_to_library: Також зберегти в бібліотеку картинок
 admin.image_transform.download_name: Ім’я файлу для завантаження
 admin.image_transform.download_name_help: Можна змінити перед завантаженням.
+admin.image_convert.run: Конвертувати
 admin.image_transform.run: Трансформувати
 admin.image_transform.download: Завантажити JPG
 admin.image_transform.preview: Перегляд
+admin.image_convert.saved: Зменшення
+admin.image_convert.size: Розмір
 admin.image_transform.before: Оригінал
 admin.image_transform.after: Результат
 admin.image_transform.recent: Останні результати
 admin.image_transform.upload_hint: Оберіть файл
 admin.image_transform.processing: Обробка…
+admin.image_convert.done: Картинку конвертовано.
 admin.image_transform.done: Картинку трансформовано.
 admin.image_transform.error: Не вдалося обробити картинку.
 admin.image_transform.deleted: Результат видалено.

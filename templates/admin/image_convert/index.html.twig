@@ -1,0 +1,205 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block head_stylesheets %}
+    {{ parent() }}
+    <style>
+        .img-tf__layout { display: grid; grid-template-columns: minmax(280px, 360px) 1fr; gap: 1rem; align-items: start; }
+        @media (max-width: 992px) { .img-tf__layout { grid-template-columns: 1fr; } }
+        .img-tf__preview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+        @media (max-width: 768px) { .img-tf__preview-grid { grid-template-columns: 1fr; } }
+        .img-tf__frame {
+            border: 1px solid #e2e8f0; border-radius: .5rem; overflow: hidden; min-height: 220px;
+            display: flex; align-items: center; justify-content: center; background: #0f172a;
+        }
+        .img-tf__frame img { max-width: 100%; max-height: 480px; display: block; transition: transform .15s ease; }
+
+        .img-tf__empty { color: #64748b; padding: 2rem 1rem; text-align: center; }
+        .small.text-muted { display: flex; flex-direction: row; column-gap: 10px;}
+    </style>
+{% endblock %}
+
+{% block content_title %}{{ page_title }}{% endblock %}
+
+{% block main %}
+    <div class="img-tf" id="image-transform"
+         data-process-url="{{ process_url }}"
+         data-download-template="{{ download_url_template }}">
+        <div class="img-tf__layout">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <p class="text-muted small">{{ 'admin.image_convert.help'|trans }}</p>
+
+                    <label class="form-label">{{ 'admin.image_transform.file'|trans }}</label>
+                    <input type="file" class="form-control" accept="image/*" data-tf-file>
+
+                    <label class="form-label mt-3">{{ 'admin.image_convert.quality'|trans }} <span data-tf-quality-label>80</span></label>
+                    <input type="range" class="form-range" min="0" max="100" value="80" data-tf-quality>
+                    <p class="text-muted small">{{ 'admin.image_convert.quality_help'|trans }}</p>
+
+                    <label class="form-label">{{ 'admin.image_transform.download_name'|trans }}</label>
+                    <input type="text" class="form-control" data-tf-download-name placeholder="product_converted.webp">
+                    <p class="text-muted small mt-1">{{ 'admin.image_transform.download_name_help'|trans }}</p>
+
+                    <div class="d-flex flex-wrap gap-2 mt-3">
+                        <button type="button" class="btn btn-primary" data-tf-run>{{ 'admin.image_convert.run'|trans }}</button>
+                        <a class="btn btn-success" data-tf-download hidden href="#">{{ 'admin.image_convert.download'|trans }}</a>
+                    </div>
+                    <div class="small text-muted mt-2" data-tf-status></div>
+                </div>
+            </div>
+
+            <div>
+                <div class="card shadow-sm mb-3">
+                    <div class="card-body">
+                        <h3 class="h5">{{ 'admin.image_transform.preview'|trans }}</h3>
+                        <div class="img-tf__preview-grid">
+                            <div>
+                                <div class="small text-muted mb-1">
+                                    {{ 'admin.image_transform.before'|trans }}
+                                    <div hidden data-tf-image-info>
+                                        {{ 'admin.image_convert.size'|trans }} <span data-tf-before-size>0</span>
+                                    </div>
+                                </div>
+                                <div class="img-tf__frame" data-tf-before>
+                                    <div class="img-tf__empty">{{ 'admin.image_transform.upload_hint'|trans }}</div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="small text-muted mb-1">
+                                    {{ 'admin.image_transform.after'|trans }}
+                                    <div  hidden data-tf-image-after-info>
+                                        {{ 'admin.image_convert.size'|trans }}
+                                        <span data-tf-after-size>0</span>
+                                        {{ 'admin.image_convert.saved'|trans }}
+                                        <span data-tf-after-saved>0</span>
+                                    </div>
+                                </div>
+                                <div class="img-tf__frame" data-tf-after>
+                                    <div class="img-tf__empty">—</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body_javascript %}
+    {{ parent() }}
+    <script>
+    (function () {
+        const root = document.getElementById('image-transform');
+        if (!root) return;
+        const processUrl = root.dataset.processUrl;
+        const downloadTpl = root.dataset.downloadTemplate;
+        console.log('downloadTpl : ',downloadTpl)
+        const i18n = {
+            processing: {{ 'admin.image_transform.processing'|trans|json_encode|raw }},
+            done: {{ 'admin.image_transform.done'|trans|json_encode|raw }},
+            error: {{ 'admin.image_transform.error'|trans|json_encode|raw }},
+            deleteConfirm: {{ 'admin.image_transform.delete_confirm'|trans|json_encode|raw }},
+            deleted: {{ 'admin.image_transform.deleted'|trans|json_encode|raw }},
+            open: {{ 'admin.image_transform.open'|trans|json_encode|raw }},
+            delete: {{ 'admin.image_transform.delete'|trans|json_encode|raw }},
+            pickFile: {{ 'admin.image_transform.pick_file'|trans|json_encode|raw }},
+        };
+
+        let resultFilename = null;
+        let objectUrl = null;
+
+        const fileInput = root.querySelector('[data-tf-file]');
+        const beforeSizeEl = root.querySelector('[data-tf-before-size]');
+        const imageInfoEl = root.querySelector('[data-tf-image-info]');
+        const imageAfterInfoEl = root.querySelector('[data-tf-image-after-info]');
+        const beforeEl = root.querySelector('[data-tf-before]');
+        const afterSavedEl = root.querySelector('[data-tf-after-saved]');
+        const afterSizeEl = root.querySelector('[data-tf-after-size]');
+        const afterEl = root.querySelector('[data-tf-after]');
+        const statusEl = root.querySelector('[data-tf-status]');
+        const downloadBtn = root.querySelector('[data-tf-download]');
+        const downloadNameInput = root.querySelector('[data-tf-download-name]');
+        const qualityInput = root.querySelector('[data-tf-quality]');
+        const qualityLabel = root.querySelector('[data-tf-quality-label]');
+
+        function suggestDownloadName(filename) {
+            const base = (filename || 'image').replace(/\.[^.]+$/, '').replace(/[^\w.\-]+/g, '_') || 'image';
+            return base + '_converted'  + '.webp';
+        }
+        qualityInput.addEventListener('input', function () {
+            qualityLabel.textContent = qualityInput.value;
+        });
+
+        function getFileSizeMB(file) {
+            return (file.size / (1024 * 1024)).toFixed(2) + ' Mb';
+        }
+        fileInput.addEventListener('change', function () {
+            const file = fileInput.files && fileInput.files[0];
+            if (!file) return;
+            if (objectUrl) URL.revokeObjectURL(objectUrl);
+            objectUrl = URL.createObjectURL(file);
+
+            beforeSizeEl.innerHTML = getFileSizeMB(file);
+            imageInfoEl.hidden = false;
+            beforeEl.innerHTML = '<img src="' + objectUrl + '" alt="">';
+
+            downloadNameInput.value = suggestDownloadName(file.name);
+            afterEl.innerHTML = '<div class="img-tf__empty">—</div>';
+
+            downloadBtn.hidden = true;
+            resultFilename = null;
+            statusEl.textContent = '';
+        });
+
+        function setStatus(msg) { statusEl.textContent = msg || ''; }
+
+
+        root.querySelector('[data-tf-run]').addEventListener('click', async function () {
+            const file = fileInput.files && fileInput.files[0];
+            if (!file) {
+                setStatus(i18n.pickFile);
+                return;
+            }
+            const body = new FormData();
+            body.append('file', file);
+            body.append('quality', qualityInput.value);
+            setStatus(i18n.processing);
+            console.log('processUrl : ', processUrl)
+            try {
+                const res = await fetch(processUrl, {
+                    method: 'POST',
+                    body: body,
+                    credentials: 'same-origin',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                });
+                const data = await res.json();
+                if (!res.ok || !data.ok) throw new Error(data.error || 'fail');
+                resultFilename = data.filename;
+                afterSizeEl.innerHTML = data.filesize;
+                afterSavedEl.innerHTML = data.savedPercent
+                imageAfterInfoEl.hidden = false;
+                afterEl.innerHTML = '<img src="' + data.url + '?t=' + Date.now() + '" alt="">';
+                if (data.downloadName) downloadNameInput.value = data.downloadName;
+                const name = encodeURIComponent(downloadNameInput.value || data.downloadName || data.filename);
+                downloadBtn.href = downloadTpl.replace('__FILENAME__', data.filename) + '?name=' + name;
+                console.log('href : ' , downloadBtn.href)
+                downloadBtn.hidden = false;
+                setStatus(data.message || i18n.done);
+
+            } catch (e) {
+                setStatus(i18n.error);
+            }
+        });
+
+        downloadBtn.addEventListener('click', function (e) {
+            if (!resultFilename) {
+                e.preventDefault();
+                return;
+            }
+            const name = encodeURIComponent(downloadNameInput.value || resultFilename);
+            downloadBtn.href = downloadTpl.replace('__FILENAME__', resultFilename) + '?name=' + name;
+        });
+    })();
+    </script>
+{% endblock %}

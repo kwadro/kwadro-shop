@@ -179,6 +179,12 @@ class DashboardController extends AbstractDashboardController
                 ['_locale' => 'ua'],
             ),
             MenuItem::linkToRoute(
+                $this->translator->trans('menu.link_image_convert', [], 'messages'),
+                'fas fa-expand',
+                'admin_image_convert',
+                ['_locale' => 'ua'],
+            ),
+            MenuItem::linkToRoute(
                 $this->translator->trans('menu.link_media_library', [], 'messages'),
                 'fas fa-photo-video',
                 'admin_media_library',

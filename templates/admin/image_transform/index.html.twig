@@ -162,6 +162,7 @@
         const processUrl = root.dataset.processUrl;
         const downloadTpl = root.dataset.downloadTemplate;
         const deleteTpl = root.dataset.deleteTemplate;
+        console.log('downloadTpl : ',downloadTpl)
         const i18n = {
             processing: {{ 'admin.image_transform.processing'|trans|json_encode|raw }},
             done: {{ 'admin.image_transform.done'|trans|json_encode|raw }},

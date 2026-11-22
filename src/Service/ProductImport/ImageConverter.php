@@ -12,10 +12,12 @@ class ImageConverter
     {
         return (bool)preg_match('/\.(jpe?g|png|jpg)$/i', $path);
     }
+
     public function isConvertiblePath(string $path): bool
     {
         return (bool)preg_match('/\.(jpe?g|png|jpg)$/i', $path);
     }
+
     /**
      * Replace .jpg / .jpeg / .png extension with .webp (same basename, no resize).
      */
@@ -23,6 +25,7 @@ class ImageConverter
     {
         return (string)preg_replace('/\.(jpe?g|png)$/i', '.webp', $source);
     }
+
     /**
      * Ensure a same-size WebP sibling exists and return its absolute path.
      * Returns null when conversion is not possible.
@@ -52,6 +55,7 @@ class ImageConverter
 
         return null;
     }
+
     /**
      * Convert JPG/PNG to WebP without changing dimensions.
      * Output filename: image.jpg -> image.webp
@@ -175,5 +179,35 @@ class ImageConverter
 
         imagedestroy($image);
         imagedestroy($output);
+    }
+
+    public function convertFile(string $sourcePath, string $resultPath, int $quality): array|int
+    {
+        $info = @getimagesize($sourcePath);
+        $temporary = $sourcePath . '.tmp';
+        try {
+            if (extension_loaded('gd') && function_exists('imagewebp')) {
+                $this->convertWithGd($sourcePath, $temporary, $quality, (int)$info[2]);
+            } elseif (extension_loaded('imagick')) {
+                $this->convertWithImagick($sourcePath, $temporary, $quality);
+            } else {
+                return ['status' => 'no_encoder'];
+            }
+
+            clearstatcache(true, $temporary);
+            if (!is_file($temporary) || filesize($temporary) === 0) {
+                throw new RuntimeException('WebP encoder produced an empty file.');
+            }
+            $sourceBytes = filesize($sourcePath);
+            $targetBytes = filesize($temporary);
+            $savingPercent = $sourceBytes > 0 ? (int)round((1 - ($targetBytes / $sourceBytes)) * 100) : 0;
+            if (!@rename($temporary, $resultPath)) {
+                throw new RuntimeException('Unable to move generated WebP file into place.');
+            }
+            return $savingPercent;
+        } catch (\Throwable $exception) {
+            @unlink($temporary);
+            return ['status' => 'error', 'message' => $exception->getMessage()];
+        }
     }
 }
