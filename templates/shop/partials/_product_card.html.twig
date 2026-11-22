@@ -17,7 +17,6 @@
             >
         </picture>
 
-        <img src="" alt="{{ image.alt|default(product.name) }}">
         {% set isSalesLeader = product.rating is defined and product.rating > 10 %}
         {% if isSalesLeader or product.badge %}
             <span class="shop-product-card__badges">
