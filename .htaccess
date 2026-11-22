@@ -8,19 +8,19 @@ RedirectMatch 403 /\.git
 <IfModule mod_expires.c>
     ExpiresActive On
 
-    ExpiresByType text/css "access plus 7 days"
-    ExpiresByType application/javascript "access plus 7 days"
+    ExpiresByType text/css "access plus 30 days"
+    ExpiresByType application/javascript "access plus 30 days"
 
-    ExpiresByType image/jpeg "access plus 7 days"
-    ExpiresByType image/png "access plus 7 days"
-    ExpiresByType image/webp "access plus 7 days"
-    ExpiresByType image/svg+xml "access plus 7 days"
+    ExpiresByType image/jpeg "access plus 30 days"
+    ExpiresByType image/png "access plus 30 days"
+    ExpiresByType image/webp "access plus 30 days"
+    ExpiresByType image/svg+xml "access plus 30 days"
 
-    ExpiresByType font/woff2 "access plus 7 days"
+    ExpiresByType font/woff2 "access plus 30 days"
 </IfModule>
 
 <IfModule mod_headers.c>
     <FilesMatch "\.(css|js|jpg|jpeg|png|webp|svg|woff2)$">
-        Header set Cache-Control "public, max-age=604800"
+        Header set Cache-Control "public, max-age=2592000"
     </FilesMatch>
 </IfModule>

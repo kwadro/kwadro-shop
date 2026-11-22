@@ -12,19 +12,19 @@ liip_imagine:
 
     filter_sets:
         product_thumbnail:
-            quality: 100
+            quality: 85
             filters:
                 thumbnail:
                     size: [348, 348]
                     mode: inset
         home_hero:
-            quality: 100
+            quality: 85
             filters:
                 thumbnail:
                     size: [ 378, 284 ]
                     mode: inset
         home_logo:
-            quality: 100
+            quality: 85
             filters:
                 thumbnail:
                     size: [ 180, 60 ]

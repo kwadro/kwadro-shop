@@ -15,6 +15,9 @@ use App\Service\Product\ProductImagePath;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\OptimisticLockException;
+use FilesystemIterator;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 use RuntimeException;
 use SimpleXMLElement;
 use Symfony\Bridge\Doctrine\Middleware\Debug\DebugDataHolder;
@@ -445,6 +448,25 @@ class LugiProductImportService
                 echo 'transfer exists. ' . PHP_EOL;
             }
         }
+    }
+
+    public function runImageByPatch(string $patch)
+    {
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($patch, FilesystemIterator::SKIP_DOTS)
+        );
+
+        foreach ($iterator as $file) {
+            if ($file->isFile() && !empty($this->imageConverter->isConvertiblePath($file->getPathname()))) {
+                // clone extension image to webp ( only once )
+                $result = $this->imageConverter->convert($file->getPathname());
+                if ($result['status'] === 'converted') {
+                    echo 'unlink downloadBinaryToFile : ' . $file->getPathname() . PHP_EOL;
+                    @unlink($file->getPathname());
+                }
+            }
+        }
+
     }
 
     /**

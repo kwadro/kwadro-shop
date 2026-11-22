@@ -34,7 +34,8 @@ final class ProductImageImportRunCommand extends Command
     {
         $this
             ->addOption('code', null, InputOption::VALUE_REQUIRED, 'Import code', ProductImport::CODE_SIVITEK)
-            ->addOption('id', null, InputOption::VALUE_REQUIRED, 'Import entity id');
+            ->addOption('id', null, InputOption::VALUE_REQUIRED, 'Import entity id')
+            ->addOption('patch', null, InputOption::VALUE_OPTIONAL, 'Convert  specific directory');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -78,12 +79,21 @@ final class ProductImageImportRunCommand extends Command
 
         try {
             $io->title(sprintf('Running import: %s (%s)', $import->getName(), $import->getCode()));
+            $patch = $input->getOption('patch');
+            if(!$patch){
+                match ($import->getCode()) {
+                    ProductImport::CODE_SIVITEK => $this->sivitekProductImportService->runImage($import),
+                    ProductImport::CODE_LUGI => $this->lugiProductImportService->runImage($import),
+                    default => throw new \RuntimeException(sprintf('Unsupported import code: %s', $import->getCode())),
+                };
+            }else{
+                match ($import->getCode()) {
+                    ProductImport::CODE_SIVITEK => $this->sivitekProductImportService->runImageByPatch($patch),
+                    ProductImport::CODE_LUGI => $this->lugiProductImportService->runImageByPatch($patch),
+                    default => throw new \RuntimeException(sprintf('Unsupported import code: %s', $import->getCode())),
+                };
+            }
 
-            match ($import->getCode()) {
-                ProductImport::CODE_SIVITEK => $this->sivitekProductImportService->runImage($import),
-                ProductImport::CODE_LUGI => $this->lugiProductImportService->runImage($import),
-                default => throw new \RuntimeException(sprintf('Unsupported import code: %s', $import->getCode())),
-            };
 
             $io->success('Done.');
             return Command::SUCCESS;

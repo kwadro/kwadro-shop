@@ -710,4 +710,9 @@ final class SivitekProductImportService
     {
 
     }
+
+    public function runImageByPatch(string $patch)
+    {
+
+    }
 }
