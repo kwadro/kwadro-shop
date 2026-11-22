@@ -14,12 +14,6 @@
             <img
                 src="{{ image.full|product_image(product.supplier.slug|default(null)) }}"
                 alt="{{ image.alt|default(product.name) }}"
-                class="shop-home-hero__image"
-                width="1152"
-                height="864"
-                style="--hero-image-position: {{ slideImagePosition }}%;"
-                {% if loop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %}
-                decoding="async"
             >
         </picture>
 
