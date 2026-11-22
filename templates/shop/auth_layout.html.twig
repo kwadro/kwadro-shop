@@ -15,6 +15,7 @@
 
 </head>
 <body class="shop-body shop-body--auth">
+    <script>if (window.opener) { window.opener = null; }</script>
     {% include 'shop/partials/_gtm.html.twig' with { placement: 'body', setting: setting } only %}
     {% block shop_banner %}
         {% include 'shop/partials/_promo_strip.html.twig' %}

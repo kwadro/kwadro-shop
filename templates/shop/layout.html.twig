@@ -35,6 +35,8 @@
     {% include 'shop/partials/_meta_pixel.html.twig' with { setting: setting } only %}
 </head>
 <body class="shop-body{% block body_class %}{% endblock %}">
+    {# Drop any leftover opener reference so bfcache is not blocked by RelatedActiveContentsExist. #}
+    <script>if (window.opener) { window.opener = null; }</script>
     {% include 'shop/partials/_gtm.html.twig' with { placement: 'body', setting: setting } only %}
     {% block shop_banner %}
         {% include 'shop/partials/_promo_strip.html.twig' %}
