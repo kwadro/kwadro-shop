@@ -37,13 +37,19 @@
                 class="site-header__brand"
                 title="{{ setting.header.title }}"
             >
-                <img
-                    src="{{ absolute_url((asset('uploads/logo/' ~ setting.header.logo)|imagine_filter('home_logo'))) }}"
-                    alt="{{ setting.header.title }}"
-                    class="site-header__logo"
-                    width="180"
-                    height="72"
-                >
+                <picture>
+                    <source
+                        media="(max-width: 900px)"
+                        srcset="{{ absolute_url((asset('uploads/logo/' ~ setting.header.logo)|imagine_filter('home_logo'))) }}"
+                    >
+                    <img
+                        src="{{ absolute_url(asset('uploads/logo/' ~ setting.header.logo)) }}"
+                        alt="{{ setting.header.title }}"
+                        class="site-header__logo"
+                        width="180"
+                        height="72"
+                    >
+                </picture>
             </a>
         </div>
         <form
