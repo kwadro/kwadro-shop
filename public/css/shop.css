@@ -798,6 +798,10 @@ a {
 }
 
 @media (min-width: 901px) {
+    .shop-home-categories {
+        min-height: 335px;
+    }
+
     .shop-category-nav__sheet,
     .shop-category-nav__dialog,
     .shop-category-nav__sheet-body {
@@ -5904,11 +5908,13 @@ body.shop-sheet-open {
     font-size: 1.02rem;
     line-height: 1.3;
     color: var(--shop-green-dark);
+    min-height: 1.3em;
 }
 
 .shop-home-category__meta {
     color: var(--shop-muted);
     font-size: 0.86rem;
+    min-height: 1.5em;
 }
 
 .shop-home-category__cta {
