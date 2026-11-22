@@ -117,10 +117,9 @@
         {% if categories is not empty %}
             {% set categoriesCount = categories|length %}
             {% set categoriesCols = categoriesPerRow|default(3) %}
-            <section class="shop-home-section" aria-labelledby="shop-home-categories-title">
+            <section class="shop-home-section category" aria-labelledby="shop-home-categories-title">
                 <div class="shop-home-section__head">
                     <h2 id="shop-home-categories-title" class="shop-home-section__title">{{ 'shop.home.categories_title'|trans }}</h2>
-                    <p class="shop-home-section__lead">{{ 'shop.home.categories_lead'|trans }}</p>
                 </div>
                 <div
                     class="shop-home-categories"
@@ -177,7 +176,7 @@
         {% if products is not empty %}
             {% set productsCount = products|length %}
             {% set sliderMin = productsSliderMin|default(5) %}
-            <section class="shop-home-section" aria-labelledby="shop-home-products-title">
+            <section class="shop-home-section product" aria-labelledby="shop-home-products-title">
                 <div class="shop-home-section__head">
                     <h2 id="shop-home-products-title" class="shop-home-section__title">{{ homeBlocks.products_title ?: 'shop.home.products_title'|trans }}</h2>
                     <p class="shop-home-section__lead">{{ homeBlocks.products_lead ?: 'shop.home.products_lead'|trans }}</p>
