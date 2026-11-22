@@ -48,8 +48,8 @@
                             {% set slideTitle = slide.title ?: 'shop.home.hero_title'|trans %}
                             {% set slideLead = slide.lead ?: 'shop.home.hero_lead'|trans %}
                             {% set slideImage = slide.image
-                                ? asset('uploads/images/' ~ slide.image)
-                                : asset('images/home/hero-living-room.jpg')
+                                ? (asset('uploads/images/' ~ slide.image)|imagine_filter('home_hero'))
+                                : (asset('images/home/hero-living-room.jpg')|imagine_filter('home_hero'))
                             %}
                             {% set slideImagePosition = slide.imagePosition|default(70) %}
                             {% set primaryHref = slide.primaryCtaUrl ?: shopCtaPath %}

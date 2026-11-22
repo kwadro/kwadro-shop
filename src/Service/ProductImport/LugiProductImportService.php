@@ -54,7 +54,6 @@ class LugiProductImportService
     {
         $feedUrl = $import->getFilePath();
         $localPath = $this->downloadFeed($feedUrl);
-        $localPath = '/home/igor/home/symfony3/var/import/lugi-20261108-165831.yml';
         $supplier = $this->resolveSupplier();
         $supplierId = (int)$supplier->getId();
         $supplierCode = $supplier->getSlug();

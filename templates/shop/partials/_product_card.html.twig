@@ -6,7 +6,7 @@
 } %}
 <article class="shop-product-card">
     <a class="shop-product-card__media" href="{{ path('shop_product', {_locale: app.request.locale, slug: product.slug}) }}">
-        <img src="{{ image.full|product_image(product.supplier.slug|default(null)) }}" alt="{{ image.alt|default(product.name) }}">
+        <img src="{{ (image.full|imagine_filter('product_thumbnail'))|product_image(product.supplier.slug|default(null)) }}" alt="{{ image.alt|default(product.name) }}">
         {% set isSalesLeader = product.rating is defined and product.rating > 10 %}
         {% if isSalesLeader or product.badge %}
             <span class="shop-product-card__badges">

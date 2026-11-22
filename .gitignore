@@ -25,3 +25,7 @@
 /og-categories/
 /vendor/
 ###< symfony/framework-bundle ###
+
+###> liip/imagine-bundle ###
+/public/media/cache/
+###< liip/imagine-bundle ###
