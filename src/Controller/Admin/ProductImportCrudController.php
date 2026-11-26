@@ -389,7 +389,7 @@ class ProductImportCrudController extends AbstractCrudController
             );
         }
 
-        if (!\in_array($import->getCode(), [ProductImport::CODE_SIVITEK, ProductImport::CODE_LUGI], true)) {
+        if (!\in_array($import->getCode(), [ProductImport::CODE_SIVITEK, ProductImport::CODE_LUGI,ProductImport::CODE_TOYSI], true)) {
             $this->addFlash('danger', $this->translator->trans('admin.product_import.run_unsupported', [], 'messages'));
 
             return $this->redirect(

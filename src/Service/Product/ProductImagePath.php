@@ -20,6 +20,7 @@ final class ProductImagePath
     private const SUPPLIER_DIR_ALIASES = [
         'lugi' => 'homeware',
         'homeware-1' => 'homeware',
+        'toysi' => 'toysi',
     ];
 
     public static function filename(?string $value): string

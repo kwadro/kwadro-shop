@@ -39,6 +39,7 @@ final class ProductAssignImportImagesCommand extends Command
     private const IMPORT_CODE_CATEGORY_SLUG = [
         ProductImport::CODE_SIVITEK => 'kronshteyny',
         ProductImport::CODE_LUGI => 'homeware',
+        ProductImport::CODE_TOYSI => 'default',
     ];
 
     public function __construct(
@@ -78,7 +79,7 @@ final class ProductAssignImportImagesCommand extends Command
         $importCode = trim(mb_strtolower((string)$input->getArgument('import-code')));
 
         if ($importCode === '') {
-            $io->error('Import code is required (e.g. sivitek or lugi).');
+            $io->error('Import code is required (e.g. sivitek or lugi or toysi).');
 
             return Command::FAILURE;
         }
@@ -104,6 +105,9 @@ final class ProductAssignImportImagesCommand extends Command
         }
 
         $supplierSlug = $category->getSlug();
+        if($supplierSlug === 'default') {
+            $supplierSlug ='toysi';
+        }
 
         $io->title(
             sprintf(
@@ -117,8 +121,13 @@ final class ProductAssignImportImagesCommand extends Command
         );
 
         $copied = $this->copyFromSource($sourceDir, $supplierSlug, $dryRun, $io);
+        if ($category->getId()==1) {
+            $categoryIds = [310,311];
+        }else{
+            $categoryIds = $this->collectCategoryIds($category);
+        }
 
-        $categoryIds = $this->collectCategoryIds($category);
+
 
         $products = $this->productRepository->createQueryBuilder('p')
             ->innerJoin('p.categories', 'c')
@@ -140,13 +149,16 @@ final class ProductAssignImportImagesCommand extends Command
             }
             $imageKey = $this->resolveImageKey($product, $supplierSlug);
             $imageKey = str_replace(['/', '`', ' '], '-', $imageKey);
+
             if ($imageKey === '') {
                 ++$skipped;
                 continue;
             }
 
             $productSupplier = $product->getImageSupplierSlug() ?: $supplierSlug;
+
             $gallery = $this->buildGalleryForModel($imageKey, $product->getName(), $productSupplier, $dryRun);
+
             if ($gallery === []) {
                 ++$missing;
                 $io->text(sprintf('  ? no images for %s', $imageKey));
@@ -181,7 +193,7 @@ final class ProductAssignImportImagesCommand extends Command
     private function resolveDefaultCategory(ProductImport $import): ?Category
     {
         $externalId = $import->getDefaultCategoryExternalId();
-        if ($externalId !== null) {
+        if ($externalId !== null && $externalId !== 3000) {
             $category = $this->categoryRepository->findOneBy(['external_id' => $externalId]);
             if ($category instanceof Category) {
                 return $category;

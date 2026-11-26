@@ -1366,6 +1366,7 @@ shop.search.empty: 'No products found for “%query%”.'
 shop.search.empty_no_query: Enter a product name to search.
 shop.filter.title: Filters
 shop.filter.close: Close filters
+shop.filter.category: Category
 shop.filter.brand: Brand
 shop.filter.color: Color
 shop.filter.type: Type
@@ -1381,6 +1382,9 @@ shop.filter.clear_all: Remove all
 shop.filter.show_all: 'Show all (+%count%)'
 shop.filter.show_less: Show less
 shop.catalog.results_count: 'Found: %count%'
+shop.catalog.loading_more: Loading more products…
+shop.catalog.load_more_error: Could not load more products. Scroll to try again.
+shop.scroll_top: Back to top
 shop.sort.by: Sort by
 shop.sort.rank: By rating
 shop.sort.cheap: Cheap to expensive

@@ -141,16 +141,22 @@
                                 >
                                     {% if category.ogImage %}
                                         <span class="shop-home-category__media">
-                                            <img
-                                                class="shop-home-category__image"
-                                                src="{{ category.ogImage|category_og_image }}"
-                                                alt="{{ category.name }}"
-                                                width="1200"
-                                                height="630"
-                                                loading="lazy"
-                                                decoding="async"
-                                                style="aspect-ratio: 1200 / 630;"
-                                            >
+                                            <picture>
+                                                <source
+                                                    media="(max-width: 700px)"
+                                                    srcset="{{ (category.ogImage|category_og_image)|imagine_filter('cat_thumbnail') }}"
+                                                >
+                                                <img
+                                                    class="shop-home-category__image"
+                                                    src="{{ category.ogImage|category_og_image }}"
+                                                    alt="{{ category.name }}"
+                                                    width="1200"
+                                                    height="630"
+                                                    loading="lazy"
+                                                    decoding="async"
+                                                    style="aspect-ratio: 1200 / 630;"
+                                                >
+                                            </picture>
                                         </span>
                                     {% endif %}
                                     <span class="shop-home-category__name">{{ category.name }}</span>

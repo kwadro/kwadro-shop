@@ -1,0 +1,3 @@
+{% for product in products %}
+    {% include 'shop/partials/_product_card.html.twig' with {product: product} only %}
+{% endfor %}

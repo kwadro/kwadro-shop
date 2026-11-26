@@ -99,9 +99,17 @@
             emptyMessage: 'shop.category.empty_products'|trans,
             paginationBasePath: categoryUrl,
             paginationQuery: paginationQuery,
+            infiniteScroll: true,
             subcategoryNavItems: showSubcategoryNav ? subcategoryNavItems : [],
             activeSiblingId: activeSiblingId|default(null),
             subcategoryNavParentName: subcategoryNavParentName
         } %}
     </article>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {% if pages|default(1) > 1 %}
+        <script src="{{ asset('js/shop-infinite-scroll.js') }}" defer></script>
+    {% endif %}
 {% endblock %}

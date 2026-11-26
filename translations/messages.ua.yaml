@@ -1366,6 +1366,7 @@ shop.search.empty: 'За запитом «%query%» товарів не знай
 shop.search.empty_no_query: Введіть назву товару для пошуку.
 shop.filter.title: Фільтри
 shop.filter.close: Закрити фільтри
+shop.filter.category: Категорія
 shop.filter.brand: Бренд
 shop.filter.color: Колір
 shop.filter.type: Тип
@@ -1381,6 +1382,9 @@ shop.filter.clear_all: Видалити всі
 shop.filter.show_all: 'Показати всі (+%count%)'
 shop.filter.show_less: Згорнути
 shop.catalog.results_count: 'Знайдено: %count%'
+shop.catalog.loading_more: Завантаження товарів…
+shop.catalog.load_more_error: Не вдалося завантажити товари. Прокрутіть, щоб спробувати знову.
+shop.scroll_top: Вгору
 shop.sort.by: Сортування
 shop.sort.rank: За рейтингом
 shop.sort.cheap: Від дешевих до дорогих

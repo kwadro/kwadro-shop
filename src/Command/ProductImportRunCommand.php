@@ -87,7 +87,7 @@ final class ProductImportRunCommand extends Command
             $importStartedAt = microtime(true);
             $run = match ($import->getCode()) {
                 ProductImport::CODE_SIVITEK => $this->sivitekProductImportService->run($import, $dryRun),
-                ProductImport::CODE_LUGI => $this->lugiProductImportService->run($import, $dryRun, $withImages),
+                ProductImport::CODE_LUGI, ProductImport::CODE_TOYSI => $this->lugiProductImportService->run($import, $dryRun, $withImages),
                 default => throw new \RuntimeException(sprintf('Unsupported import code: %s', $import->getCode())),
             };
             $importElapsed = microtime(true) - $importStartedAt;

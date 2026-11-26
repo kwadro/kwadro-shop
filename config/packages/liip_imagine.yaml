@@ -6,26 +6,29 @@ liip_imagine:
         default:
             filesystem:
                 data_root:
-                    - '/home/kwadro/kvadro.if.ua/www/shared/public'
                     - '%kernel.project_dir%/public'
-
-
     filter_sets:
         product_thumbnail:
-            quality: 85
+            quality: 100
             filters:
                 thumbnail:
                     size: [348, 348]
                     mode: inset
         home_hero:
-            quality: 85
+            quality: 100
             filters:
                 thumbnail:
                     size: [ 378, 284 ]
                     mode: inset
         home_logo:
-            quality: 85
+            quality: 100
             filters:
                 thumbnail:
                     size: [ 180, 60 ]
+                    mode: inset
+        cat_thumbnail:
+            quality: 100
+            filters:
+                thumbnail:
+                    size: [375, 97]
                     mode: inset

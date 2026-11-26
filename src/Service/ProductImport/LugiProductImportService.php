@@ -57,7 +57,7 @@ class LugiProductImportService
     {
         $feedUrl = $import->getFilePath();
         $localPath = $this->downloadFeed($feedUrl);
-        $supplier = $this->resolveSupplier();
+        $supplier = $this->resolveSupplier($import->getCode());
         $supplierId = (int)$supplier->getId();
         $supplierCode = $supplier->getSlug();
         $this->downloadOfferImages($localPath, $supplierCode);
@@ -106,7 +106,7 @@ class LugiProductImportService
                 );
             }
             $baseCategoryId = (int)$baseCategory->getId();
-            $supplier = $this->resolveSupplier();
+            $supplier = $this->resolveSupplier($import->getCode());
             $supplierId = (int)$supplier->getId();
             $supplierCode = $supplier->getSlug();
             $importId = (int)$import->getId();
@@ -466,7 +466,6 @@ class LugiProductImportService
                 }
             }
         }
-
     }
 
     /**
@@ -599,19 +598,34 @@ class LugiProductImportService
         return 'jpg';
     }
 
-    private function resolveSupplier(): Supplier
+    private function resolveSupplier($importCode): ?Supplier
     {
-        $supplier = $this->supplierRepository->findOneBy(['slug' => 'homeware'])
-            ?? $this->supplierRepository->findOneBy(['name' => 'Товари для дому']);
+        $name = $slug = $description = null;
+        if ($importCode === 'toysi') {
+            $name = 'Дитячі Товари';
+            $slug = 'toysi';
+            $description = 'Товари для дітей';
+        }
+        if ($importCode === 'lugi') {
+            $name = 'Товари для дому';
+            $slug = 'homeware';
+            $description = 'Побутові товари для всіх';
+        }
+        if (!$name) {
+            return null;
+        }
+
+        $supplier = $this->supplierRepository->findOneBy(['slug' => $slug])
+            ?? $this->supplierRepository->findOneBy(['name' => $name]);
 
         if ($supplier !== null) {
             return $supplier;
         }
 
         $supplier = (new Supplier())
-            ->setName('Товари для дому')
-            ->setSlug('homeware')
-            ->setDescription('Побутові товари для всіх');
+            ->setName($name)
+            ->setSlug($slug)
+            ->setDescription($description);
         $this->em->persist($supplier);
         $this->em->flush();
 

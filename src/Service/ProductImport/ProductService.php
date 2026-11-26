@@ -12,7 +12,7 @@ use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
 use SimpleXMLElement;
 
- class ProductService
+class ProductService
 {
     private ?array $menuCategoryMoves;
 
@@ -65,19 +65,30 @@ use SimpleXMLElement;
             }
         }
 
-        $vendorCode = trim((string) $node->vendorCode);
-
+        $vendorCode = trim((string)$node->vendorCode);
+        $skuPrefix = null;
+        if (property_exists($node, 'quantity_in_stock')) {
+            $stockQty = (int)$node->quantity_in_stock;
+            $skuPrefix = 'homeware-';
+        }
+        if (property_exists($node, 'ostatok')) {
+            $stockQty = (int)str_replace('шт.', '', $node->ostatok);
+            $skuPrefix = 'toysi-';
+        }
+        if (!$skuPrefix){
+            return null;
+        }
         return [
             'id' => $externalId,
             'available' => true,
-            'name' => (string) $node->name,
-            'category_id' => (int) $node->categoryId,
-            'price' => (int) $node->price,
-            'description' => (string) $node->description,
-            'brand' => (string) $node->vendor,
-            'stock_qty' => (int) $node->quantity_in_stock,
+            'name' => (string)$node->name,
+            'category_id' => (int)$node->categoryId,
+            'price' => (int)$node->price,
+            'description' => (string)$node->description,
+            'brand' => (string)$node->vendor,
+            'stock_qty' => $stockQty,
             'vendor_code' => $vendorCode,
-            'sku' => 'homeware-'.$vendorCode,
+            'sku' => $skuPrefix . $vendorCode,
             'params' => $params,
             'weight' => WeightParser::fromParams($params),
         ];
@@ -101,7 +112,7 @@ use SimpleXMLElement;
             }
             $quoted = preg_quote($token, '/');
             $name = preg_replace(
-                '/(?<![\p{L}\p{N}_-])'.$quoted.'(?![\p{L}\p{N}_-])/iu',
+                '/(?<![\p{L}\p{N}_-])' . $quoted . '(?![\p{L}\p{N}_-])/iu',
                 '',
                 $name,
             ) ?? $name;
@@ -119,9 +130,9 @@ use SimpleXMLElement;
      */
     public function applyStripSkuFromName(array $productData): array
     {
-        $name = trim((string) ($productData['name'] ?? ''));
-        $vendorCode = trim((string) ($productData['vendor_code'] ?? ''));
-        $sku = trim((string) ($productData['sku'] ?? ''));
+        $name = trim((string)($productData['name'] ?? ''));
+        $vendorCode = trim((string)($productData['vendor_code'] ?? ''));
+        $sku = trim((string)($productData['sku'] ?? ''));
         $productData['name'] = $this->stripSkuFromName($name, $vendorCode, $sku);
         $productData['strip_sku_from_name'] = true;
 
@@ -198,7 +209,7 @@ use SimpleXMLElement;
 
         $this->generatorSlugService->assignUniqueSlug($product, $baseSlug);
 
-        $this->updateProductCategory($product,$productData['category_id']);
+        $this->updateProductCategory($product, $productData['category_id']);
 
         $this->ensureUniqueProductSlug($product);
 
@@ -225,7 +236,7 @@ use SimpleXMLElement;
             ->setBadge($inStock ? null : 'Очікується');
 
         if (!empty($productData['strip_sku_from_name'])) {
-            $name = trim((string) ($productData['name'] ?? ''));
+            $name = trim((string)($productData['name'] ?? ''));
             if ($name !== '') {
                 $product->setName($name);
             }
@@ -242,7 +253,7 @@ use SimpleXMLElement;
         if ($productData['price'] !== null && $productData['price'] > 0) {
             $this->upsertOffer($product, $productData, $supplier);
         }
-        $this->updateProductCategory($product,$productData['category_id']);
+        $this->updateProductCategory($product, $productData['category_id']);
 
         $this->attributeImportService->syncProductValues(
             $product,
@@ -250,20 +261,21 @@ use SimpleXMLElement;
             $productData['params'] ?? [],
         );
     }
+
     public function updateProductCategory(Product $product, $categoryId): void
     {
-        $category = $this->resolveCategoryByExternalId((int) $categoryId);
+        $category = $this->resolveCategoryByExternalId((int)$categoryId);
         if ($category === null) {
             return;
         }
 
         $categoryMoves = array_filter(
             $this->getMenuCategoryMoves() ?? [],
-            static fn ($categoryMove): bool => (int) ($categoryMove['category_id'] ?? 0) === (int) $category->getId(),
+            static fn($categoryMove): bool => (int)($categoryMove['category_id'] ?? 0) === (int)$category->getId(),
         );
         $categoryIds = [$category];
         if ($categoryMoves) {
-            $parentId = (int) (current($categoryMoves)['parent_id'] ?? 0);
+            $parentId = (int)(current($categoryMoves)['parent_id'] ?? 0);
             $parentCategory = $parentId > 0 ? $this->resolveCategoryById($parentId) : null;
         } else {
             $parentCategory = $category->getParent();
@@ -292,7 +304,7 @@ use SimpleXMLElement;
         $category = $this->categoryRepository->findOneBy(['external_id' => $externalId]);
         $this->categoryByExternalId[$externalId] = $category;
         if ($category !== null && $category->getId() !== null) {
-            $this->categoryById[(int) $category->getId()] = $category;
+            $this->categoryById[(int)$category->getId()] = $category;
         }
 
         return $category;
@@ -315,6 +327,7 @@ use SimpleXMLElement;
 
         return $category;
     }
+
     /**
      * Convert feed description text into HTML while preserving/restoring line breaks.
      * Lugi YML often flattens paragraphs to 2–3 spaces inside CDATA.

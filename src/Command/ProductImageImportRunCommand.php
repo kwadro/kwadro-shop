@@ -83,13 +83,13 @@ final class ProductImageImportRunCommand extends Command
             if(!$patch){
                 match ($import->getCode()) {
                     ProductImport::CODE_SIVITEK => $this->sivitekProductImportService->runImage($import),
-                    ProductImport::CODE_LUGI => $this->lugiProductImportService->runImage($import),
+                    ProductImport::CODE_LUGI, ProductImport::CODE_TOYSI => $this->lugiProductImportService->runImage($import),
                     default => throw new \RuntimeException(sprintf('Unsupported import code: %s', $import->getCode())),
                 };
             }else{
                 match ($import->getCode()) {
                     ProductImport::CODE_SIVITEK => $this->sivitekProductImportService->runImageByPatch($patch),
-                    ProductImport::CODE_LUGI => $this->lugiProductImportService->runImageByPatch($patch),
+                    ProductImport::CODE_LUGI, ProductImport::CODE_TOYSI => $this->lugiProductImportService->runImageByPatch($patch),
                     default => throw new \RuntimeException(sprintf('Unsupported import code: %s', $import->getCode())),
                 };
             }

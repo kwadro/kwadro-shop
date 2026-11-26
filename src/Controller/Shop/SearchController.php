@@ -26,6 +26,12 @@ class SearchController extends AbstractController
     {
         $listing = $this->productListing->list([], $request, false);
 
+        if ($request->query->get('fragment') === 'products') {
+            return $this->render('shop/partials/_product_cards.html.twig', [
+                'products' => $listing['products'],
+            ]);
+        }
+
         return $this->render('shop/search/index.html.twig', $listing);
     }
 }

@@ -51,6 +51,14 @@ class FullPageCacheSubscriber implements EventSubscriberInterface
             $this->syncCartCookie($request, $response);
         }
 
+        // Infinite-scroll product fragments must never be stored as full pages.
+        if ($request->query->get('fragment') === 'products') {
+            $response->headers->set('X-Accel-Expires', '0');
+            $response->headers->set('Cache-Control', 'private, no-store');
+
+            return;
+        }
+
         if (!$this->policy->isEnabled() || !$this->isCacheable($request, $response)) {
             $response->headers->set('X-Accel-Expires', '0');
 

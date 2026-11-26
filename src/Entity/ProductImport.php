@@ -18,6 +18,7 @@ class ProductImport
 
     public const CODE_SIVITEK = 'sivitek';
     public const CODE_LUGI = 'lugi';
+    const CODE_TOYSI = 'toysi';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]

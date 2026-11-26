@@ -63,6 +63,12 @@ class CategoryController extends AbstractController
             $category->isShowFilters(),
         );
 
+        if ($request->query->get('fragment') === 'products') {
+            return $this->render('shop/partials/_product_cards.html.twig', [
+                'products' => $listing['products'],
+            ]);
+        }
+
         return $this->render('shop/category/show.html.twig', [
             'category' => $category,
             'siblings' => $siblings,

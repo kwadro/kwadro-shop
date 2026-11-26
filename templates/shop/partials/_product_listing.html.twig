@@ -1,4 +1,5 @@
 {% set facetLabels = {
+    category: 'shop.filter.category'|trans,
     brand: 'shop.filter.brand'|trans,
     color: 'shop.filter.color'|trans,
     type: 'shop.filter.type'|trans,
@@ -412,19 +413,54 @@
                 </form>
             </div>
 
-            <div class="shop-catalog-grid">
-                {% for product in products %}
-                    {% include 'shop/partials/_product_card.html.twig' with {product: product} only %}
-                {% endfor %}
-            </div>
+            {% set useInfiniteScroll = infiniteScroll|default(false) and pages|default(1) > 1 %}
+            {% if useInfiniteScroll %}
+                <div
+                    class="shop-infinite-scroll"
+                    data-infinite-scroll
+                    data-page="{{ page }}"
+                    data-pages="{{ pages }}"
+                    data-url="{{ paginationBasePath }}"
+                    data-query="{{ paginationQuery|default({})|json_encode|e('html_attr') }}"
+                    data-loading-label="{{ 'shop.catalog.loading_more'|trans|e('html_attr') }}"
+                    data-error-label="{{ 'shop.catalog.load_more_error'|trans|e('html_attr') }}"
+                >
+                    <div class="shop-catalog-grid" data-infinite-scroll-grid>
+                        {% include 'shop/partials/_product_cards.html.twig' with {products: products} only %}
+                    </div>
 
-            {% if pages|default(1) > 1 %}
-                {% include 'shop/partials/_pagination.html.twig' with {
-                    page: page,
-                    pages: pages,
-                    paginationBasePath: paginationBasePath,
-                    paginationQuery: paginationQuery|default({})
-                } only %}
+                    <div
+                        class="shop-infinite-scroll__sentinel"
+                        data-infinite-scroll-sentinel
+                        aria-hidden="true"
+                    ></div>
+                    <p
+                        class="shop-infinite-scroll__status"
+                        data-infinite-scroll-status
+                        aria-live="polite"
+                    ></p>
+                    <noscript>
+                        {% include 'shop/partials/_pagination.html.twig' with {
+                            page: page,
+                            pages: pages,
+                            paginationBasePath: paginationBasePath,
+                            paginationQuery: paginationQuery|default({})
+                        } only %}
+                    </noscript>
+                </div>
+            {% else %}
+                <div class="shop-catalog-grid">
+                    {% include 'shop/partials/_product_cards.html.twig' with {products: products} only %}
+                </div>
+
+                {% if pages|default(1) > 1 %}
+                    {% include 'shop/partials/_pagination.html.twig' with {
+                        page: page,
+                        pages: pages,
+                        paginationBasePath: paginationBasePath,
+                        paginationQuery: paginationQuery|default({})
+                    } only %}
+                {% endif %}
             {% endif %}
         {% endif %}
     </div>

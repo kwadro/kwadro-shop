@@ -79,7 +79,15 @@
                 ? 'shop.search.empty'|trans({'%query%': query})
                 : 'shop.search.empty_no_query'|trans,
             paginationBasePath: searchUrl,
-            paginationQuery: paginationQuery
+            paginationQuery: paginationQuery,
+            infiniteScroll: true
         } %}
     </article>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {% if pages|default(1) > 1 %}
+        <script src="{{ asset('js/shop-infinite-scroll.js') }}" defer></script>
+    {% endif %}
 {% endblock %}
