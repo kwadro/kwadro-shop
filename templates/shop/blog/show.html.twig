@@ -72,7 +72,7 @@
                     {% endif %}
                     {% if article.tagList is not empty %}
                         <ul class="shop-blog-card__tags">
-                            {% for tag in article.tagList %}
+                            {% for tag in article.tagList|slice(0, 3) %}
                                 <li>
                                     <a href="{{ path('shop_blog_search', {_locale: app.request.locale, q: tag}) }}">{{ tag }}</a>
                                 </li>

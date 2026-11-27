@@ -217,11 +217,6 @@
                     </div>
                     <div class="shop-home-slider__dots" data-home-slider-dots hidden></div>
                 </div>
-                <div class="shop-home-section__footer">
-                    <a class="shop-home__btn shop-home__btn--primary" href="{{ shopCtaPath }}">
-                        {{ 'shop.home.cta_all_products'|trans }}
-                    </a>
-                </div>
             </section>
         {% endif %}
 
@@ -238,11 +233,6 @@
                     {% for article in articles %}
                         {% include 'shop/blog/_article_card.html.twig' with { article: article, homeCard: true } %}
                     {% endfor %}
-                </div>
-                <div class="shop-home-section__footer">
-                    <a class="shop-home__btn shop-home__btn--ghost" href="{{ path('shop_blog_index', {_locale: app.request.locale}) }}">
-                        {{ 'shop.home.cta_all_articles'|trans }}
-                    </a>
                 </div>
             </section>
         {% endif %}
