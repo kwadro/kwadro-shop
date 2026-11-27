@@ -19,7 +19,11 @@ readonly class GeneratorSlugService
     }
     public function transferSkuAndIdToSlug($sku, $id): string
     {
-        $value = mb_strtolower(trim($sku)).'-'.$id;
+        if (str_contains((string)$sku, (string)$id)) {
+            $value = mb_strtolower(trim($sku));
+        } else {
+            $value = mb_strtolower(trim($sku)) . '-' . $id;
+        }
         $value = preg_replace('/[^a-z0-9_-]+/', '-', $value) ?? '';
         $value = trim($value, '-_');
         return $value !== '' ? $value : 'category';

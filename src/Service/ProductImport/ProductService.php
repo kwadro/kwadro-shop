@@ -67,6 +67,7 @@ class ProductService
 
         $vendorCode = trim((string)$node->vendorCode);
         $skuPrefix = null;
+        $stockQty = 0;
         if (property_exists($node, 'quantity_in_stock')) {
             $stockQty = (int)$node->quantity_in_stock;
             $skuPrefix = 'homeware-';
@@ -233,7 +234,9 @@ class ProductService
             ->setDescription($this->toHtmlDescription((string)($productData['description'] ?? '')))
             ->setInStock($inStock)
             ->setStockQty($inStock ? max(1, $productData['stock_qty']) : 0)
-            ->setBadge($inStock ? null : 'Очікується');
+            ->setBadge($inStock ? null : 'Очікується')
+            ->setEnabled(true)
+            ->setSupplierDelete(false);
 
         if (!empty($productData['strip_sku_from_name'])) {
             $name = trim((string)($productData['name'] ?? ''));
@@ -514,10 +517,10 @@ class ProductService
             if (isset($seenSkus[$skuKey])) {
                 continue;
             }
-            if (!$product->isEnabled()) {
+            if ($product->isSupplierDelete()) {
                 continue;
             }
-            $product->setEnabled(false);
+            $product->setSupplierDelete(true);
             ++$count;
         }
 

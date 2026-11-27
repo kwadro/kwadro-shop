@@ -264,7 +264,8 @@ final class SivitekProductImportService
             ->setShortDescription($this->toShortDescription($row['description']))
             ->setInStock($row['in_stock'])
             ->setStockQty($row['in_stock'] ? max(1, $row['stock_qty']) : 0)
-            ->setBadge($row['in_stock'] ? null : 'Очікується');
+            ->setBadge($row['in_stock'] ? null : 'Очікується')
+            ->setSupplierDelete(false);
 
         if (($row['weight'] ?? null) !== null) {
             $product->setWeight($row['weight']);
@@ -301,10 +302,10 @@ final class SivitekProductImportService
             if (isset($seenSkus[$skuKey])) {
                 continue;
             }
-            if (!$product->isEnabled()) {
+            if ($product->isSupplierDelete()) {
                 continue;
             }
-            $product->setEnabled(false);
+            $product->setSupplierDelete(true);
             ++$count;
         }
 

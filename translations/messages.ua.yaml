@@ -315,6 +315,9 @@ admin.product.in_stock: В наявності
 admin.product.enabled: Включено
 admin.product.enabled_yes: Так
 admin.product.enabled_no: Ні
+admin.product.supplier_delete: Видалений у постачальника
+admin.product.supplier_delete_yes: Так
+admin.product.supplier_delete_no: Ні
 admin.product.batch_enable: Увімкнути
 admin.product.batch_disable: Вимкнути
 admin.product.batch_enable_success: 'Увімкнено товарів: %count%'
@@ -324,7 +327,7 @@ admin.product_import.name: Назва
 admin.product_import.code: Код
 admin.product_import.code_help: 'Унікальний код типу імпорту, наприклад sivitek або lugi. Після створення змінити не можна.'
 admin.product_import.mode: Режим імпорту
-admin.product_import.mode_help: 'Add/Update — додати нові та оновити ціну/наявність/опис. Delete Add/Update — те саме + вимкнути товари постачальника, яких немає у файлі.'
+admin.product_import.mode_help: 'Add/Update — додати нові та оновити ціну/наявність/опис. Delete Add/Update — те саме + позначити товари постачальника, яких немає у файлі, як видалені у постачальника.'
 admin.product_import.file_path: Шлях до файлу
 admin.product_import.file_path_help: 'Відносно кореня проєкту або абсолютний шлях.'
 admin.product_import.disabled_skus: SKU для Disabled

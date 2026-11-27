@@ -72,7 +72,8 @@ class ProductCrudController extends AbstractCrudController
             ->add(EntityFilter::new('categories', $this->translator->trans('admin.product.categories', [], 'messages'))
                 ->canSelectMultiple()
                 ->autocomplete())
-            ->add(BooleanFilter::new('enabled', $this->translator->trans('admin.product.enabled', [], 'messages')));
+            ->add(BooleanFilter::new('enabled', $this->translator->trans('admin.product.enabled', [], 'messages')))
+            ->add(BooleanFilter::new('supplierDelete', $this->translator->trans('admin.product.supplier_delete', [], 'messages')));
     }
 
     public function configureActions(Actions $actions): Actions
@@ -212,6 +213,11 @@ class ProductCrudController extends AbstractCrudController
             ->formatValue(fn (mixed $value): string => $value
                 ? $this->translator->trans('admin.product.enabled_yes', [], 'messages')
                 : $this->translator->trans('admin.product.enabled_no', [], 'messages'));
+        yield BooleanField::new('supplierDelete', $this->translator->trans('admin.product.supplier_delete', [], 'messages'))
+            ->renderAsSwitch(false)
+            ->formatValue(fn (mixed $value): string => $value
+                ? $this->translator->trans('admin.product.supplier_delete_yes', [], 'messages')
+                : $this->translator->trans('admin.product.supplier_delete_no', [], 'messages'));
         yield BooleanField::new('in_stock', $this->translator->trans('admin.product.in_stock', [], 'messages'));
         yield IntegerField::new('stock_qty', $this->translator->trans('admin.product.stock_qty', [], 'messages'));
         yield TextField::new('badge', $this->translator->trans('admin.product.badge', [], 'messages'))

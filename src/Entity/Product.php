@@ -75,6 +75,10 @@ class Product
     #[ORM\Column(options: ['default' => true])]
     private bool $enabled = true;
 
+    /** Missing from the latest supplier feed (Delete Add/Update import mode). */
+    #[ORM\Column(name: 'supplier_delete', options: ['default' => false])]
+    private bool $supplierDelete = false;
+
     #[ORM\Column(options: ['default' => false])]
     private bool $in_stock = true;
 
@@ -394,6 +398,18 @@ class Product
     public function setEnabled(bool $enabled): static
     {
         $this->enabled = $enabled;
+
+        return $this;
+    }
+
+    public function isSupplierDelete(): bool
+    {
+        return $this->supplierDelete;
+    }
+
+    public function setSupplierDelete(bool $supplierDelete): static
+    {
+        $this->supplierDelete = $supplierDelete;
 
         return $this;
     }

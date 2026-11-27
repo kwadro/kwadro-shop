@@ -227,14 +227,12 @@ class LugiProductImportService
                 }
             }
             $deleted = 0;
-
             if ($import->getMode() === ProductImportMode::DeleteAddUpdate) {
                 // Supplier may be detached after the last batch clear.
                 if (!$this->em->contains($supplier)) {
                     $supplier = $this->supplierRepository->find($supplierId)
                         ?? throw new RuntimeException('Supplier lost after EntityManager clear.');
                 }
-
                 $deleted = $this->productService->disableMissingProducts($supplier, $seenSkus, $dryRun);
             }
 
