@@ -5,8 +5,12 @@ liip_imagine:
     loaders:
         default:
             filesystem:
+                # Deployer shares public/uploads + public/images outside the release.
+                # realpath() then leaves %kernel.project_dir%/public, so Liip rejects
+                # those files unless the shared root is also allow-listed.
                 data_root:
                     - '%kernel.project_dir%/public'
+                    - '%kernel.project_dir%/../../shared/public'
     filter_sets:
         product_thumbnail:
             quality: 100
@@ -18,17 +22,17 @@ liip_imagine:
             quality: 100
             filters:
                 thumbnail:
-                    size: [ 378, 284 ]
+                    size: [378, 284]
                     mode: inset
         home_logo:
             quality: 100
             filters:
                 thumbnail:
-                    size: [ 180, 60 ]
+                    size: [180, 60]
                     mode: inset
         cat_thumbnail:
             quality: 100
             filters:
                 thumbnail:
-                    size: [375, 97]
-                    mode: inset
+                    size: [375, 197]
+                    mode: outbound

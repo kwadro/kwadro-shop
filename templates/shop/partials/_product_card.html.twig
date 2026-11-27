@@ -8,8 +8,8 @@
     <a class="shop-product-card__media" href="{{ path('shop_product', {_locale: app.request.locale, slug: product.slug}) }}">
         <picture>
             <source
-                media="(max-width: 900px)"
-                srcset="{{ (image.full|imagine_filter('product_thumbnail'))|product_image(product.supplier.slug|default(null)) }}"
+                media="(max-width: 700px)"
+                srcset="{{ (image.full|product_image(product.supplier.slug|default(null)))|imagine_filter('cat_thumbnail') }}"
             >
             <img
                 src="{{ image.full|product_image(product.supplier.slug|default(null)) }}"
