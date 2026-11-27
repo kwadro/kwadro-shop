@@ -505,8 +505,12 @@ admin.homepage_setting.fieldset_products_help: Products on the homepage. Only en
 admin.homepage_setting.fieldset_articles: '"Interesting articles" block'
 admin.homepage_setting.fieldset_articles_help: Blog articles on the homepage. Only published articles of this site and language are shown.
 admin.homepage_setting.enabled: Show block
+admin.homepage_setting.top_title: Top title
+admin.homepage_setting.top_title_help: Small label shown above the title. Leave empty to hide.
 admin.homepage_setting.title: Title
 admin.homepage_setting.title_help: Leave empty to use the default title.
+admin.homepage_setting.sub_title: Subtitle
+admin.homepage_setting.sub_title_help: Text shown under the title. Leave empty to hide.
 admin.homepage_setting.lead: Subtitle
 admin.homepage_setting.lead_help: Leave empty to use the default text.
 admin.homepage_setting.source: What to show

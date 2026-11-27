@@ -115,8 +115,13 @@ class HomeController extends AbstractController
                 'productsInterval' => $homeSetting?->getProductsSliderIntervalMs() ?? HomepageSetting::DEFAULT_SLIDER_INTERVAL_MS,
             ],
             'homeBlocks' => [
+                'categories_top_title' => $homeSetting?->getCategoriesTopTitle(),
+                'categories_title' => $homeSetting?->getCategoriesTitle(),
+                'categories_sub_title' => $homeSetting?->getCategoriesSubTitle(),
+                'products_top_title' => $homeSetting?->getProductsTopTitle(),
                 'products_title' => $homeSetting?->getProductsTitle(),
                 'products_lead' => $homeSetting?->getProductsLead(),
+                'articles_top_title' => $homeSetting?->getArticlesTopTitle(),
                 'articles_title' => $homeSetting?->getArticlesTitle(),
                 'articles_lead' => $homeSetting?->getArticlesLead(),
             ],

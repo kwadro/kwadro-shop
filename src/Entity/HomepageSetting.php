@@ -67,6 +67,15 @@ class HomepageSetting
     #[ORM\Column(options: ['default' => true])]
     private bool $categoriesEnabled = true;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $categoriesTopTitle = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $categoriesTitle = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $categoriesSubTitle = null;
+
     #[ORM\Column(length: 20, options: ['default' => self::SOURCE_LATEST])]
     private string $categoriesSource = self::SOURCE_LATEST;
 
@@ -94,6 +103,9 @@ class HomepageSetting
 
     #[ORM\Column(options: ['default' => true])]
     private bool $productsEnabled = true;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $productsTopTitle = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $productsTitle = null;
@@ -136,6 +148,9 @@ class HomepageSetting
 
     #[ORM\Column(options: ['default' => true])]
     private bool $articlesEnabled = true;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $articlesTopTitle = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $articlesTitle = null;
@@ -298,6 +313,42 @@ class HomepageSetting
         return $this;
     }
 
+    public function getCategoriesTopTitle(): ?string
+    {
+        return $this->categoriesTopTitle;
+    }
+
+    public function setCategoriesTopTitle(?string $categoriesTopTitle): static
+    {
+        $this->categoriesTopTitle = self::normalizeText($categoriesTopTitle);
+
+        return $this;
+    }
+
+    public function getCategoriesTitle(): ?string
+    {
+        return $this->categoriesTitle;
+    }
+
+    public function setCategoriesTitle(?string $categoriesTitle): static
+    {
+        $this->categoriesTitle = self::normalizeText($categoriesTitle);
+
+        return $this;
+    }
+
+    public function getCategoriesSubTitle(): ?string
+    {
+        return $this->categoriesSubTitle;
+    }
+
+    public function setCategoriesSubTitle(?string $categoriesSubTitle): static
+    {
+        $this->categoriesSubTitle = self::normalizeText($categoriesSubTitle);
+
+        return $this;
+    }
+
     public function getCategoriesSource(): string
     {
         return $this->categoriesSource;
@@ -382,6 +433,18 @@ class HomepageSetting
     public function setProductsEnabled(bool $productsEnabled): static
     {
         $this->productsEnabled = $productsEnabled;
+
+        return $this;
+    }
+
+    public function getProductsTopTitle(): ?string
+    {
+        return $this->productsTopTitle;
+    }
+
+    public function setProductsTopTitle(?string $productsTopTitle): static
+    {
+        $this->productsTopTitle = self::normalizeText($productsTopTitle);
 
         return $this;
     }
@@ -529,6 +592,18 @@ class HomepageSetting
     public function setArticlesEnabled(bool $articlesEnabled): static
     {
         $this->articlesEnabled = $articlesEnabled;
+
+        return $this;
+    }
+
+    public function getArticlesTopTitle(): ?string
+    {
+        return $this->articlesTopTitle;
+    }
+
+    public function setArticlesTopTitle(?string $articlesTopTitle): static
+    {
+        $this->articlesTopTitle = self::normalizeText($articlesTopTitle);
 
         return $this;
     }

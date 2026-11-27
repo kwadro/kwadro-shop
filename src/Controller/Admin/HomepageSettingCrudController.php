@@ -119,6 +119,15 @@ class HomepageSettingCrudController extends AbstractCrudController
             ->setTabId('categories');
         yield BooleanField::new('categoriesEnabled', $this->t('admin.homepage_setting.enabled'))
             ->renderAsSwitch($pageName !== Crud::PAGE_INDEX);
+        yield TextField::new('categoriesTopTitle', $this->t('admin.homepage_setting.top_title'))
+            ->setHelp($this->t('admin.homepage_setting.top_title_help'))
+            ->hideOnIndex();
+        yield TextField::new('categoriesTitle', $this->t('admin.homepage_setting.title'))
+            ->setHelp($this->t('admin.homepage_setting.title_help'))
+            ->hideOnIndex();
+        yield TextareaField::new('categoriesSubTitle', $this->t('admin.homepage_setting.sub_title'))
+            ->setHelp($this->t('admin.homepage_setting.sub_title_help'))
+            ->hideOnIndex();
         yield ChoiceField::new('categoriesSource', $this->t('admin.homepage_setting.source'))
             ->setChoices([
                 $this->t('admin.homepage_setting.source_auto') => HomepageSetting::SOURCE_LATEST,
@@ -160,6 +169,9 @@ class HomepageSettingCrudController extends AbstractCrudController
             ->setTabId('products');
         yield BooleanField::new('productsEnabled', $this->t('admin.homepage_setting.enabled'))
             ->renderAsSwitch($pageName !== Crud::PAGE_INDEX);
+        yield TextField::new('productsTopTitle', $this->t('admin.homepage_setting.top_title'))
+            ->setHelp($this->t('admin.homepage_setting.top_title_help'))
+            ->hideOnIndex();
         yield TextField::new('productsTitle', $this->t('admin.homepage_setting.title'))
             ->setHelp($this->t('admin.homepage_setting.title_help'))
             ->hideOnIndex();
@@ -204,6 +216,9 @@ class HomepageSettingCrudController extends AbstractCrudController
             ->setTabId('articles');
         yield BooleanField::new('articlesEnabled', $this->t('admin.homepage_setting.enabled'))
             ->renderAsSwitch($pageName !== Crud::PAGE_INDEX);
+        yield TextField::new('articlesTopTitle', $this->t('admin.homepage_setting.top_title'))
+            ->setHelp($this->t('admin.homepage_setting.top_title_help'))
+            ->hideOnIndex();
         yield TextField::new('articlesTitle', $this->t('admin.homepage_setting.title'))
             ->setHelp($this->t('admin.homepage_setting.title_help'))
             ->hideOnIndex();

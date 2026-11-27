@@ -119,7 +119,13 @@
             {% set categoriesCols = categoriesPerRow|default(3) %}
             <section class="shop-home-section category" aria-labelledby="shop-home-categories-title">
                 <div class="shop-home-section__head">
-                    <h2 id="shop-home-categories-title" class="shop-home-section__title">{{ 'shop.home.categories_title'|trans }}</h2>
+                    {% if homeBlocks.categories_top_title %}
+                        <p class="shop-home-section__top-title">{{ homeBlocks.categories_top_title }}</p>
+                    {% endif %}
+                    <h2 id="shop-home-categories-title" class="shop-home-section__title">{{ homeBlocks.categories_title ?: 'shop.home.categories_title'|trans }}</h2>
+                    {% if homeBlocks.categories_sub_title %}
+                        <p class="shop-home-section__lead">{{ homeBlocks.categories_sub_title }}</p>
+                    {% endif %}
                 </div>
                 <div
                     class="shop-home-categories"
@@ -184,6 +190,9 @@
             {% set sliderMin = productsSliderMin|default(5) %}
             <section class="shop-home-section product" aria-labelledby="shop-home-products-title">
                 <div class="shop-home-section__head">
+                    {% if homeBlocks.products_top_title %}
+                        <p class="shop-home-section__top-title">{{ homeBlocks.products_top_title }}</p>
+                    {% endif %}
                     <h2 id="shop-home-products-title" class="shop-home-section__title">{{ homeBlocks.products_title ?: 'shop.home.products_title'|trans }}</h2>
                     <p class="shop-home-section__lead">{{ homeBlocks.products_lead ?: 'shop.home.products_lead'|trans }}</p>
                 </div>
@@ -219,6 +228,9 @@
         {% if articles is not empty %}
             <section class="shop-home-section shop-home-section--blog" aria-labelledby="shop-home-blog-title">
                 <div class="shop-home-section__head">
+                    {% if homeBlocks.articles_top_title %}
+                        <p class="shop-home-section__top-title">{{ homeBlocks.articles_top_title }}</p>
+                    {% endif %}
                     <h2 id="shop-home-blog-title" class="shop-home-section__title">{{ homeBlocks.articles_title ?: 'shop.home.blog_title'|trans }}</h2>
                     <p class="shop-home-section__lead">{{ homeBlocks.articles_lead ?: 'shop.home.blog_lead'|trans }}</p>
                 </div>

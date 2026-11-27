@@ -505,8 +505,12 @@ admin.homepage_setting.fieldset_products_help: Товари на головні�
 admin.homepage_setting.fieldset_articles: Блок «Цікаві статті»
 admin.homepage_setting.fieldset_articles_help: Статті блогу на головній сторінці. Показуються лише опубліковані статті цього сайту та мови.
 admin.homepage_setting.enabled: Показувати блок
+admin.homepage_setting.top_title: Верхній заголовок
+admin.homepage_setting.top_title_help: Невеликий текст над заголовком. Залиште порожнім, щоб приховати.
 admin.homepage_setting.title: Заголовок
 admin.homepage_setting.title_help: Залиште порожнім, щоб використати стандартний заголовок.
+admin.homepage_setting.sub_title: Підзаголовок
+admin.homepage_setting.sub_title_help: Текст під заголовком. Залиште порожнім, щоб приховати.
 admin.homepage_setting.lead: Підзаголовок
 admin.homepage_setting.lead_help: Залиште порожнім, щоб використати стандартний текст.
 admin.homepage_setting.source: Що показувати
