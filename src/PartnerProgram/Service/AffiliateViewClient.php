@@ -20,6 +20,8 @@ final class AffiliateViewClient
     }
 
     /**
+     * @param array<string, string> $attribution Extra FB / Google Ads click fields
+     *
      * @return array{ok: bool, advertisingLinkId: ?int}
      */
     public function registerView(
@@ -27,6 +29,7 @@ final class AffiliateViewClient
         string $landingUrl,
         ?string $visitorId = null,
         ?string $ipAddress = null,
+        array $attribution = [],
     ): array {
         $base = rtrim(trim($this->apiBase), '/');
         if ($base === '' || $referralKey === '') {
@@ -44,6 +47,12 @@ final class AffiliateViewClient
         $ipAddress = $ipAddress !== null ? trim($ipAddress) : '';
         if ($ipAddress !== '') {
             $payload['ip_address'] = mb_substr($ipAddress, 0, 45);
+        }
+        foreach ($attribution as $key => $value) {
+            if (!\is_string($key) || $key === '' || !\is_string($value) || $value === '') {
+                continue;
+            }
+            $payload[$key] = $value;
         }
 
         try {

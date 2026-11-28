@@ -1,0 +1,37 @@
+<div class="table-responsive">
+    <table class="table table-striped table-hover align-middle mb-0">
+        <thead>
+            <tr>
+                <th>{{ 'admin.partner_referral_stats.day'|trans }}</th>
+                <th class="text-end">{{ 'admin.partner_referral_stats.total'|trans }}</th>
+                <th class="text-end">{{ 'admin.partner_referral_stats.facebook'|trans }}</th>
+                <th class="text-end">{{ 'admin.partner_referral_stats.google_ads'|trans }}</th>
+                <th class="text-end">{{ 'admin.partner_referral_stats.other'|trans }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows|reverse %}
+                <tr>
+                    <td>{{ row.day }}</td>
+                    <td class="text-end">{{ row.total }}</td>
+                    <td class="text-end">{{ row.facebook }}</td>
+                    <td class="text-end">{{ row.google_ads }}</td>
+                    <td class="text-end">{{ row.other }}</td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="5" class="text-muted">{{ 'admin.partner_referral_stats.empty'|trans }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr class="fw-semibold">
+                <td>{{ 'admin.partner_referral_stats.totals'|trans({'%days%': days}) }}</td>
+                <td class="text-end">{{ totals.total }}</td>
+                <td class="text-end">{{ totals.facebook }}</td>
+                <td class="text-end">{{ totals.google_ads }}</td>
+                <td class="text-end">{{ totals.other }}</td>
+            </tr>
+        </tfoot>
+    </table>
+</div>

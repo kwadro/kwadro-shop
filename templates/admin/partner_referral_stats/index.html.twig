@@ -1,0 +1,98 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block content_title %}{{ page_title }}{% endblock %}
+
+{% block main %}
+    <div class="card shadow-sm" data-partner-referral-stats data-table-url="{{ table_url }}">
+        <div class="card-body">
+            <p class="text-muted">{{ 'admin.partner_referral_stats.help'|trans }}</p>
+
+            <ul class="nav nav-tabs mb-3" role="tablist" data-report-periods>
+                {% for period in periods %}
+                    <li class="nav-item" role="presentation">
+                        <button
+                            type="button"
+                            class="nav-link{% if period == days %} active{% endif %}"
+                            role="tab"
+                            data-days="{{ period }}"
+                            aria-selected="{{ period == days ? 'true' : 'false' }}"
+                        >
+                            {{ ('admin.partner_referral_stats.period_' ~ period)|trans }}
+                        </button>
+                    </li>
+                {% endfor %}
+            </ul>
+
+            <div data-report-content>
+                {% include 'admin/partner_referral_stats/_table.html.twig' %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            const root = document.querySelector('[data-partner-referral-stats]');
+            if (!root) {
+                return;
+            }
+
+            const tableUrl = root.getAttribute('data-table-url');
+            const content = root.querySelector('[data-report-content]');
+            const tabs = root.querySelectorAll('[data-report-periods] [data-days]');
+            let activeRequest = null;
+
+            tabs.forEach(function (tab) {
+                tab.addEventListener('click', function () {
+                    const days = tab.getAttribute('data-days');
+                    if (!days || tab.classList.contains('active') || tab.disabled) {
+                        return;
+                    }
+
+                    tabs.forEach(function (item) {
+                        item.classList.toggle('active', item === tab);
+                        item.setAttribute('aria-selected', item === tab ? 'true' : 'false');
+                        item.disabled = true;
+                    });
+
+                    content.style.opacity = '0.5';
+
+                    if (activeRequest) {
+                        activeRequest.abort();
+                    }
+
+                    const controller = new AbortController();
+                    activeRequest = controller;
+
+                    fetch(tableUrl + '?days=' + encodeURIComponent(days), {
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                        signal: controller.signal,
+                        credentials: 'same-origin',
+                    })
+                        .then(function (response) {
+                            if (!response.ok) {
+                                throw new Error('Request failed');
+                            }
+                            return response.text();
+                        })
+                        .then(function (html) {
+                            content.innerHTML = html;
+                        })
+                        .catch(function (error) {
+                            if (error.name !== 'AbortError') {
+                                content.innerHTML = '<p class="text-danger">Failed to load stats.</p>';
+                            }
+                        })
+                        .finally(function () {
+                            content.style.opacity = '1';
+                            tabs.forEach(function (item) {
+                                item.disabled = false;
+                            });
+                            if (activeRequest === controller) {
+                                activeRequest = null;
+                            }
+                        });
+                });
+            });
+        })();
+    </script>
+{% endblock %}

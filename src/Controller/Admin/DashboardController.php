@@ -73,6 +73,7 @@ use App\Controller\Admin\RedirectCrudController;
 use App\Controller\Admin\ReportRequestTrafficController;
 use App\Controller\Admin\ShopMegaMenuSettingCrudController;
 use App\PartnerProgram\Controller\Admin\PartnerQueryParameterCrudController;
+use App\PartnerProgram\Controller\Admin\PartnerReferralHitCrudController;
 // @GENERATE USE FINISH
 
 #[AdminDashboard(routePath: '/admin/{_locale}', routeName: 'admin')]
@@ -151,6 +152,13 @@ class DashboardController extends AbstractDashboardController
 
         yield MenuItem::subMenu($this->translator->trans('menu.group_partner_program', [], 'messages'), 'fas fa-handshake')->setSubItems([
             MenuItem::linkTo(PartnerQueryParameterCrudController::class, $this->translator->trans('menu.link_partner_query_parameter', [], 'messages'), 'fas fa-question'),
+            MenuItem::linkToRoute(
+                $this->translator->trans('menu.link_partner_referral_stats', [], 'messages'),
+                'fas fa-chart-line',
+                'admin_partner_referral_stats',
+                ['_locale' => 'ua'],
+            ),
+            MenuItem::linkTo(PartnerReferralHitCrudController::class, $this->translator->trans('menu.link_partner_referral_hit', [], 'messages'), 'fas fa-list'),
         ]);
 
         yield MenuItem::subMenu($this->translator->trans('menu.group_marketing', [], 'messages'), 'fas fa-bullhorn')->setSubItems([

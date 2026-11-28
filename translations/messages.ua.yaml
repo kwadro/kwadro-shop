@@ -17,6 +17,9 @@ menu.group_marketing: Маркетинг
 menu.group_partner_program: Партнерська програма
 menu.link_partner_query_parameter: Параметри запитів
 menu.link_partner_query_parameter_single: Параметр запиту
+menu.link_partner_referral_stats: Статистика переходів
+menu.link_partner_referral_hit: Переходи
+menu.link_partner_referral_hit_single: Перехід
 menu.link_promo_image_editor: Редактор промо-картинок
 menu.link_image_editor: Редактор картинок
 menu.link_background_remover: Прибрати фон
@@ -773,6 +776,37 @@ admin.partner_query_parameter.note: Примітка
 admin.partner_query_parameter.is_active: Активний
 admin.partner_query_parameter.created_at: Створено
 admin.partner_query_parameter.updated_at: Оновлено
+admin.partner_referral_hit.help: 'Серверні партнерські переходи з fbclid / gclid (як у Meta Pixel / Google Ads). Лише читання.'
+admin.partner_referral_hit.created_at: Час
+admin.partner_referral_hit.referral_key: Ключ
+admin.partner_referral_hit.param: Параметр
+admin.partner_referral_hit.ad_source: Джерело реклами
+admin.partner_referral_hit.ad_source_facebook: Facebook
+admin.partner_referral_hit.ad_source_google_ads: Google Ads
+admin.partner_referral_hit.fbclid: fbclid
+admin.partner_referral_hit.gclid: gclid
+admin.partner_referral_hit.gbraid: gbraid
+admin.partner_referral_hit.wbraid: wbraid
+admin.partner_referral_hit.utm_source: utm_source
+admin.partner_referral_hit.utm_medium: utm_medium
+admin.partner_referral_hit.utm_campaign: utm_campaign
+admin.partner_referral_hit.visitor_id: Visitor ID
+admin.partner_referral_hit.ip_address: IP
+admin.partner_referral_hit.advertising_link_id: Advertising link ID
+admin.partner_referral_hit.landing_url: Landing URL
+admin.partner_referral_hit.fbc: _fbc
+admin.partner_referral_hit.fbp: _fbp
+admin.partner_referral_stats.help: 'Щоденна статистика партнерських переходів з Facebook і Google Ads (серверний захват при ?pr=… / path).'
+admin.partner_referral_stats.day: День
+admin.partner_referral_stats.total: Усього
+admin.partner_referral_stats.facebook: Facebook
+admin.partner_referral_stats.google_ads: Google Ads
+admin.partner_referral_stats.other: Інше
+admin.partner_referral_stats.totals: 'Разом за %days% дн.'
+admin.partner_referral_stats.empty: Немає переходів за вибраний період.
+admin.partner_referral_stats.period_7: 7 днів
+admin.partner_referral_stats.period_14: 14 днів
+admin.partner_referral_stats.period_30: 30 днів
 admin.blocked_ip.ip: IP адреса
 admin.blocked_ip.ip_help: 'IPv4 або IPv6. Заблокований IP отримає 403 на вітрині (адмінка лишається доступною).'
 admin.blocked_ip.note: Примітка
