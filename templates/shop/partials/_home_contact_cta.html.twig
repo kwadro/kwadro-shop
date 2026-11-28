@@ -1,0 +1,102 @@
+{% set cta = contactCta|default({}) %}
+{% if cta.enabled|default(true) %}
+    {% set eyebrow = cta.eyebrow|default('') %}
+    {% set title = cta.title|default('') %}
+    {% set lead = cta.lead|default('') %}
+    {% set phoneLabel = cta.phoneLabel|default('') %}
+    {% set phone = cta.phone|default('') %}
+    {% set phoneHref = cta.phoneHref|default('') %}
+    {% set email = cta.email|default('') %}
+    {% set note = cta.note|default('') %}
+    {% set badges = cta.badges|default([]) %}
+    {% set links = cta.links|default([]) %}
+
+    {% if eyebrow is empty %}{% set eyebrow = 'shop.home.contact_cta_eyebrow'|trans %}{% endif %}
+    {% if title is empty %}{% set title = 'shop.home.contact_cta_title'|trans %}{% endif %}
+    {% if lead is empty %}{% set lead = 'shop.home.contact_cta_lead'|trans %}{% endif %}
+    {% if phoneLabel is empty %}{% set phoneLabel = 'shop.home.contact_cta_phone_label'|trans %}{% endif %}
+    {% if note is empty %}{% set note = 'shop.home.contact_cta_note'|trans %}{% endif %}
+
+    {% if badges is empty %}
+        {% set badges = [
+            'shop.home.contact_cta_badge1'|trans,
+            'shop.home.contact_cta_badge2'|trans,
+            'shop.home.contact_cta_badge3'|trans,
+        ] %}
+    {% endif %}
+
+    {% if links is empty %}
+        {% set links = [
+            { label: 'shop.home.contact_cta_link1'|trans, url: path('shop_page', { slug: 'delivery', _locale: app.request.locale }) },
+            { label: 'shop.home.contact_cta_link2'|trans, url: path('shop_page', { slug: 'payment', _locale: app.request.locale }) },
+            { label: 'shop.home.contact_cta_link3'|trans, url: path('shop_page', { slug: 'returns', _locale: app.request.locale }) },
+        ] %}
+    {% endif %}
+
+    {% if phone is empty %}
+        {% set phoneLinks = site_settings().header.phone_links|default([]) %}
+        {% if phoneLinks is not empty %}
+            {% set phone = phoneLinks[0].display|default('') %}
+            {% set phoneHref = phoneLinks[0].tel is defined and phoneLinks[0].tel ? 'tel:' ~ phoneLinks[0].tel : phoneHref %}
+        {% elseif site_settings().header.phone_list|default([]) is not empty %}
+            {% set phone = site_settings().header.phone_list[0] %}
+        {% endif %}
+    {% endif %}
+
+    <section class="shop-home-contact-cta" aria-labelledby="shop-home-contact-cta-title">
+        <div class="shop-home-contact-cta__grid">
+            <div class="shop-home-contact-cta__copy">
+                {% if eyebrow %}
+                    <p class="shop-home-contact-cta__eyebrow">{{ eyebrow }}</p>
+                {% endif %}
+                <h2 id="shop-home-contact-cta-title" class="shop-home-contact-cta__title">{{ title }}</h2>
+                {% if lead %}
+                    <p class="shop-home-contact-cta__lead">{{ lead }}</p>
+                {% endif %}
+                {% if badges is not empty %}
+                    <ul class="shop-home-contact-cta__badges">
+                        {% for badge in badges %}
+                            <li class="shop-home-contact-cta__badge">{{ badge }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+
+            <div class="shop-home-contact-cta__aside">
+                {% if phoneLabel %}
+                    <p class="shop-home-contact-cta__phone-label">{{ phoneLabel }}</p>
+                {% endif %}
+                {% if phone %}
+                    {% if phoneHref %}
+                        <a class="shop-home-contact-cta__phone" href="{{ phoneHref }}">{{ phone }}</a>
+                    {% else %}
+                        <p class="shop-home-contact-cta__phone">{{ phone }}</p>
+                    {% endif %}
+                {% endif %}
+                {% if email %}
+                    <a class="shop-home-contact-cta__email" href="mailto:{{ email }}">{{ email }}</a>
+                {% endif %}
+
+                {% if links is not empty %}
+                    <div class="shop-home-contact-cta__links">
+                        {% for link in links %}
+                            <a class="shop-home-contact-cta__link" href="{{ link.url }}">
+                                <span class="shop-home-contact-cta__link-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                                        <path d="M7 17L17 7"/>
+                                        <path d="M8 7h9v9"/>
+                                    </svg>
+                                </span>
+                                <span>{{ link.label }}</span>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                {% if note %}
+                    <p class="shop-home-contact-cta__note">{{ note }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+{% endif %}

@@ -1,0 +1,49 @@
+{% set articleUrl = path('shop_blog_article', {_locale: app.request.locale, slug: article.slug}) %}
+{% set variant = variant|default('featured') %}
+{% set categoryName = null %}
+{% for category in article.categories %}
+    {% if categoryName is null and category.enabled %}
+        {% set categoryName = category.name %}
+    {% endif %}
+{% endfor %}
+
+<article class="shop-home-blog__card shop-home-blog__card--{{ variant }}">
+    <a class="shop-home-blog__media{% if not article.ogImage %} shop-home-blog__media--empty{% endif %}" href="{{ articleUrl }}" tabindex="-1" aria-hidden="true">
+        {% if article.ogImage %}
+            <img
+                src="{{ article.ogImage|blog_og_image }}"
+                alt=""
+                width="{{ variant == 'featured' ? 900 : 480 }}"
+                height="{{ variant == 'featured' ? 560 : 480 }}"
+                loading="lazy"
+                decoding="async"
+            >
+        {% endif %}
+    </a>
+    <div class="shop-home-blog__body">
+        <p class="shop-home-blog__meta">
+            {% if categoryName %}
+                <span class="shop-home-blog__category">{{ categoryName }}</span>
+            {% endif %}
+            {% if categoryName and article.publishedAt %}
+                <span class="shop-home-blog__meta-sep" aria-hidden="true">·</span>
+            {% endif %}
+            {% if article.publishedAt %}
+                <time datetime="{{ article.publishedAt|date('c') }}">{{ article.publishedAt|date('d.m.Y') }}</time>
+            {% endif %}
+        </p>
+        <h3 class="shop-home-blog__card-title">
+            <a href="{{ articleUrl }}">{{ article.title }}</a>
+        </h3>
+        {% if article.metaDescription %}
+            <p class="shop-home-blog__excerpt">{{ article.metaDescription }}</p>
+        {% endif %}
+        <a class="shop-home-blog__more" href="{{ articleUrl }}">
+            <span>{{ 'shop.home.blog_read'|trans }}</span>
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                <path d="M7 17L17 7"/>
+                <path d="M8 7h9v9"/>
+            </svg>
+        </a>
+    </div>
+</article>
