@@ -86,8 +86,8 @@ class LugiProductImportService
         }
         try {
             $feedUrl = $import->getFilePath();
-            $localPath = $this->downloadFeed($feedUrl);
-//            $localPath = '/home/igor/home/kvadro/var/import/lugi-20261108-165831.yml';
+            $localPath = $this->downloadFeed($feedUrl, $import->getCode());
+//          $localPath = '/home/igor/home/kvadro/var/import/lugi-20261108-165831.yml';
             $reader = new XMLReader();
             $reader->open($localPath);
 
@@ -306,7 +306,7 @@ class LugiProductImportService
     /**
      * @throws TransportExceptionInterface
      */
-    private function downloadFeed(string $feedUrl): string
+    private function downloadFeed(string $feedUrl, string $importCode='lugi'): string
     {
         $feedUrl = trim($feedUrl);
         if ($feedUrl === '' || !filter_var($feedUrl, FILTER_VALIDATE_URL)) {
@@ -316,7 +316,7 @@ class LugiProductImportService
         if (!is_dir($dir) && !mkdir($dir, 0775, true) && !is_dir($dir)) {
             throw new RuntimeException(sprintf('Cannot create import directory: %s', $dir));
         }
-        $path = sprintf('%s/lugi-%s.yml', $dir, (new \DateTimeImmutable())->format('Ymd-His'));
+        $path = sprintf('%s/%s-%s.yml', $dir, $importCode, (new \DateTimeImmutable())->format('Ymd-His'));
         $response = $this->httpClient->request('GET', $feedUrl, [
             'timeout' => 120,
             'max_duration' => 300,
