@@ -256,6 +256,54 @@ class HomepageSettingCrudController extends AbstractCrudController
             ])
             ->setHelp($this->t('admin.homepage_setting.articles_help'))
             ->hideOnIndex();
+
+        yield FormField::addTab($this->t('admin.homepage_setting.fieldset_contact_cta'), 'fa fa-phone')
+            ->setHelp($this->t('admin.homepage_setting.fieldset_contact_cta_help'))
+            ->setTabId('contact_cta');
+        yield BooleanField::new('contactCtaEnabled', $this->t('admin.homepage_setting.enabled'))
+            ->renderAsSwitch($pageName !== Crud::PAGE_INDEX);
+        yield TextField::new('contactCtaEyebrow', $this->t('admin.homepage_setting.contact_cta_eyebrow'))
+            ->setHelp($this->t('admin.homepage_setting.contact_cta_eyebrow_help'))
+            ->hideOnIndex();
+        yield TextField::new('contactCtaTitle', $this->t('admin.homepage_setting.contact_cta_title'))
+            ->setHelp($this->t('admin.homepage_setting.title_help'))
+            ->hideOnIndex();
+        yield TextareaField::new('contactCtaLead', $this->t('admin.homepage_setting.contact_cta_lead'))
+            ->setHelp($this->t('admin.homepage_setting.lead_help'))
+            ->hideOnIndex();
+        yield TextField::new('contactCtaBadge1', $this->t('admin.homepage_setting.contact_cta_badge1'))
+            ->hideOnIndex();
+        yield TextField::new('contactCtaBadge2', $this->t('admin.homepage_setting.contact_cta_badge2'))
+            ->hideOnIndex();
+        yield TextField::new('contactCtaBadge3', $this->t('admin.homepage_setting.contact_cta_badge3'))
+            ->setHelp($this->t('admin.homepage_setting.contact_cta_badges_help'))
+            ->hideOnIndex();
+        yield TextField::new('contactCtaPhoneLabel', $this->t('admin.homepage_setting.contact_cta_phone_label'))
+            ->hideOnIndex();
+        yield TextField::new('contactCtaPhone', $this->t('admin.homepage_setting.contact_cta_phone'))
+            ->setHelp($this->t('admin.homepage_setting.contact_cta_phone_help'))
+            ->hideOnIndex();
+        yield TextField::new('contactCtaEmail', $this->t('admin.homepage_setting.contact_cta_email'))
+            ->setHelp($this->t('admin.homepage_setting.contact_cta_email_help'))
+            ->hideOnIndex();
+        yield TextField::new('contactCtaLink1Label', $this->t('admin.homepage_setting.contact_cta_link1_label'))
+            ->hideOnIndex();
+        yield TextField::new('contactCtaLink1Url', $this->t('admin.homepage_setting.contact_cta_link1_url'))
+            ->setHelp($this->t('admin.homepage_setting.contact_cta_link_url_help'))
+            ->hideOnIndex();
+        yield TextField::new('contactCtaLink2Label', $this->t('admin.homepage_setting.contact_cta_link2_label'))
+            ->hideOnIndex();
+        yield TextField::new('contactCtaLink2Url', $this->t('admin.homepage_setting.contact_cta_link2_url'))
+            ->setHelp($this->t('admin.homepage_setting.contact_cta_link_url_help'))
+            ->hideOnIndex();
+        yield TextField::new('contactCtaLink3Label', $this->t('admin.homepage_setting.contact_cta_link3_label'))
+            ->hideOnIndex();
+        yield TextField::new('contactCtaLink3Url', $this->t('admin.homepage_setting.contact_cta_link3_url'))
+            ->setHelp($this->t('admin.homepage_setting.contact_cta_link_url_help'))
+            ->hideOnIndex();
+        yield TextareaField::new('contactCtaNote', $this->t('admin.homepage_setting.contact_cta_note'))
+            ->setHelp($this->t('admin.homepage_setting.contact_cta_note_help'))
+            ->hideOnIndex();
     }
 
     public function configureCrud(Crud $crud): Crud

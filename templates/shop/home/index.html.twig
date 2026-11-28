@@ -97,11 +97,23 @@
                                     {% endif %}
                                     <div class="shop-home-hero__actions">
                                         <a class="shop-home__btn shop-home__btn--primary" href="{{ primaryHref }}">
-                                            {{ primaryLabel }}
+                                            <span>{{ primaryLabel }}</span>
+                                            <span class="shop-home__btn-icon" aria-hidden="true">
+                                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                                                    <path d="M7 17L17 7"/>
+                                                    <path d="M8 7h9v9"/>
+                                                </svg>
+                                            </span>
                                         </a>
                                         {% if showSecondary and secondaryHref %}
                                             <a class="shop-home__btn shop-home__btn--ghost" href="{{ secondaryHref }}">
-                                                {{ secondaryLabel }}
+                                                <span>{{ secondaryLabel }}</span>
+                                                <span class="shop-home__btn-icon" aria-hidden="true">
+                                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                                                        <path d="M7 17L17 7"/>
+                                                        <path d="M8 7h9v9"/>
+                                                    </svg>
+                                                </span>
                                             </a>
                                         {% endif %}
                                     </div>
@@ -221,18 +233,41 @@
         {% endif %}
 
         {% if articles is not empty %}
-            <section class="shop-home-section shop-home-section--blog" aria-labelledby="shop-home-blog-title">
-                <div class="shop-home-section__head">
-                    {% if homeBlocks.articles_top_title %}
-                        <p class="shop-home-section__top-title">{{ homeBlocks.articles_top_title }}</p>
-                    {% endif %}
-                    <h2 id="shop-home-blog-title" class="shop-home-section__title">{{ homeBlocks.articles_title ?: 'shop.home.blog_title'|trans }}</h2>
-                    <p class="shop-home-section__lead">{{ homeBlocks.articles_lead ?: 'shop.home.blog_lead'|trans }}</p>
-                </div>
-                <div class="shop-home-blog">
-                    {% for article in articles %}
-                        {% include 'shop/blog/_article_card.html.twig' with { article: article, homeCard: true } %}
-                    {% endfor %}
+            {% set blogTopTitle = homeBlocks.articles_top_title ?: 'shop.home.blog_top_title'|trans %}
+            {% set blogTitle = homeBlocks.articles_title ?: 'shop.home.blog_title'|trans %}
+            {% set blogLead = homeBlocks.articles_lead ?: 'shop.home.blog_lead'|trans %}
+            {% set featuredArticle = articles|first %}
+            {% set sideArticles = articles|slice(1, 2) %}
+            <section class="shop-home-blog" aria-labelledby="shop-home-blog-title">
+                <div class="shop-home-blog__inner">
+                    <header class="shop-home-blog__head">
+                        <div class="shop-home-blog__head-main">
+                            {% if blogTopTitle %}
+                                <p class="shop-home-blog__top-title">{{ blogTopTitle }}</p>
+                            {% endif %}
+                            <h2 id="shop-home-blog-title" class="shop-home-blog__title">{{ blogTitle }}</h2>
+                        </div>
+                        {% if blogLead %}
+                            <p class="shop-home-blog__lead">{{ blogLead }}</p>
+                        {% endif %}
+                    </header>
+
+                    <div class="shop-home-blog__grid{% if sideArticles is empty %} shop-home-blog__grid--single{% endif %}">
+                        {% include 'shop/partials/_home_blog_card.html.twig' with {
+                            article: featuredArticle,
+                            variant: 'featured',
+                        } %}
+                        {% if sideArticles is not empty %}
+                            <div class="shop-home-blog__side">
+                                {% for article in sideArticles %}
+                                    {% include 'shop/partials/_home_blog_card.html.twig' with {
+                                        article: article,
+                                        variant: 'compact',
+                                    } %}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
                 </div>
             </section>
         {% endif %}
@@ -242,12 +277,6 @@
             modifier: 'home',
         } %}
 
-        <section class="shop-home-final-cta" aria-labelledby="shop-home-final-title">
-            <h2 id="shop-home-final-title" class="shop-home-final-cta__title">{{ 'shop.home.final_title'|trans }}</h2>
-            <p class="shop-home-final-cta__lead">{{ 'shop.home.final_lead'|trans }}</p>
-            <a class="shop-home__btn shop-home__btn--primary" href="{{ shopCtaPath }}">
-                {{ 'shop.home.cta_buy'|trans }}
-            </a>
-        </section>
+        {% include 'shop/partials/_home_contact_cta.html.twig' %}
     </div>
 {% endblock %}

@@ -5,6 +5,7 @@ namespace App\Controller\Shop;
 use App\Entity\Category;
 use App\Entity\HomepageHeroSlide;
 use App\Entity\HomepageSetting;
+use App\Entity\Site;
 use App\Repository\BlogArticleRepository;
 use App\Repository\CategoryRepository;
 use App\Repository\HomepageSettingRepository;
@@ -125,9 +126,86 @@ class HomeController extends AbstractController
                 'articles_title' => $homeSetting?->getArticlesTitle(),
                 'articles_lead' => $homeSetting?->getArticlesLead(),
             ],
+            'contactCta' => $this->resolveContactCta($homeSetting, $site),
             'show_topbar' => $showTopbar,
             'block_search_engines' => $blockSearchEngines,
         ]);
+    }
+
+    /**
+     * @return array{
+     *     enabled: bool,
+     *     eyebrow: ?string,
+     *     title: ?string,
+     *     lead: ?string,
+     *     badges: list<string>,
+     *     phoneLabel: ?string,
+     *     phone: ?string,
+     *     phoneHref: ?string,
+     *     email: ?string,
+     *     links: list<array{label: string, url: string}>,
+     *     note: ?string
+     * }
+     */
+    private function resolveContactCta(?HomepageSetting $homeSetting, ?Site $site): array
+    {
+        $enabled = $homeSetting === null || $homeSetting->isContactCtaEnabled();
+        $phone = $homeSetting?->getContactCtaPhone();
+        $email = $homeSetting?->getContactCtaEmail() ?? $site?->getAdminEmail();
+
+        $badges = array_values(array_filter([
+            $homeSetting?->getContactCtaBadge1(),
+            $homeSetting?->getContactCtaBadge2(),
+            $homeSetting?->getContactCtaBadge3(),
+        ], static fn (?string $value): bool => $value !== null && $value !== ''));
+
+        $links = [];
+        foreach ([
+            [$homeSetting?->getContactCtaLink1Label(), $homeSetting?->getContactCtaLink1Url()],
+            [$homeSetting?->getContactCtaLink2Label(), $homeSetting?->getContactCtaLink2Url()],
+            [$homeSetting?->getContactCtaLink3Label(), $homeSetting?->getContactCtaLink3Url()],
+        ] as [$label, $url]) {
+            if ($label === null || $label === '' || $url === null || $url === '') {
+                continue;
+            }
+            $links[] = ['label' => $label, 'url' => $url];
+        }
+
+        return [
+            'enabled' => $enabled,
+            'eyebrow' => $homeSetting?->getContactCtaEyebrow(),
+            'title' => $homeSetting?->getContactCtaTitle(),
+            'lead' => $homeSetting?->getContactCtaLead(),
+            'badges' => $badges,
+            'phoneLabel' => $homeSetting?->getContactCtaPhoneLabel(),
+            'phone' => $phone,
+            'phoneHref' => $this->formatContactPhoneHref($phone),
+            'email' => $email,
+            'links' => $links,
+            'note' => $homeSetting?->getContactCtaNote(),
+        ];
+    }
+
+    private function formatContactPhoneHref(?string $phone): ?string
+    {
+        if ($phone === null || trim($phone) === '') {
+            return null;
+        }
+
+        $digits = preg_replace('/\D+/', '', $phone) ?? '';
+        if ($digits === '') {
+            return null;
+        }
+
+        if (str_starts_with($digits, '380')) {
+            return 'tel:+'.$digits;
+        }
+
+        if (str_starts_with($digits, '0')) {
+            return 'tel:+38'.$digits;
+        }
+
+        return 'tel:+'.$digits;
     }
 
     /**

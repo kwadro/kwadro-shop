@@ -532,6 +532,30 @@ admin.homepage_setting.slider_autoplay: Автоперемикання слай�
 admin.homepage_setting.slider_autoplay_help: Автоматично перемикати слайди, коли блок у режимі слайдера.
 admin.homepage_setting.slider_interval: Інтервал слайдів (мс)
 admin.homepage_setting.slider_interval_help: Пауза між слайдами в мілісекундах (1000–60000). За замовчуванням 5000.
+admin.homepage_setting.fieldset_contact_cta: Блок контактного CTA
+admin.homepage_setting.fieldset_contact_cta_help: Темний контактний блок унизу головної (перед футером). Порожні поля беруть стандартні тексти з вітрини.
+admin.homepage_setting.contact_cta_eyebrow: Верхній підпис
+admin.homepage_setting.contact_cta_eyebrow_help: Невеликий текст великими літерами над заголовком.
+admin.homepage_setting.contact_cta_title: Заголовок
+admin.homepage_setting.contact_cta_lead: Підзаголовок
+admin.homepage_setting.contact_cta_badge1: Бейдж 1
+admin.homepage_setting.contact_cta_badge2: Бейдж 2
+admin.homepage_setting.contact_cta_badge3: Бейдж 3
+admin.homepage_setting.contact_cta_badges_help: Залиште всі бейджі порожніми, щоб показати три стандартні.
+admin.homepage_setting.contact_cta_phone_label: Підпис телефону
+admin.homepage_setting.contact_cta_phone: Телефон
+admin.homepage_setting.contact_cta_phone_help: Залиште порожнім, щоб узяти перший телефон з налаштувань шапки.
+admin.homepage_setting.contact_cta_email: Email
+admin.homepage_setting.contact_cta_email_help: Залиште порожнім, щоб узяти admin email сайту.
+admin.homepage_setting.contact_cta_link1_label: Посилання 1 — текст
+admin.homepage_setting.contact_cta_link1_url: Посилання 1 — URL
+admin.homepage_setting.contact_cta_link2_label: Посилання 2 — текст
+admin.homepage_setting.contact_cta_link2_url: Посилання 2 — URL
+admin.homepage_setting.contact_cta_link3_label: Посилання 3 — текст
+admin.homepage_setting.contact_cta_link3_url: Посилання 3 — URL
+admin.homepage_setting.contact_cta_link_url_help: Повний URL або шлях сайту. Кнопка з’являється лише коли заповнені і текст, і URL.
+admin.homepage_setting.contact_cta_note: Примітка
+admin.homepage_setting.contact_cta_note_help: Невеликий текст під кнопками. Залиште порожнім для стандартної примітки.
 admin.product_import_run.import: Імпорт
 admin.product_import_run.started_at: Початок
 admin.product_import_run.finished_at: Завершення
@@ -1509,10 +1533,23 @@ shop.home.products_title: Нові пропозиції
 shop.home.products_lead: Свіжі товари в наявності — купуйте онлайн з доставкою по Україні.
 shop.home.products_prev: Попередні товари
 shop.home.products_next: Наступні товари
-shop.home.blog_title: Цікаві статті
-shop.home.blog_lead: Короткі огляди та поради, які допоможуть зробити правильний вибір.
+shop.home.blog_top_title: Перед покупкою
+shop.home.blog_title: Розібратися перед вибором.
+shop.home.blog_lead: Короткі поради Квадро про живлення, інтернет для ТВ та захист техніки.
+shop.home.blog_read: Читати поради
 shop.home.final_title: Готові обрати?
 shop.home.final_lead: Перейдіть у каталог і купіть потрібний товар за кілька хвилин.
+shop.home.contact_cta_eyebrow: "— Квадро • Івано-Франківськ"
+shop.home.contact_cta_title: Знайшли своє? Уточніть деталі покупки.
+shop.home.contact_cta_lead: Перед замовленням перегляньте умови доставки, оплати й повернення на офіційному сайті магазину.
+shop.home.contact_cta_badge1: Івано-Франківськ
+shop.home.contact_cta_badge2: Щодня 9:00–19:00
+shop.home.contact_cta_badge3: Доставка по Україні
+shop.home.contact_cta_phone_label: Телефон магазину
+shop.home.contact_cta_link1: Доставка
+shop.home.contact_cta_link2: Оплата
+shop.home.contact_cta_link3: Повернення
+shop.home.contact_cta_note: Уточнення деталей не створює замовлення. Оформлюйте замовлення окремо на сайті.
 shop.google.review_title: Залиште відгук про магазин
 shop.google.review_lead: Ваша оцінка в Google допомагає іншим покупцям і нам ставати кращими.
 shop.google.review_title_checkout: Подобається наш магазин?

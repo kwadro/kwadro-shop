@@ -172,6 +172,57 @@ class HomepageSetting
     #[ORM\InverseJoinColumn(onDelete: 'CASCADE')]
     private Collection $articles;
 
+    #[ORM\Column(options: ['default' => true])]
+    private bool $contactCtaEnabled = true;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $contactCtaEyebrow = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $contactCtaTitle = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $contactCtaLead = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $contactCtaBadge1 = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $contactCtaBadge2 = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $contactCtaBadge3 = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $contactCtaPhoneLabel = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $contactCtaPhone = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $contactCtaEmail = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $contactCtaLink1Label = null;
+
+    #[ORM\Column(length: 500, nullable: true)]
+    private ?string $contactCtaLink1Url = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $contactCtaLink2Label = null;
+
+    #[ORM\Column(length: 500, nullable: true)]
+    private ?string $contactCtaLink2Url = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $contactCtaLink3Label = null;
+
+    #[ORM\Column(length: 500, nullable: true)]
+    private ?string $contactCtaLink3Url = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $contactCtaNote = null;
+
     #[ORM\Column(options: ['default' => false])]
     private bool $promoStripEnabled = false;
 
@@ -674,6 +725,210 @@ class HomepageSetting
     public function removeArticle(BlogArticle $article): static
     {
         $this->articles->removeElement($article);
+
+        return $this;
+    }
+
+    public function isContactCtaEnabled(): bool
+    {
+        return $this->contactCtaEnabled;
+    }
+
+    public function setContactCtaEnabled(bool $contactCtaEnabled): static
+    {
+        $this->contactCtaEnabled = $contactCtaEnabled;
+
+        return $this;
+    }
+
+    public function getContactCtaEyebrow(): ?string
+    {
+        return $this->contactCtaEyebrow;
+    }
+
+    public function setContactCtaEyebrow(?string $contactCtaEyebrow): static
+    {
+        $this->contactCtaEyebrow = self::normalizeText($contactCtaEyebrow);
+
+        return $this;
+    }
+
+    public function getContactCtaTitle(): ?string
+    {
+        return $this->contactCtaTitle;
+    }
+
+    public function setContactCtaTitle(?string $contactCtaTitle): static
+    {
+        $this->contactCtaTitle = self::normalizeText($contactCtaTitle);
+
+        return $this;
+    }
+
+    public function getContactCtaLead(): ?string
+    {
+        return $this->contactCtaLead;
+    }
+
+    public function setContactCtaLead(?string $contactCtaLead): static
+    {
+        $this->contactCtaLead = self::normalizeText($contactCtaLead);
+
+        return $this;
+    }
+
+    public function getContactCtaBadge1(): ?string
+    {
+        return $this->contactCtaBadge1;
+    }
+
+    public function setContactCtaBadge1(?string $contactCtaBadge1): static
+    {
+        $this->contactCtaBadge1 = self::normalizeText($contactCtaBadge1);
+
+        return $this;
+    }
+
+    public function getContactCtaBadge2(): ?string
+    {
+        return $this->contactCtaBadge2;
+    }
+
+    public function setContactCtaBadge2(?string $contactCtaBadge2): static
+    {
+        $this->contactCtaBadge2 = self::normalizeText($contactCtaBadge2);
+
+        return $this;
+    }
+
+    public function getContactCtaBadge3(): ?string
+    {
+        return $this->contactCtaBadge3;
+    }
+
+    public function setContactCtaBadge3(?string $contactCtaBadge3): static
+    {
+        $this->contactCtaBadge3 = self::normalizeText($contactCtaBadge3);
+
+        return $this;
+    }
+
+    public function getContactCtaPhoneLabel(): ?string
+    {
+        return $this->contactCtaPhoneLabel;
+    }
+
+    public function setContactCtaPhoneLabel(?string $contactCtaPhoneLabel): static
+    {
+        $this->contactCtaPhoneLabel = self::normalizeText($contactCtaPhoneLabel);
+
+        return $this;
+    }
+
+    public function getContactCtaPhone(): ?string
+    {
+        return $this->contactCtaPhone;
+    }
+
+    public function setContactCtaPhone(?string $contactCtaPhone): static
+    {
+        $this->contactCtaPhone = self::normalizeText($contactCtaPhone);
+
+        return $this;
+    }
+
+    public function getContactCtaEmail(): ?string
+    {
+        return $this->contactCtaEmail;
+    }
+
+    public function setContactCtaEmail(?string $contactCtaEmail): static
+    {
+        $this->contactCtaEmail = self::normalizeText($contactCtaEmail);
+
+        return $this;
+    }
+
+    public function getContactCtaLink1Label(): ?string
+    {
+        return $this->contactCtaLink1Label;
+    }
+
+    public function setContactCtaLink1Label(?string $contactCtaLink1Label): static
+    {
+        $this->contactCtaLink1Label = self::normalizeText($contactCtaLink1Label);
+
+        return $this;
+    }
+
+    public function getContactCtaLink1Url(): ?string
+    {
+        return $this->contactCtaLink1Url;
+    }
+
+    public function setContactCtaLink1Url(?string $contactCtaLink1Url): static
+    {
+        $this->contactCtaLink1Url = self::normalizeText($contactCtaLink1Url);
+
+        return $this;
+    }
+
+    public function getContactCtaLink2Label(): ?string
+    {
+        return $this->contactCtaLink2Label;
+    }
+
+    public function setContactCtaLink2Label(?string $contactCtaLink2Label): static
+    {
+        $this->contactCtaLink2Label = self::normalizeText($contactCtaLink2Label);
+
+        return $this;
+    }
+
+    public function getContactCtaLink2Url(): ?string
+    {
+        return $this->contactCtaLink2Url;
+    }
+
+    public function setContactCtaLink2Url(?string $contactCtaLink2Url): static
+    {
+        $this->contactCtaLink2Url = self::normalizeText($contactCtaLink2Url);
+
+        return $this;
+    }
+
+    public function getContactCtaLink3Label(): ?string
+    {
+        return $this->contactCtaLink3Label;
+    }
+
+    public function setContactCtaLink3Label(?string $contactCtaLink3Label): static
+    {
+        $this->contactCtaLink3Label = self::normalizeText($contactCtaLink3Label);
+
+        return $this;
+    }
+
+    public function getContactCtaLink3Url(): ?string
+    {
+        return $this->contactCtaLink3Url;
+    }
+
+    public function setContactCtaLink3Url(?string $contactCtaLink3Url): static
+    {
+        $this->contactCtaLink3Url = self::normalizeText($contactCtaLink3Url);
+
+        return $this;
+    }
+
+    public function getContactCtaNote(): ?string
+    {
+        return $this->contactCtaNote;
+    }
+
+    public function setContactCtaNote(?string $contactCtaNote): static
+    {
+        $this->contactCtaNote = self::normalizeText($contactCtaNote);
 
         return $this;
     }

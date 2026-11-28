@@ -532,6 +532,30 @@ admin.homepage_setting.slider_autoplay: Autoplay slider
 admin.homepage_setting.slider_autoplay_help: Automatically advance slides when the block is in slider mode.
 admin.homepage_setting.slider_interval: Slide interval (ms)
 admin.homepage_setting.slider_interval_help: Delay between slides in milliseconds (1000–60000). Default is 5000.
+admin.homepage_setting.fieldset_contact_cta: Contact CTA block
+admin.homepage_setting.fieldset_contact_cta_help: Dark contact block at the bottom of the homepage (before the footer). Empty fields use the default storefront texts.
+admin.homepage_setting.contact_cta_eyebrow: Eyebrow
+admin.homepage_setting.contact_cta_eyebrow_help: Small uppercase label above the title.
+admin.homepage_setting.contact_cta_title: Title
+admin.homepage_setting.contact_cta_lead: Subtitle
+admin.homepage_setting.contact_cta_badge1: Badge 1
+admin.homepage_setting.contact_cta_badge2: Badge 2
+admin.homepage_setting.contact_cta_badge3: Badge 3
+admin.homepage_setting.contact_cta_badges_help: Leave all badges empty to show the three default badges.
+admin.homepage_setting.contact_cta_phone_label: Phone label
+admin.homepage_setting.contact_cta_phone: Phone
+admin.homepage_setting.contact_cta_phone_help: Leave empty to use the first phone from header settings.
+admin.homepage_setting.contact_cta_email: Email
+admin.homepage_setting.contact_cta_email_help: Leave empty to use the site admin email.
+admin.homepage_setting.contact_cta_link1_label: Link 1 label
+admin.homepage_setting.contact_cta_link1_url: Link 1 URL
+admin.homepage_setting.contact_cta_link2_label: Link 2 label
+admin.homepage_setting.contact_cta_link2_url: Link 2 URL
+admin.homepage_setting.contact_cta_link3_label: Link 3 label
+admin.homepage_setting.contact_cta_link3_url: Link 3 URL
+admin.homepage_setting.contact_cta_link_url_help: Full URL or site path. Both label and URL are required to show a button.
+admin.homepage_setting.contact_cta_note: Note
+admin.homepage_setting.contact_cta_note_help: Small text under the buttons. Leave empty for the default note.
 admin.product_import_run.import: Import
 admin.product_import_run.started_at: Started at
 admin.product_import_run.finished_at: Finished at
@@ -1509,10 +1533,23 @@ shop.home.products_title: New offers
 shop.home.products_lead: Fresh in-stock products — buy online with delivery across Ukraine.
 shop.home.products_prev: Previous products
 shop.home.products_next: Next products
-shop.home.blog_title: Interesting articles
-shop.home.blog_lead: Short guides and tips to help you choose with confidence.
+shop.home.blog_top_title: Before buying
+shop.home.blog_title: Understand before you choose.
+shop.home.blog_lead: Short Kvadro tips on power, TV internet, and protecting your devices.
+shop.home.blog_read: Read tips
 shop.home.final_title: Ready to choose?
 shop.home.final_lead: Open the catalog and buy what you need in a few minutes.
+shop.home.contact_cta_eyebrow: "— Kvadro • Ivano-Frankivsk"
+shop.home.contact_cta_title: Found what you need? Confirm the purchase details.
+shop.home.contact_cta_lead: Before ordering, review delivery, payment, and return terms on the store’s official website.
+shop.home.contact_cta_badge1: Ivano-Frankivsk
+shop.home.contact_cta_badge2: Daily 9:00–19:00
+shop.home.contact_cta_badge3: Delivery across Ukraine
+shop.home.contact_cta_phone_label: Store phone
+shop.home.contact_cta_link1: Delivery
+shop.home.contact_cta_link2: Payment
+shop.home.contact_cta_link3: Returns
+shop.home.contact_cta_note: Clarifying details does not create an order. Place your order separately on the website.
 shop.google.review_title: Leave a store review
 shop.google.review_lead: Your Google rating helps other shoppers and helps us improve.
 shop.google.review_title_checkout: Enjoying our store?
